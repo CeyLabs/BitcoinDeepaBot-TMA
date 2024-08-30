@@ -4,6 +4,7 @@ import { useTMA } from "@/lib/hooks";
 import { initHapticFeedback, retrieveLaunchParams } from "@telegram-apps/sdk-react";
 import { Button } from "@telegram-apps/telegram-ui";
 import React from "react";
+import { IoMdShareAlt } from "react-icons/io";
 
 export default function ShareStory() {
     const { shareStory, closeWebApp } = useTMA();
@@ -31,7 +32,9 @@ export default function ShareStory() {
             stretched
             onClick={handleClick}
         >
-            Share Story
+            <span className="flex gap-2">
+                Share Story <IoMdShareAlt className="text-xl" />
+            </span>
         </Button>
     );
 }

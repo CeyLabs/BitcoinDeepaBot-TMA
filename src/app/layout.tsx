@@ -21,18 +21,22 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-             <head>
+            <head>
                 <Script
                     src="https://telegram.org/js/telegram-web-app.js"
                     strategy="beforeInteractive"
                 />
             </head>
-            <body className={`${inter.className} grid min-h-screen p-5 leading-tight bg-[#202020]`}>
+            <body className={`${inter.className} grid min-h-screen bg-[#202020] p-5 leading-tight`}>
                 <Providers>
-                    <AppRoot appearance='dark'>
+                    <AppRoot
+                        appearance="dark"
+                        style={{
+                            color: "white",
+                        }}
+                    >
                         <section className="flex flex-col items-center justify-center text-center">
-                            <Image src="/logo.png" width={300} height={300} alt="Bitcoin Deepa" />
-                            <p className="text-gray-500">#Bitcoinදීප</p>
+                            <Image src="/logo.png" width={250} height={250} alt="Bitcoin Deepa" />
                             <Title weight="2">
                                 Join Sri Lanka's First and Largest Bitcoin Community
                             </Title>

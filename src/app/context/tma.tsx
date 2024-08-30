@@ -13,7 +13,6 @@ export default function TMASetupProvider({ children }: { children: React.ReactNo
     }, [initLaunchParams, initData]);
 
     useEffect(() => {
-
         const { username, id } = authData?.user || {};
 
         async function addUserToDb() {
