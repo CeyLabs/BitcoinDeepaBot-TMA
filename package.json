@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev",
+        "dev": "next dev -p 3347",
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
@@ -11,6 +11,7 @@
         "init-git-hooks": "git config core.hooksPath .githooks"
     },
     "dependencies": {
+        "@telegram-apps/sdk-react": "^1.1.3",
         "@telegram-apps/telegram-ui": "^2.1.8",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.1.1",

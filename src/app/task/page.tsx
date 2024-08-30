@@ -1,15 +1,7 @@
-import {
-    Avatar,
-    Button,
-    Caption,
-    Card,
-    Divider,
-    Subheadline,
-    Text,
-    Title,
-} from "@telegram-apps/telegram-ui";
+import { Avatar, Button, Caption, Divider, Subheadline, Text } from "@telegram-apps/telegram-ui";
 import { TiUserAdd } from "react-icons/ti";
-import { IoIdCardOutline } from "react-icons/io5";
+import { MdWallet } from "react-icons/md";
+import Image from "next/image";
 
 export default function Page() {
     return (
@@ -18,7 +10,7 @@ export default function Page() {
             <section className="space-y-3">
                 <div className="space-y-2 rounded-xl border p-4 shadow-md">
                     <div className="flex items-center gap-2">
-                        <Avatar size={24} src="logo.png" />
+                        <Avatar size={24} src="/logo.png" />
                         <Text weight="2">Bitcoin දීප</Text>
                         <Caption>@BitcoinDeepa</Caption>
                     </div>
@@ -35,10 +27,10 @@ export default function Page() {
                         <Subheadline weight="2">Setup your Wallet</Subheadline>
                         <Caption>Setup your wallet to receive Bitcoin</Caption>
                     </div>
-                    <TiUserAdd className="text-5xl" />
+                    <MdWallet className="text-4xl" />
                 </div>
-                <Button Component="a" stretched href="/task">
-                    <span className="flex gap-2">Join the Group</span>
+                <Button Component="a" stretched href="https://t.me/BitcoinDeepaBot">
+                    <span className="flex gap-2">Setup Wallet</span>
                 </Button>
             </section>
             <section>
@@ -47,7 +39,15 @@ export default function Page() {
                         <Subheadline weight="2">Post a Story</Subheadline>
                         <Caption>Share your story with the community</Caption>
                     </div>
-                    <IoIdCardOutline className="text-5xl" />
+                    <div className="relative h-14 w-10 rotate-12 rounded-[5px] shadow-lg">
+                        <Image
+                            src="/logo.png"
+                            width={40}
+                            height={40}
+                            alt="Bitcoin Deepa"
+                            className="absolute bottom-0 right-0"
+                        />
+                    </div>
                 </div>
                 <Button Component="a" stretched href="/task">
                     <span className="flex gap-2">Share Story</span>
