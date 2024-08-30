@@ -26,6 +26,7 @@ export async function POST(req: Request) {
 
         const id = body.id;
         const username = body.username;
+        const data = body.data;
 
         await connect();
 
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
         }
 
         // Create a new user
-        const newUser = new User({ id, username });
+        const newUser = new User({ id, username, data });
         await newUser.save();
 
         return NextResponse.json({
