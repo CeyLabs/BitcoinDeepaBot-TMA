@@ -3,9 +3,10 @@
 import fetchy from "@/lib/fetchy";
 import { Headline } from "@telegram-apps/telegram-ui";
 import { useEffect, useState } from "react";
+import TextTicker from "./TextTicker";
 
 export default function UserCount() {
-    const [userCount, setUserCount] = useState(0);
+    const [userCount, setUserCount] = useState(5);
 
     useEffect(() => {
         async function fetchUserCount() {
@@ -15,5 +16,9 @@ export default function UserCount() {
         fetchUserCount();
     }, []);
 
-    return <Headline>{userCount} Joined</Headline>;
+    return (
+        <div className="text-2xl font-semibold tabular-nums tracking-tight">
+            <TextTicker value={userCount} />
+        </div>
+    );
 }

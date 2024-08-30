@@ -27,7 +27,7 @@ export default function RootLayout({
                     strategy="beforeInteractive"
                 />
             </head>
-            <body className={`${inter.className} grid min-h-screen p-5 leading-tight bg-black`}>
+            <body className={`${inter.className} grid min-h-screen p-5 leading-tight bg-[#202020]`}>
                 <Providers>
                     <AppRoot appearance='dark'>
                         <section className="flex flex-col items-center justify-center text-center">

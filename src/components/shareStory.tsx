@@ -3,7 +3,7 @@
 import { useTMA } from "@/lib/hooks";
 import { initHapticFeedback, retrieveLaunchParams } from "@telegram-apps/sdk-react";
 import { Button } from "@telegram-apps/telegram-ui";
-import React, { useState } from "react";
+import React from "react";
 
 export default function ShareStory() {
     const { shareStory, closeWebApp } = useTMA();
@@ -16,7 +16,7 @@ export default function ShareStory() {
             text: `#ViralStory #CeyLabs `,
             widget_link: {
                 url: "https://example.com",
-                name: "Share Story",
+                name: "Inner Circle Entry",
             },
         };
         haptic.impactOccurred("heavy");

@@ -15,8 +15,8 @@ export default function Page() {
                             border: "0.5px solid #FF9900",
                             objectFit: "cover",
                         }} />
-                        <Text weight="2">Bitcoin දීප</Text>
-                        <Caption>@BitcoinDeepa</Caption>
+                        <p className="text-sm">Bitcoin දීප</p>
+                        <p>@BitcoinDeepa</p>
                     </div>
                     <p className="text-xs">
                         Bitcoin deepa is a community of Bitcoin enthusiasts in Sri Lanka. We share
@@ -28,6 +28,8 @@ export default function Page() {
                         backgroundColor: "#FF9900",
                     }}
                     stretched
+                    Component='a'
+                    href="https://t.me/+iiP-rX7ldYxjZWU1"
                 >
                     Join the Community
                 </Button>
