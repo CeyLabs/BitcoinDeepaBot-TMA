@@ -5,6 +5,7 @@ import "@telegram-apps/telegram-ui/dist/styles.css";
 import { AppRoot, Title } from "@telegram-apps/telegram-ui";
 import Image from "next/image";
 import Providers from "./context/providers";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,9 +20,15 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
+             <head>
+                <Script
+                    src="https://telegram.org/js/telegram-web-app.js"
+                    strategy="beforeInteractive"
+                />
+            </head>
             <body className={`${inter.className} grid min-h-screen p-5 leading-tight bg-black`}>
                 <Providers>
-                    <AppRoot>
+                    <AppRoot appearance='dark'>
                         <section className="flex flex-col items-center justify-center text-center">
                             <Image src="/logo.png" width={300} height={300} alt="Bitcoin Deepa" />
                             <p className="text-gray-500">#Bitcoinදීප</p>

@@ -8,9 +8,12 @@ export default function Page() {
         <main className="mt-4 space-y-5">
             <Divider />
             <section className="space-y-3">
-                <div className="space-y-2 rounded-xl border p-4 shadow-md">
+                <div className="space-y-2 rounded-xl p-4 bg-white bg-opacity-10">
                     <div className="flex items-center gap-2">
-                        <Avatar size={24} src="/logo.png" />
+                        <Avatar size={24} src="/logo.png" style={{
+                            border: "0.5px solid #FF9900",
+                            objectFit: "cover",
+                        }} />
                         <Text weight="2">Bitcoin දීප</Text>
                         <Caption>@BitcoinDeepa</Caption>
                     </div>
@@ -19,7 +22,14 @@ export default function Page() {
                         knowledge, help each other, and grow together.
                     </p>
                 </div>
-                <Button stretched>Join the Community</Button>
+                <Button
+                    style={{
+                        backgroundColor: "#FF9900",
+                    }}
+                    stretched
+                >
+                    Join the Community
+                </Button>
             </section>
             <section>
                 <div className="flex items-center justify-between pb-3">
@@ -29,7 +39,9 @@ export default function Page() {
                     </div>
                     <MdWallet className="text-4xl" />
                 </div>
-                <Button Component="a" stretched href="https://t.me/BitcoinDeepaBot">
+                <Button Component="a" stretched href="https://t.me/BitcoinDeepaBot" style={{
+                        backgroundColor: "#FF9900",
+                    }}>
                     <span className="flex gap-2">Setup Wallet</span>
                 </Button>
             </section>
@@ -39,7 +51,7 @@ export default function Page() {
                         <Subheadline weight="2">Post a Story</Subheadline>
                         <Caption>Share your story with the community</Caption>
                     </div>
-                    <div className="relative h-14 w-10 rotate-12 rounded-[5px] shadow-lg">
+                    <div className="relative h-14 w-10 rotate-12 rounded-[5px] bg-white bg-opacity-10 ">
                         <Image
                             src="/logo.png"
                             width={40}
@@ -49,7 +61,9 @@ export default function Page() {
                         />
                     </div>
                 </div>
-                <Button Component="a" stretched href="/task">
+                <Button Component="a" stretched href="/task" style={{
+                        backgroundColor: "#FF9900",
+                    }}>
                     <span className="flex gap-2">Share Story</span>
                 </Button>
             </section>
