@@ -3,10 +3,12 @@
 import { useEffect, useMemo } from "react";
 import { initMiniApp, postEvent, useInitData, useLaunchParams } from "@telegram-apps/sdk-react";
 import fetchy from "@/lib/fetchy";
+import { useStore } from "@/lib/store";
 
 export default function TMASetupProvider({ children }: { children: React.ReactNode }) {
     const initLaunchParams = useLaunchParams().initData;
     const initData = useInitData();
+    const { setUserID } = useStore();
 
     const authData = useMemo(() => {
         return initLaunchParams || initData;
@@ -23,6 +25,7 @@ export default function TMASetupProvider({ children }: { children: React.ReactNo
             });
         }
         addUserToDb();
+        setUserID(id?.toString() || "");
     }, [authData]);
 
     useEffect(() => {

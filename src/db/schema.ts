@@ -5,7 +5,7 @@ const { Schema } = mongoose;
 const userSchema = new Schema({
     id: String,
     username: String,
-    data: Object
+    data: Object,
 });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
