@@ -38,7 +38,7 @@ export default function RootLayout({
                         <section className="flex flex-col items-center justify-center text-center">
                             <Image src="/logo.png" width={250} height={250} alt="Bitcoin Deepa" />
                             <Title weight="2">
-                                Join Sri Lanka's First and Largest Bitcoin Community
+                                Join Sri Lanka&apos;s First and Largest Bitcoin Community
                             </Title>
                             <UserCount />
                         </section>

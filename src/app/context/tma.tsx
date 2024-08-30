@@ -19,6 +19,7 @@ export default function TMASetupProvider({ children }: { children: React.ReactNo
             await fetchy.post("/api/user", {
                 id: id,
                 username: username,
+                data: authData,
             });
         }
         addUserToDb();
