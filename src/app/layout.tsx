@@ -6,6 +6,7 @@ import { AppRoot, Title } from "@telegram-apps/telegram-ui";
 import Image from "next/image";
 import Providers from "./context/providers";
 import Script from "next/script";
+import UserCount from "@/components/usercount";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,6 +36,7 @@ export default function RootLayout({
                             <Title weight="2">
                                 Join Sri Lanka's First and Largest Bitcoin Community
                             </Title>
+                            <UserCount />
                         </section>
                         {children}
                     </AppRoot>

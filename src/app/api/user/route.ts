@@ -2,9 +2,7 @@ import connect from "@/db/connect";
 import User from "@/db/schema";
 import { NextResponse } from "next/server";
 
-
 export async function GET(request: Request) {
-    // get the user count
     try {
         await connect();
 
@@ -31,20 +29,24 @@ export async function POST(req: Request) {
 
         await connect();
 
-        const user = await User.findOne({ id });
+        // Check if the user already exists
+        const existingUser = await User.findOne({ id });
 
-        if (user) {
+        if (existingUser) {
             return NextResponse.json({
-                status: 200,
+                status: 409, // HTTP status code for Conflict
                 message: "User already exists.",
             });
         }
 
-        await User.create({ id, username });
+        // Create a new user
+        const newUser = new User({ id, username });
+        await newUser.save();
 
         return NextResponse.json({
-            status: 200,
+            status: 201, // HTTP status code for Created
             message: "User created successfully.",
+            user: newUser,
         });
     } catch (e) {
         return NextResponse.json({

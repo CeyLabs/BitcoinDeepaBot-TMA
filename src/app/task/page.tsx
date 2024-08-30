@@ -2,6 +2,7 @@ import { Avatar, Button, Caption, Divider, Subheadline, Text } from "@telegram-a
 import { TiUserAdd } from "react-icons/ti";
 import { MdWallet } from "react-icons/md";
 import Image from "next/image";
+import ShareStory from "@/components/shareStory";
 
 export default function Page() {
     return (
@@ -61,11 +62,7 @@ export default function Page() {
                         />
                     </div>
                 </div>
-                <Button Component="a" stretched href="/task" style={{
-                        backgroundColor: "#FF9900",
-                    }}>
-                    <span className="flex gap-2">Share Story</span>
-                </Button>
+                <ShareStory />
             </section>
         </main>
     );
