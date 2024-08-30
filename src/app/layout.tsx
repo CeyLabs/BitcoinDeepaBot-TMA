@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/theme.css";
+import "@telegram-apps/telegram-ui/dist/styles.css";
+import { AppRoot, Text, Title } from "@telegram-apps/telegram-ui";
+import Image from "next/image";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +19,18 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={inter.className}>{children}</body>
+            <body className={`${inter.className} grid min-h-screen p-5 leading-tight`}>
+                <AppRoot>
+                    <section className="flex flex-col justify-center items-center text-center">
+                        <Image src="/logo.png" width={300} height={300} alt="Bitcoin Deepa" />
+                        <p className="text-gray-500">#Bitcoinදීප</p>
+                        <Title weight="2">
+                            Join Sri Lanka's First and Largest Bitcoin Community
+                        </Title>
+                    </section>
+                    {children}
+                </AppRoot>
+            </body>
         </html>
     );
 }
