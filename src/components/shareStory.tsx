@@ -1,5 +1,6 @@
 "use client";
 
+import fetchy from "@/lib/fetchy";
 import { useTMA } from "@/lib/hooks";
 import { useStore } from "@/lib/store";
 import { initHapticFeedback, retrieveLaunchParams } from "@telegram-apps/sdk-react";
@@ -16,8 +17,7 @@ export default function ShareStory() {
 
     useEffect(() => {
         async function fetchPosition() {
-            const response = await fetch(`/api/user/${userID}`);
-            const data = await response.json();
+            const data = await fetchy.get<any>(`/api/user/${userID}`);
             setPosition(data.position);
         }
 
@@ -27,7 +27,7 @@ export default function ShareStory() {
     const handleClick = () => {
         const mediaUrl = "https://ceyloncash.com/bitcoindeepa/tma/story.mp4";
         const params = {
-            text: `Proud Member of Bitcoin Deepa #${position} 🚀🔥
+            text: `Proud Member of Bitcoin Deepa ${position ? `#${position}` : ""} 🚀🔥
 
 #bitcoindeepa @bitcoindeepa #viralstory`,
             widget_link: {
