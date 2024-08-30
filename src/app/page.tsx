@@ -1,9 +1,22 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@telegram-apps/telegram-ui";
+import { IoMdShareAlt } from "react-icons/io";
 
 export default function Home() {
     return (
-        <main className="grid min-h-screen place-content-center">
-            <Button>Click me</Button>
+        <main className="mt-10">
+            <Button
+                Component="a"
+                stretched
+                href="/task"
+                style={{
+                    backgroundColor: "#FF9900",
+                }}
+            >
+                <span className="flex gap-2">
+                    Join the Community
+                    <IoMdShareAlt className="text-xl" />
+                </span>
+            </Button>
         </main>
     );
 }
