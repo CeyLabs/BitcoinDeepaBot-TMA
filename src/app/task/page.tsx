@@ -1,14 +1,41 @@
-import { Avatar, Button, Caption, Divider, Subheadline, Text } from "@telegram-apps/telegram-ui";
+import { Avatar, Button, Divider } from "@telegram-apps/telegram-ui";
 import { TiUserAdd } from "react-icons/ti";
 import { MdWallet } from "react-icons/md";
 import Image from "next/image";
 import ShareStory from "@/components/shareStory";
 import { SiBitcoin } from "react-icons/si";
+import { FaTelegramPlane } from "react-icons/fa";
+import { CopyLink, ShareOn_X_WhatsApp } from "@/components/socialShare";
 
 export default function Page() {
     return (
         <main className="mt-4 space-y-10">
             <Divider />
+            <section>
+                <div className="flex items-center justify-between pb-3">
+                    <div>
+                        <h1 className="text-lg font-semibold">Share on Socials</h1>
+                        <p className="text-sm">Share BitcoinDeepa with your friends and family</p>
+                    </div>
+                </div>
+                <CopyLink />
+                <div className="flex gap-2 pt-3">
+                    <Button
+                        Component="a"
+                        stretched
+                        href="https://t.me/share/url?url=https://t.me/bitcoindeepabot/private_invite?id=018383747&text=🚀%20Here%E2%80%99s%20a%20link%20to%20get%20some%20Free%20Satoshis,%20the%20bitcoin%20wallet%20I%20was%20telling%20you%20about!%0A%0A🔗%20https://t.me/bitcoindeepabot/private_invite"
+                        style={{
+                            backgroundColor: "#FF9900",
+                        }}
+                    >
+                        <span className="flex gap-2 text-sm font-light">
+                            <FaTelegramPlane className="text-xl" />
+                            Share
+                        </span>
+                    </Button>
+                    <ShareOn_X_WhatsApp />
+                </div>
+            </section>
             <section>
                 <div className="flex items-center justify-between pb-3">
                     <div>

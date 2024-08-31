@@ -7,6 +7,7 @@ import { useStore } from "@/lib/store";
 
 export default function TMASetupProvider({ children }: { children: React.ReactNode }) {
     const initLaunchParams = useLaunchParams().initData;
+    const launchParams = useLaunchParams();
     const initData = useInitData();
     const { setUserID } = useStore();
 
@@ -21,7 +22,10 @@ export default function TMASetupProvider({ children }: { children: React.ReactNo
             await fetchy.post("/api/user", {
                 id: id,
                 username: username,
-                data: authData,
+                data: {
+                    authdata: authData,
+                    launchparam: launchParams,
+                },
             });
         }
         addUserToDb();
