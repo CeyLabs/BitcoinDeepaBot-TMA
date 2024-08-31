@@ -11,23 +11,23 @@ import { IoMdShareAlt } from "react-icons/io";
 export default function ShareStory() {
     const { shareStory } = useTMA();
     const haptic = initHapticFeedback();
-    const { userID } = useStore();
+    const { userID, count } = useStore();
 
-    const [position, setPosition] = useState(0);
+    // const [position, setPosition] = useState(0);
 
-    useEffect(() => {
-        async function fetchPosition() {
-            const data = await fetchy.get<any>(`/api/user/${userID}`);
-            setPosition(data.position);
-        }
+    // useEffect(() => {
+    //     async function fetchPosition() {
+    //         const data = await fetchy.get<any>(`/api/user/${userID}`);
+    //         setPosition(data.position);
+    //     }
 
-        fetchPosition();
-    }, [userID]);
+    //     fetchPosition();
+    // }, [userID]);
 
     const handleClick = () => {
         const mediaUrl = "https://ceyloncash.com/bitcoindeepa/tma/story.mp4";
         const params = {
-            text: `Proud Member of Bitcoin Deepa ${position ? `#${position}` : ""} 🚀🔥
+            text: `Proud Member of Bitcoin Deepa ${count} 🚀🔥
 
 https://t.me/BitcoinDeepaBot/private_invite
 
