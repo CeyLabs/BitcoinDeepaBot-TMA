@@ -29,6 +29,8 @@ export default function ShareStory() {
         const params = {
             text: `Proud Member of Bitcoin Deepa ${position ? `#${position}` : ""} 🚀🔥
 
+https://t.me/BitcoinDeepaBot/private_invite
+
 #bitcoindeepa @bitcoindeepa #viralstory`,
             widget_link: {
                 url: "https://t.me/BitcoinDeepaBot/private_invite",
