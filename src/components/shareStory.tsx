@@ -31,7 +31,7 @@ export default function ShareStory() {
 
 https://t.me/BitcoinDeepaBot/private_invite
 
-#bitcoindeepa @bitcoindeepa #viralstory`,
+#bitcoindeepa @bitcoindeepabot #viralstory`,
             widget_link: {
                 url: "https://t.me/BitcoinDeepaBot/private_invite",
                 name: "Inner Circle Entry",
