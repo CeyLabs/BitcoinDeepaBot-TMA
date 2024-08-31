@@ -13,16 +13,16 @@ export default function ShareStory() {
     const haptic = initHapticFeedback();
     const { userID, count } = useStore();
 
-    const [position, setPosition] = useState(0);
+    // const [position, setPosition] = useState(0);
 
-    useEffect(() => {
-        async function fetchPosition() {
-            const data = await fetchy.get<any>(`/api/user/${userID}`);
-            setPosition(data.position);
-        }
+    // useEffect(() => {
+    //     async function fetchPosition() {
+    //         const data = await fetchy.get<any>(`/api/user/${userID}`);
+    //         setPosition(data.position);
+    //     }
 
-        fetchPosition();
-    }, [userID]);
+    //     fetchPosition();
+    // }, [userID]);
 
     const handleClick = () => {
         const mediaUrl = "https://ceyloncash.com/bitcoindeepa/tma/story.mp4";
