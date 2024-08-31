@@ -19,18 +19,16 @@ export default function UserCount() {
 
     // Function to determine tier and progress value
     const getProgressValue = (count: number): number => {
-        if (count <= 100) {
-            return count; // 0-100
-        } else if (count <= 200) {
-            return ((count - 100) / 100) * 100; // 100-200
+        if (count <= 200) {
+            return (count / 200) * 100; // 0-200 range
         } else if (count <= 500) {
-            return ((count - 200) / 300) * 100; // 200-500
+            return ((count - 200) / (500 - 200)) * 100; // 200-500 range
         } else if (count <= 1000) {
-            return ((count - 500) / 500) * 100; // 500-1000
+            return ((count - 500) / (1000 - 500)) * 100; // 500-1000 range
         } else if (count <= 2500) {
-            return ((count - 1000) / 1500) * 100; // 1000-2500
+            return ((count - 1000) / (2500 - 1000)) * 100; // 1000-2500 range
         } else if (count <= 10000) {
-            return ((count - 2500) / 7500) * 100; // 2500-10000
+            return ((count - 2500) / (10000 - 2500)) * 100; // 2500-10000 range
         } else {
             return 100; // Anything above 10000 is considered full progress
         }
@@ -38,7 +36,6 @@ export default function UserCount() {
 
     // Determine the current tier's maximum count for display
     const getCurrentTierMax = (count: number): number => {
-        if (count <= 100) return 100;
         if (count <= 200) return 200;
         if (count <= 500) return 500;
         if (count <= 1000) return 1000;
