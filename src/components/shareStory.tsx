@@ -29,11 +29,11 @@ export default function ShareStory() {
         const params = {
             text: `Proud Member of Bitcoin Deepa ${count} 🚀🔥
 
-https://t.me/BitcoinDeepaBot/private_invite
+https://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}
 
 #bitcoindeepa @bitcoindeepabot #viralstory`,
             widget_link: {
-                url: "https://t.me/BitcoinDeepaBot/private_invite",
+                url: `https://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}`,
                 name: "Inner Circle Entry",
             },
         };

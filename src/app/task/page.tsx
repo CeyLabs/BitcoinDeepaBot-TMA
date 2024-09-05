@@ -1,3 +1,5 @@
+"use client";
+
 import { Avatar, Button, Divider } from "@telegram-apps/telegram-ui";
 import { TiUserAdd } from "react-icons/ti";
 import { MdWallet } from "react-icons/md";
@@ -6,8 +8,11 @@ import ShareStory from "@/components/shareStory";
 import { SiBitcoin } from "react-icons/si";
 import { FaTelegramPlane } from "react-icons/fa";
 import { CopyLink, ShareOn_X_WhatsApp } from "@/components/socialShare";
+import { useStore } from "@/lib/store";
 
 export default function Page() {
+    const { userID } = useStore();
+
     return (
         <main className="mt-4 space-y-10">
             <Divider />
@@ -23,7 +28,7 @@ export default function Page() {
                     <Button
                         Component="a"
                         stretched
-                        href="https://t.me/share/url?url=https://t.me/bitcoindeepabot/private_invite?id=018383747&text=🚀%20Here%E2%80%99s%20a%20link%20to%20get%20some%20Free%20Satoshis,%20the%20bitcoin%20wallet%20I%20was%20telling%20you%20about!%0A%0A🔗%20https://t.me/bitcoindeepabot/private_invite"
+                        href={`https://t.me/share/url?url=https://t.me/bitcoindeepabot/private_invite%3Fstartapp%3D${userID}&text=%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%0A%F0%9F%9A%80%20Here%E2%80%99s%20a%20link%20to%20get%20some%20Free%20Satoshis%2C%20the%20bitcoin%20wallet%20I%20was%20telling%20you%20about%21`}
                         style={{
                             backgroundColor: "#FF9900",
                         }}
