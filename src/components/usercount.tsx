@@ -17,30 +17,36 @@ export default function UserCount() {
         fetchUserCount();
     }, []);
 
-    // Function to determine tier and progress value
+    // Array to maintain tier maximum counts
+    const tierMaxCounts = [0, 200, 500, 1000, 2500, 5000, 10000];
+
+    // Function to determine progress value dynamically based on tiers
     const getProgressValue = (count: number): number => {
-        if (count <= 200) {
-            return (count / 200) * 100; // 0-200 range
-        } else if (count <= 500) {
-            return (40 + (((count - 200) / (500 - 200)) * 100)); // 200-500 range
-        } else if (count <= 1000) {
-            return (50 + ((count - 500) / (1000 - 500)) * 100); // 500-1000 range
-        } else if (count <= 2500) {
-            return (40 + ((count - 1000) / (2500 - 1000)) * 100); // 1000-2500 range
-        } else if (count <= 10000) {
-            return (25 + ((count - 2500) / (10000 - 2500)) * 100); // 2500-10000 range
-        } else {
-            return 100; // Anything above 10000 is considered full progress
+        const totalProgress = 100; // Total percentage progress (100%)
+        const tierCount = tierMaxCounts.length - 1; // Number of tiers
+
+        for (let i = 1; i <= tierCount; i++) {
+            const maxCount = tierMaxCounts[i];
+            const prevMax = tierMaxCounts[i - 1];
+            const tierRange = maxCount - prevMax;
+
+            if (count <= maxCount) {
+                // Calculate the percentage for this tier
+                const progressPerTier = totalProgress / tierCount;
+                const tierProgress = ((count - prevMax) / tierRange) * progressPerTier;
+                return (i - 1) * progressPerTier + tierProgress;
+            }
         }
+
+        return 100; // If above the maximum tier
     };
 
-    // Determine the current tier's maximum count for display
+    // Function to determine the current tier's max count for display
     const getCurrentTierMax = (count: number): number => {
-        if (count <= 200) return 200;
-        if (count <= 500) return 500;
-        if (count <= 1000) return 1000;
-        if (count <= 2500) return 2500;
-        return 10000;
+        for (const maxCount of tierMaxCounts) {
+            if (count <= maxCount) return maxCount;
+        }
+        return 10000; // Fallback for very large counts
     };
 
     // Calculate progress value for the current count
