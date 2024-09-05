@@ -16,29 +16,17 @@ export default function UserCount() {
         }
         fetchUserCount();
     }, []);
-
+    
     // Array to maintain tier maximum counts
-    const tierMaxCounts = [0, 200, 500, 1000, 2500, 5000, 10000];
+    const tierMaxCounts = [200, 500, 1000, 2500, 5000, 10000];
 
-    // Function to determine progress value dynamically based on tiers
+    // Function to calculate progress based on the entire range (0 to 100%)
     const getProgressValue = (count: number): number => {
-        const totalProgress = 100; // Total percentage progress (100%)
-        const tierCount = tierMaxCounts.length - 1; // Number of tiers
+        const overallMax = tierMaxCounts[tierMaxCounts.length - 1]; // The max value for all tiers (10000)
 
-        for (let i = 1; i <= tierCount; i++) {
-            const maxCount = tierMaxCounts[i];
-            const prevMax = tierMaxCounts[i - 1];
-            const tierRange = maxCount - prevMax;
-
-            if (count <= maxCount) {
-                // Calculate the percentage for this tier
-                const progressPerTier = totalProgress / tierCount;
-                const tierProgress = ((count - prevMax) / tierRange) * progressPerTier;
-                return (i - 1) * progressPerTier + tierProgress;
-            }
-        }
-
-        return 100; // If above the maximum tier
+        // Calculate the overall progress percentage based on the entire range
+        const progress = (count / overallMax) * 100;
+        return Math.min(progress, 100); // Ensure it doesn't exceed 100%
     };
 
     // Function to determine the current tier's max count for display
