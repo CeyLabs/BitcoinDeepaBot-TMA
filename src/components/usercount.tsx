@@ -22,13 +22,13 @@ export default function UserCount() {
         if (count <= 200) {
             return (count / 200) * 100; // 0-200 range
         } else if (count <= 500) {
-            return ((count - 200) / (500 - 200)) * 100; // 200-500 range
+            return (40 + (((count - 200) / (500 - 200)) * 100)); // 200-500 range
         } else if (count <= 1000) {
-            return ((count - 500) / (1000 - 500)) * 100; // 500-1000 range
+            return (50 + ((count - 500) / (1000 - 500)) * 100); // 500-1000 range
         } else if (count <= 2500) {
-            return ((count - 1000) / (2500 - 1000)) * 100; // 1000-2500 range
+            return (40 + ((count - 1000) / (2500 - 1000)) * 100); // 1000-2500 range
         } else if (count <= 10000) {
-            return ((count - 2500) / (10000 - 2500)) * 100; // 2500-10000 range
+            return (25 + ((count - 2500) / (10000 - 2500)) * 100); // 2500-10000 range
         } else {
             return 100; // Anything above 10000 is considered full progress
         }
