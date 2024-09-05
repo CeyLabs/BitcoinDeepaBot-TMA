@@ -5,10 +5,12 @@ import { Button } from "@telegram-apps/telegram-ui";
 import { IoCopyOutline } from "react-icons/io5";
 import { initUtils } from "@telegram-apps/sdk-react";
 import { FaXTwitter, FaWhatsapp } from "react-icons/fa6";
+import { useInitData } from "@telegram-apps/sdk-react";
 
 export function CopyLink() {
-    const [buttonText, setButtonText] = useState("t.me/bitcoindeepabot/private_invite");
-    const link = "t.me/bitcoindeepabot/private_invite";
+    const initData = useInitData();
+    const [buttonText, setButtonText] = useState(`t.me/bitcoindeepabo/private_invite?startapp=${initData?.user?.id}`);
+    const link = `t.me/bitcoindeepabot/private_invite?startapp=${initData?.user?.id}`;
 
     const copyToClipboard = () => {
         navigator.clipboard
@@ -27,7 +29,7 @@ export function CopyLink() {
 
     return (
         <Button mode="gray" stretched onClick={copyToClipboard}>
-            <span className="flex gap-2 text-sm font-light">
+            <span className="flex gap-2 text-[10.7px] font-light">
                 {buttonText}
                 {buttonText !== "Copied!" && <IoCopyOutline className="absolute right-3 text-xl" />}
             </span>
@@ -37,13 +39,14 @@ export function CopyLink() {
 
 export function ShareOn_X_WhatsApp() {
     const utils = initUtils();
+    const initData = useInitData();
 
     return (
         <>
             <Button
                 onClick={() =>
                     utils.openLink(
-                        "https://twitter.com/intent/tweet?text=%F0%9F%9A%80%20Here%E2%80%99s%20a%20link%20to%20get%20some%20Free%20Satoshis,%20the%20bitcoin%20wallet%20I%20was%20telling%20you%20about!%0A%0A%F0%9F%94%97%20https://t.me/bitcoindeepabot/private_invite",
+                        `https://twitter.com/intent/tweet?text=%F0%9F%9A%80%20Here%E2%80%99s%20a%20link%20to%20get%20some%20Free%20Satoshis,%20the%20bitcoin%20wallet%20I%20was%20telling%20you%20about!%0A%0A%F0%9F%94%97%20https://t.me/bitcoindeepabot/private_invite?startapp=${initData?.user?.id}`,
                         { tryBrowser: true }
                     )
                 }
@@ -54,7 +57,7 @@ export function ShareOn_X_WhatsApp() {
             <Button
                 onClick={() =>
                     utils.openLink(
-                        "https://wa.me/?text=%F0%9F%9A%80%20Here%E2%80%99s%20a%20link%20to%20get%20some%20Free%20Satoshis,%20the%20bitcoin%20wallet%20I%20was%20telling%20you%20about!%0A%0A%F0%9F%94%97%20https://t.me/bitcoindeepabot/private_invite",
+                        `https://api.whatsapp.com/send?text=%F0%9F%9A%80%20Here%E2%80%99s%20a%20link%20to%20get%20some%20Free%20Satoshis%2C%20the%20bitcoin%20wallet%20I%20was%20telling%20you%20about!%0A%0A%F0%9F%94%97%20https%3A%2F%2Ft.me%2Fbitcoindeepabot%2Fprivate_invite%3Fstartapp=${initData?.user?.id}`,
                         { tryBrowser: true }
                     )
                 }
