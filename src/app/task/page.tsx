@@ -33,7 +33,7 @@ export default function Page() {
                             backgroundColor: "#FF9900",
                         }}
                     >
-                        <span className="flex gap-2 text-sm font-light">
+                        <span className="flex gap-2 text-sm">
                             <FaTelegramPlane className="text-xl" />
                             Share
                         </span>
