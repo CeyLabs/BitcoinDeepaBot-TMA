@@ -7,6 +7,7 @@ import { initHapticFeedback, retrieveLaunchParams } from "@telegram-apps/sdk-rea
 import { Button } from "@telegram-apps/telegram-ui";
 import React, { useEffect, useState } from "react";
 import { IoMdShareAlt } from "react-icons/io";
+import { Badge } from "./ui/badge";
 
 export default function ShareStory() {
     const { shareStory } = useTMA();
@@ -50,7 +51,7 @@ https://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}
             onClick={handleClick}
         >
             <span className="flex gap-2">
-                Share Story <IoMdShareAlt className="text-xl" />
+                Share Story <IoMdShareAlt className="text-xl" /><Badge variant="sharestory">+100 sats</Badge>
             </span>
         </Button>
     );

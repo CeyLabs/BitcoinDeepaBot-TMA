@@ -6,6 +6,7 @@ import { IoCopyOutline } from "react-icons/io5";
 import { initUtils } from "@telegram-apps/sdk-react";
 import { FaXTwitter, FaWhatsapp } from "react-icons/fa6";
 import { useInitData } from "@telegram-apps/sdk-react";
+import { useStore } from "@/lib/store";
 
 export function CopyLink() {
     const initData = useInitData();
@@ -40,13 +41,14 @@ export function CopyLink() {
 export function ShareOn_X_WhatsApp() {
     const utils = initUtils();
     const initData = useInitData();
+    const { userID } = useStore();
 
     return (
         <>
             <Button
                 onClick={() =>
                     utils.openLink(
-                        `https://twitter.com/intent/tweet?text=%F0%9F%9A%80%20Here%E2%80%99s%20a%20link%20to%20get%20some%20Free%20Satoshis,%20the%20bitcoin%20wallet%20I%20was%20telling%20you%20about!%0A%0A%F0%9F%94%97%20https://t.me/bitcoindeepabot/private_invite?startapp=${initData?.user?.id}`,
+                        `https://twitter.com/intent/tweet?text=%F0%9F%9A%80%20Here%E2%80%99s%20a%20link%20to%20get%20some%20Free%20Satoshis,%20the%20bitcoin%20wallet%20I%20was%20telling%20you%20about!%0A%0A%F0%9F%94%97%20https://t.me/bitcoindeepabot/private_invite?startapp=${userID}`,
                         { tryBrowser: true }
                     )
                 }
@@ -57,7 +59,7 @@ export function ShareOn_X_WhatsApp() {
             <Button
                 onClick={() =>
                     utils.openLink(
-                        `https://api.whatsapp.com/send?text=%F0%9F%9A%80%20Here%E2%80%99s%20a%20link%20to%20get%20some%20Free%20Satoshis%2C%20the%20bitcoin%20wallet%20I%20was%20telling%20you%20about!%0A%0A%F0%9F%94%97%20https%3A%2F%2Ft.me%2Fbitcoindeepabot%2Fprivate_invite%3Fstartapp=${initData?.user?.id}`,
+                        `https://api.whatsapp.com/send?text=%F0%9F%9A%80%20Here%E2%80%99s%20a%20link%20to%20get%20some%20Free%20Satoshis%2C%20the%20bitcoin%20wallet%20I%20was%20telling%20you%20about!%0A%0A%F0%9F%94%97%20https%3A%2F%2Ft.me%2Fbitcoindeepabot%2Fprivate_invite%3Fstartapp=${userID}`,
                         { tryBrowser: true }
                     )
                 }
