@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/theme.css";
 import "@telegram-apps/telegram-ui/dist/styles.css";
@@ -9,10 +8,6 @@ import Script from "next/script";
 import UserCount from "@/components/usercount";
 
 const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-    title: "Create Next App",
-};
 
 export default function RootLayout({
     children,
@@ -29,12 +24,7 @@ export default function RootLayout({
             </head>
             <body className={`${inter.className} grid min-h-screen bg-[#202020] p-5 leading-tight`}>
                 <Providers>
-                    <AppRoot
-                        appearance="dark"
-                        style={{
-                            color: "white",
-                        }}
-                    >
+                    <AppRoot appearance="dark" id="tg-ui-root">
                         <section className="flex flex-col items-center justify-center text-center">
                             <Image src="/logo.png" width={250} height={250} alt="Bitcoin Deepa" />
                             <Title weight="2">

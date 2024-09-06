@@ -18,7 +18,7 @@ export default function UserCount() {
     }, []);
 
     // Array to maintain tier maximum counts
-    const tierMaxCounts = [100,200, 500, 1000, 2500, 5000, 10000];
+    const tierMaxCounts = [100, 200, 500, 1000, 2500, 5000, 10000];
 
     // Function to calculate progress based on the entire range (0 to 100%)
     const getProgressValue = (count: number): number => {

@@ -10,14 +10,15 @@ import { useStore } from "@/lib/store";
 
 export function CopyLink() {
     const initData = useInitData();
-    const [buttonText, setButtonText] = useState(`t.me/bitcoindeepabo/private_invite?startapp=${initData?.user?.id}`);
+    const [buttonText, setButtonText] = useState(
+        `t.me/bitcoindeepabo/private_invite?startapp=${initData?.user?.id}`
+    );
     const link = `t.me/bitcoindeepabot/private_invite?startapp=${initData?.user?.id}`;
 
     const copyToClipboard = () => {
         navigator.clipboard
             .writeText(link)
             .then(() => {
-                console.log("Link copied to clipboard!");
                 setButtonText("Copied!");
                 setTimeout(() => {
                     setButtonText(link);
@@ -40,7 +41,6 @@ export function CopyLink() {
 
 export function ShareOn_X_WhatsApp() {
     const utils = initUtils();
-    const initData = useInitData();
     const { userID } = useStore();
 
     return (
