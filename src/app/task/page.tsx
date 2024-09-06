@@ -29,9 +29,6 @@ export default function Page() {
                         Component="a"
                         stretched
                         href={`https://t.me/share/url?url=https://t.me/bitcoindeepabot/private_invite%3Fstartapp%3D${userID}&text=%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%C2%AD%0A%F0%9F%9A%80%20Here%E2%80%99s%20a%20link%20to%20get%20some%20Free%20Satoshis%2C%20the%20bitcoin%20wallet%20I%20was%20telling%20you%20about%21`}
-                        style={{
-                            backgroundColor: "#FF9900",
-                        }}
                     >
                         <span className="flex gap-2 text-sm">
                             <FaTelegramPlane className="text-xl" />
@@ -49,14 +46,7 @@ export default function Page() {
                     </div>
                     <SiBitcoin className="text-4xl" />
                 </div>
-                <Button
-                    Component="a"
-                    stretched
-                    href="https://t.me/BitcoinDeepaBot"
-                    style={{
-                        backgroundColor: "#FF9900",
-                    }}
-                >
+                <Button Component="a" stretched href="https://t.me/BitcoinDeepaBot">
                     <span className="flex gap-2">
                         Setup Wallet
                         <MdWallet className="text-xl" />
@@ -100,14 +90,7 @@ export default function Page() {
                         knowledge, help each other, and grow together.
                     </p>
                 </div>
-                <Button
-                    style={{
-                        backgroundColor: "#FF9900",
-                    }}
-                    stretched
-                    Component="a"
-                    href="https://t.me/+iiP-rX7ldYxjZWU1"
-                >
+                <Button stretched Component="a" href="https://t.me/+iiP-rX7ldYxjZWU1">
                     <span className="flex gap-2">
                         Join the Community <TiUserAdd className="text-xl" />
                     </span>
