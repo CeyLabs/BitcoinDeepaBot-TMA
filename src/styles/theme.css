@@ -2,7 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Telegram UI Kit theme customization variable list
+--tg-theme-link-color: #62bcf9;
+--tg-theme-section-bg-color: #18222d;
+--tg-theme-button-color: #2ea6ff;
+--tg-color-scheme: dark;
+--tg-theme-bg-color: #18222d;
+--tg-theme-destructive-text-color: #ef5b5b;
+--tg-theme-hint-color: #b1c3d5;
+--tg-theme-subtitle-text-color: #b1c3d5;
+--tg-theme-section-header-text-color: #b1c3d5;
+--tg-theme-secondary-bg-color: #131415;
+--tg-theme-button-text-color: #ffffff;
+--tg-theme-text-color: #ffffff;
+--tg-theme-header-bg-color: #131415;
+--tg-theme-accent-text-color: #2ea6ff;
+--tg-viewport-height: 100vh;
+--tg-viewport-stable-height: 100vh; */
+
 #tg-ui-root {
     color: white;
-    --tg-theme-button-color: #FF9900;
+    --tg-theme-button-color: #ff9900;
 }
