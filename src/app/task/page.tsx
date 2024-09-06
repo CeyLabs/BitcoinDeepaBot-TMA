@@ -19,7 +19,7 @@ export default function Page() {
             <section>
                 <div className="flex items-center justify-between pb-3">
                     <div>
-                        <h1 className="text-lg font-semibold">Share on Socials</h1>
+                        <h1 className="text-lg font-semibold">Share your Referral on Socials</h1>
                         <p className="text-sm">Share BitcoinDeepa with your friends and family</p>
                     </div>
                 </div>
