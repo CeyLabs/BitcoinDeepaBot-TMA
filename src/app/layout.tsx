@@ -24,15 +24,7 @@ export default function RootLayout({
             </head>
             <body className={`${inter.className} grid min-h-screen bg-[#202020] p-5 leading-tight`}>
                 <Providers>
-                    <AppRoot
-                        appearance="dark"
-                        style={
-                            {
-                                color: "white",
-                                "--tg-theme-button-color": "#FF9900",
-                            } as React.CSSProperties
-                        }
-                    >
+                    <AppRoot appearance="dark" id="tg-ui-root">
                         <section className="flex flex-col items-center justify-center text-center">
                             <Image src="/logo.png" width={250} height={250} alt="Bitcoin Deepa" />
                             <Title weight="2">
