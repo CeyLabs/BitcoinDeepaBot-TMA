@@ -15,7 +15,7 @@ export default function ShareStory() {
     const handleClick = () => {
         const mediaUrl = "https://ceyloncash.com/bitcoindeepa/tma/story.mp4";
         const params = {
-            text: `Proud Member of Bitcoin Deepa ${count} 🚀🔥
+            text: `Proud OG Member of Bitcoin දීප. ${count} Citizens and Counting 🚀🔥
 
 https://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}
 
