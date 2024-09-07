@@ -11,7 +11,7 @@ import { useStore } from "@/lib/store";
 export function CopyLink() {
     const initData = useInitData();
     const [buttonText, setButtonText] = useState(
-        `t.me/bitcoindeepabo/private_invite?startapp=${initData?.user?.id}`
+        `t.me/bitcoindeepabot/private_invite?startapp=${initData?.user?.id}`
     );
     const link = `t.me/bitcoindeepabot/private_invite?startapp=${initData?.user?.id}`;
 
