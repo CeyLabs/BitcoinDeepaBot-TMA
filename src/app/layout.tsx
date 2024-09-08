@@ -2,7 +2,7 @@ import { Inter } from "next/font/google";
 import "@/styles/theme.css";
 import "@telegram-apps/telegram-ui/dist/styles.css";
 import { AppRoot, Title } from "@telegram-apps/telegram-ui";
-import Image from "next/image";
+import Image from "nhttps://bitcoin-deepa-tma-bot.vercel.app/_next/image?url=%2Flogo.png&w=640&q=75ext/image";
 import Providers from "./context/providers";
 import Script from "next/script";
 import UserCount from "@/components/usercount";
@@ -28,7 +28,7 @@ export default function RootLayout({
                         <section className="flex flex-col items-center justify-center text-center">
                             <Image src="/logo.png" width={250} height={250} alt="Bitcoin Deepa" />
                             <Title weight="2">
-                                Join Sri Lanka&apos;s First and Largest Bitcoin Community
+                                Join Sri Lanka&apos;s Fastest Growing Bitcoin Community 🇱🇰
                             </Title>
                             <UserCount />
                         </section>
