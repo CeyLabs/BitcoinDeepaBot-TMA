@@ -1,5 +1,5 @@
 import { Button } from "@telegram-apps/telegram-ui";
-import { IoMdShareAlt } from "react-icons/io";
+import { IoIosArrowDroprightCircle } from "react-icons/io";
 
 export default function Home() {
     return (
@@ -7,7 +7,7 @@ export default function Home() {
             <Button Component="a" stretched href="/task">
                 <span className="flex gap-2">
                     Join the Community
-                    <IoMdShareAlt className="text-xl" />
+                    <IoIosArrowDroprightCircle className="text-xl" />
                 </span>
             </Button>
         </main>
