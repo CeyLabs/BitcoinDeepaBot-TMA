@@ -7,18 +7,31 @@ import { useStore } from "@/lib/store";
 
 export default function UserCount() {
     const { count, setCount } = useStore();
+export default function UserCount() {
+    const { count, setCount, isLoading, setLoading } = useStore();
 
     useEffect(() => {
         async function fetchUserCount() {
+            setLoading(true);
             const data = await fetchy.get<any>("/api/user");
             console.log(data.count);
             setCount((data.count as number) || 80);
+            setLoading(false);
         }
         fetchUserCount();
     }, []);
 
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <Progress />
+            </div>
+        );
+    }
+
     // Array to maintain tier maximum counts
     const tierMaxCounts = [100, 200, 500, 1000, 2500, 5000, 10000];
+    // ... rest of the component
 
     // Function to calculate progress based on the entire range (0 to 100%)
     const getProgressValue = (count: number): number => {
