@@ -2,7 +2,7 @@ import { Inter } from "next/font/google";
 import "@/styles/theme.css";
 import "@telegram-apps/telegram-ui/dist/styles.css";
 import { AppRoot, Title } from "@telegram-apps/telegram-ui";
-import Image from "nhttps://bitcoin-deepa-tma-bot.vercel.app/_next/image?url=%2Flogo.png&w=640&q=75ext/image";
+import Image from "https://bitcoin-deepa-tma-bot.vercel.app/_next/image?url=%2Flogo.png&w=640&q=75ext/image";
 import Providers from "./context/providers";
 import Script from "next/script";
 import UserCount from "@/components/usercount";
