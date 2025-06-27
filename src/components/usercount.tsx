@@ -15,7 +15,7 @@ export default function UserCount() {
             setCount((data.count as number) || 80);
         }
         fetchUserCount();
-    }, []);
+    }, [setCount]);
 
     // Array to maintain tier maximum counts
     const tierMaxCounts = [100, 200, 500, 1000, 2500, 5000, 10000];

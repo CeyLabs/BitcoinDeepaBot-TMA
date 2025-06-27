@@ -30,7 +30,7 @@ export default function TMASetupProvider({ children }: { children: React.ReactNo
         }
         addUserToDb();
         setUserID(id?.toString() || "");
-    }, [authData]);
+    }, [authData, launchParams, setUserID]);
 
     useEffect(() => {
         const [miniApp] = initMiniApp();
