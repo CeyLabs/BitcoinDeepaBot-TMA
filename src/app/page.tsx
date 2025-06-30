@@ -4,8 +4,44 @@ import { Button, Title } from "@telegram-apps/telegram-ui";
 import { BiSolidChevronsRight } from "react-icons/bi";
 import Image from "next/image";
 import UserCount from "@/components/usercount";
+import { useEffect, useMemo } from "react";
+import { useInitData, useLaunchParams } from "@telegram-apps/sdk-react";
+import fetchy from "@/lib/fetchy";
+import { useStore } from "@/lib/store";
 
 export default function Home() {
+    const initLaunchParams = useLaunchParams().initData;
+    const launchParams = useLaunchParams();
+    const initData = useInitData();
+    const { setUserID } = useStore();
+
+    const authData = useMemo(() => {
+        return initLaunchParams || initData;
+    }, [initLaunchParams, initData]);
+
+    useEffect(() => {
+        const { username, id } = authData?.user || {};
+
+        async function addUserToDb() {
+            if (id && username) {
+                try {
+                    await fetchy.post("/api/user", {
+                        id: id,
+                        username: username,
+                        data: {
+                            authdata: authData,
+                            launchparam: launchParams,
+                        },
+                    });
+                } catch (error) {
+                    console.error("Error adding user to database:", error);
+                }
+            }
+        }
+
+        addUserToDb();
+        setUserID(id?.toString() || "");
+    }, [authData, launchParams, setUserID]);
     return (
         <main className="grid min-h-screen p-5">
             <section className="flex flex-col items-center justify-center text-center">
