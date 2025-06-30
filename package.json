@@ -1,6 +1,6 @@
 {
-    "name": "naxt-shadcn-template",
-    "version": "0.1.0",
+    "name": "next-shadcn-template",
+    "version": "1.0.0",
     "private": true,
     "scripts": {
         "dev": "next dev -p 3347",
