@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Button, Divider } from "@telegram-apps/telegram-ui";
+import { Avatar, Button, Divider, Title } from "@telegram-apps/telegram-ui";
 import { TiUserAdd } from "react-icons/ti";
 import { MdWallet } from "react-icons/md";
 import Image from "next/image";
@@ -9,12 +9,18 @@ import { SiBitcoin } from "react-icons/si";
 import { FaTelegramPlane } from "react-icons/fa";
 import { CopyLink, ShareOn_X_WhatsApp } from "@/components/socialShare";
 import { useStore } from "@/lib/store";
+import UserCount from "@/components/usercount";
 
 export default function Page() {
     const { userID } = useStore();
 
     return (
-        <main className="mt-4 space-y-10">
+        <main className="mt-4 space-y-10 p-5">
+            <section className="flex flex-col items-center justify-center text-center">
+                <Image src="/logo.png" width={250} height={250} alt="Bitcoin Deepa" />
+                <Title weight="2">Join Sri Lanka&apos;s Fastest Growing Bitcoin Community 🇱🇰</Title>
+                <UserCount />
+            </section>
             <Divider />
             <section>
                 <div className="flex items-center justify-between pb-3">

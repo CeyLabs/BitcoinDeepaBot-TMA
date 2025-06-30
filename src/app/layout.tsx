@@ -1,11 +1,9 @@
 import { Inter } from "next/font/google";
 import "@/styles/theme.css";
 import "@telegram-apps/telegram-ui/dist/styles.css";
-import { AppRoot, Title } from "@telegram-apps/telegram-ui";
-import Image from "next/image";
+import { AppRoot } from "@telegram-apps/telegram-ui";
 import Providers from "./context/providers";
 import Script from "next/script";
-import UserCount from "@/components/usercount";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,16 +20,9 @@ export default function RootLayout({
                     strategy="beforeInteractive"
                 />
             </head>
-            <body className={`${inter.className} grid min-h-screen bg-[#202020] p-5 leading-tight`}>
+            <body className={`${inter.className} min-h-screen bg-[#202020] leading-tight`}>
                 <Providers>
                     <AppRoot appearance="dark" id="tg-ui-root">
-                        <section className="flex flex-col items-center justify-center text-center">
-                            <Image src="/logo.png" width={250} height={250} alt="Bitcoin Deepa" />
-                            <Title weight="2">
-                                Join Sri Lanka&apos;s Fastest Growing Bitcoin Community 🇱🇰
-                            </Title>
-                            <UserCount />
-                        </section>
                         {children}
                     </AppRoot>
                 </Providers>
