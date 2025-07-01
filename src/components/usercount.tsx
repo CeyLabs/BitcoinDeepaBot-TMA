@@ -11,7 +11,6 @@ export default function UserCount() {
     useEffect(() => {
         async function fetchUserCount() {
             const data = await fetchy.get<any>("/api/user");
-            console.log(data.count);
             setCount((data.count as number) || 80);
         }
         fetchUserCount();

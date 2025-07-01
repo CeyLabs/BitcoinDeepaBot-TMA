@@ -20,7 +20,43 @@
 --tg-viewport-height: 100vh;
 --tg-viewport-stable-height: 100vh; */
 
+:root {
+    --bg-color: #202020;
+    background-color: var(--bg-color);
+}
+
 #tg-ui-root {
     color: white;
     --tg-theme-button-color: #ff9900;
+    --tg-theme-bg-color: var(--bg-color);
+    --tg-theme-link-color: #f97316;
+}
+
+/* Custom animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-pulse-custom {
+    animation: pulse 2s ease-in-out infinite;
 }

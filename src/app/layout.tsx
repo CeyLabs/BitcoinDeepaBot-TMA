@@ -22,7 +22,7 @@ export default function RootLayout({
             </head>
             <body className={`${inter.className} min-h-screen bg-[#202020] leading-tight`}>
                 <Providers>
-                    <AppRoot appearance="dark" id="tg-ui-root">
+                    <AppRoot appearance="dark" platform="base" id="tg-ui-root">
                         {children}
                     </AppRoot>
                 </Providers>
