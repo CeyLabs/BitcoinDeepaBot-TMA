@@ -33,6 +33,9 @@ export interface Subscription {
   startDate: string
   endDate: string
   isActive: boolean
+  packageId?: string
+  userId?: string
+  payhereSubId?: string
 }
 
 export interface Transaction {
