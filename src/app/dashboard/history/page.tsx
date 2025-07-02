@@ -1,58 +1,280 @@
-"use client"
+"use client";
 
-import { useStore } from "@/lib/store"
+import { useState, useEffect, useCallback } from "react";
+import { useStore } from "@/lib/store";
+import type { ApiTransaction } from "@/lib/types";
+import { cn } from "@/lib/cn";
+import LoadingPage from "@/components/LoadingPage";
 
 export default function HistoryPage() {
-  const { transactions } = useStore()
+    const { authToken } = useStore();
 
-  const sortedTransactions = transactions.sort((a, b) => {
-    const dateA = new Date(a.date).getTime()
-    const dateB = new Date(b.date).getTime()
-    return dateB - dateA
-  })
+    // API transaction state
+    const [apiTransactions, setApiTransactions] = useState<ApiTransaction[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-  return (
-    <main className="pb-20">
-      {/* Header */}
-      <div className="flex items-center justify-center mb-6">
-        <h1 className="text-xl font-bold">Bitcoin Deepa</h1>
-      </div>
+    // Fetch transactions from API
+    const fetchTransactions = useCallback(async () => {
+        if (!authToken) {
+            setLoading(false);
+            return;
+        }
 
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold">Transactions</h2>
-      </div>
+        try {
+            setLoading(true);
+            setError(null);
 
-      {/* Transactions List */}
-      <div className="space-y-0">
-        {sortedTransactions.length > 0 ? (
-          sortedTransactions.map((transaction, index) => (
-            <div
-              key={transaction.id}
-              className="flex items-center justify-between py-4 border-b border-gray-800 last:border-b-0"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-green-500/20 border-2 border-green-500 flex items-center justify-center">
-                  <span className="text-green-500 text-sm">✓</span>
-                </div>
-                <div>
-                  <p className="font-medium text-sm">{transaction.description}</p>
-                  <p className="text-gray-400 text-xs">{transaction.date}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-semibold">
-                  {transaction.amount.toLocaleString()} {transaction.currency}
-                </p>
-                <p className="text-xs text-gray-400 capitalize">{transaction.status}</p>
-              </div>
+            const response = await fetch("/api/transaction/current", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || `Failed to fetch transactions: ${response.statusText}`
+                );
+            }
+
+            const transactions = Array.isArray(result.transactions)
+                ? result.transactions
+                : result.transactions?.data || [];
+
+            setApiTransactions(transactions);
+        } catch (err) {
+            console.error("❌ Error fetching transactions:", err);
+            setError(err instanceof Error ? err.message : "Failed to fetch transactions");
+            setApiTransactions([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [authToken]);
+
+    // Fetch transactions when component mounts and auth token is available
+    useEffect(() => {
+        if (authToken) {
+            fetchTransactions();
+        } else {
+            setLoading(false);
+        }
+    }, [authToken, fetchTransactions]);
+
+    // Get status display info
+    const getStatusInfo = (status: ApiTransaction["status"]) => {
+        switch (status) {
+            case "SUCCESS":
+                return {
+                    color: "text-green-400",
+                    bgColor: "bg-green-500/20",
+                    borderColor: "border-green-500",
+                    icon: "✓",
+                    label: "Success",
+                };
+            case "PENDING":
+                return {
+                    color: "text-yellow-400",
+                    bgColor: "bg-yellow-500/20",
+                    borderColor: "border-yellow-500",
+                    icon: "⏳",
+                    label: "Pending",
+                };
+            case "FAILED":
+                return {
+                    color: "text-red-400",
+                    bgColor: "bg-red-500/20",
+                    borderColor: "border-red-500",
+                    icon: "✗",
+                    label: "Failed",
+                };
+            case "CANCELLED":
+                return {
+                    color: "text-gray-400",
+                    bgColor: "bg-gray-500/20",
+                    borderColor: "border-gray-500",
+                    icon: "⊘",
+                    label: "Cancelled",
+                };
+            case "CHARGEBACK":
+                return {
+                    color: "text-orange-400",
+                    bgColor: "bg-orange-500/20",
+                    borderColor: "border-orange-500",
+                    icon: "↶",
+                    label: "Chargeback",
+                };
+            default:
+                return {
+                    color: "text-gray-400",
+                    bgColor: "bg-gray-500/20",
+                    borderColor: "border-gray-500",
+                    icon: "?",
+                    label: "Unknown",
+                };
+        }
+    };
+
+    // Format satoshis to BTC
+    const formatSatoshis = (satoshis: number) => {
+        return (satoshis / 100000000).toFixed(8);
+    };
+
+    // Show loading state
+    if (loading) {
+        return <LoadingPage />;
+    }
+
+    return (
+        <main className="pb-20">
+            {/* Header */}
+            <div className="mb-6 flex items-center justify-between">
+                <h1 className="text-xl font-bold">Transaction History</h1>
+                {authToken && (
+                    <button
+                        onClick={fetchTransactions}
+                        className="rounded-lg border border-gray-600 p-2 text-gray-400 transition-colors hover:border-orange-500 hover:text-orange-500"
+                        title="Refresh transactions"
+                    >
+                        <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
+                        </svg>
+                    </button>
+                )}
             </div>
-          ))
-        ) : (
-          <div className="text-center py-8 text-gray-400">
-            <p>No transactions found</p>
-          </div>
-        )}
-      </div>
-    </main>
-  )
+
+            {/* Error State */}
+            {error && (
+                <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 p-4">
+                    <h3 className="mb-2 font-medium text-red-400">Failed to Load Transactions</h3>
+                    <p className="mb-4 text-sm text-gray-400">{error}</p>
+                    <button
+                        onClick={fetchTransactions}
+                        className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            )}
+
+            {/* No Auth Token */}
+            {!authToken && (
+                <div className="py-8 text-center text-gray-400">
+                    <p className="mb-2">Please authenticate to view transactions</p>
+                    <p className="text-sm text-gray-500">
+                        Your transaction history will appear here once logged in
+                    </p>
+                </div>
+            )}
+
+            {/* Transactions List */}
+            {authToken && !error && (
+                <div className="space-y-0">
+                    {apiTransactions.length > 0 ? (
+                        apiTransactions.map((transaction) => {
+                            const statusInfo = getStatusInfo(transaction.status);
+
+                            return (
+                                <div
+                                    key={transaction.payhere_pay_id}
+                                    className="flex items-center justify-between border-b border-gray-800 py-4 last:border-b-0"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className={cn(
+                                                "flex h-8 w-8 items-center justify-center rounded-full border-2",
+                                                statusInfo.bgColor,
+                                                statusInfo.borderColor
+                                            )}
+                                        >
+                                            <span className={cn("text-sm", statusInfo.color)}>
+                                                {statusInfo.icon}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium">
+                                                SATS Purchase
+                                                {transaction.payhere_sub_id && (
+                                                    <span className="ml-1 text-xs text-gray-500">
+                                                        (Auto-stack)
+                                                    </span>
+                                                )}
+                                            </p>
+                                            <p className="text-xs text-gray-400">
+                                                {new Date(
+                                                    transaction.created_at
+                                                ).toLocaleDateString()}{" "}
+                                                at{" "}
+                                                {new Date(
+                                                    transaction.created_at
+                                                ).toLocaleTimeString()}
+                                            </p>
+                                            {transaction.btc_price_at_purchase && (
+                                                <p className="text-xs text-gray-500">
+                                                    BTC Purchased AT: {transaction.btc_price_at_purchase.toLocaleString()}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        {transaction.satoshis_purchased && (
+                                            <p className="font-semibold text-orange-400">
+                                                {transaction.satoshis_purchased}
+                                            </p>
+                                        )}
+                                        {transaction.satoshis_purchased && (
+                                            <p className="font-mono text-xs text-gray-500">
+                                                ₿ {formatSatoshis(transaction.satoshis_purchased)}
+                                            </p>
+                                        )}
+                                        <p className={cn("text-xs font-medium", statusInfo.color)}>
+                                            {statusInfo.label}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className="py-8 text-center">
+                            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-700">
+                                <svg
+                                    className="h-8 w-8 text-gray-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                    />
+                                </svg>
+                            </div>
+                            <h3 className="mb-2 text-lg font-medium text-gray-400">
+                                No Transactions Yet
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                                Your Bitcoin purchases and subscription transactions will appear
+                                here
+                            </p>
+                        </div>
+                    )}
+                </div>
+            )}
+        </main>
+    );
 }

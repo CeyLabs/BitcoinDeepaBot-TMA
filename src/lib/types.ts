@@ -50,6 +50,18 @@ export interface Transaction {
   duration?: string
 }
 
+export interface ApiTransaction {
+  payhere_pay_id: string
+  payhere_sub_id?: string
+  status: "SUCCESS" | "PENDING" | "CANCELLED" | "FAILED" | "CHARGEBACK"
+  btc_price_at_purchase?: number
+  satoshis_purchased?: number
+  price_currency?: string
+  coingecko_timestamp?: string
+  created_at: string
+  updated_at: string
+}
+
 export interface Wallet {
   balance: number
   balanceUSD: number
