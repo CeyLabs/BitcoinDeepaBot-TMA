@@ -12,11 +12,11 @@ import { authenticateWithTelegram, saveAuthToStorage } from "@/lib/auth";
 import LoadingPage from "@/components/LoadingPage";
 import fetchy from "@/lib/fetchy";
 import { UserExistsResponse } from "@/lib/types";
+import { toast } from "sonner";
 
 export default function WalletPage() {
     const router = useRouter();
-    const { wallet, rewards, isExistingUser, setIsExistingUser, setUser } =
-        useStore();
+    const { wallet, rewards, isExistingUser, setIsExistingUser, setUser } = useStore();
     const launchParams = useLaunchParams();
     const [isLoading, setIsLoading] = useState(true);
     const [authError, setAuthError] = useState<string | null>(null);
@@ -72,7 +72,6 @@ export default function WalletPage() {
                                     });
                                     return;
                                 } else {
-                                    console.log("😼 meow!!");
                                     // User is not registered, redirect to onboarding
                                     setIsExistingUser(false);
                                     router.push("/onboard");
@@ -104,6 +103,30 @@ export default function WalletPage() {
         initializeAuth();
     }, [launchParams, setIsExistingUser, setUser, router]);
 
+    useEffect(() => {
+        if (showWelcome && telegramUserData?.firstName) {
+            toast(
+                <div className="text-center">
+                    <h3 className="mb-1 flex items-center justify-center gap-2 text-lg font-semibold text-green-400">
+                        <span className="text-xl">🎉</span> Welcome back to Bitcoin Deepa!
+                    </h3>
+                    <p className="text-sm text-green-300">{`Good to see you again!`}</p>
+                </div>,
+                {
+                    duration: 5000,
+                    className:
+                        "backdrop-blur-md bg-gradient-to-r from-green-600/20 to-green-500/20 border border-green-500/30 rounded-lg px-4 py-3 shadow-lg",
+                    style: {
+                        background: "rgba(22, 163, 74, 0.2)",
+                        color: "#fff",
+                        border: "1px solid rgba(34,197,94,0.3)",
+                    },
+                }
+            );
+            setShowWelcome(false);
+        }
+    }, [showWelcome, telegramUserData]);
+
     if (isLoading) {
         return <LoadingPage />;
     }
@@ -129,21 +152,6 @@ export default function WalletPage() {
 
     return (
         <main className="pb-20">
-            {/* Welcome Banner */}
-            {showWelcome && (
-                <div className="animate-fadeInUp mb-6 rounded-lg border border-green-500/30 bg-gradient-to-r from-green-600/20 to-green-500/20 p-4">
-                    <div className="text-center">
-                        <h3 className="mb-1 text-lg font-semibold text-green-400">
-                            🎉 Welcome back to Bitcoin Deepa!
-                        </h3>
-                        <p className="text-sm text-green-300">
-                            {telegramUserData?.firstName &&
-                                `Good to see you again, ${telegramUserData.firstName}!`}
-                        </p>
-                    </div>
-                </div>
-            )}
-
             {/* Header */}
             <div className="mb-8 flex items-center justify-between">
                 <button className="rounded-lg bg-gray-800 p-2">

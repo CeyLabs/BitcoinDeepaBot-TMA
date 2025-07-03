@@ -4,6 +4,7 @@ import "@telegram-apps/telegram-ui/dist/styles.css";
 import { AppRoot } from "@telegram-apps/telegram-ui";
 import Providers from "./context/providers";
 import Script from "next/script";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({
                 <Providers>
                     <AppRoot appearance="dark" platform="base" id="tg-ui-root">
                         {children}
+                        <Toaster position="top-center" richColors />
                     </AppRoot>
                 </Providers>
             </body>
