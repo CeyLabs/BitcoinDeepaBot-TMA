@@ -156,32 +156,57 @@ export default function SubscriptionPage() {
         }
     }, [authToken, packages.length, fetchCurrentSubscription]);
 
-    const handleSubscribe = (plan: SubscriptionPlan) => {
-        const newSubscription = {
-            id: Date.now().toString(),
-            planName: plan.name,
-            planType: plan.type,
-            price: plan.amount,
-            currency: plan.currency,
-            startDate: new Date().toISOString(),
-            endDate: new Date(
-                Date.now() + (plan.type === "weekly" ? 7 : 30) * 24 * 60 * 60 * 1000
-            ).toISOString(),
-            isActive: true,
-        };
+    // State for PayHere link
+    const [payhereLink, setPayhereLink] = useState<string | null>(null);
+    const [payhereLinkLoading, setPayhereLinkLoading] = useState(false);
+    const [payhereLinkError, setPayhereLinkError] = useState<string | null>(null);
 
-        setSubscription(newSubscription);
+    const handleSubscribe = async (plan: SubscriptionPlan) => {
+        if (!authToken) {
+            console.error("No auth token available for subscription");
+            return;
+        }
 
-        // Add transaction
-        addTransaction({
-            id: Date.now().toString(),
-            type: "subscription",
-            amount: plan.amount,
-            currency: plan.currency,
-            date: new Date().toLocaleDateString(),
-            description: `${plan.name} Subscription`,
-            status: "completed",
-        });
+        try {
+            setPayhereLinkLoading(true);
+            setPayhereLinkError(null);
+
+            // Generate PayHere link
+            const response = await fetch("/api/subscription/payhere-link", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+                body: JSON.stringify({
+                    package_id: plan.id,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || `Failed to generate PayHere link: ${response.statusText}`
+                );
+            }
+
+            if (result.link) {
+                setPayhereLink(result.link);
+
+                // Redirect to PayHere
+                window.location.href = result.link;
+            } else {
+                throw new Error("No PayHere link received");
+            }
+        } catch (err) {
+            console.error("❌ Error generating PayHere link:", err);
+            setPayhereLinkError(
+                err instanceof Error ? err.message : "Failed to generate PayHere link"
+            );
+        } finally {
+            setPayhereLinkLoading(false);
+        }
     };
 
     const handleCancelSubscription = () => {
@@ -200,7 +225,7 @@ export default function SubscriptionPage() {
     };
 
     // Show loading state
-    if (loading) {
+    if (loading && !packages.length) {
         return <LoadingPage />;
     }
 
@@ -329,9 +354,21 @@ export default function SubscriptionPage() {
                             );
                             if (plan) handleSubscribe(plan);
                         }}
-                        className="w-full rounded-lg bg-orange-600 py-4 font-medium text-white transition-colors hover:bg-orange-700"
+                        disabled={payhereLinkLoading}
+                        className={`w-full rounded-lg py-4 font-medium text-white transition-colors ${
+                            payhereLinkLoading
+                                ? "cursor-not-allowed bg-gray-600"
+                                : "bg-orange-600 hover:bg-orange-700"
+                        }`}
                     >
-                        Subscribe →
+                        {payhereLinkLoading ? (
+                            <>
+                                <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white align-text-bottom"></span>
+                                Connecting to PayHere...
+                            </>
+                        ) : (
+                            "Subscribe →"
+                        )}
                     </button>
                 </div>
             ) : (

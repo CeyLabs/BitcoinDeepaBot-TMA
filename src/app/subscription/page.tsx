@@ -190,6 +190,7 @@ export default function SubscriptionPage() {
                 planName: selectedPlanData?.name || "",
             };
 
+            // Register the user first
             await registerUserWithPlan(authToken, userOnlyData, planData);
 
             // Set user as registered
@@ -200,25 +201,38 @@ export default function SubscriptionPage() {
                 isExisting: true,
             });
 
-            // Create subscription in store
-            setSubscription({
-                id: Date.now().toString(),
-                planName: planData.planName,
-                planType: selectedPlanData?.type || "weekly",
-                price: selectedPlanData?.amount || 0,
-                currency: selectedPlanData?.currency || "LKR",
-                startDate: new Date().toISOString(),
-                endDate: new Date(
-                    Date.now() +
-                        (selectedPlanData?.type === "weekly" ? 7 : 30) * 24 * 60 * 60 * 1000
-                ).toISOString(),
-                isActive: true,
+            const payhereResponse = await fetch("/api/subscription/payhere-link", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+                body: JSON.stringify({
+                    package_id: selectedPlan,
+                }),
             });
 
-            // Redirect to dashboard after successful registration
-            router.push("/dashboard");
+            const payhereResult = await payhereResponse.json();
+
+            if (!payhereResponse.ok) {
+                throw new Error(
+                    payhereResult.message || `Failed to generate PayHere link: ${payhereResponse.statusText}`
+                );
+            }
+
+            if (payhereResult.link) {                
+                // Redirect to PayHere for payment
+                window.location.href = payhereResult.link;
+            } else {
+                // Fallback: If PayHere link generation fails, create local subscription and redirect to dashboard
+                console.warn("⚠️ No PayHere link received, creating local subscription as fallback");
+
+                // Redirect to dashboard
+                router.push("/dashboard");
+            }
+
         } catch (error) {
-            console.error("Registration failed:", error);
+            console.error("Registration or PayHere generation failed:", error);
             setAuthError("Registration failed. Please try again.");
         } finally {
             setIsRegistering(false);
@@ -522,10 +536,10 @@ export default function SubscriptionPage() {
                                 {isRegistering ? (
                                     <div className="flex items-center justify-center">
                                         <div className="mr-3 h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                        Creating your account...
+                                        Creating account and payment link...
                                     </div>
                                 ) : (
-                                    "Complete Registration →"
+                                    "Complete Registration & Pay →"
                                 )}
                             </Button>
 
