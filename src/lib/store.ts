@@ -10,9 +10,6 @@ export type Store = {
   setUser: (user: User | null) => void
   isExistingUser: boolean
   setIsExistingUser: (isExisting: boolean) => void
-  // Authentication state
-  authToken: string | null
-  setAuthToken: (token: string | null) => void
   isRegistering: boolean
   setIsRegistering: (isRegistering: boolean) => void
   subscription: Subscription | null
@@ -56,9 +53,6 @@ export const useStore = create<Store>((set, get) => ({
   setUser: (user: User | null) => set({ user }),
   isExistingUser: false,
   setIsExistingUser: (isExisting: boolean) => set({ isExistingUser: isExisting }),
-  // Authentication state
-  authToken: null,
-  setAuthToken: (token: string | null) => set({ authToken: token }),
   isRegistering: false,
   setIsRegistering: (isRegistering: boolean) => set({ isRegistering }),
   subscription: null,
