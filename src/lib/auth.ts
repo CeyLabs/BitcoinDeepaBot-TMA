@@ -1,5 +1,3 @@
-// Auth utility functions for Telegram authentication and user registration
-
 export interface TelegramAuthResponse {
     token?: string;
     user?: any;
@@ -154,3 +152,33 @@ export async function completeAuthFlow(
         throw error;
     }
 }
+
+/**
+ * Utility functions for authentication using localStorage
+ */
+
+export const getAuthTokenFromStorage = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('bitcoin-deepa-auth-token');
+};
+
+export const getIsExistingUserFromStorage = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('bitcoin-deepa-is-existing-user') === 'true';
+};
+
+export const saveAuthToStorage = (token: string) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('bitcoin-deepa-auth-token', token);
+  localStorage.setItem('bitcoin-deepa-is-existing-user', 'true');
+};
+
+export const clearAuthFromStorage = () => {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem('bitcoin-deepa-auth-token');
+  localStorage.removeItem('bitcoin-deepa-is-existing-user');
+};
+
+export const isAuthenticated = (): boolean => {
+  return !!getAuthTokenFromStorage();
+};

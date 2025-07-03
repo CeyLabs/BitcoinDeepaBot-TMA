@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useStore } from "@/lib/store";
+import { getAuthTokenFromStorage } from "@/lib/auth";
 import type { SubscriptionPlan } from "@/lib/types";
 import { cn } from "@/lib/cn";
 import LoadingPage from "@/components/LoadingPage";
@@ -9,7 +10,10 @@ import LoadingPage from "@/components/LoadingPage";
 export default function SubscriptionPage() {
     const [selectedPlan, setSelectedPlan] = useState<string>("stacker-weekly");
     const [activeTab, setActiveTab] = useState<"plans" | "status">("plans");
-    const { subscription, setSubscription, addTransaction, authToken } = useStore();
+    const { subscription, setSubscription, addTransaction } = useStore();
+
+    // Get auth token from localStorage
+    const authToken = getAuthTokenFromStorage();
 
     // Package state
     const [packages, setPackages] = useState<SubscriptionPlan[]>([]);

@@ -3,7 +3,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLaunchParams, useBackButton } from "@telegram-apps/sdk-react";
-import { authenticateWithTelegram, registerUserWithPlan } from "@/lib/auth";
+import {
+    authenticateWithTelegram,
+    getAuthTokenFromStorage,
+    registerUserWithPlan,
+    saveAuthToStorage,
+} from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import type { SubscriptionPlan } from "@/lib/types";
 import { cn } from "@/lib/cn";
@@ -13,9 +18,12 @@ import { Button, Input } from "@telegram-apps/telegram-ui";
 
 export default function SubscriptionPage() {
     const router = useRouter();
-    const { setAuthToken, setIsExistingUser, setUser, setSubscription } = useStore();
+    const { setIsExistingUser, setUser, setSubscription } = useStore();
     const launchParams = useLaunchParams();
     const backButton = useBackButton();
+
+    // Get auth token from localStorage
+    const authToken = getAuthTokenFromStorage();
 
     // Package state
     const [packages, setPackages] = useState<SubscriptionPlan[]>([]);
@@ -26,7 +34,6 @@ export default function SubscriptionPage() {
     const [authError, setAuthError] = useState<string | null>(null);
     const [isRegistering, setIsRegistering] = useState(false);
     const [telegramUserData, setTelegramUserData] = useState<any>(null);
-    const [authToken, setLocalAuthToken] = useState<string>("");
     const [selectedPlan, setSelectedPlan] = useState<string>("stacker-weekly");
     const [showRegistrationForm, setShowRegistrationForm] = useState(false);
     const [registrationData, setRegistrationData] = useState({
@@ -115,8 +122,6 @@ export default function SubscriptionPage() {
                         // Pre-fill form with Telegram data
                         setRegistrationData((prev) => ({
                             ...prev,
-                            first_name: user.firstName || "",
-                            last_name: user.lastName || "",
                             country: "Sri Lanka",
                         }));
 
@@ -124,8 +129,8 @@ export default function SubscriptionPage() {
                         const authResult = await authenticateWithTelegram(initDataRaw);
 
                         if (authResult.token) {
-                            setLocalAuthToken(authResult.token);
-                            setAuthToken(authResult.token);
+                            // Save auth token to localStorage
+                            saveAuthToStorage(authResult.token);
                         } else {
                             setAuthError("Failed to authenticate with Telegram");
                         }
@@ -144,7 +149,7 @@ export default function SubscriptionPage() {
         };
 
         initializeAuth();
-    }, [launchParams, setAuthToken]);
+    }, [launchParams]);
 
     // Cleanup back button on component unmount
     useEffect(() => {
@@ -216,21 +221,23 @@ export default function SubscriptionPage() {
 
             if (!payhereResponse.ok) {
                 throw new Error(
-                    payhereResult.message || `Failed to generate PayHere link: ${payhereResponse.statusText}`
+                    payhereResult.message ||
+                        `Failed to generate PayHere link: ${payhereResponse.statusText}`
                 );
             }
 
-            if (payhereResult.link) {                
+            if (payhereResult.link) {
                 // Redirect to PayHere for payment
                 window.location.href = payhereResult.link;
             } else {
                 // Fallback: If PayHere link generation fails, create local subscription and redirect to dashboard
-                console.warn("⚠️ No PayHere link received, creating local subscription as fallback");
+                console.warn(
+                    "⚠️ No PayHere link received, creating local subscription as fallback"
+                );
 
                 // Redirect to dashboard
                 router.push("/dashboard");
             }
-
         } catch (error) {
             console.error("Registration or PayHere generation failed:", error);
             setAuthError("Registration failed. Please try again.");
@@ -276,7 +283,7 @@ export default function SubscriptionPage() {
                     // Plan Selection Screen
                     <>
                         {/* Header */}
-                        <div className="mb-8 p-4 text-center">
+                        <div className="p-4 text-center">
                             <div className="mb-4 flex justify-center">
                                 <Image
                                     src="/btc-animated.webp"
@@ -297,7 +304,7 @@ export default function SubscriptionPage() {
                                 <div
                                     key={plan.id}
                                     className={cn(
-                                        "flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all duration-300",
+                                        "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all duration-300",
                                         selectedPlan === plan.id
                                             ? "border-orange-500 bg-gradient-to-r from-orange-500/10 to-orange-600/10 shadow-lg shadow-orange-500/20"
                                             : "border-gray-700 bg-gradient-to-r from-gray-800/50 to-gray-900/50 hover:border-gray-600"
@@ -327,7 +334,7 @@ export default function SubscriptionPage() {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="font-semibold text-orange-500">
+                                        <div className="text-sm font-semibold text-orange-500">
                                             {plan.currency} {plan.amount.toLocaleString()}
                                         </div>
                                         <div className="text-xs text-gray-400">per {plan.type}</div>
@@ -389,7 +396,7 @@ export default function SubscriptionPage() {
                                             <p className="text-lg font-semibold text-orange-500">
                                                 {selectedPlanData.name}
                                             </p>
-                                            <p className="text-sm text-gray-400">
+                                            <p className="text-xs text-gray-400">
                                                 {selectedPlanData.currency}{" "}
                                                 {selectedPlanData.amount.toLocaleString()} per{" "}
                                                 {selectedPlanData.type}
@@ -419,15 +426,6 @@ export default function SubscriptionPage() {
                                     className="w-full"
                                     required
                                 />
-                                {/* <input
-                                    type="text"
-                                    value={registrationData.first_name}
-                                    onChange={(e) =>
-                                        handleInputChange("first_name", e.target.value)
-                                    }
-                                    className="w-full rounded-xl border border-gray-700 bg-gray-800/50 px-4 py-3 text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-                                    placeholder="Enter your first name"
-                                /> */}
                             </div>
 
                             {/* Last Name */}
@@ -495,7 +493,7 @@ export default function SubscriptionPage() {
                                     header="City"
                                     value={registrationData.city}
                                     onChange={(e) => handleInputChange("city", e.target.value)}
-                                    placeholder="e.g. Colombo, Kandy, Galle"
+                                    placeholder="e.g. Colombo"
                                     className="w-full"
                                 />
                             </div>

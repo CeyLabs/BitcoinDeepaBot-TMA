@@ -8,14 +8,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLaunchParams } from "@telegram-apps/sdk-react";
-import { authenticateWithTelegram } from "@/lib/auth";
+import { authenticateWithTelegram, saveAuthToStorage } from "@/lib/auth";
 import LoadingPage from "@/components/LoadingPage";
 import fetchy from "@/lib/fetchy";
 import { UserExistsResponse } from "@/lib/types";
 
 export default function WalletPage() {
     const router = useRouter();
-    const { wallet, rewards, isExistingUser, setIsExistingUser, authToken, setAuthToken, setUser } =
+    const { wallet, rewards, isExistingUser, setIsExistingUser, setUser } =
         useStore();
     const launchParams = useLaunchParams();
     const [isLoading, setIsLoading] = useState(true);
@@ -51,7 +51,7 @@ export default function WalletPage() {
                         const authResult = await authenticateWithTelegram(initDataRaw);
 
                         if (authResult.token) {
-                            setAuthToken(authResult.token);
+                            saveAuthToStorage(authResult.token);
 
                             // Check if user is registered in the backend
                             try {
@@ -102,7 +102,7 @@ export default function WalletPage() {
         };
 
         initializeAuth();
-    }, [launchParams, setAuthToken, setIsExistingUser, setUser, router]);
+    }, [launchParams, setIsExistingUser, setUser, router]);
 
     if (isLoading) {
         return <LoadingPage />;

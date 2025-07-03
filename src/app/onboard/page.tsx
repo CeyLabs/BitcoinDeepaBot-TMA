@@ -4,7 +4,7 @@ import { useStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLaunchParams } from "@telegram-apps/sdk-react";
-import { authenticateWithTelegram } from "@/lib/auth";
+import { authenticateWithTelegram, saveAuthToStorage } from "@/lib/auth";
 import LoadingPage from "@/components/LoadingPage";
 import fetchy from "@/lib/fetchy";
 import { UserExistsResponse } from "@/lib/types";
@@ -13,7 +13,7 @@ import Image from "next/image";
 
 export default function OnboardPage() {
     const router = useRouter();
-    const { setIsExistingUser, setAuthToken, setUser } = useStore();
+    const { setIsExistingUser, setUser } = useStore();
     const launchParams = useLaunchParams();
     const [isLoading, setIsLoading] = useState(true);
     const [authError, setAuthError] = useState<string | null>(null);
@@ -39,7 +39,8 @@ export default function OnboardPage() {
                         const authResult = await authenticateWithTelegram(initDataRaw);
 
                         if (authResult.token) {
-                            setAuthToken(authResult.token);
+                            // Save auth token to localStorage
+                            saveAuthToStorage(authResult.token);
 
                             // Check if user is already registered
                             try {
@@ -87,7 +88,7 @@ export default function OnboardPage() {
         };
 
         initializeAuth();
-    }, [launchParams, setAuthToken, setIsExistingUser, setUser, router]);
+    }, [launchParams, setIsExistingUser, setUser, router]);
 
     const handleCompleteOnboarding = () => {
         setIsExistingUser(true);
@@ -158,17 +159,12 @@ export default function OnboardPage() {
 
                 {/* Action Buttons */}
                 <div className="space-y-4">
-                    <Button Component="a" className="bg-gradient-to-r from-orange-500 to-orange-600 w-full" href="/subscription">
-                        <span className="flex gap-2">🎯 Choose Your Plan</span>
-                    </Button>
-
                     <Button
                         Component="a"
-                        stretched
-                        onClick={handleCompleteOnboarding}
-                        className="border-2 border-solid border-orange-500 bg-orange-500/10 text-orange-500 backdrop-blur-[10px]"
+                        className="w-full bg-gradient-to-r from-orange-500 to-orange-600"
+                        href="/subscription"
                     >
-                        <span className="flex gap-2"> 👀 View Wallet (Demo)</span>
+                        <span className="flex gap-2">🎯 Choose Your Plan</span>
                     </Button>
                 </div>
 

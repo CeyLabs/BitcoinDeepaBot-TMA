@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useStore } from "@/lib/store";
+import { getAuthTokenFromStorage } from "@/lib/auth";
 import type { ApiTransaction } from "@/lib/types";
 import { cn } from "@/lib/cn";
 import LoadingPage from "@/components/LoadingPage";
 
 export default function HistoryPage() {
-    const { authToken } = useStore();
+    // Get auth token from localStorage
+    const authToken = getAuthTokenFromStorage();
 
     // API transaction state
     const [apiTransactions, setApiTransactions] = useState<ApiTransaction[]>([]);
