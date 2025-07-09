@@ -58,6 +58,9 @@ export async function POST(request: Request) {
 
         const data = await response.json();
 
+        console.log("✅ PayHere link generated successfully:", data);
+        debugger;
+
         return NextResponse.json({
             ...data,
             message: "PayHere link generated successfully",
