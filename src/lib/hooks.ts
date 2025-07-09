@@ -67,7 +67,7 @@ export function usePostRedirect() {
             const form = document.createElement("form");
             form.method = "POST";
             form.action = baseUrl;
-            form.target = "_blank"; // Optional: or remove for same-tab
+            form.target = "_self";
 
             url.searchParams.forEach((value, key) => {
                 const input = document.createElement("input");
@@ -89,19 +89,28 @@ export function usePostRedirect() {
 }
 
 export function usePayHereRedirect() {
-    const { openLink } = useTMA();
+    const postRedirect = usePostRedirect();
 
-    const redirectToPayHereViaPage = useCallback(
+    const redirectToPayHereViaPost = useCallback(
         (payHereParams: Record<string, string>) => {
-            const redirectUrl = new URL("/payhere-redirect", window.location.origin);
+            // Determine if we're in sandbox or production
+            const isProduction = process.env.NODE_ENV === "production";
+            const payHereUrl = isProduction
+                ? "https://www.payhere.lk/pay/checkout"
+                : "https://sandbox.payhere.lk/pay/checkout";
+
+            // Create URL with search params for our postRedirect function
+            const url = new URL(payHereUrl);
+
+            // Add all parameters to URL
             Object.entries(payHereParams).forEach(([key, value]) => {
-                redirectUrl.searchParams.append(key, value);
+                url.searchParams.append(key, value);
             });
 
-            openLink(redirectUrl.toString()); // Opens in default browser
+            postRedirect(url.toString());
         },
-        [openLink]
+        [postRedirect]
     );
 
-    return redirectToPayHereViaPage;
+    return redirectToPayHereViaPost;
 }
