@@ -149,16 +149,13 @@ export default function WalletPage() {
             setSummaryLoading(true);
             setSummaryError(null);
             try {
-                const res = await fetch(
-                    `/api/transaction/dca-summary`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${authToken}`,
-                        },
-                    }
-                );
+                const res = await fetch(`/api/transaction/dca-summary`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${authToken}`,
+                    },
+                });
                 if (!res.ok) throw new Error("Failed to fetch wallet summary");
                 const data = await res.json();
                 setSummary(data);
@@ -268,15 +265,25 @@ export default function WalletPage() {
             <div className="mb-8 flex justify-between">
                 {[
                     { icon: IoMdSend, label: "Send", color: "bg-gray-800", unavailable: true },
-                    { icon: IoMdDownload, label: "Receive", color: "bg-gray-800", unavailable: true },
+                    {
+                        icon: IoMdDownload,
+                        label: "Receive",
+                        color: "bg-gray-800",
+                        unavailable: true,
+                    },
                     {
                         icon: FaUserPlus,
                         label: "Invite",
                         color: "bg-gray-800",
                         badge: "Reward",
-                        link: "/invite",
+                        link: "/dashboard/invite",
                     },
-                    { icon: IoMdTime, label: "Activity", color: "bg-gray-800" },
+                    {
+                        icon: IoMdTime,
+                        label: "Activity",
+                        color: "bg-gray-800",
+                        link: "dashboard/history",
+                    },
                     { icon: IoMdQrScanner, label: "Scan", color: "bg-gray-800" },
                 ].map((action, index) => (
                     <div key={index} className="flex flex-col items-center">
@@ -296,7 +303,14 @@ export default function WalletPage() {
                             <button
                                 type="button"
                                 className={`relative rounded-full p-4 ${action.color} mb-2 focus:outline-none ${action.unavailable ? "opacity-50" : ""}`}
-                                onClick={action.unavailable ? () => toast("This feature is not available yet.", { className: "bg-gray-900 text-white" }) : undefined}
+                                onClick={
+                                    action.unavailable
+                                        ? () =>
+                                              toast("This feature is not available yet.", {
+                                                  className: "bg-gray-900 text-white",
+                                              })
+                                        : undefined
+                                }
                                 tabIndex={0}
                             >
                                 <action.icon className="text-xl text-orange-500" />
@@ -307,7 +321,11 @@ export default function WalletPage() {
                                 )}
                             </button>
                         )}
-                        <span className={`text-xs ${action.unavailable ? "text-gray-500" : "text-gray-400"}`}>{action.label}</span>
+                        <span
+                            className={`text-xs ${action.unavailable ? "text-gray-500" : "text-gray-400"}`}
+                        >
+                            {action.label}
+                        </span>
                     </div>
                 ))}
             </div>
