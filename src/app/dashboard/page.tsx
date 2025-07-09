@@ -150,7 +150,7 @@ export default function WalletPage() {
             setSummaryError(null);
             try {
                 const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/transaction/dca-summary`,
+                    `/api/transaction/dca-summary`,
                     {
                         method: "GET",
                         headers: {
