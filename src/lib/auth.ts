@@ -43,7 +43,7 @@ export async function authenticateWithTelegram(initData: string): Promise<Telegr
                 return {
                     token: result.token || null,
                     isRegistered: false,
-                    message: result.message || "User not found"
+                    message: result.message || "User not found",
                 };
             }
             throw new Error(`Authentication failed: ${response.statusText}`);
@@ -91,22 +91,18 @@ export async function registerUser(token: string, userData: UserRegistrationData
 /**
  * Register user with plan information
  */
-export async function registerUserWithPlan(token: string, userData: UserRegistrationData, planData: PlanSelectionData): Promise<any> {
+export async function registerUserWithPlan(
+    token: string,
+    userData: UserRegistrationData,
+    planData: PlanSelectionData
+): Promise<any> {
     try {
         // First, register the user with basic information
         const userResult = await registerUser(token, userData);
-        
-        // For now, we'll store plan data locally or handle it separately
-        // since the backend database doesn't have plan columns yet
-        console.log("🚀 ~ User registered successfully:", userResult);
-        console.log("🚀 ~ Plan selected:", planData);
-        
-        // You can extend this to call a separate plan subscription API endpoint
-        // or store plan data in localStorage/global state for now
-        
+
         return {
             ...userResult,
-            plan: planData
+            plan: planData,
         };
     } catch (error) {
         console.error("Error during user registration with plan:", error);
@@ -123,7 +119,7 @@ export async function completeAuthFlow(
 ): Promise<{ isRegistered: boolean; token?: string; user?: any }> {
     try {
         const authResult = await authenticateWithTelegram(initData);
-        
+
         if (authResult.isRegistered) {
             return {
                 isRegistered: true,
@@ -131,17 +127,17 @@ export async function completeAuthFlow(
                 user: authResult.user,
             };
         }
-        
+
         if (!authResult.isRegistered && userRegistrationData && authResult.token) {
             const registrationResult = await registerUser(authResult.token, userRegistrationData);
-            
+
             return {
                 isRegistered: true,
                 token: authResult.token,
                 user: registrationResult.user || registrationResult,
             };
         }
-        
+
         // Step 4: User is not registered and no registration data provided
         return {
             isRegistered: false,
@@ -158,27 +154,27 @@ export async function completeAuthFlow(
  */
 
 export const getAuthTokenFromStorage = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('bitcoin-deepa-auth-token');
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("bitcoin-deepa-auth-token");
 };
 
 export const getIsExistingUserFromStorage = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem('bitcoin-deepa-is-existing-user') === 'true';
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("bitcoin-deepa-is-existing-user") === "true";
 };
 
 export const saveAuthToStorage = (token: string) => {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem('bitcoin-deepa-auth-token', token);
-  localStorage.setItem('bitcoin-deepa-is-existing-user', 'true');
+    if (typeof window === "undefined") return;
+    localStorage.setItem("bitcoin-deepa-auth-token", token);
+    localStorage.setItem("bitcoin-deepa-is-existing-user", "true");
 };
 
 export const clearAuthFromStorage = () => {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem('bitcoin-deepa-auth-token');
-  localStorage.removeItem('bitcoin-deepa-is-existing-user');
+    if (typeof window === "undefined") return;
+    localStorage.removeItem("bitcoin-deepa-auth-token");
+    localStorage.removeItem("bitcoin-deepa-is-existing-user");
 };
 
 export const isAuthenticated = (): boolean => {
-  return !!getAuthTokenFromStorage();
+    return !!getAuthTokenFromStorage();
 };

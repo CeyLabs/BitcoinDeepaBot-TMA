@@ -33,7 +33,6 @@ export async function POST(request: NextRequest) {
                 throw new Error(`Request failed with status ${response.status}`);
             }
         } catch (error) {
-            console.log("❌ Bearer token format failed:", error);
             lastError = error;
         }
 
