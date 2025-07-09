@@ -67,7 +67,7 @@ export function usePostRedirect() {
             const form = document.createElement("form");
             form.method = "POST";
             form.action = baseUrl;
-            form.target = "_self";
+            form.target = "_blank";
 
             url.searchParams.forEach((value, key) => {
                 const input = document.createElement("input");
@@ -94,10 +94,7 @@ export function usePayHereRedirect() {
     const redirectToPayHereViaPost = useCallback(
         (payHereParams: Record<string, string>) => {
             // Determine if we're in sandbox or production
-            const isProduction = process.env.NODE_ENV === "production";
-            const payHereUrl = isProduction
-                ? "https://www.payhere.lk/pay/checkout"
-                : "https://sandbox.payhere.lk/pay/checkout";
+            const payHereUrl = "https://sandbox.payhere.lk/pay/checkout";
 
             // Create URL with search params for our postRedirect function
             const url = new URL(payHereUrl);
