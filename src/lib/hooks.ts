@@ -36,6 +36,17 @@ export function useTMA() {
         [webApp]
     );
 
+    const openLink = useCallback(
+        (url: string, tryInstantView = false) => {
+            if (webApp) {
+                webApp.openLink(url, tryInstantView);
+            } else {
+                throw new Error("TMA not available");
+            }
+        },
+        [webApp]
+    );
+
     const closeWebApp = useCallback(() => {
         if (webApp) {
             webApp.close();
@@ -44,7 +55,7 @@ export function useTMA() {
         }
     }, [webApp]);
 
-    return { webApp, closeWebApp, shareStory };
+    return { webApp, closeWebApp, shareStory, openLink };
 }
 
 export function usePostRedirect() {
@@ -75,4 +86,22 @@ export function usePostRedirect() {
     }, []);
 
     return redirectInPost;
+}
+
+export function usePayHereRedirect() {
+    const { openLink } = useTMA();
+
+    const redirectToPayHereViaPage = useCallback(
+        (payHereParams: Record<string, string>) => {
+            const redirectUrl = new URL("/payhere-redirect", window.location.origin);
+            Object.entries(payHereParams).forEach(([key, value]) => {
+                redirectUrl.searchParams.append(key, value);
+            });
+
+            openLink(redirectUrl.toString()); // Opens in default browser
+        },
+        [openLink]
+    );
+
+    return redirectToPayHereViaPage;
 }
