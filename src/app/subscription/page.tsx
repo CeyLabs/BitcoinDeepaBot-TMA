@@ -34,7 +34,7 @@ export default function SubscriptionPage() {
     const [authError, setAuthError] = useState<string | null>(null);
     const [isRegistering, setIsRegistering] = useState(false);
     const [telegramUserData, setTelegramUserData] = useState<any>(null);
-    const [selectedPlan, setSelectedPlan] = useState<string>("stacker-weekly");
+    const [selectedPlan, setSelectedPlan] = useState<string>("");
     const [showRegistrationForm, setShowRegistrationForm] = useState(false);
     const [registrationData, setRegistrationData] = useState({
         first_name: "",
@@ -159,7 +159,9 @@ export default function SubscriptionPage() {
     }, [backButton]);
 
     const handlePlanSelection = () => {
-        setShowRegistrationForm(true);
+        if (selectedPlan) {
+            setShowRegistrationForm(true);
+        }
     };
 
     const handleRegistrationSubmit = async () => {
@@ -349,13 +351,19 @@ export default function SubscriptionPage() {
                                 Component="a"
                                 stretched
                                 onClick={handlePlanSelection}
-                                className="bg-gradient-to-r from-orange-500 to-orange-600 p-4"
+                                disabled={!selectedPlan}
+                                className={cn(
+                                    "p-4",
+                                    selectedPlan
+                                        ? "bg-gradient-to-r from-orange-500 to-orange-600"
+                                        : "cursor-not-allowed bg-gray-700 opacity-50"
+                                )}
                             >
                                 <span className="flex gap-2"> Continue with Selected Plan →</span>
                             </Button>
 
                             {/* Footer */}
-                            <div className="mt-2 p-4 text-center">
+                            <div className="p-4 text-center">
                                 <p className="text-xs text-gray-500">
                                     Start small, stack consistently. Cancel anytime.
                                 </p>
