@@ -9,10 +9,8 @@ export async function GET() {
             },
         });
 
-        if (response.ok) {
-            const packages = await response.json();
-            return NextResponse.json(packages);
-        }
+        const packages = await response.json();
+        return NextResponse.json(packages);
     } catch (error) {
         return NextResponse.json(
             {
