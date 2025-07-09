@@ -46,3 +46,33 @@ export function useTMA() {
 
     return { webApp, closeWebApp, shareStory };
 }
+
+export function usePostRedirect() {
+    const redirectInPost = useCallback((fullUrl: string) => {
+        try {
+            const url = new URL(fullUrl);
+            const baseUrl = `${url.origin}${url.pathname}`;
+
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = baseUrl;
+            form.target = "_blank"; // Optional: or remove for same-tab
+
+            url.searchParams.forEach((value, key) => {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = key;
+                input.value = value;
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        } catch (error) {
+            console.error("Failed to redirect:", error);
+        }
+    }, []);
+
+    return redirectInPost;
+}

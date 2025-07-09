@@ -15,12 +15,14 @@ import { cn } from "@/lib/cn";
 import LoadingPage from "@/components/LoadingPage";
 import Image from "next/image";
 import { Button, Input } from "@telegram-apps/telegram-ui";
+import { usePostRedirect } from "@/lib/hooks";
 
 export default function SubscriptionPage() {
     const router = useRouter();
     const { setIsExistingUser, setUser, setSubscription } = useStore();
     const launchParams = useLaunchParams();
     const backButton = useBackButton();
+    const redirectInPost = usePostRedirect();
 
     // Get auth token from localStorage
     const authToken = getAuthTokenFromStorage();
@@ -235,7 +237,7 @@ export default function SubscriptionPage() {
 
             if (payhereResult.link) {
                 // Redirect to PayHere for payment
-                window.location.href = payhereResult.link;
+                redirectInPost(payhereResult.link);
             } else {
                 // Fallback: If PayHere link generation fails, create local subscription and redirect to dashboard
                 console.warn(
