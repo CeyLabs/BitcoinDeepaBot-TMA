@@ -8,11 +8,22 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLaunchParams } from "@telegram-apps/sdk-react";
-import { authenticateWithTelegram, saveAuthToStorage } from "@/lib/auth";
+import { authenticateWithTelegram, getAuthTokenFromStorage, saveAuthToStorage } from "@/lib/auth";
 import LoadingPage from "@/components/LoadingPage";
 import fetchy from "@/lib/fetchy";
 import { UserExistsResponse } from "@/lib/types";
 import { toast } from "sonner";
+
+interface DCSummary {
+    total_transactions: number;
+    successful_transactions: number;
+    total_satoshis_purchased: string;
+    total_amount_spent: number;
+    average_btc_price: number;
+    currency: string;
+    first_purchase_date: string;
+    last_purchase_date: string;
+}
 
 export default function WalletPage() {
     const router = useRouter();
@@ -22,6 +33,11 @@ export default function WalletPage() {
     const [authError, setAuthError] = useState<string | null>(null);
     const [telegramUserData, setTelegramUserData] = useState<any>(null);
     const [showWelcome, setShowWelcome] = useState(false);
+    const [summary, setSummary] = useState<DCSummary | null>(null);
+    const [summaryLoading, setSummaryLoading] = useState(true);
+    const [summaryError, setSummaryError] = useState<string | null>(null);
+
+    const authToken = getAuthTokenFromStorage();
 
     useEffect(() => {
         // Hide welcome banner after 5 seconds
@@ -127,6 +143,34 @@ export default function WalletPage() {
         }
     }, [showWelcome, telegramUserData]);
 
+    useEffect(() => {
+        // Fetch wallet summary
+        const fetchSummary = async () => {
+            setSummaryLoading(true);
+            setSummaryError(null);
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/transaction/dca-summary`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${authToken}`,
+                        },
+                    }
+                );
+                if (!res.ok) throw new Error("Failed to fetch wallet summary");
+                const data = await res.json();
+                setSummary(data);
+            } catch (e: any) {
+                setSummaryError(e.message || "Unknown error");
+            } finally {
+                setSummaryLoading(false);
+            }
+        };
+        fetchSummary();
+    }, [authToken]);
+
     if (isLoading) {
         return <LoadingPage />;
     }
@@ -164,27 +208,43 @@ export default function WalletPage() {
 
             {/* Balance Section */}
             <div className="mb-8 text-center">
-                <p className="mb-2 text-gray-400">Balance</p>
-                <h1 className="mb-2 text-4xl font-bold">${wallet.balance.toFixed(2)}</h1>
-                <div className="flex items-center justify-center gap-2">
-                    <span
-                        className={`text-sm ${wallet.change24h < 0 ? "text-red-500" : "text-green-500"}`}
-                    >
-                        {wallet.change24h < 0 ? "-" : "+"}${Math.abs(wallet.change24h).toFixed(2)}
-                    </span>
-                    <div className="flex items-center gap-1">
-                        {wallet.changePercent < 0 ? (
-                            <MdTrendingDown className="text-red-500" />
-                        ) : (
-                            <MdTrendingUp className="text-green-500" />
-                        )}
-                        <span
-                            className={`text-sm ${wallet.changePercent < 0 ? "text-red-500" : "text-green-500"}`}
-                        >
-                            {Math.abs(wallet.changePercent).toFixed(2)}%
-                        </span>
-                    </div>
-                </div>
+                <p className="mb-2 text-gray-400">Wallet Balance</p>
+                {summary ? (
+                    <>
+                        <h1 className="mb-2 text-4xl font-bold text-orange-400">
+                            {Number(summary.total_satoshis_purchased).toLocaleString()}{" "}
+                            <span className="text-base font-medium text-orange-300">sats</span>
+                        </h1>
+                        <div className="mb-2 text-lg text-orange-200">
+                            {(Number(summary.total_satoshis_purchased) / 100_000_000).toFixed(8)}{" "}
+                            BTC
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <h1 className="mb-2 text-4xl font-bold">${wallet.balance.toFixed(2)}</h1>
+                        <div className="flex items-center justify-center gap-2">
+                            <span
+                                className={`text-sm ${wallet.change24h < 0 ? "text-red-500" : "text-green-500"}`}
+                            >
+                                {wallet.change24h < 0 ? "-" : "+"}$
+                                {Math.abs(wallet.change24h).toFixed(2)}
+                            </span>
+                            <div className="flex items-center gap-1">
+                                {wallet.changePercent < 0 ? (
+                                    <MdTrendingDown className="text-red-500" />
+                                ) : (
+                                    <MdTrendingUp className="text-green-500" />
+                                )}
+                                <span
+                                    className={`text-sm ${wallet.changePercent < 0 ? "text-red-500" : "text-green-500"}`}
+                                >
+                                    {Math.abs(wallet.changePercent).toFixed(2)}%
+                                </span>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Rewards Banner */}
@@ -207,8 +267,8 @@ export default function WalletPage() {
             {/* Action Buttons */}
             <div className="mb-8 flex justify-between">
                 {[
-                    { icon: IoMdSend, label: "Send", color: "bg-gray-800" },
-                    { icon: IoMdDownload, label: "Receive", color: "bg-gray-800" },
+                    { icon: IoMdSend, label: "Send", color: "bg-gray-800", unavailable: true },
+                    { icon: IoMdDownload, label: "Receive", color: "bg-gray-800", unavailable: true },
                     {
                         icon: FaUserPlus,
                         label: "Invite",
@@ -233,16 +293,21 @@ export default function WalletPage() {
                                 )}
                             </Link>
                         ) : (
-                            <div className={`relative rounded-full p-4 ${action.color} mb-2`}>
+                            <button
+                                type="button"
+                                className={`relative rounded-full p-4 ${action.color} mb-2 focus:outline-none ${action.unavailable ? "opacity-50" : ""}`}
+                                onClick={action.unavailable ? () => toast("This feature is not available yet.", { className: "bg-gray-900 text-white" }) : undefined}
+                                tabIndex={0}
+                            >
                                 <action.icon className="text-xl text-orange-500" />
                                 {action.badge && (
                                     <div className="absolute -right-1 -top-1 rounded-full bg-green-500 px-2 py-0.5 text-xs text-white">
                                         {action.badge}
                                     </div>
                                 )}
-                            </div>
+                            </button>
                         )}
-                        <span className="text-xs text-gray-400">{action.label}</span>
+                        <span className={`text-xs ${action.unavailable ? "text-gray-500" : "text-gray-400"}`}>{action.label}</span>
                     </div>
                 ))}
             </div>
