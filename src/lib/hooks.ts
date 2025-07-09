@@ -67,7 +67,7 @@ export function usePostRedirect() {
             const form = document.createElement("form");
             form.method = "POST";
             form.action = baseUrl;
-            form.target = "_blank";
+            form.target = "_self";
 
             url.searchParams.forEach((value, key) => {
                 const input = document.createElement("input");
