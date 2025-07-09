@@ -225,7 +225,8 @@ export default function HistoryPage() {
                                             </p>
                                             {transaction.btc_price_at_purchase && (
                                                 <p className="text-xs text-gray-500">
-                                                    BTC Purchased AT: {transaction.btc_price_at_purchase.toLocaleString()}
+                                                    BTC Purchased AT:{" "}
+                                                    {transaction.btc_price_at_purchase.toLocaleString()}
                                                 </p>
                                             )}
                                         </div>

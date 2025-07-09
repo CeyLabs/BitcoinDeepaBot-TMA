@@ -6,28 +6,26 @@ export async function GET(request: Request) {
         // Get authorization header
         const headersList = headers();
         const authorization = headersList.get("authorization");
-        
+
         if (!authorization) {
             return NextResponse.json(
-                { 
-                    error: "Unauthorized", 
-                    message: "Authorization header is required" 
+                {
+                    error: "Unauthorized",
+                    message: "Authorization header is required",
                 },
                 { status: 401 }
             );
         }
 
         // Extract token from "Bearer <token>" format
-        const token = authorization.startsWith("Bearer ") 
-            ? authorization.slice(7) 
-            : authorization;
+        const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : authorization;
 
         // Make request to external API to get current subscription
         const response = await fetch(`${process.env.API_BASE_URL}/subscription/current`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
 
@@ -35,14 +33,14 @@ export async function GET(request: Request) {
             if (response.status === 404) {
                 // No subscription found
                 return NextResponse.json(
-                    { 
+                    {
                         subscription: null,
-                        message: "No active subscription found" 
+                        message: "No active subscription found",
                     },
                     { status: 200 }
                 );
             }
-            
+
             const errorData = await response.text();
             return NextResponse.json(
                 {
@@ -54,12 +52,11 @@ export async function GET(request: Request) {
         }
 
         const subscription = await response.json();
-        
+
         return NextResponse.json({
             subscription,
-            message: "Subscription fetched successfully"
+            message: "Subscription fetched successfully",
         });
-
     } catch (error) {
         console.error("❌ Error fetching current subscription:", error);
         return NextResponse.json(

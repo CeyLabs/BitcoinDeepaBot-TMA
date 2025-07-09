@@ -6,28 +6,26 @@ export async function GET(request: Request) {
         // Get authorization header
         const headersList = headers();
         const authorization = headersList.get("authorization");
-        
+
         if (!authorization) {
             return NextResponse.json(
-                { 
-                    error: "Unauthorized", 
-                    message: "Authorization header is required" 
+                {
+                    error: "Unauthorized",
+                    message: "Authorization header is required",
                 },
                 { status: 401 }
             );
         }
 
         // Extract token from "Bearer <token>" format
-        const token = authorization.startsWith("Bearer ") 
-            ? authorization.slice(7) 
-            : authorization;
+        const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : authorization;
 
         // Make request to external API to get current user transactions
         const response = await fetch(`${process.env.API_BASE_URL}/transaction/current`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
 
@@ -35,14 +33,14 @@ export async function GET(request: Request) {
             if (response.status === 404) {
                 // No transactions found
                 return NextResponse.json(
-                    { 
+                    {
                         transactions: [],
-                        message: "No transactions found" 
+                        message: "No transactions found",
                     },
                     { status: 200 }
                 );
             }
-            
+
             const errorData = await response.text();
             return NextResponse.json(
                 {
@@ -54,12 +52,11 @@ export async function GET(request: Request) {
         }
 
         const transactions = await response.json();
-        
+
         return NextResponse.json({
             transactions,
-            message: "Transactions fetched successfully"
+            message: "Transactions fetched successfully",
         });
-
     } catch (error) {
         console.error("❌ Error fetching current transactions:", error);
         return NextResponse.json(

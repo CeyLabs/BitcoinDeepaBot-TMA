@@ -6,30 +6,28 @@ export async function POST(request: Request) {
         // Get authorization header
         const headersList = headers();
         const authorization = headersList.get("authorization");
-        
+
         if (!authorization) {
             return NextResponse.json(
-                { 
-                    error: "Unauthorized", 
-                    message: "Authorization header is required" 
+                {
+                    error: "Unauthorized",
+                    message: "Authorization header is required",
                 },
                 { status: 401 }
             );
         }
 
         // Extract token from "Bearer <token>" format
-        const token = authorization.startsWith("Bearer ") 
-            ? authorization.slice(7) 
-            : authorization;
+        const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : authorization;
 
         // Parse request body
         const body = await request.json();
-        
+
         if (!body.package_id) {
             return NextResponse.json(
-                { 
-                    error: "Bad Request", 
-                    message: "package_id is required" 
+                {
+                    error: "Bad Request",
+                    message: "package_id is required",
                 },
                 { status: 400 }
             );
@@ -40,7 +38,7 @@ export async function POST(request: Request) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
                 package_id: body.package_id,
@@ -59,12 +57,11 @@ export async function POST(request: Request) {
         }
 
         const data = await response.json();
-        
+
         return NextResponse.json({
             ...data,
-            message: "PayHere link generated successfully"
+            message: "PayHere link generated successfully",
         });
-
     } catch (error) {
         console.error("❌ Error generating PayHere link:", error);
         return NextResponse.json(
