@@ -213,18 +213,39 @@ export default function SubscriptionPage() {
         }
     };
 
-    const handleCancelSubscription = () => {
-        if (subscription) {
-            addTransaction({
-                id: Date.now().toString(),
-                type: "subscription",
-                amount: 0,
-                currency: subscription.currency,
-                date: new Date().toLocaleDateString(),
-                description: `Cancelled ${subscription.planName}`,
-                status: "completed",
+    const [isCancelling, setIsCancelling] = useState(false);
+    const [cancelError, setCancelError] = useState<string | null>(null);
+
+    const handleCancelSubscription = async () => {
+        if (!authToken) return;
+
+        try {
+            setIsCancelling(true);
+            setCancelError(null);
+
+            // Call the API to cancel subscription
+            const response = await fetch("/api/subscription/cancel", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(
+                    errorData.message || `Failed to cancel subscription: ${response.statusText}`
+                );
+            }
+
+            // Update subscription state
             setSubscription(null);
+        } catch (err) {
+            console.error("❌ Error cancelling subscription:", err);
+            setCancelError(err instanceof Error ? err.message : "Failed to cancel subscription");
+        } finally {
+            setIsCancelling(false);
         }
     };
 
@@ -475,11 +496,29 @@ export default function SubscriptionPage() {
                                 </div>
                             </div>
 
+                            {cancelError && (
+                                <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-center">
+                                    <p className="text-sm text-red-400">{cancelError}</p>
+                                </div>
+                            )}
+
                             <button
                                 onClick={handleCancelSubscription}
-                                className="w-full rounded-lg bg-red-600 py-4 font-medium text-white transition-colors hover:bg-red-700"
+                                disabled={isCancelling}
+                                className={`w-full rounded-lg py-4 font-medium text-white transition-colors ${
+                                    isCancelling
+                                        ? "cursor-not-allowed bg-gray-600"
+                                        : "bg-red-600 hover:bg-red-700"
+                                }`}
                             >
-                                Cancel Subscription
+                                {isCancelling ? (
+                                    <>
+                                        <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white align-text-bottom"></span>
+                                        Cancelling...
+                                    </>
+                                ) : (
+                                    "Cancel Subscription"
+                                )}
                             </button>
                         </>
                     ) : (
