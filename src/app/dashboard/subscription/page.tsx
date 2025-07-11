@@ -6,11 +6,15 @@ import { getAuthTokenFromStorage } from "@/lib/auth";
 import type { SubscriptionPlan } from "@/lib/types";
 import { cn } from "@/lib/cn";
 import LoadingPage from "@/components/LoadingPage";
+import { initPopup } from "@telegram-apps/sdk-react";
 
 export default function SubscriptionPage() {
     const [selectedPlan, setSelectedPlan] = useState<string>("stacker-weekly");
     const [activeTab, setActiveTab] = useState<"plans" | "status">("plans");
     const { subscription, setSubscription, addTransaction } = useStore();
+
+    // Initialize Telegram Mini App SDK popup
+    const popup = initPopup();
 
     // Get auth token from localStorage
     const authToken = getAuthTokenFromStorage();
@@ -170,6 +174,19 @@ export default function SubscriptionPage() {
     const handleSubscribe = async (plan: SubscriptionPlan) => {
         if (!authToken) {
             console.error("No auth token available for subscription");
+            return;
+        }
+        // Show Telegram popup if user has active subscription
+        if (subscription && subscription.isActive) {
+            popup.open({
+                title: "Active Subscription",
+                message: "First cancel your existing subscription to subscribe to another package.",
+                buttons: [{ id: "ok", type: "ok" }],
+            });
+
+            if (!popup.isOpened) {
+                alert("First cancel your existing subscription to subscribe to another package.");
+            }
             return;
         }
 
