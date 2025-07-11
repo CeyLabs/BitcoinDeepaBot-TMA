@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@telegram-apps/telegram-ui";
 import { useStore } from "@/lib/store";
@@ -20,7 +20,11 @@ export default function PaymentSuccessPage() {
     // Get auth token
     const authToken = getAuthTokenFromStorage();
 
+    const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
     useEffect(() => {
+        let isMounted = true;
+
         const fetchTransactionData = async () => {
             try {
                 setIsProcessing(true);
@@ -30,7 +34,7 @@ export default function PaymentSuccessPage() {
                 }
 
                 // Fetch current transaction status
-                const response = await fetch("/api/transaction/list", {
+                const response = await fetch("/api/transaction/latest", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -48,7 +52,11 @@ export default function PaymentSuccessPage() {
 
                 // Check if transactions array exists and has items
                 if (!data.transactions || data.transactions.length === 0) {
-                    throw new Error("No transaction found");
+                    // If not found, keep polling
+                    if (isMounted) {
+                        pollingRef.current = setTimeout(fetchTransactionData, 1000);
+                    }
+                    return;
                 }
 
                 // Get the first transaction (most recent)
@@ -65,17 +73,24 @@ export default function PaymentSuccessPage() {
                 if (transaction.status !== "SUCCESS") {
                     throw new Error("Payment was not successful. Please contact support.");
                 }
+                // Stop polling when data is found and successful
+                setIsProcessing(false);
             } catch (error) {
                 console.error("Error processing transaction:", error);
                 setError(
                     error instanceof Error ? error.message : "Transaction verification failed"
                 );
-            } finally {
                 setIsProcessing(false);
             }
         };
 
-        fetchTransactionData();
+        // Start polling with 1 second delay
+        pollingRef.current = setTimeout(fetchTransactionData, 1000);
+
+        return () => {
+            isMounted = false;
+            if (pollingRef.current) clearTimeout(pollingRef.current);
+        };
     }, [authToken, setSubscription]);
 
     if (isProcessing) {
