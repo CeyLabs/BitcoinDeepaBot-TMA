@@ -110,13 +110,15 @@ export default function SubscriptionPage() {
                 const enhancedSubscription = {
                     id: subscriptionData.payhere_sub_id,
                     planName: matchingPackage?.name || "Unknown Plan",
-                    planType: matchingPackage?.type || "monthly",
+                    planType: subscriptionData.frequency || "monthly",
                     price: matchingPackage?.amount || 0,
                     currency: matchingPackage?.currency || "LKR",
                     startDate: subscriptionData.created_at,
-                    endDate: matchingPackage
-                        ? calculateEndDate(subscriptionData.created_at, matchingPackage.type)
-                        : subscriptionData.updated_at,
+                    endDate:
+                        subscriptionData.next_billing_date ||
+                        (matchingPackage
+                            ? calculateEndDate(subscriptionData.created_at, matchingPackage.type)
+                            : subscriptionData.updated_at),
                     isActive: subscriptionData.is_active,
                     // Keep original data for reference
                     packageId: subscriptionData.package_id,
