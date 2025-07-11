@@ -13,48 +13,89 @@ export default function HistoryPage() {
     // API transaction state
     const [apiTransactions, setApiTransactions] = useState<ApiTransaction[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [hasMorePages, setHasMorePages] = useState(true);
+    const [totalTransactions, setTotalTransactions] = useState(0);
+
+    const ITEMS_PER_PAGE = 10;
 
     // Fetch transactions from API
-    const fetchTransactions = useCallback(async () => {
-        if (!authToken) {
-            setLoading(false);
-            return;
-        }
-
-        try {
-            setLoading(true);
-            setError(null);
-
-            const response = await fetch("/api/transaction/list", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${authToken}`,
-                },
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    result.message || `Failed to fetch transactions: ${response.statusText}`
-                );
+    const fetchTransactions = useCallback(
+        async (page: number = 1, append: boolean = false) => {
+            if (!authToken) {
+                setLoading(false);
+                return;
             }
 
-            const transactions = Array.isArray(result.transactions)
-                ? result.transactions
-                : result.transactions?.data || [];
+            try {
+                if (append) {
+                    setLoadingMore(true);
+                } else {
+                    setLoading(true);
+                    setCurrentPage(1);
+                    setApiTransactions([]);
+                    setHasMorePages(true);
+                }
+                setError(null);
 
-            setApiTransactions(transactions);
-        } catch (err) {
-            console.error("❌ Error fetching transactions:", err);
-            setError(err instanceof Error ? err.message : "Failed to fetch transactions");
-            setApiTransactions([]);
-        } finally {
-            setLoading(false);
-        }
-    }, [authToken]);
+                const response = await fetch(
+                    `/api/transaction/list?page=${page}&limit=${ITEMS_PER_PAGE}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${authToken}`,
+                        },
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.message || `Failed to fetch transactions: ${response.statusText}`
+                    );
+                }
+
+                const transactions = Array.isArray(result.transactions)
+                    ? result.transactions
+                    : result.transactions?.data || [];
+
+                // Check if this is the response structure with pagination info
+                const paginationInfo = result.transactions?.pagination || result.pagination;
+                const totalCount =
+                    paginationInfo?.total || result.transactions?.total || transactions.length;
+                const currentPageFromAPI =
+                    paginationInfo?.currentPage || result.transactions?.currentPage || page;
+                const totalPages =
+                    paginationInfo?.totalPages ||
+                    result.transactions?.totalPages ||
+                    Math.ceil(totalCount / ITEMS_PER_PAGE);
+
+                setTotalTransactions(totalCount);
+                setCurrentPage(currentPageFromAPI);
+                setHasMorePages(currentPageFromAPI < totalPages);
+
+                if (append) {
+                    setApiTransactions((prev) => [...prev, ...transactions]);
+                } else {
+                    setApiTransactions(transactions);
+                }
+            } catch (err) {
+                console.error("❌ Error fetching transactions:", err);
+                setError(err instanceof Error ? err.message : "Failed to fetch transactions");
+                if (!append) {
+                    setApiTransactions([]);
+                }
+            } finally {
+                setLoading(false);
+                setLoadingMore(false);
+            }
+        },
+        [authToken, ITEMS_PER_PAGE]
+    );
 
     // Fetch transactions when component mounts and auth token is available
     useEffect(() => {
@@ -65,7 +106,17 @@ export default function HistoryPage() {
         }
     }, [authToken, fetchTransactions]);
 
-    // Get status display info
+    // Load more transactions
+    const loadMoreTransactions = () => {
+        if (!loadingMore && hasMorePages) {
+            fetchTransactions(currentPage + 1, true);
+        }
+    };
+
+    // Refresh transactions (reset to first page)
+    const refreshTransactions = () => {
+        fetchTransactions(1, false);
+    };
     const getStatusInfo = (status: ApiTransaction["status"]) => {
         switch (status) {
             case "SUCCESS":
@@ -136,7 +187,7 @@ export default function HistoryPage() {
                 <h1 className="text-xl font-bold">Transaction History</h1>
                 {authToken && (
                     <button
-                        onClick={fetchTransactions}
+                        onClick={refreshTransactions}
                         className="rounded-lg border border-gray-600 p-2 text-gray-400 transition-colors hover:border-orange-500 hover:text-orange-500"
                         title="Refresh transactions"
                     >
@@ -163,7 +214,7 @@ export default function HistoryPage() {
                     <h3 className="mb-2 font-medium text-red-400">Failed to Load Transactions</h3>
                     <p className="mb-4 text-sm text-gray-400">{error}</p>
                     <button
-                        onClick={fetchTransactions}
+                        onClick={refreshTransactions}
                         className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
                     >
                         Try Again
@@ -275,6 +326,48 @@ export default function HistoryPage() {
                             </p>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Load More Button */}
+            {authToken && !error && apiTransactions.length > 0 && hasMorePages && (
+                <div className="mt-6 text-center">
+                    <button
+                        onClick={loadMoreTransactions}
+                        disabled={loadingMore}
+                        className="rounded-lg border border-orange-500 bg-orange-500/10 px-6 py-3 font-medium text-orange-400 transition-colors hover:bg-orange-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {loadingMore ? (
+                            <div className="flex items-center gap-2">
+                                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                        fill="none"
+                                    />
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    />
+                                </svg>
+                                Loading more...
+                            </div>
+                        ) : (
+                            `Load More (${totalTransactions - apiTransactions.length} remaining)`
+                        )}
+                    </button>
+                </div>
+            )}
+
+            {/* Transaction Summary */}
+            {authToken && !error && apiTransactions.length > 0 && (
+                <div className="mt-4 text-center text-sm text-gray-500">
+                    Showing {apiTransactions.length} of {totalTransactions} transactions
                 </div>
             )}
         </main>

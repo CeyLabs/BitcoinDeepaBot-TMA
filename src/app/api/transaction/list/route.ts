@@ -20,8 +20,18 @@ export async function GET(request: Request) {
         // Extract token from "Bearer <token>" format
         const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : authorization;
 
+        // Get pagination parameters from URL
+        const url = new URL(request.url);
+        const page = url.searchParams.get("page") || "1";
+        const limit = url.searchParams.get("limit") || "10";
+
+        // Build API URL with pagination parameters
+        const apiUrl = new URL(`${process.env.API_BASE_URL}/transaction/list`);
+        apiUrl.searchParams.set("page", page);
+        apiUrl.searchParams.set("limit", limit);
+
         // Make request to external API to get current user transactions
-        const response = await fetch(`${process.env.API_BASE_URL}/transaction/list`, {
+        const response = await fetch(apiUrl.toString(), {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
