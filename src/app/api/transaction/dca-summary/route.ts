@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
         // Forward the request to the external API
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/transaction/dca-summary`,
+            `${process.env.API_BASE_URL}/transaction/dca-summary`,
             {
                 method: "GET",
                 headers: {
