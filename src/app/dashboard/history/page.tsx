@@ -26,7 +26,7 @@ export default function HistoryPage() {
             setLoading(true);
             setError(null);
 
-            const response = await fetch("/api/transaction/current", {
+            const response = await fetch("/api/transaction/list", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",

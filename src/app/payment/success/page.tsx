@@ -30,7 +30,7 @@ export default function PaymentSuccessPage() {
                 }
 
                 // Fetch current transaction status
-                const response = await fetch("/api/transaction/current", {
+                const response = await fetch("/api/transaction/list", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
