@@ -61,22 +61,18 @@ export default function HistoryPage() {
 
                 const transactions = Array.isArray(result.transactions)
                     ? result.transactions
-                    : result.transactions?.data || [];
+                    : result.transactions?.transactions || [];
 
-                // Check if this is the response structure with pagination info
-                const paginationInfo = result.transactions?.pagination || result.pagination;
-                const totalCount =
-                    paginationInfo?.total || result.transactions?.total || transactions.length;
-                const currentPageFromAPI =
-                    paginationInfo?.currentPage || result.transactions?.currentPage || page;
-                const totalPages =
-                    paginationInfo?.totalPages ||
-                    result.transactions?.totalPages ||
-                    Math.ceil(totalCount / ITEMS_PER_PAGE);
+                // Extract pagination info from the nested transactions object
+                const transactionData = result.transactions;
+                const totalCount = transactionData?.total_count || transactions.length;
+                const currentPageFromAPI = transactionData?.current_page || page;
+                const totalPages = transactionData?.total_pages || Math.ceil(totalCount / ITEMS_PER_PAGE);
+                const hasMore = transactionData?.has_more || false;
 
                 setTotalTransactions(totalCount);
                 setCurrentPage(currentPageFromAPI);
-                setHasMorePages(currentPageFromAPI < totalPages);
+                setHasMorePages(hasMore);
 
                 if (append) {
                     setApiTransactions((prev) => [...prev, ...transactions]);
