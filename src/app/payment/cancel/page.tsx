@@ -59,10 +59,6 @@ export default function PaymentCancelPage() {
         fetchCurrentSubscription();
     }, [authToken]);
 
-    const handleTryAgain = () => {
-        router.push("/subscription");
-    };
-
     if (isLoading) {
         return <LoadingPage message="Loading subscription details..." />;
     }
@@ -79,39 +75,6 @@ export default function PaymentCancelPage() {
                         Your payment was cancelled. No charges have been made to your account.
                     </p>
 
-                    {/* Show subscription details if available */}
-                    {subscription && (
-                        <div className="mb-8 rounded-lg bg-gray-800/50 p-4 text-left">
-                            <h3 className="mb-3 font-medium text-orange-400">
-                                Subscription Details
-                            </h3>
-                            <div className="space-y-2 text-sm text-gray-300">
-                                {subscription.payhere_sub_id && (
-                                    <div className="flex justify-between">
-                                        <span>PayHere Sub ID:</span>
-                                        <span className="font-mono text-xs">
-                                            {subscription.payhere_sub_id}
-                                        </span>
-                                    </div>
-                                )}
-                                <div className="flex justify-between">
-                                    <span>Status:</span>
-                                    <span
-                                        className={`${subscription.is_active ? "text-green-400" : "text-red-400"}`}
-                                    >
-                                        {subscription.is_active ? "Active" : "Inactive"}
-                                    </span>
-                                </div>
-                                {subscription.plan_name && (
-                                    <div className="flex justify-between">
-                                        <span>Plan:</span>
-                                        <span>{subscription.plan_name}</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
                     {/* Show error message if subscription fetch failed */}
                     {error && (
                         <div className="mb-8 rounded-lg border border-yellow-500/30 bg-yellow-600/20 p-4 text-left">
@@ -121,12 +84,6 @@ export default function PaymentCancelPage() {
                     )}
 
                     <div className="space-y-3">
-                        <Button
-                            onClick={handleTryAgain}
-                            className="w-full bg-orange-600 hover:bg-orange-700"
-                        >
-                            Try Again
-                        </Button>
                         <Button
                             onClick={() => router.push("/dashboard")}
                             className="w-full bg-gray-600 hover:bg-gray-700"
