@@ -120,30 +120,6 @@ export default function WalletPage() {
     }, [launchParams, setIsExistingUser, setUser, router]);
 
     useEffect(() => {
-        if (showWelcome && telegramUserData?.firstName) {
-            toast(
-                <div className="text-center">
-                    <h3 className="mb-1 flex items-center justify-center gap-2 text-lg font-semibold text-green-400">
-                        <span className="text-xl">🎉</span> Welcome back to Bitcoin Deepa!
-                    </h3>
-                    <p className="text-sm text-green-300">{`Good to see you again!`}</p>
-                </div>,
-                {
-                    duration: 5000,
-                    className:
-                        "backdrop-blur-md bg-gradient-to-r from-green-600/20 to-green-500/20 border border-green-500/30 rounded-lg px-4 py-3 shadow-lg",
-                    style: {
-                        background: "rgba(22, 163, 74, 0.2)",
-                        color: "#fff",
-                        border: "1px solid rgba(34,197,94,0.3)",
-                    },
-                }
-            );
-            setShowWelcome(false);
-        }
-    }, [showWelcome, telegramUserData]);
-
-    useEffect(() => {
         // Fetch wallet summary
         const fetchSummary = async () => {
             setSummaryLoading(true);
