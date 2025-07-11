@@ -7,11 +7,14 @@ import type { SubscriptionPlan } from "@/lib/types";
 import { cn } from "@/lib/cn";
 import LoadingPage from "@/components/LoadingPage";
 import { initPopup } from "@telegram-apps/sdk-react";
+import { usePayHereRedirect } from "@/lib/hooks";
 
 export default function SubscriptionPage() {
     const [selectedPlan, setSelectedPlan] = useState<string>("stacker-weekly");
     const [activeTab, setActiveTab] = useState<"plans" | "status">("plans");
-    const { subscription, setSubscription, addTransaction } = useStore();
+    const { subscription, setSubscription } = useStore();
+
+    const redirectToPayHereViaPage = usePayHereRedirect();
 
     // Initialize Telegram Mini App SDK popup
     const popup = initPopup();
@@ -215,10 +218,14 @@ export default function SubscriptionPage() {
             }
 
             if (result.link) {
-                setPayhereLink(result.link);
+                const parsedUrl = new URL(result.link);
+                const payHereParams: Record<string, string> = {};
 
-                // Redirect to PayHere
-                window.location.href = result.link;
+                parsedUrl.searchParams.forEach((value, key) => {
+                    payHereParams[key] = value;
+                });
+
+                redirectToPayHereViaPage(payHereParams);
             } else {
                 throw new Error("No PayHere link received");
             }
