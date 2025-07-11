@@ -234,8 +234,6 @@ export default function SubscriptionPage() {
             setPayhereLinkError(
                 err instanceof Error ? err.message : "Failed to generate PayHere link"
             );
-        } finally {
-            setPayhereLinkLoading(false);
         }
     };
 
