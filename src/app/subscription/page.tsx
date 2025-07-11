@@ -205,7 +205,7 @@ export default function SubscriptionPage() {
             };
 
             // Register the user first
-            // await registerUserWithPlan(authToken, userOnlyData, planData);
+            await registerUserWithPlan(authToken, userOnlyData, planData);
 
             // Set user as registered
             setIsExistingUser(true);
