@@ -12,11 +12,11 @@ const navItems = [
         icon: MdWallet,
         label: "Wallet",
     },
-    {
-        href: "/dashboard/invite",
-        icon: FaUserPlus,
-        label: "Invite",
-    },
+    // {
+    //     href: "/dashboard/invite",
+    //     icon: FaUserPlus,
+    //     label: "Invite",
+    // },
     {
         href: "/dashboard/subscription",
         icon: MdSubscriptions,

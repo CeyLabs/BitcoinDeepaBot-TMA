@@ -194,17 +194,17 @@ export default function WalletPage() {
     return (
         <main className="pb-20">
             {/* Header */}
-            <div className="mb-8 flex items-center justify-between">
-                <button className="rounded-lg bg-gray-800 p-2">
+            {/* <div className="mb-8 flex items-center justify-between"> */}
+            {/* <button className="rounded-lg bg-gray-800 p-2">
                     <MdSettings className="text-xl text-gray-400" />
                 </button>
                 <button className="rounded-lg bg-gray-800 p-2">
                     <MdApps className="text-xl text-gray-400" />
-                </button>
-            </div>
+                </button> */}
+            {/* </div> */}
 
             {/* Balance Section */}
-            <div className="mb-8 text-center">
+            <div className="my-12 text-center">
                 <p className="mb-2 text-gray-400">Wallet Balance</p>
                 {summary ? (
                     <>
@@ -271,33 +271,33 @@ export default function WalletPage() {
                         color: "bg-gray-800",
                         unavailable: true,
                     },
-                    {
-                        icon: FaUserPlus,
-                        label: "Invite",
-                        color: "bg-gray-800",
-                        badge: "Reward",
-                        link: "/dashboard/invite",
-                    },
+                    // {
+                    //     icon: FaUserPlus,
+                    //     label: "Invite",
+                    //     color: "bg-gray-800",
+                    //     badge: "Reward",
+                    //     link: "/dashboard/invite",
+                    // },
                     {
                         icon: IoMdTime,
                         label: "Activity",
                         color: "bg-gray-800",
                         link: "dashboard/history",
                     },
-                    { icon: IoMdQrScanner, label: "Scan", color: "bg-gray-800" },
+                    // { icon: IoMdQrScanner, label: "Scan", color: "bg-gray-800" },
                 ].map((action, index) => (
-                    <div key={index} className="flex flex-col items-center">
+                    <div key={index} className="flex w-1/3 flex-col items-center justify-center">
                         {action.link ? (
                             <Link
                                 href={action.link}
                                 className={`relative rounded-full p-4 ${action.color} mb-2`}
                             >
                                 <action.icon className="text-xl text-orange-500" />
-                                {action.badge && (
+                                {/* {action.badge && (
                                     <div className="absolute -right-1 -top-1 rounded-full bg-green-500 px-2 py-0.5 text-xs text-white">
                                         {action.badge}
                                     </div>
-                                )}
+                                )} */}
                             </Link>
                         ) : (
                             <button
@@ -314,11 +314,11 @@ export default function WalletPage() {
                                 tabIndex={0}
                             >
                                 <action.icon className="text-xl text-orange-500" />
-                                {action.badge && (
+                                {/* {action.badge && (
                                     <div className="absolute -right-1 -top-1 rounded-full bg-green-500 px-2 py-0.5 text-xs text-white">
                                         {action.badge}
                                     </div>
-                                )}
+                                )} */}
                             </button>
                         )}
                         <span
