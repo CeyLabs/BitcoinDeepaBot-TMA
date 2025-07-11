@@ -56,7 +56,7 @@ export interface ApiTransaction {
     status: "SUCCESS" | "PENDING" | "CANCELLED" | "FAILED" | "CHARGEBACK";
     btc_price_at_purchase?: number;
     satoshis_purchased?: number;
-    price_currency?: string;
+    package_amount?: number;
     coingecko_timestamp?: string;
     created_at: string;
     updated_at: string;

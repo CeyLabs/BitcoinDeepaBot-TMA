@@ -158,7 +158,7 @@ export default function PaymentSuccessPage() {
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Amount:</span>
-                                    <span>LKR {transactionData.price_currency}</span>
+                                    <span>LKR {transactionData.package_amount}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Satoshis Purchased:</span>
@@ -172,7 +172,7 @@ export default function PaymentSuccessPage() {
                                 <div className="flex justify-between">
                                     <span>BTC Price:</span>
                                     <span>
-                                        $
+                                        Rs. 
                                         {Number(
                                             transactionData.btc_price_at_purchase
                                         ).toLocaleString()}
