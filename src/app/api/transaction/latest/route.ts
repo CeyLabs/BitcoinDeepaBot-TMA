@@ -21,7 +21,7 @@ export async function GET(request: Request) {
         const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : authorization;
 
         // Make request to external API to get current user transactions
-        const response = await fetch(`${process.env.API_BASE_URL}/transaction/list`, {
+        const response = await fetch(`${process.env.API_BASE_URL}/transaction/latest`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
