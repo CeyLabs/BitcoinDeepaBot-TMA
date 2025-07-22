@@ -121,17 +121,6 @@ export default function SubscriptionPage() {
                     if (user) {
                         setTelegramUserData(user);
 
-                        // Pre-fill form with Telegram data
-                        setRegistrationData({
-                            first_name: "Test",
-                            last_name: "User",
-                            email: "test@example.com",
-                            phone: "+94712345678",
-                            address: "02 Park Street",
-                            city: "Colombo",
-                            country: "Sri Lanka",
-                        });
-
                         // Authenticate to get token
                         const authResult = await authenticateWithTelegram(initDataRaw);
 
