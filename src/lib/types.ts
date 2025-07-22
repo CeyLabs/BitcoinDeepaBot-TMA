@@ -60,6 +60,7 @@ export interface ApiTransaction {
     coingecko_timestamp?: string;
     created_at: string;
     updated_at: string;
+    settled?: boolean;
 }
 
 export interface Wallet {

@@ -113,6 +113,30 @@ export default function HistoryPage() {
     const refreshTransactions = () => {
         fetchTransactions(1, false);
     };
+
+    // Get settlement status info
+    const getSettlementInfo = (settled?: boolean) => {
+        if (settled === undefined) {
+            return null; // Don't show anything if settled status is not available
+        }
+        
+        return settled
+            ? {
+                  color: "text-green-400",
+                  bgColor: "bg-green-500/10",
+                  icon: "✓",
+                  label: "Sats Sent",
+                  description: "Satoshis delivered to your wallet"
+              }
+            : {
+                  color: "text-yellow-400",
+                  bgColor: "bg-yellow-500/10",
+                  icon: "⏳",
+                  label: "Processing",
+                  description: "Satoshis being processed"
+              };
+    };
+
     const getStatusInfo = (status: ApiTransaction["status"]) => {
         switch (status) {
             case "SUCCESS":
@@ -234,6 +258,7 @@ export default function HistoryPage() {
                     {apiTransactions.length > 0 ? (
                         apiTransactions.map((transaction) => {
                             const statusInfo = getStatusInfo(transaction.status);
+                            const settlementInfo = getSettlementInfo(transaction.settled);
 
                             return (
                                 <div
@@ -276,6 +301,19 @@ export default function HistoryPage() {
                                                     {transaction.btc_price_at_purchase.toLocaleString()}
                                                 </p>
                                             )}
+                                            {settlementInfo && (
+                                                <div className="flex items-center gap-1 mt-1">
+                                                    <span 
+                                                        className={cn("text-xs", settlementInfo.color)}
+                                                        title={settlementInfo.description}
+                                                    >
+                                                        {settlementInfo.icon}
+                                                    </span>
+                                                    <span className={cn("text-xs", settlementInfo.color)}>
+                                                        {settlementInfo.label}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="text-right">
@@ -292,6 +330,11 @@ export default function HistoryPage() {
                                         <p className={cn("text-xs font-medium", statusInfo.color)}>
                                             {statusInfo.label}
                                         </p>
+                                        {settlementInfo && (
+                                            <p className={cn("text-xs font-medium mt-1", settlementInfo.color)}>
+                                                {settlementInfo.label}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             );
