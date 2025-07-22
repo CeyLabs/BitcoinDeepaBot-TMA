@@ -53,9 +53,16 @@ export async function GET(request: Request) {
 
         const transactions = await response.json();
         let latest = null;
-        if (Array.isArray(transactions) && transactions.length > 0) {
+
+        // Check if response is a single transaction object
+        if (transactions && typeof transactions === "object" && transactions.payhere_pay_id) {
+            latest = transactions;
+        } else if (Array.isArray(transactions) && transactions.length > 0) {
             latest = transactions[0];
-        } else if (Array.isArray(transactions.transactions) && transactions.transactions.length > 0) {
+        } else if (
+            Array.isArray(transactions.transactions) &&
+            transactions.transactions.length > 0
+        ) {
             latest = transactions.transactions[0];
         }
 
