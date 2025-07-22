@@ -92,19 +92,9 @@ export function usePayHereRedirect() {
     const postRedirect = usePostRedirect();
 
     const redirectToPayHereViaPost = useCallback(
-        (payHereParams: Record<string, string>) => {
-            // Determine if we're in sandbox or production
-            const payHereUrl = "https://sandbox.payhere.lk/pay/checkout";
-
-            // Create URL with search params for our postRedirect function
-            const url = new URL(payHereUrl);
-
-            // Add all parameters to URL
-            Object.entries(payHereParams).forEach(([key, value]) => {
-                url.searchParams.append(key, value);
-            });
-
-            postRedirect(url.toString());
+        (fullUrl: string) => {
+            // Pass the complete URL directly to postRedirect
+            postRedirect(fullUrl);
         },
         [postRedirect]
     );

@@ -225,14 +225,8 @@ export default function SubscriptionPage() {
             }
 
             if (payhereResult && payhereResult.link) {
-                const parsedUrl = new URL(payhereResult.link);
-                const payHereParams: Record<string, string> = {};
-
-                parsedUrl.searchParams.forEach((value, key) => {
-                    payHereParams[key] = value;
-                });
-
-                redirectToPayHereViaPage(payHereParams);
+                // Pass the complete URL directly to redirectToPayHereViaPage
+                redirectToPayHereViaPage(payhereResult.link);
             } else {
                 // Fallback: If PayHere link generation fails, create local subscription and redirect to dashboard
                 console.warn(

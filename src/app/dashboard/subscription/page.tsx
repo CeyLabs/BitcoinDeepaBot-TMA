@@ -218,14 +218,8 @@ export default function SubscriptionPage() {
             }
 
             if (result.link) {
-                const parsedUrl = new URL(result.link);
-                const payHereParams: Record<string, string> = {};
-
-                parsedUrl.searchParams.forEach((value, key) => {
-                    payHereParams[key] = value;
-                });
-
-                redirectToPayHereViaPage(payHereParams);
+                // Pass the complete URL directly to redirectToPayHereViaPage
+                redirectToPayHereViaPage(result.link);
             } else {
                 throw new Error("No PayHere link received");
             }
