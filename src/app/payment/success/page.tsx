@@ -190,7 +190,7 @@ export default function PaymentSuccessPage() {
                                 <div className="flex justify-between">
                                     <span>Date:</span>
                                     <span>
-                                        {new Date(transactionData.created_at).toLocaleDateString()}
+                                        {new Date(transactionData.created_at).toLocaleString()}
                                     </span>
                                 </div>
                             </div>
