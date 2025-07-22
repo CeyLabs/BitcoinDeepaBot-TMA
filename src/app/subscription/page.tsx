@@ -352,7 +352,7 @@ export default function SubscriptionPage() {
                                         <div className="text-sm font-semibold text-orange-500">
                                             {plan.currency} {plan.amount.toLocaleString()}
                                         </div>
-                                        <div className="text-xs text-gray-400">per {plan.type}</div>
+                                        <div className="text-xs text-gray-400">{plan.type}</div>
                                     </div>
                                 </div>
                             ))}
@@ -419,7 +419,7 @@ export default function SubscriptionPage() {
                                             </p>
                                             <p className="text-xs text-gray-400">
                                                 {selectedPlanData.currency}{" "}
-                                                {selectedPlanData.amount.toLocaleString()} per{" "}
+                                                {selectedPlanData.amount.toLocaleString()}{" "}
                                                 {selectedPlanData.type}
                                             </p>
                                         </div>
