@@ -11,11 +11,10 @@ export default function UserCount() {
     useEffect(() => {
         async function fetchUserCount() {
             const data = await fetchy.get<any>("/api/user");
-            console.log(data.count);
             setCount((data.count as number) || 80);
         }
         fetchUserCount();
-    }, []);
+    }, [setCount]);
 
     // Array to maintain tier maximum counts
     const tierMaxCounts = [100, 200, 500, 1000, 2500, 5000, 10000];
