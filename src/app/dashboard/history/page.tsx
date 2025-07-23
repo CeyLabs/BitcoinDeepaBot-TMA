@@ -318,12 +318,13 @@ export default function HistoryPage() {
                                     <div className="text-right">
                                         {transaction.satoshis_purchased && (
                                             <p className="font-semibold text-orange-400">
-                                                {Number(transaction.satoshis_purchased).toLocaleString()}
+                                                {Number(transaction.satoshis_purchased).toLocaleString()}{" "}
+                                                <span className="text-sm font-medium text-orange-300">sats</span>
                                             </p>
                                         )}
                                         {transaction.satoshis_purchased && (
                                             <p className="font-mono text-xs text-gray-500">
-                                                ₿ {formatSatoshis(transaction.satoshis_purchased)}
+                                                ₿{formatSatoshis(transaction.satoshis_purchased)}
                                             </p>
                                         )}
                                         <p className={cn("text-xs font-medium", statusInfo.color)}>
