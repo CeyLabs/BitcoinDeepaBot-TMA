@@ -125,7 +125,7 @@ export default function HistoryPage() {
                   color: "text-green-400",
                   bgColor: "bg-green-500/10",
                   icon: "✓",
-                  label: "Sats Sent",
+                  label: "Sats settled",
                   description: "Satoshis delivered to your wallet"
               }
             : {
@@ -133,7 +133,7 @@ export default function HistoryPage() {
                   bgColor: "bg-yellow-500/10",
                   icon: "⏳",
                   label: "Processing",
-                  description: "Satoshis being processed"
+                  description: "Satoshis settlement being processed"
               };
     };
 
@@ -330,11 +330,6 @@ export default function HistoryPage() {
                                         <p className={cn("text-xs font-medium", statusInfo.color)}>
                                             {statusInfo.label}
                                         </p>
-                                        {settlementInfo && (
-                                            <p className={cn("text-xs font-medium mt-1", settlementInfo.color)}>
-                                                {settlementInfo.label}
-                                            </p>
-                                        )}
                                     </div>
                                 </div>
                             );
