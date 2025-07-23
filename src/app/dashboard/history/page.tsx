@@ -296,7 +296,7 @@ export default function HistoryPage() {
                                                 ).toLocaleTimeString()}
                                             </p>
                                             {transaction.btc_price_at_purchase && (
-                                                <p className="text-xs text-gray-500">
+                                                <p className="text-xs text-gray-500 italic">
                                                     @ {Number(transaction.btc_price_at_purchase).toLocaleString()} LKR per BTC
                                                 </p>
                                             )}
