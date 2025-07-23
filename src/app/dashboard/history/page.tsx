@@ -279,7 +279,7 @@ export default function HistoryPage() {
                                         </div>
                                         <div>
                                             <p className="text-sm font-medium">
-                                                SATS Purchase
+                                                DCA Recurring Buy
                                                 {transaction.payhere_sub_id && (
                                                     <span className="ml-1 text-xs text-gray-500">
                                                         (Auto-stack)
@@ -297,8 +297,7 @@ export default function HistoryPage() {
                                             </p>
                                             {transaction.btc_price_at_purchase && (
                                                 <p className="text-xs text-gray-500">
-                                                    BTC Purchased AT:{" "}
-                                                    {Number(transaction.btc_price_at_purchase).toLocaleString()}
+                                                    @ {Number(transaction.btc_price_at_purchase).toLocaleString()} LKR per BTC
                                                 </p>
                                             )}
                                             {settlementInfo && (
