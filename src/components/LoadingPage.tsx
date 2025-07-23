@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 interface LoadingSpinnerProps {
     size?: "sm" | "md" | "lg";
@@ -59,7 +60,7 @@ export default function LoadingPage({
                     <div className="relative">
                         <LoadingSpinner size="lg" color="orange" />
                         <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-xl font-bold text-orange-500">₿</span>
+                            <Image src="/Yaka.png" alt="Yaka" width={20} height={20} />
                         </div>
                     </div>
 
@@ -81,7 +82,7 @@ export default function LoadingPage({
             <div className="relative">
                 <LoadingSpinner size="md" color="orange" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-sm font-bold text-orange-500">₿</span>
+                    <Image src="/Yaka.png" alt="Yaka" width={13} height={13} />
                 </div>
             </div>
             <p className="text-sm text-white">

@@ -67,7 +67,8 @@ export default function HistoryPage() {
                 const transactionData = result.transactions;
                 const totalCount = transactionData?.total_count || transactions.length;
                 const currentPageFromAPI = transactionData?.current_page || page;
-                const totalPages = transactionData?.total_pages || Math.ceil(totalCount / ITEMS_PER_PAGE);
+                const totalPages =
+                    transactionData?.total_pages || Math.ceil(totalCount / ITEMS_PER_PAGE);
                 const hasMore = transactionData?.has_more || false;
 
                 setTotalTransactions(totalCount);
@@ -119,21 +120,21 @@ export default function HistoryPage() {
         if (settled === undefined) {
             return null; // Don't show anything if settled status is not available
         }
-        
+
         return settled
             ? {
                   color: "text-green-400",
                   bgColor: "bg-green-500/10",
                   icon: "✓",
                   label: "Sats Sent",
-                  description: "Satoshis delivered to your wallet"
+                  description: "Satoshis delivered to your wallet",
               }
             : {
                   color: "text-yellow-400",
                   bgColor: "bg-yellow-500/10",
                   icon: "⏳",
                   label: "Processing",
-                  description: "Satoshis being processed"
+                  description: "Satoshis being processed",
               };
     };
 
@@ -208,21 +209,23 @@ export default function HistoryPage() {
                 {authToken && (
                     <button
                         onClick={refreshTransactions}
-                        className="rounded-lg border border-gray-600 p-2 text-gray-400 transition-colors hover:border-orange-500 hover:text-orange-500"
+                        className="rounded-xl border border-gray-600 p-2 text-gray-400 transition-colors hover:border-orange-500 hover:text-orange-500"
                         title="Refresh transactions"
                     >
                         <svg
-                            className="h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            viewBox="0 0 24 24"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="h-4 w-4 text-orange-400"
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                            />
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                            <path d="M21 3v5h-5" />
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                            <path d="M8 16H3v5" />
                         </svg>
                     </button>
                 )}
@@ -230,7 +233,7 @@ export default function HistoryPage() {
 
             {/* Error State */}
             {error && (
-                <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 p-4">
+                <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4">
                     <h3 className="mb-2 font-medium text-red-400">Failed to Load Transactions</h3>
                     <p className="mb-4 text-sm text-gray-400">{error}</p>
                     <button
@@ -302,14 +305,22 @@ export default function HistoryPage() {
                                                 </p>
                                             )}
                                             {settlementInfo && (
-                                                <div className="flex items-center gap-1 mt-1">
-                                                    <span 
-                                                        className={cn("text-xs", settlementInfo.color)}
+                                                <div className="mt-1 flex items-center gap-1">
+                                                    <span
+                                                        className={cn(
+                                                            "text-xs",
+                                                            settlementInfo.color
+                                                        )}
                                                         title={settlementInfo.description}
                                                     >
                                                         {settlementInfo.icon}
                                                     </span>
-                                                    <span className={cn("text-xs", settlementInfo.color)}>
+                                                    <span
+                                                        className={cn(
+                                                            "text-xs",
+                                                            settlementInfo.color
+                                                        )}
+                                                    >
                                                         {settlementInfo.label}
                                                     </span>
                                                 </div>
@@ -331,7 +342,12 @@ export default function HistoryPage() {
                                             {statusInfo.label}
                                         </p>
                                         {settlementInfo && (
-                                            <p className={cn("text-xs font-medium mt-1", settlementInfo.color)}>
+                                            <p
+                                                className={cn(
+                                                    "mt-1 text-xs font-medium",
+                                                    settlementInfo.color
+                                                )}
+                                            >
                                                 {settlementInfo.label}
                                             </p>
                                         )}

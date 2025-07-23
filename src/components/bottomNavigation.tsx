@@ -1,8 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { MdWallet, MdSubscriptions, MdHistory } from "react-icons/md";
+import { MdWallet, MdHistory } from "react-icons/md";
 import { FaUserPlus } from "react-icons/fa";
+import { Sprout } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { usePageTransition } from "@/app/context/transition";
 
@@ -19,7 +20,7 @@ const navItems = [
     // },
     {
         href: "/dashboard/subscription",
-        icon: MdSubscriptions,
+        icon: Sprout,
         label: "Plans",
     },
     {

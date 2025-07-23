@@ -158,7 +158,7 @@ export default function WalletPage() {
                     <p className="mb-4 text-gray-400">{authError}</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="rounded-lg bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
+                        className="rounded bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
                     >
                         Try Again
                     </button>
