@@ -48,28 +48,40 @@ export default function SubscriptionPage() {
         city: "",
         country: "",
     });
-    const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof CreateUserFormData, string>>>({});
-    const [touchedFields, setTouchedFields] = useState<Partial<Record<keyof CreateUserFormData, boolean>>>({});
+    const [validationErrors, setValidationErrors] = useState<
+        Partial<Record<keyof CreateUserFormData, string>>
+    >({});
+    const [touchedFields, setTouchedFields] = useState<
+        Partial<Record<keyof CreateUserFormData, boolean>>
+    >({});
 
     // Check if form is valid for submission
     const isFormValid = () => {
         // Check if all required fields are filled and valid
-        const requiredFields: (keyof CreateUserFormData)[] = ['first_name', 'last_name', 'email', 'phone', 'address', 'city', 'country'];
-        
+        const requiredFields: (keyof CreateUserFormData)[] = [
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "address",
+            "city",
+            "country",
+        ];
+
         // Ensure all required fields have values
-        const allRequiredFieldsFilled = requiredFields.every(field => 
-            registrationData[field] && registrationData[field].trim() !== ''
+        const allRequiredFieldsFilled = requiredFields.every(
+            (field) => registrationData[field] && registrationData[field].trim() !== ""
         );
-        
+
         if (!allRequiredFieldsFilled) return false;
-        
+
         // Check if there are any validation errors
-        const hasValidationErrors = Object.keys(validationErrors).some(key => 
-            validationErrors[key as keyof CreateUserFormData]
+        const hasValidationErrors = Object.keys(validationErrors).some(
+            (key) => validationErrors[key as keyof CreateUserFormData]
         );
-        
+
         if (hasValidationErrors) return false;
-        
+
         // Validate the entire form data to ensure it passes schema validation
         try {
             createUserSchema.parse(registrationData);
@@ -215,7 +227,7 @@ export default function SubscriptionPage() {
                 phone: true,
                 address: true,
                 city: true,
-                country: true
+                country: true,
             });
             setAuthError("Please fix the validation errors before submitting");
             return;
@@ -298,17 +310,17 @@ export default function SubscriptionPage() {
             ...prev,
             [field]: value,
         }));
-        
+
         // Mark field as touched
-        setTouchedFields(prev => ({ ...prev, [field]: true }));
-        
+        setTouchedFields((prev) => ({ ...prev, [field]: true }));
+
         // Validate field in real-time
         const validation = validateField(field, value);
-        setValidationErrors(prev => ({
+        setValidationErrors((prev) => ({
             ...prev,
-            [field]: validation.isValid ? undefined : validation.error
+            [field]: validation.isValid ? undefined : validation.error,
         }));
-        
+
         // Clear general auth error when user starts fixing validation issues
         if (authError && validation.isValid) {
             setAuthError(null);
@@ -481,6 +493,11 @@ export default function SubscriptionPage() {
                             <div>
                                 <Input
                                     type="text"
+                                    status={
+                                        touchedFields.first_name && validationErrors.first_name
+                                            ? "error"
+                                            : undefined
+                                    }
                                     header={
                                         <>
                                             First Name <span className="text-red-500">*</span>
@@ -491,16 +508,12 @@ export default function SubscriptionPage() {
                                         handleInputChange("first_name", e.target.value)
                                     }
                                     placeholder="Enter your first name"
-                                    className={cn(
-                                        "w-full",
-                                        touchedFields.first_name && validationErrors.first_name
-                                            ? "border-red-500 focus:border-red-500"
-                                            : ""
-                                    )}
                                     required
                                 />
                                 {touchedFields.first_name && validationErrors.first_name && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.first_name}</p>
+                                    <p className="pl-6 text-sm text-red-500">
+                                        {validationErrors.first_name}
+                                    </p>
                                 )}
                             </div>
 
@@ -508,6 +521,11 @@ export default function SubscriptionPage() {
                             <div>
                                 <Input
                                     type="text"
+                                    status={
+                                        touchedFields.last_name && validationErrors.last_name
+                                            ? "error"
+                                            : undefined
+                                    }
                                     header={
                                         <>
                                             Last Name <span className="text-red-500">*</span>
@@ -516,16 +534,12 @@ export default function SubscriptionPage() {
                                     value={registrationData.last_name}
                                     onChange={(e) => handleInputChange("last_name", e.target.value)}
                                     placeholder="Enter your last name"
-                                    className={cn(
-                                        "w-full",
-                                        touchedFields.last_name && validationErrors.last_name
-                                            ? "border-red-500 focus:border-red-500"
-                                            : ""
-                                    )}
                                     required
                                 />
                                 {touchedFields.last_name && validationErrors.last_name && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.last_name}</p>
+                                    <p className="pl-6 text-sm text-red-500">
+                                        {validationErrors.last_name}
+                                    </p>
                                 )}
                             </div>
 
@@ -533,6 +547,11 @@ export default function SubscriptionPage() {
                             <div>
                                 <Input
                                     type="email"
+                                    status={
+                                        touchedFields.email && validationErrors.email
+                                            ? "error"
+                                            : undefined
+                                    }
                                     header={
                                         <>
                                             Email Address <span className="text-red-500">*</span>
@@ -541,16 +560,12 @@ export default function SubscriptionPage() {
                                     value={registrationData.email}
                                     onChange={(e) => handleInputChange("email", e.target.value)}
                                     placeholder="e.g. example@gmail.com"
-                                    className={cn(
-                                        "w-full",
-                                        touchedFields.email && validationErrors.email
-                                            ? "border-red-500 focus:border-red-500"
-                                            : ""
-                                    )}
                                     required
                                 />
                                 {touchedFields.email && validationErrors.email && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.email}</p>
+                                    <p className="pl-6 text-sm text-red-500">
+                                        {validationErrors.email}
+                                    </p>
                                 )}
                             </div>
 
@@ -558,6 +573,11 @@ export default function SubscriptionPage() {
                             <div>
                                 <Input
                                     type="tel"
+                                    status={
+                                        touchedFields.phone && validationErrors.phone
+                                            ? "error"
+                                            : undefined
+                                    }
                                     header={
                                         <>
                                             Phone Number <span className="text-red-500">*</span>
@@ -566,16 +586,12 @@ export default function SubscriptionPage() {
                                     value={registrationData.phone}
                                     onChange={(e) => handleInputChange("phone", e.target.value)}
                                     placeholder="e.g. +94771234567"
-                                    className={cn(
-                                        "w-full",
-                                        touchedFields.phone && validationErrors.phone
-                                            ? "border-red-500 focus:border-red-500"
-                                            : ""
-                                    )}
                                     required
                                 />
                                 {touchedFields.phone && validationErrors.phone && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.phone}</p>
+                                    <p className="pl-6 text-sm text-red-500">
+                                        {validationErrors.phone}
+                                    </p>
                                 )}
                             </div>
 
@@ -583,6 +599,11 @@ export default function SubscriptionPage() {
                             <div>
                                 <Input
                                     type="text"
+                                    status={
+                                        touchedFields.address && validationErrors.address
+                                            ? "error"
+                                            : undefined
+                                    }
                                     header={
                                         <>
                                             Address <span className="text-red-500">*</span>
@@ -591,16 +612,12 @@ export default function SubscriptionPage() {
                                     value={registrationData.address}
                                     onChange={(e) => handleInputChange("address", e.target.value)}
                                     placeholder="Enter your address"
-                                    className={cn(
-                                        "w-full",
-                                        touchedFields.address && validationErrors.address
-                                            ? "border-red-500 focus:border-red-500"
-                                            : ""
-                                    )}
                                     required
                                 />
                                 {touchedFields.address && validationErrors.address && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.address}</p>
+                                    <p className="pl-6 text-sm text-red-500">
+                                        {validationErrors.address}
+                                    </p>
                                 )}
                             </div>
 
@@ -608,6 +625,11 @@ export default function SubscriptionPage() {
                             <div>
                                 <Input
                                     type="text"
+                                    status={
+                                        touchedFields.city && validationErrors.city
+                                            ? "error"
+                                            : undefined
+                                    }
                                     header={
                                         <>
                                             City <span className="text-red-500">*</span>
@@ -616,16 +638,12 @@ export default function SubscriptionPage() {
                                     value={registrationData.city}
                                     onChange={(e) => handleInputChange("city", e.target.value)}
                                     placeholder="e.g. Colombo"
-                                    className={cn(
-                                        "w-full",
-                                        touchedFields.city && validationErrors.city
-                                            ? "border-red-500 focus:border-red-500"
-                                            : ""
-                                    )}
                                     required
                                 />
                                 {touchedFields.city && validationErrors.city && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.city}</p>
+                                    <p className="pl-6 text-sm text-red-500">
+                                        {validationErrors.city}
+                                    </p>
                                 )}
                             </div>
 
@@ -633,6 +651,11 @@ export default function SubscriptionPage() {
                             <div>
                                 <Input
                                     type="text"
+                                    status={
+                                        touchedFields.country && validationErrors.country
+                                            ? "error"
+                                            : undefined
+                                    }
                                     header={
                                         <>
                                             Country <span className="text-red-500">*</span>
@@ -641,16 +664,12 @@ export default function SubscriptionPage() {
                                     value={registrationData.country}
                                     onChange={(e) => handleInputChange("country", e.target.value)}
                                     placeholder="Enter your country"
-                                    className={cn(
-                                        "w-full",
-                                        touchedFields.country && validationErrors.country
-                                            ? "border-red-500 focus:border-red-500"
-                                            : ""
-                                    )}
                                     required
                                 />
                                 {touchedFields.country && validationErrors.country && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.country}</p>
+                                    <p className="pl-6 text-sm text-red-500">
+                                        {validationErrors.country}
+                                    </p>
                                 )}
                             </div>
                         </div>

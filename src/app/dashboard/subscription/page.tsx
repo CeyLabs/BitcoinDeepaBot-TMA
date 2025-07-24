@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 import LoadingPage from "@/components/LoadingPage";
 import { initPopup } from "@telegram-apps/sdk-react";
 import { usePayHereRedirect } from "@/lib/hooks";
+import { Button } from "@telegram-apps/telegram-ui";
 
 export default function SubscriptionPage() {
     const [selectedPlan, setSelectedPlan] = useState<string>("stacker-weekly");
@@ -390,7 +391,9 @@ export default function SubscriptionPage() {
                         </div>
                     </div>
 
-                    <button
+                    <Button
+                        Component="a"
+                        className="w-full bg-gradient-to-r from-orange-500 to-orange-600"
                         onClick={() => {
                             const plan = packages.find(
                                 (p: SubscriptionPlan) => p.id === selectedPlan
@@ -398,11 +401,6 @@ export default function SubscriptionPage() {
                             if (plan) handleSubscribe(plan);
                         }}
                         disabled={payhereLinkLoading}
-                        className={`w-full rounded-lg py-4 font-medium text-white transition-colors ${
-                            payhereLinkLoading
-                                ? "cursor-not-allowed bg-gray-600"
-                                : "bg-orange-600 hover:bg-orange-700"
-                        }`}
                     >
                         {payhereLinkLoading ? (
                             <>
@@ -412,7 +410,7 @@ export default function SubscriptionPage() {
                         ) : (
                             "Subscribe →"
                         )}
-                    </button>
+                    </Button>
                 </div>
             ) : (
                 <div className="space-y-6">
@@ -560,12 +558,13 @@ export default function SubscriptionPage() {
                             <p className="mb-6 text-gray-400">
                                 Choose a plan to get started with automated Bitcoin stacking
                             </p>
-                            <button
+                            <Button
+                                Component="a"
+                                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3"
                                 onClick={() => setActiveTab("plans")}
-                                className="rounded-lg bg-orange-600 px-6 py-3 font-medium text-white transition-colors hover:bg-orange-700"
                             >
                                 View Plans
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>
