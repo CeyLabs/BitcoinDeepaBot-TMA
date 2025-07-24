@@ -51,27 +51,51 @@ export default function SubscriptionPage() {
     const [validationErrors, setValidationErrors] = useState({
         email: "",
         phone: "",
+        address: "",
+        city: "",
+        country: "",
     });
 
+    // Validation functions
     const validateEmail = (email: string): string => {
         if (!email) return "Email is required";
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            return "Please enter a valid email address";
+            return "Please provide a valid email address";
         }
         return "";
     };
 
     const validatePhone = (phone: string): string => {
         if (!phone) return "Phone number is required";
+        // Remove all non-digit characters for validation
         const digitsOnly = phone.replace(/\D/g, "");
         
+        // Check if it's a valid Sri Lankan phone number (starts with +94 or 0 and has appropriate length)
         const sriLankanRegex = /^(\+94|0)[1-9]\d{8}$/;
         const internationalRegex = /^\+[1-9]\d{6,14}$/;
         
         if (!sriLankanRegex.test(phone) && !internationalRegex.test(phone)) {
-            return "Please enter a valid phone number (e.g., +94 71 234 5678 or 0712345678)";
+            return "Please provide a valid phone number (e.g., +94771234567)";
         }
+        return "";
+    };
+
+    const validateAddress = (address: string): string => {
+        if (!address) return "address should not be empty";
+        if (address.length < 5) return "address must be longer than or equal to 5 characters";
+        return "";
+    };
+
+    const validateCity = (city: string): string => {
+        if (!city) return "city should not be empty";
+        if (city.length < 2) return "city must be longer than or equal to 2 characters";
+        return "";
+    };
+
+    const validateCountry = (country: string): string => {
+        if (!country) return "country should not be empty";
+        if (country.length < 2) return "country must be longer than or equal to 2 characters";
         return "";
     };
 
@@ -196,11 +220,17 @@ export default function SubscriptionPage() {
         // Validate required fields
         const emailError = validateEmail(registrationData.email);
         const phoneError = validatePhone(registrationData.phone);
+        const addressError = validateAddress(registrationData.address);
+        const cityError = validateCity(registrationData.city);
+        const countryError = validateCountry(registrationData.country);
         
-        if (!registrationData.first_name || emailError || phoneError) {
+        if (!registrationData.first_name || emailError || phoneError || addressError || cityError || countryError) {
             setValidationErrors({
                 email: emailError,
                 phone: phoneError,
+                address: addressError,
+                city: cityError,
+                country: countryError,
             });
             
             if (!registrationData.first_name) {
@@ -301,6 +331,24 @@ export default function SubscriptionPage() {
             setValidationErrors((prev) => ({
                 ...prev,
                 phone: phoneError,
+            }));
+        } else if (field === "address") {
+            const addressError = validateAddress(value);
+            setValidationErrors((prev) => ({
+                ...prev,
+                address: addressError,
+            }));
+        } else if (field === "city") {
+            const cityError = validateCity(value);
+            setValidationErrors((prev) => ({
+                ...prev,
+                city: cityError,
+            }));
+        } else if (field === "country") {
+            const countryError = validateCountry(value);
+            setValidationErrors((prev) => ({
+                ...prev,
+                country: countryError,
             }));
         }
     };
@@ -554,8 +602,15 @@ export default function SubscriptionPage() {
                                     value={registrationData.address}
                                     onChange={(e) => handleInputChange("address", e.target.value)}
                                     placeholder="Enter your address"
-                                    className="w-full"
+                                    className={`w-full ${
+                                        validationErrors.address ? "border-red-500" : ""
+                                    }`}
                                 />
+                                {validationErrors.address && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {validationErrors.address}
+                                    </p>
+                                )}
                             </div>
 
                             {/* City */}
@@ -566,8 +621,15 @@ export default function SubscriptionPage() {
                                     value={registrationData.city}
                                     onChange={(e) => handleInputChange("city", e.target.value)}
                                     placeholder="e.g. Colombo"
-                                    className="w-full"
+                                    className={`w-full ${
+                                        validationErrors.city ? "border-red-500" : ""
+                                    }`}
                                 />
+                                {validationErrors.city && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {validationErrors.city}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Country */}
@@ -578,8 +640,15 @@ export default function SubscriptionPage() {
                                     value={registrationData.country}
                                     onChange={(e) => handleInputChange("country", e.target.value)}
                                     placeholder="Enter your country"
-                                    className="w-full"
+                                    className={`w-full ${
+                                        validationErrors.country ? "border-red-500" : ""
+                                    }`}
                                 />
+                                {validationErrors.country && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {validationErrors.country}
+                                    </p>
+                                )}
                             </div>
                         </div>
 
@@ -592,8 +661,14 @@ export default function SubscriptionPage() {
                                     !registrationData.first_name ||
                                     !registrationData.email ||
                                     !registrationData.phone ||
+                                    !registrationData.address ||
+                                    !registrationData.city ||
+                                    !registrationData.country ||
                                     validationErrors.email !== "" ||
-                                    validationErrors.phone !== ""
+                                    validationErrors.phone !== "" ||
+                                    validationErrors.address !== "" ||
+                                    validationErrors.city !== "" ||
+                                    validationErrors.country !== ""
                                 }
                                 className={cn(
                                     "mt-2 w-full rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300",
@@ -601,8 +676,14 @@ export default function SubscriptionPage() {
                                         !registrationData.first_name ||
                                         !registrationData.email ||
                                         !registrationData.phone ||
+                                        !registrationData.address ||
+                                        !registrationData.city ||
+                                        !registrationData.country ||
                                         validationErrors.email !== "" ||
-                                        validationErrors.phone !== ""
+                                        validationErrors.phone !== "" ||
+                                        validationErrors.address !== "" ||
+                                        validationErrors.city !== "" ||
+                                        validationErrors.country !== ""
                                         ? "cursor-not-allowed opacity-50"
                                         : "hover:scale-105 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl"
                                 )}
