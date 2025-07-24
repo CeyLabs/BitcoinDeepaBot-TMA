@@ -51,6 +51,34 @@ export default function SubscriptionPage() {
     const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof CreateUserFormData, string>>>({});
     const [touchedFields, setTouchedFields] = useState<Partial<Record<keyof CreateUserFormData, boolean>>>({});
 
+    // Check if form is valid for submission
+    const isFormValid = () => {
+        // Check if all required fields are filled and valid
+        const requiredFields: (keyof CreateUserFormData)[] = ['first_name', 'last_name', 'email', 'phone'];
+        
+        // Ensure all required fields have values
+        const allRequiredFieldsFilled = requiredFields.every(field => 
+            registrationData[field] && registrationData[field].trim() !== ''
+        );
+        
+        if (!allRequiredFieldsFilled) return false;
+        
+        // Check if there are any validation errors
+        const hasValidationErrors = Object.keys(validationErrors).some(key => 
+            validationErrors[key as keyof CreateUserFormData]
+        );
+        
+        if (hasValidationErrors) return false;
+        
+        // Validate the entire form data to ensure it passes schema validation
+        try {
+            createUserSchema.parse(registrationData);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
     // Fetch packages function
     const fetchPackages = async () => {
         try {
@@ -616,22 +644,10 @@ export default function SubscriptionPage() {
                             {/* Submit Button */}
                             <Button
                                 onClick={handleRegistrationSubmit}
-                                disabled={
-                                    isRegistering ||
-                                    !registrationData.first_name ||
-                                    !registrationData.last_name ||
-                                    !registrationData.email ||
-                                    !registrationData.phone ||
-                                    Object.keys(validationErrors).some(key => validationErrors[key as keyof CreateUserFormData])
-                                }
+                                disabled={isRegistering || !isFormValid()}
                                 className={cn(
                                     "mt-2 w-full rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300",
-                                    isRegistering ||
-                                        !registrationData.first_name ||
-                                        !registrationData.last_name ||
-                                        !registrationData.email ||
-                                        !registrationData.phone ||
-                                        Object.keys(validationErrors).some(key => validationErrors[key as keyof CreateUserFormData])
+                                    isRegistering || !isFormValid()
                                         ? "cursor-not-allowed opacity-50"
                                         : "hover:scale-105 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl"
                                 )}
