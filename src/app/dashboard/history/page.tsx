@@ -126,15 +126,15 @@ export default function HistoryPage() {
                   color: "text-green-400",
                   bgColor: "bg-green-500/10",
                   icon: "✓",
-                  label: "Sats Sent",
-                  description: "Satoshis delivered to your wallet",
+                  label: "Sats settled",
+                  description: "Satoshis delivered to your wallet"
               }
             : {
                   color: "text-yellow-400",
                   bgColor: "bg-yellow-500/10",
                   icon: "⏳",
                   label: "Processing",
-                  description: "Satoshis being processed",
+                  description: "Satoshis settlement being processed"
               };
     };
 
@@ -282,7 +282,7 @@ export default function HistoryPage() {
                                         </div>
                                         <div>
                                             <p className="text-sm font-medium">
-                                                SATS Purchase
+                                                DCA Recurring Buy
                                                 {transaction.payhere_sub_id && (
                                                     <span className="ml-1 text-xs text-gray-500">
                                                         (Auto-stack)
@@ -299,9 +299,8 @@ export default function HistoryPage() {
                                                 ).toLocaleTimeString()}
                                             </p>
                                             {transaction.btc_price_at_purchase && (
-                                                <p className="text-xs text-gray-500">
-                                                    BTC Purchased AT:{" "}
-                                                    {transaction.btc_price_at_purchase.toLocaleString()}
+                                                <p className="text-xs text-gray-500 italic">
+                                                    @ {Number(transaction.btc_price_at_purchase).toLocaleString()} LKR per BTC
                                                 </p>
                                             )}
                                             {settlementInfo && (
@@ -330,12 +329,13 @@ export default function HistoryPage() {
                                     <div className="text-right">
                                         {transaction.satoshis_purchased && (
                                             <p className="font-semibold text-orange-400">
-                                                {transaction.satoshis_purchased}
+                                                {Number(transaction.satoshis_purchased).toLocaleString()}{" "}
+                                                <span className="text-sm font-medium text-orange-300">sats</span>
                                             </p>
                                         )}
                                         {transaction.satoshis_purchased && (
                                             <p className="font-mono text-xs text-gray-500">
-                                                ₿ {formatSatoshis(transaction.satoshis_purchased)}
+                                                ₿{formatSatoshis(transaction.satoshis_purchased)}
                                             </p>
                                         )}
                                         <p className={cn("text-xs font-medium", statusInfo.color)}>

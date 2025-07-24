@@ -16,6 +16,7 @@ import LoadingPage from "@/components/LoadingPage";
 import Image from "next/image";
 import { Button, Input } from "@telegram-apps/telegram-ui";
 import { usePayHereRedirect } from "@/lib/hooks";
+import { createUserSchema, validateField, type CreateUserFormData } from "@/lib/validations";
 
 export default function SubscriptionPage() {
     const router = useRouter();
@@ -38,7 +39,7 @@ export default function SubscriptionPage() {
     const [telegramUserData, setTelegramUserData] = useState<any>(null);
     const [selectedPlan, setSelectedPlan] = useState<string>("");
     const [showRegistrationForm, setShowRegistrationForm] = useState(false);
-    const [registrationData, setRegistrationData] = useState({
+    const [registrationData, setRegistrationData] = useState<CreateUserFormData>({
         first_name: "",
         last_name: "",
         email: "",
@@ -47,6 +48,36 @@ export default function SubscriptionPage() {
         city: "",
         country: "",
     });
+    const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof CreateUserFormData, string>>>({});
+    const [touchedFields, setTouchedFields] = useState<Partial<Record<keyof CreateUserFormData, boolean>>>({});
+
+    // Check if form is valid for submission
+    const isFormValid = () => {
+        // Check if all required fields are filled and valid
+        const requiredFields: (keyof CreateUserFormData)[] = ['first_name', 'last_name', 'email', 'phone', 'address', 'city', 'country'];
+        
+        // Ensure all required fields have values
+        const allRequiredFieldsFilled = requiredFields.every(field => 
+            registrationData[field] && registrationData[field].trim() !== ''
+        );
+        
+        if (!allRequiredFieldsFilled) return false;
+        
+        // Check if there are any validation errors
+        const hasValidationErrors = Object.keys(validationErrors).some(key => 
+            validationErrors[key as keyof CreateUserFormData]
+        );
+        
+        if (hasValidationErrors) return false;
+        
+        // Validate the entire form data to ensure it passes schema validation
+        try {
+            createUserSchema.parse(registrationData);
+            return true;
+        } catch {
+            return false;
+        }
+    };
 
     // Fetch packages function
     const fetchPackages = async () => {
@@ -166,9 +197,27 @@ export default function SubscriptionPage() {
             return;
         }
 
-        // Validate required fields
-        if (!registrationData.first_name || !registrationData.email || !registrationData.phone) {
-            setAuthError("Please fill in all required fields");
+        // Validate all form data
+        const validationResult = createUserSchema.safeParse(registrationData);
+        if (!validationResult.success) {
+            const fieldErrors: Partial<Record<keyof CreateUserFormData, string>> = {};
+            validationResult.error.issues.forEach((issue) => {
+                if (issue.path && issue.path[0]) {
+                    fieldErrors[issue.path[0] as keyof CreateUserFormData] = issue.message;
+                }
+            });
+            setValidationErrors(fieldErrors);
+            // Mark all fields as touched to show errors
+            setTouchedFields({
+                first_name: true,
+                last_name: true,
+                email: true,
+                phone: true,
+                address: true,
+                city: true,
+                country: true
+            });
+            setAuthError("Please fix the validation errors before submitting");
             return;
         }
 
@@ -244,11 +293,26 @@ export default function SubscriptionPage() {
         }
     };
 
-    const handleInputChange = (field: string, value: string) => {
+    const handleInputChange = (field: keyof CreateUserFormData, value: string) => {
         setRegistrationData((prev) => ({
             ...prev,
             [field]: value,
         }));
+        
+        // Mark field as touched
+        setTouchedFields(prev => ({ ...prev, [field]: true }));
+        
+        // Validate field in real-time
+        const validation = validateField(field, value);
+        setValidationErrors(prev => ({
+            ...prev,
+            [field]: validation.isValid ? undefined : validation.error
+        }));
+        
+        // Clear general auth error when user starts fixing validation issues
+        if (authError && validation.isValid) {
+            setAuthError(null);
+        }
     };
 
     if (isLoading || isRegistering || packagesLoading) {
@@ -427,21 +491,42 @@ export default function SubscriptionPage() {
                                         handleInputChange("first_name", e.target.value)
                                     }
                                     placeholder="Enter your first name"
-                                    className="w-full"
+                                    className={cn(
+                                        "w-full",
+                                        touchedFields.first_name && validationErrors.first_name
+                                            ? "border-red-500 focus:border-red-500"
+                                            : ""
+                                    )}
                                     required
                                 />
+                                {touchedFields.first_name && validationErrors.first_name && (
+                                    <p className="mt-1 text-sm text-red-500">{validationErrors.first_name}</p>
+                                )}
                             </div>
 
                             {/* Last Name */}
                             <div>
                                 <Input
                                     type="text"
-                                    header="Last Name"
+                                    header={
+                                        <>
+                                            Last Name <span className="text-red-500">*</span>
+                                        </>
+                                    }
                                     value={registrationData.last_name}
                                     onChange={(e) => handleInputChange("last_name", e.target.value)}
                                     placeholder="Enter your last name"
-                                    className="w-full"
+                                    className={cn(
+                                        "w-full",
+                                        touchedFields.last_name && validationErrors.last_name
+                                            ? "border-red-500 focus:border-red-500"
+                                            : ""
+                                    )}
+                                    required
                                 />
+                                {touchedFields.last_name && validationErrors.last_name && (
+                                    <p className="mt-1 text-sm text-red-500">{validationErrors.last_name}</p>
+                                )}
                             </div>
 
                             {/* Email */}
@@ -456,9 +541,17 @@ export default function SubscriptionPage() {
                                     value={registrationData.email}
                                     onChange={(e) => handleInputChange("email", e.target.value)}
                                     placeholder="e.g. example@gmail.com"
-                                    className="w-full"
+                                    className={cn(
+                                        "w-full",
+                                        touchedFields.email && validationErrors.email
+                                            ? "border-red-500 focus:border-red-500"
+                                            : ""
+                                    )}
                                     required
                                 />
+                                {touchedFields.email && validationErrors.email && (
+                                    <p className="mt-1 text-sm text-red-500">{validationErrors.email}</p>
+                                )}
                             </div>
 
                             {/* Phone */}
@@ -472,46 +565,93 @@ export default function SubscriptionPage() {
                                     }
                                     value={registrationData.phone}
                                     onChange={(e) => handleInputChange("phone", e.target.value)}
-                                    placeholder="e.g. +94 71 234 5678"
-                                    className="w-full"
+                                    placeholder="e.g. +94771234567"
+                                    className={cn(
+                                        "w-full",
+                                        touchedFields.phone && validationErrors.phone
+                                            ? "border-red-500 focus:border-red-500"
+                                            : ""
+                                    )}
                                     required
                                 />
+                                {touchedFields.phone && validationErrors.phone && (
+                                    <p className="mt-1 text-sm text-red-500">{validationErrors.phone}</p>
+                                )}
                             </div>
 
                             {/* Address */}
                             <div>
                                 <Input
                                     type="text"
-                                    header="Address"
+                                    header={
+                                        <>
+                                            Address <span className="text-red-500">*</span>
+                                        </>
+                                    }
                                     value={registrationData.address}
                                     onChange={(e) => handleInputChange("address", e.target.value)}
                                     placeholder="Enter your address"
-                                    className="w-full"
+                                    className={cn(
+                                        "w-full",
+                                        touchedFields.address && validationErrors.address
+                                            ? "border-red-500 focus:border-red-500"
+                                            : ""
+                                    )}
+                                    required
                                 />
+                                {touchedFields.address && validationErrors.address && (
+                                    <p className="mt-1 text-sm text-red-500">{validationErrors.address}</p>
+                                )}
                             </div>
 
                             {/* City */}
                             <div>
                                 <Input
                                     type="text"
-                                    header="City"
+                                    header={
+                                        <>
+                                            City <span className="text-red-500">*</span>
+                                        </>
+                                    }
                                     value={registrationData.city}
                                     onChange={(e) => handleInputChange("city", e.target.value)}
                                     placeholder="e.g. Colombo"
-                                    className="w-full"
+                                    className={cn(
+                                        "w-full",
+                                        touchedFields.city && validationErrors.city
+                                            ? "border-red-500 focus:border-red-500"
+                                            : ""
+                                    )}
+                                    required
                                 />
+                                {touchedFields.city && validationErrors.city && (
+                                    <p className="mt-1 text-sm text-red-500">{validationErrors.city}</p>
+                                )}
                             </div>
 
                             {/* Country */}
                             <div>
                                 <Input
                                     type="text"
-                                    header="Country"
+                                    header={
+                                        <>
+                                            Country <span className="text-red-500">*</span>
+                                        </>
+                                    }
                                     value={registrationData.country}
                                     onChange={(e) => handleInputChange("country", e.target.value)}
                                     placeholder="Enter your country"
-                                    className="w-full"
+                                    className={cn(
+                                        "w-full",
+                                        touchedFields.country && validationErrors.country
+                                            ? "border-red-500 focus:border-red-500"
+                                            : ""
+                                    )}
+                                    required
                                 />
+                                {touchedFields.country && validationErrors.country && (
+                                    <p className="mt-1 text-sm text-red-500">{validationErrors.country}</p>
+                                )}
                             </div>
                         </div>
 
@@ -519,18 +659,10 @@ export default function SubscriptionPage() {
                             {/* Submit Button */}
                             <Button
                                 onClick={handleRegistrationSubmit}
-                                disabled={
-                                    isRegistering ||
-                                    !registrationData.first_name ||
-                                    !registrationData.email ||
-                                    !registrationData.phone
-                                }
+                                disabled={isRegistering || !isFormValid()}
                                 className={cn(
                                     "mt-2 w-full rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300",
-                                    isRegistering ||
-                                        !registrationData.first_name ||
-                                        !registrationData.email ||
-                                        !registrationData.phone
+                                    isRegistering || !isFormValid()
                                         ? "cursor-not-allowed opacity-50"
                                         : "hover:scale-105 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl"
                                 )}
