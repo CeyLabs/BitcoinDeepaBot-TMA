@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { MdWallet, MdHistory } from "react-icons/md";
-import { FaUserPlus } from "react-icons/fa";
+// import { FaUserPlus } from "react-icons/fa";
 import { Sprout } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { usePageTransition } from "@/app/context/transition";
