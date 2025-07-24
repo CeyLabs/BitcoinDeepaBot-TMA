@@ -54,7 +54,7 @@ export default function SubscriptionPage() {
     // Check if form is valid for submission
     const isFormValid = () => {
         // Check if all required fields are filled and valid
-        const requiredFields: (keyof CreateUserFormData)[] = ['first_name', 'last_name', 'email', 'phone'];
+        const requiredFields: (keyof CreateUserFormData)[] = ['first_name', 'last_name', 'email', 'phone', 'address', 'city', 'country'];
         
         // Ensure all required fields have values
         const allRequiredFieldsFilled = requiredFields.every(field => 
@@ -583,16 +583,21 @@ export default function SubscriptionPage() {
                             <div>
                                 <Input
                                     type="text"
-                                    header="Address"
+                                    header={
+                                        <>
+                                            Address <span className="text-red-500">*</span>
+                                        </>
+                                    }
                                     value={registrationData.address}
                                     onChange={(e) => handleInputChange("address", e.target.value)}
-                                    placeholder="Enter your address (optional)"
+                                    placeholder="Enter your address"
                                     className={cn(
                                         "w-full",
                                         touchedFields.address && validationErrors.address
                                             ? "border-red-500 focus:border-red-500"
                                             : ""
                                     )}
+                                    required
                                 />
                                 {touchedFields.address && validationErrors.address && (
                                     <p className="mt-1 text-sm text-red-500">{validationErrors.address}</p>
@@ -603,16 +608,21 @@ export default function SubscriptionPage() {
                             <div>
                                 <Input
                                     type="text"
-                                    header="City"
+                                    header={
+                                        <>
+                                            City <span className="text-red-500">*</span>
+                                        </>
+                                    }
                                     value={registrationData.city}
                                     onChange={(e) => handleInputChange("city", e.target.value)}
-                                    placeholder="e.g. Colombo (optional)"
+                                    placeholder="e.g. Colombo"
                                     className={cn(
                                         "w-full",
                                         touchedFields.city && validationErrors.city
                                             ? "border-red-500 focus:border-red-500"
                                             : ""
                                     )}
+                                    required
                                 />
                                 {touchedFields.city && validationErrors.city && (
                                     <p className="mt-1 text-sm text-red-500">{validationErrors.city}</p>
@@ -623,16 +633,21 @@ export default function SubscriptionPage() {
                             <div>
                                 <Input
                                     type="text"
-                                    header="Country"
+                                    header={
+                                        <>
+                                            Country <span className="text-red-500">*</span>
+                                        </>
+                                    }
                                     value={registrationData.country}
                                     onChange={(e) => handleInputChange("country", e.target.value)}
-                                    placeholder="Enter your country (optional)"
+                                    placeholder="Enter your country"
                                     className={cn(
                                         "w-full",
                                         touchedFields.country && validationErrors.country
                                             ? "border-red-500 focus:border-red-500"
                                             : ""
                                     )}
+                                    required
                                 />
                                 {touchedFields.country && validationErrors.country && (
                                     <p className="mt-1 text-sm text-red-500">{validationErrors.country}</p>

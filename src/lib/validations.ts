@@ -25,23 +25,17 @@ export const createUserSchema = z.object({
   address: z
     .string()
     .min(5, 'Address must be at least 5 characters')
-    .max(200, 'Address must be at most 200 characters')
-    .optional()
-    .or(z.literal('')),
+    .max(200, 'Address must be at most 200 characters'),
   
   city: z
     .string()
     .min(2, 'City must be at least 2 characters')
-    .max(50, 'City must be at most 50 characters')
-    .optional()
-    .or(z.literal('')),
+    .max(50, 'City must be at most 50 characters'),
   
   country: z
     .string()
     .min(2, 'Country must be at least 2 characters')
     .max(50, 'Country must be at most 50 characters')
-    .optional()
-    .or(z.literal(''))
 });
 
 export type CreateUserFormData = z.infer<typeof createUserSchema>;
