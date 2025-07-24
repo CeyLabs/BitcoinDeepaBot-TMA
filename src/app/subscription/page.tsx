@@ -341,7 +341,7 @@ export default function SubscriptionPage() {
                     <p className="mb-4 text-gray-400">{authError || packagesError}</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="rounded-lg bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
+                        className="rounded bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
                     >
                         Try Again
                     </button>
@@ -367,9 +367,7 @@ export default function SubscriptionPage() {
                                 />
                             </div>
                             <h1 className="mb-2 text-3xl font-bold text-white">Choose Your Plan</h1>
-                            <p className="text-lg text-gray-300">
-                                Start your Bitcoin auto-stacking journey
-                            </p>
+                            <p className="text-lg text-gray-300">Get your Bitcoin දීප Membership</p>
                         </div>
 
                         {/* Plans */}

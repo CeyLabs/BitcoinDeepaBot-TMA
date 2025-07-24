@@ -6,6 +6,7 @@ import { getAuthTokenFromStorage } from "@/lib/auth";
 import type { SubscriptionPlan } from "@/lib/types";
 import { cn } from "@/lib/cn";
 import LoadingPage from "@/components/LoadingPage";
+import Image from "next/image";
 import { initPopup } from "@telegram-apps/sdk-react";
 import { usePayHereRedirect } from "@/lib/hooks";
 import { Button } from "@telegram-apps/telegram-ui";
@@ -314,8 +315,14 @@ export default function SubscriptionPage() {
     return (
         <main className="pb-20">
             {/* Header */}
-            <div className="mb-6 flex items-center justify-center">
-                <h1 className="text-xl font-bold">Bitcoin Deepa</h1>
+            <div className="mb-7 flex items-center justify-center">
+                <Image
+                    src="/DeepaLogo_WnO.svg"
+                    alt="Bitcoin Deepa"
+                    width={100}
+                    height={50}
+                    priority
+                />
             </div>
 
             {/* Tabs */}
@@ -347,17 +354,17 @@ export default function SubscriptionPage() {
             {activeTab === "plans" ? (
                 <div className="space-y-6">
                     <div>
-                        <h2 className="mb-4 text-xl font-semibold">Pick your auto-stack plan</h2>
+                        <h2 className="mb-4 text-xl font-semibold">Pick your subscription plan</h2>
 
                         <div className="space-y-3">
                             {packages.map((plan: SubscriptionPlan) => (
                                 <div
                                     key={plan.id}
                                     className={cn(
-                                        "flex cursor-pointer items-center justify-between rounded-lg border-2 p-4 transition-colors",
+                                        "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all duration-300",
                                         selectedPlan === plan.id
-                                            ? "border-orange-500 bg-orange-500/10"
-                                            : "border-gray-700 bg-gray-800/50"
+                                            ? "border-orange-500 bg-gradient-to-r from-orange-500/10 to-orange-600/10 shadow-lg shadow-orange-500/20"
+                                            : "border-gray-700 bg-zinc-900/50 hover:border-gray-600"
                                     )}
                                     onClick={() => setSelectedPlan(plan.id)}
                                 >
@@ -375,7 +382,7 @@ export default function SubscriptionPage() {
                                             )}
                                         </div>
                                         <div>
-                                            <h3 className="font-medium">{plan.name}</h3>
+                                            <h3 className="font-medium text-white">{plan.name}</h3>
                                             {plan.popular && (
                                                 <span className="text-xs text-orange-500">
                                                     Most Popular
@@ -383,8 +390,11 @@ export default function SubscriptionPage() {
                                             )}
                                         </div>
                                     </div>
-                                    <div className="font-semibold text-orange-500">
-                                        {plan.currency} {plan.amount.toLocaleString()}
+                                    <div className="text-right">
+                                        <div className="text-sm font-semibold text-orange-500">
+                                            {plan.currency} {plan.amount.toLocaleString()}
+                                        </div>
+                                        <div className="text-xs text-gray-400">{plan.type}</div>
                                     </div>
                                 </div>
                             ))}
@@ -408,7 +418,9 @@ export default function SubscriptionPage() {
                                 Connecting to PayHere...
                             </>
                         ) : (
-                            "Subscribe →"
+                            <span className="flex items-center justify-center gap-2">
+                                Subscribe →
+                            </span>
                         )}
                     </Button>
                 </div>
@@ -421,21 +433,21 @@ export default function SubscriptionPage() {
                             <p className="text-gray-400">Loading subscription...</p>
                         </div>
                     ) : subscriptionError ? (
-                        <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-center">
+                        <div className="rounded-xl border border-red-500/30 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
                             <h3 className="mb-2 font-medium text-red-400">
                                 Failed to Load Subscription
                             </h3>
                             <p className="mb-4 text-sm text-gray-400">{subscriptionError}</p>
                             <button
                                 onClick={fetchCurrentSubscription}
-                                className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                                className="rounded bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-sm font-medium text-white hover:from-red-700 hover:to-red-800"
                             >
                                 Retry
                             </button>
                         </div>
                     ) : subscription ? (
                         <>
-                            <div className="rounded-lg border border-green-500/20 bg-green-500/10 p-6">
+                            <div className="rounded-xl border border-green-500/30 bg-zinc-900/50 p-6 backdrop-blur-sm">
                                 <div className="text-center">
                                     <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20">
                                         <svg
@@ -513,7 +525,7 @@ export default function SubscriptionPage() {
                             </div>
 
                             {cancelError && (
-                                <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-center">
+                                <div className="mb-4 rounded-xl border border-red-500/30 bg-zinc-900/50 p-3 text-center backdrop-blur-sm">
                                     <p className="text-sm text-red-400">{cancelError}</p>
                                 </div>
                             )}
@@ -521,11 +533,12 @@ export default function SubscriptionPage() {
                             <button
                                 onClick={handleCancelSubscription}
                                 disabled={isCancelling}
-                                className={`w-full rounded-lg py-4 font-medium text-white transition-colors ${
+                                className={cn(
+                                    "w-full rounded-xl py-4 font-medium text-white transition-all duration-300",
                                     isCancelling
                                         ? "cursor-not-allowed bg-gray-600"
-                                        : "bg-red-600 hover:bg-red-700"
-                                }`}
+                                        : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+                                )}
                             >
                                 {isCancelling ? (
                                     <>
