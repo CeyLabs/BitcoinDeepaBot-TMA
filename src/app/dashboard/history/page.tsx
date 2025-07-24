@@ -67,7 +67,8 @@ export default function HistoryPage() {
                 const transactionData = result.transactions;
                 const totalCount = transactionData?.total_count || transactions.length;
                 const currentPageFromAPI = transactionData?.current_page || page;
-                const totalPages = transactionData?.total_pages || Math.ceil(totalCount / ITEMS_PER_PAGE);
+                const totalPages =
+                    transactionData?.total_pages || Math.ceil(totalCount / ITEMS_PER_PAGE);
                 const hasMore = transactionData?.has_more || false;
 
                 setTotalTransactions(totalCount);
@@ -119,7 +120,7 @@ export default function HistoryPage() {
         if (settled === undefined) {
             return null; // Don't show anything if settled status is not available
         }
-        
+
         return settled
             ? {
                   color: "text-green-400",
@@ -208,11 +209,11 @@ export default function HistoryPage() {
                 {authToken && (
                     <button
                         onClick={refreshTransactions}
-                        className="rounded-lg border border-gray-600 p-2 text-gray-400 transition-colors hover:border-orange-500 hover:text-orange-500"
+                        className="rounded-xl border border-gray-600 p-2 text-gray-400 transition-colors hover:border-orange-500 hover:text-orange-500"
                         title="Refresh transactions"
                     >
                         <svg
-                            className="h-4 w-4"
+                            className="h-4 w-4 text-orange-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -230,12 +231,12 @@ export default function HistoryPage() {
 
             {/* Error State */}
             {error && (
-                <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 p-4">
+                <div className="mb-6 rounded-xl border border-red-500/30 bg-zinc-900/50 p-4 backdrop-blur-sm">
                     <h3 className="mb-2 font-medium text-red-400">Failed to Load Transactions</h3>
                     <p className="mb-4 text-sm text-gray-400">{error}</p>
                     <button
                         onClick={refreshTransactions}
-                        className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                        className="rounded bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-sm font-medium text-white hover:from-red-700 hover:to-red-800"
                     >
                         Try Again
                     </button>
@@ -282,7 +283,7 @@ export default function HistoryPage() {
                                                 DCA Recurring Buy
                                                 {transaction.payhere_sub_id && (
                                                     <span className="ml-1 text-xs text-gray-500">
-                                                        (Auto-stack)
+                                                        (Subscription)
                                                     </span>
                                                 )}
                                             </p>
@@ -301,14 +302,22 @@ export default function HistoryPage() {
                                                 </p>
                                             )}
                                             {settlementInfo && (
-                                                <div className="flex items-center gap-1 mt-1">
-                                                    <span 
-                                                        className={cn("text-xs", settlementInfo.color)}
+                                                <div className="mt-1 flex items-center gap-1">
+                                                    <span
+                                                        className={cn(
+                                                            "text-xs",
+                                                            settlementInfo.color
+                                                        )}
                                                         title={settlementInfo.description}
                                                     >
                                                         {settlementInfo.icon}
                                                     </span>
-                                                    <span className={cn("text-xs", settlementInfo.color)}>
+                                                    <span
+                                                        className={cn(
+                                                            "text-xs",
+                                                            settlementInfo.color
+                                                        )}
+                                                    >
                                                         {settlementInfo.label}
                                                     </span>
                                                 </div>
