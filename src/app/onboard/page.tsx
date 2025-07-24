@@ -109,7 +109,7 @@ export default function OnboardPage() {
                     <p className="mb-4 text-gray-400">{authError}</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="rounded-lg bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
+                        className="rounded bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
                     >
                         Try Again
                     </button>
@@ -134,7 +134,7 @@ export default function OnboardPage() {
                     </section>
                     <Subheadline className="mt-3 text-gray-300">
                         {" "}
-                        Your gateway to Bitcoin trading in Sri Lanka
+                        Sri Lanka&#39;s Fastest Growing Bitcoin Community
                     </Subheadline>
                 </div>
 
@@ -176,7 +176,7 @@ export default function OnboardPage() {
                 {/* Footer */}
                 <div className="mt-4 text-center">
                     <p className="text-xs text-gray-500">
-                        Join thousands of Sri Lankans already trading Bitcoin
+                        Be part of the growing Bitcoin community in Sri Lanka! 🇱🇰
                     </p>
                 </div>
             </div>

@@ -213,19 +213,17 @@ export default function HistoryPage() {
                         title="Refresh transactions"
                     >
                         <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
+                            className="h-4 w-4 text-orange-400"
                             fill="none"
                             stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="h-4 w-4 text-orange-400"
+                            viewBox="0 0 24 24"
                         >
-                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                            <path d="M21 3v5h-5" />
-                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                            <path d="M8 16H3v5" />
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
                         </svg>
                     </button>
                 )}
@@ -233,12 +231,12 @@ export default function HistoryPage() {
 
             {/* Error State */}
             {error && (
-                <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4">
+                <div className="mb-6 rounded-xl border border-red-500/30 bg-zinc-900/50 p-4 backdrop-blur-sm">
                     <h3 className="mb-2 font-medium text-red-400">Failed to Load Transactions</h3>
                     <p className="mb-4 text-sm text-gray-400">{error}</p>
                     <button
                         onClick={refreshTransactions}
-                        className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                        className="rounded bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-sm font-medium text-white hover:from-red-700 hover:to-red-800"
                     >
                         Try Again
                     </button>
@@ -285,7 +283,7 @@ export default function HistoryPage() {
                                                 DCA Recurring Buy
                                                 {transaction.payhere_sub_id && (
                                                     <span className="ml-1 text-xs text-gray-500">
-                                                        (Auto-stack)
+                                                        (Subscription)
                                                     </span>
                                                 )}
                                             </p>
@@ -341,16 +339,6 @@ export default function HistoryPage() {
                                         <p className={cn("text-xs font-medium", statusInfo.color)}>
                                             {statusInfo.label}
                                         </p>
-                                        {settlementInfo && (
-                                            <p
-                                                className={cn(
-                                                    "mt-1 text-xs font-medium",
-                                                    settlementInfo.color
-                                                )}
-                                            >
-                                                {settlementInfo.label}
-                                            </p>
-                                        )}
                                     </div>
                                 </div>
                             );
