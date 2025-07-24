@@ -48,6 +48,33 @@ export default function SubscriptionPage() {
         country: "",
     });
 
+    const [validationErrors, setValidationErrors] = useState({
+        email: "",
+        phone: "",
+    });
+
+    const validateEmail = (email: string): string => {
+        if (!email) return "Email is required";
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return "Please enter a valid email address";
+        }
+        return "";
+    };
+
+    const validatePhone = (phone: string): string => {
+        if (!phone) return "Phone number is required";
+        const digitsOnly = phone.replace(/\D/g, "");
+        
+        const sriLankanRegex = /^(\+94|0)[1-9]\d{8}$/;
+        const internationalRegex = /^\+[1-9]\d{6,14}$/;
+        
+        if (!sriLankanRegex.test(phone) && !internationalRegex.test(phone)) {
+            return "Please enter a valid phone number (e.g., +94 71 234 5678 or 0712345678)";
+        }
+        return "";
+    };
+
     // Fetch packages function
     const fetchPackages = async () => {
         try {
@@ -167,8 +194,20 @@ export default function SubscriptionPage() {
         }
 
         // Validate required fields
-        if (!registrationData.first_name || !registrationData.email || !registrationData.phone) {
-            setAuthError("Please fill in all required fields");
+        const emailError = validateEmail(registrationData.email);
+        const phoneError = validatePhone(registrationData.phone);
+        
+        if (!registrationData.first_name || emailError || phoneError) {
+            setValidationErrors({
+                email: emailError,
+                phone: phoneError,
+            });
+            
+            if (!registrationData.first_name) {
+                setAuthError("Please fill in all required fields");
+            } else {
+                setAuthError("Please fix the validation errors before continuing");
+            }
             return;
         }
 
@@ -249,6 +288,21 @@ export default function SubscriptionPage() {
             ...prev,
             [field]: value,
         }));
+
+        // Clear and validate specific fields
+        if (field === "email") {
+            const emailError = validateEmail(value);
+            setValidationErrors((prev) => ({
+                ...prev,
+                email: emailError,
+            }));
+        } else if (field === "phone") {
+            const phoneError = validatePhone(value);
+            setValidationErrors((prev) => ({
+                ...prev,
+                phone: phoneError,
+            }));
+        }
     };
 
     if (isLoading || isRegistering || packagesLoading) {
@@ -456,9 +510,16 @@ export default function SubscriptionPage() {
                                     value={registrationData.email}
                                     onChange={(e) => handleInputChange("email", e.target.value)}
                                     placeholder="e.g. example@gmail.com"
-                                    className="w-full"
+                                    className={`w-full ${
+                                        validationErrors.email ? "border-red-500" : ""
+                                    }`}
                                     required
                                 />
+                                {validationErrors.email && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {validationErrors.email}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Phone */}
@@ -473,9 +534,16 @@ export default function SubscriptionPage() {
                                     value={registrationData.phone}
                                     onChange={(e) => handleInputChange("phone", e.target.value)}
                                     placeholder="e.g. +94 71 234 5678"
-                                    className="w-full"
+                                    className={`w-full ${
+                                        validationErrors.phone ? "border-red-500" : ""
+                                    }`}
                                     required
                                 />
+                                {validationErrors.phone && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {validationErrors.phone}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Address */}
@@ -523,14 +591,18 @@ export default function SubscriptionPage() {
                                     isRegistering ||
                                     !registrationData.first_name ||
                                     !registrationData.email ||
-                                    !registrationData.phone
+                                    !registrationData.phone ||
+                                    validationErrors.email !== "" ||
+                                    validationErrors.phone !== ""
                                 }
                                 className={cn(
                                     "mt-2 w-full rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300",
                                     isRegistering ||
                                         !registrationData.first_name ||
                                         !registrationData.email ||
-                                        !registrationData.phone
+                                        !registrationData.phone ||
+                                        validationErrors.email !== "" ||
+                                        validationErrors.phone !== ""
                                         ? "cursor-not-allowed opacity-50"
                                         : "hover:scale-105 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl"
                                 )}
