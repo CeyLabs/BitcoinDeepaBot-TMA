@@ -127,14 +127,14 @@ export default function HistoryPage() {
                   bgColor: "bg-green-500/10",
                   icon: "✓",
                   label: "Sats settled",
-                  description: "Satoshis delivered to your wallet"
+                  description: "Satoshis delivered to your wallet",
               }
             : {
                   color: "text-yellow-400",
                   bgColor: "bg-yellow-500/10",
                   icon: "⏳",
                   label: "Processing",
-                  description: "Satoshis settlement being processed"
+                  description: "Satoshis settlement being processed",
               };
     };
 
@@ -297,8 +297,12 @@ export default function HistoryPage() {
                                                 ).toLocaleTimeString()}
                                             </p>
                                             {transaction.btc_price_at_purchase && (
-                                                <p className="text-xs text-gray-500 italic">
-                                                    @ {Number(transaction.btc_price_at_purchase).toLocaleString()} LKR per BTC
+                                                <p className="text-xs italic text-gray-500">
+                                                    @{" "}
+                                                    {Number(
+                                                        transaction.btc_price_at_purchase
+                                                    ).toLocaleString()}{" "}
+                                                    LKR per BTC
                                                 </p>
                                             )}
                                             {settlementInfo && (
@@ -327,8 +331,12 @@ export default function HistoryPage() {
                                     <div className="text-right">
                                         {transaction.satoshis_purchased && (
                                             <p className="font-semibold text-orange-400">
-                                                {Number(transaction.satoshis_purchased).toLocaleString()}{" "}
-                                                <span className="text-sm font-medium text-orange-300">sats</span>
+                                                {Number(
+                                                    transaction.satoshis_purchased
+                                                ).toLocaleString()}{" "}
+                                                <span className="text-sm font-medium text-orange-300">
+                                                    sats
+                                                </span>
                                             </p>
                                         )}
                                         {transaction.satoshis_purchased && (

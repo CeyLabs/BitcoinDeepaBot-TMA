@@ -48,28 +48,40 @@ export default function SubscriptionPage() {
         city: "",
         country: "",
     });
-    const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof CreateUserFormData, string>>>({});
-    const [touchedFields, setTouchedFields] = useState<Partial<Record<keyof CreateUserFormData, boolean>>>({});
+    const [validationErrors, setValidationErrors] = useState<
+        Partial<Record<keyof CreateUserFormData, string>>
+    >({});
+    const [touchedFields, setTouchedFields] = useState<
+        Partial<Record<keyof CreateUserFormData, boolean>>
+    >({});
 
     // Check if form is valid for submission
     const isFormValid = () => {
         // Check if all required fields are filled and valid
-        const requiredFields: (keyof CreateUserFormData)[] = ['first_name', 'last_name', 'email', 'phone', 'address', 'city', 'country'];
-        
+        const requiredFields: (keyof CreateUserFormData)[] = [
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "address",
+            "city",
+            "country",
+        ];
+
         // Ensure all required fields have values
-        const allRequiredFieldsFilled = requiredFields.every(field => 
-            registrationData[field] && registrationData[field].trim() !== ''
+        const allRequiredFieldsFilled = requiredFields.every(
+            (field) => registrationData[field] && registrationData[field].trim() !== ""
         );
-        
+
         if (!allRequiredFieldsFilled) return false;
-        
+
         // Check if there are any validation errors
-        const hasValidationErrors = Object.keys(validationErrors).some(key => 
-            validationErrors[key as keyof CreateUserFormData]
+        const hasValidationErrors = Object.keys(validationErrors).some(
+            (key) => validationErrors[key as keyof CreateUserFormData]
         );
-        
+
         if (hasValidationErrors) return false;
-        
+
         // Validate the entire form data to ensure it passes schema validation
         try {
             createUserSchema.parse(registrationData);
@@ -215,7 +227,7 @@ export default function SubscriptionPage() {
                 phone: true,
                 address: true,
                 city: true,
-                country: true
+                country: true,
             });
             setAuthError("Please fix the validation errors before submitting");
             return;
@@ -298,17 +310,17 @@ export default function SubscriptionPage() {
             ...prev,
             [field]: value,
         }));
-        
+
         // Mark field as touched
-        setTouchedFields(prev => ({ ...prev, [field]: true }));
-        
+        setTouchedFields((prev) => ({ ...prev, [field]: true }));
+
         // Validate field in real-time
         const validation = validateField(field, value);
-        setValidationErrors(prev => ({
+        setValidationErrors((prev) => ({
             ...prev,
-            [field]: validation.isValid ? undefined : validation.error
+            [field]: validation.isValid ? undefined : validation.error,
         }));
-        
+
         // Clear general auth error when user starts fixing validation issues
         if (authError && validation.isValid) {
             setAuthError(null);
@@ -498,7 +510,9 @@ export default function SubscriptionPage() {
                                     required
                                 />
                                 {touchedFields.first_name && validationErrors.first_name && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.first_name}</p>
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {validationErrors.first_name}
+                                    </p>
                                 )}
                             </div>
 
@@ -523,7 +537,9 @@ export default function SubscriptionPage() {
                                     required
                                 />
                                 {touchedFields.last_name && validationErrors.last_name && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.last_name}</p>
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {validationErrors.last_name}
+                                    </p>
                                 )}
                             </div>
 
@@ -548,7 +564,9 @@ export default function SubscriptionPage() {
                                     required
                                 />
                                 {touchedFields.email && validationErrors.email && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.email}</p>
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {validationErrors.email}
+                                    </p>
                                 )}
                             </div>
 
@@ -573,7 +591,9 @@ export default function SubscriptionPage() {
                                     required
                                 />
                                 {touchedFields.phone && validationErrors.phone && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.phone}</p>
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {validationErrors.phone}
+                                    </p>
                                 )}
                             </div>
 
@@ -598,7 +618,9 @@ export default function SubscriptionPage() {
                                     required
                                 />
                                 {touchedFields.address && validationErrors.address && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.address}</p>
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {validationErrors.address}
+                                    </p>
                                 )}
                             </div>
 
@@ -623,7 +645,9 @@ export default function SubscriptionPage() {
                                     required
                                 />
                                 {touchedFields.city && validationErrors.city && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.city}</p>
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {validationErrors.city}
+                                    </p>
                                 )}
                             </div>
 
@@ -648,7 +672,9 @@ export default function SubscriptionPage() {
                                     required
                                 />
                                 {touchedFields.country && validationErrors.country && (
-                                    <p className="mt-1 text-sm text-red-500">{validationErrors.country}</p>
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {validationErrors.country}
+                                    </p>
                                 )}
                             </div>
                         </div>
