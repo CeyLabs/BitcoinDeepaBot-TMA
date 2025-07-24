@@ -27,6 +27,7 @@ export async function GET(request: Request) {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
             },
+            cache: "no-cache"
         });
 
         if (!response.ok) {
