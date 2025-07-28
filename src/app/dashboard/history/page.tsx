@@ -283,7 +283,7 @@ export default function HistoryPage() {
                                                 DCA Recurring Buy
                                                 {transaction.payhere_sub_id && (
                                                     <span className="ml-1 text-xs text-gray-500">
-                                                        (Subscription)
+                                                        (Membership)
                                                     </span>
                                                 )}
                                             </p>
@@ -372,8 +372,7 @@ export default function HistoryPage() {
                                 No Transactions Yet
                             </h3>
                             <p className="text-sm text-gray-500">
-                                Your Bitcoin purchases and subscription transactions will appear
-                                here
+                                Your Bitcoin purchases and Membership transactions will appear here
                             </p>
                         </div>
                     )}

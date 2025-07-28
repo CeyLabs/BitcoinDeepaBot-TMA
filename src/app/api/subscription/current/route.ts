@@ -35,7 +35,7 @@ export async function GET(request: Request) {
                 return NextResponse.json(
                     {
                         subscription: null,
-                        message: "No active subscription found",
+                        message: "No active membership found",
                     },
                     { status: 200 }
                 );
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
             const errorData = await response.text();
             return NextResponse.json(
                 {
-                    error: "Failed to fetch subscription",
+                    error: "Failed to fetch membership",
                     message: errorData || `HTTP ${response.status}: ${response.statusText}`,
                 },
                 { status: response.status }
@@ -55,10 +55,10 @@ export async function GET(request: Request) {
 
         return NextResponse.json({
             subscription,
-            message: "Subscription fetched successfully",
+            message: "Membership fetched successfully",
         });
     } catch (error) {
-        console.error("❌ Error fetching current subscription:", error);
+        console.error("❌ Error fetching current membership:", error);
         return NextResponse.json(
             {
                 error: "Internal server error",

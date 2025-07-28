@@ -435,7 +435,8 @@ export default function SubscriptionPage() {
                             {/* Footer */}
                             <div className="p-4 text-center">
                                 <p className="text-xs text-gray-500">
-                                    Start small, stack consistently. Cancel anytime.
+                                    Activate your Bitcoin දීප Membership today, grow with the
+                                    community, cancel anytime.
                                 </p>
                             </div>
                         </section>
