@@ -100,7 +100,7 @@ export default function SubscriptionPage() {
 
             if (!response.ok) {
                 throw new Error(
-                    result.message || `Failed to fetch subscription: ${response.statusText}`
+                    result.message || `Failed to fetch membership: ${response.statusText}`
                 );
             }
 

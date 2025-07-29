@@ -372,7 +372,7 @@ export default function HistoryPage() {
                                 No Transactions Yet
                             </h3>
                             <p className="text-sm text-gray-500">
-                                Your Bitcoin purchases and Membership transactions will appear here
+                                Your Bitcoin purchases and membership transactions will appear here
                             </p>
                         </div>
                     )}
