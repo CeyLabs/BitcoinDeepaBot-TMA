@@ -13,16 +13,13 @@ export async function GET(request: NextRequest) {
         }
 
         // Forward the request to the external API
-        const response = await fetch(
-            `${process.env.API_BASE_URL}/transaction/dca-summary`,
-            {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: authHeader,
-                },
-            }
-        );
+        const response = await fetch(`${process.env.API_BASE_URL}/transaction/dca-summary`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: authHeader,
+            },
+        });
 
         // If the external API returns an error
         if (!response.ok) {

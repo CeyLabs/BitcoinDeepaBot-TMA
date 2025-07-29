@@ -41,7 +41,7 @@ export async function POST(request: Request) {
                 Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-                package_id: body.package_id
+                package_id: body.package_id,
             }),
         });
 
