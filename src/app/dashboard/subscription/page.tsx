@@ -100,7 +100,7 @@ export default function SubscriptionPage() {
 
             if (!response.ok) {
                 throw new Error(
-                    result.message || `Failed to fetch subscription: ${response.statusText}`
+                    result.message || `Failed to fetch membership: ${response.statusText}`
                 );
             }
 
@@ -146,10 +146,8 @@ export default function SubscriptionPage() {
                 setSubscription(null);
             }
         } catch (err) {
-            console.error("❌ Error fetching current subscription:", err);
-            setSubscriptionError(
-                err instanceof Error ? err.message : "Failed to fetch subscription"
-            );
+            console.error("❌ Error fetching current membership:", err);
+            setSubscriptionError(err instanceof Error ? err.message : "Failed to fetch membership");
         } finally {
             setSubscriptionLoading(false);
         }
@@ -177,19 +175,19 @@ export default function SubscriptionPage() {
 
     const handleSubscribe = async (plan: SubscriptionPlan) => {
         if (!authToken) {
-            console.error("No auth token available for subscription");
+            console.error("No auth token available for membership");
             return;
         }
         // Show Telegram popup if user has active subscription
         if (subscription && subscription.isActive) {
             popup.open({
-                title: "Active Subscription",
-                message: "First cancel your existing subscription to subscribe to another package.",
+                title: "Active Membership",
+                message: "First cancel your existing membership to subscribe to another package.",
                 buttons: [{ id: "ok", type: "ok" }],
             });
 
             if (!popup.isOpened) {
-                alert("First cancel your existing subscription to subscribe to another package.");
+                alert("First cancel your existing membership to subscribe to another package.");
             }
             return;
         }
@@ -254,15 +252,15 @@ export default function SubscriptionPage() {
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(
-                    errorData.message || `Failed to cancel subscription: ${response.statusText}`
+                    errorData.message || `Failed to cancel membership: ${response.statusText}`
                 );
             }
 
             // Update subscription state
             setSubscription(null);
         } catch (err) {
-            console.error("❌ Error cancelling subscription:", err);
-            setCancelError(err instanceof Error ? err.message : "Failed to cancel subscription");
+            console.error("❌ Error cancelling membership:", err);
+            setCancelError(err instanceof Error ? err.message : "Failed to cancel membership");
         } finally {
             setIsCancelling(false);
         }
@@ -346,14 +344,14 @@ export default function SubscriptionPage() {
                             : "border-transparent text-gray-400"
                     )}
                 >
-                    My Subscription
+                    My Membership
                 </button>
             </div>
 
             {activeTab === "plans" ? (
                 <div className="space-y-6">
                     <div>
-                        <h2 className="mb-4 text-xl font-semibold">Pick your subscription plan</h2>
+                        <h2 className="mb-4 text-xl font-semibold">Pick your membership plan</h2>
 
                         <div className="space-y-3">
                             {packages.map((plan: SubscriptionPlan) => (
@@ -424,7 +422,7 @@ export default function SubscriptionPage() {
                             </>
                         ) : (
                             <span className="flex items-center justify-center gap-2">
-                                Subscribe →
+                                Subscribe
                             </span>
                         )}
                     </button>
@@ -435,12 +433,12 @@ export default function SubscriptionPage() {
                     {subscriptionLoading && !subscription ? (
                         <div className="py-8 text-center">
                             <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-600 border-t-orange-500"></div>
-                            <p className="text-gray-400">Loading subscription...</p>
+                            <p className="text-gray-400">Loading membership...</p>
                         </div>
                     ) : subscriptionError ? (
                         <div className="rounded-xl border border-red-500/30 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
                             <h3 className="mb-2 font-medium text-red-400">
-                                Failed to Load Subscription
+                                Failed to Load Membership
                             </h3>
                             <p className="mb-4 text-sm text-gray-400">{subscriptionError}</p>
                             <button
@@ -470,7 +468,7 @@ export default function SubscriptionPage() {
                                         </svg>
                                     </div>
                                     <h2 className="mb-2 text-lg font-medium text-green-400">
-                                        Active Subscription
+                                        Active Membership
                                     </h2>
                                     <h3 className="text-xl font-semibold">
                                         {subscription.planName || "Premium Plan"}
@@ -551,7 +549,7 @@ export default function SubscriptionPage() {
                                         Cancelling...
                                     </>
                                 ) : (
-                                    "Cancel Subscription"
+                                    "Cancel Membership"
                                 )}
                             </button>
                         </>
@@ -572,9 +570,9 @@ export default function SubscriptionPage() {
                                     />
                                 </svg>
                             </div>
-                            <h2 className="mb-4 text-lg font-medium">No Active Subscription</h2>
+                            <h2 className="mb-4 text-lg font-medium">No Active Membership</h2>
                             <p className="mb-6 text-gray-400">
-                                Choose a plan to get started with automated Bitcoin stacking
+                                Choose a plan to get started with your bitcoin දීප membership
                             </p>
                             <button
                                 onClick={() => setActiveTab("plans")}

@@ -46,11 +46,11 @@ export default function PaymentCancelPage() {
                     setSubscription(data);
                 } else {
                     const errorData = await response.json();
-                    setError(errorData.message || "Failed to fetch subscription");
+                    setError(errorData.message || "Failed to fetch membership");
                 }
             } catch (err) {
-                console.error("Error fetching subscription:", err);
-                setError("Error fetching subscription data");
+                console.error("Error fetching membership:", err);
+                setError("Error fetching membership data");
             } finally {
                 setIsLoading(false);
             }
@@ -60,7 +60,7 @@ export default function PaymentCancelPage() {
     }, [authToken]);
 
     if (isLoading) {
-        return <LoadingPage message="Loading subscription details..." />;
+        return <LoadingPage message="Loading membership details..." />;
     }
 
     return (

@@ -112,7 +112,7 @@ export default function PaymentSuccessPage() {
                                 onClick={() => router.push("/dashboard/subscription")}
                                 className="w-full bg-orange-600 hover:bg-orange-700"
                             >
-                                Check Subscription
+                                Check Membership
                             </Button>
                             <Button
                                 onClick={() => router.push("/dashboard")}
