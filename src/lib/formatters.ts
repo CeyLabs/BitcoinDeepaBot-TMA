@@ -1,10 +1,9 @@
+import { format } from "date-fns";
+
 // Format a date as DD/MM/YYYY (Sri Lankan style)
 export function formatDate(dateInput: string | Date): string {
-    const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}/${month}/${day}`;
+    const date = new Date(dateInput);
+    return format(date, "yyyy/MM/dd");
 }
 
 // Format satoshis to BTC
