@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 
-// Format a date as DD/MM/YYYY (Sri Lankan style)
+// Format a date as YYYY/MM/DD
 export function formatDate(dateInput: string | Date): string {
     const date = new Date(dateInput);
     return format(date, "yyyy/MM/dd");
