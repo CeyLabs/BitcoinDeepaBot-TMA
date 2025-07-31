@@ -9,6 +9,7 @@ import LoadingPage from "@/components/LoadingPage";
 import Image from "next/image";
 import { initPopup } from "@telegram-apps/sdk-react";
 import { usePayHereRedirect } from "@/lib/hooks";
+import { formatDate } from "@/lib/formatters";
 
 export default function SubscriptionPage() {
     const [selectedPlan, setSelectedPlan] = useState<string>("stacker-weekly");
@@ -494,21 +495,13 @@ export default function SubscriptionPage() {
                                     {subscription.startDate && (
                                         <div className="flex justify-between">
                                             <span className="text-gray-400">Started:</span>
-                                            <span>
-                                                {new Date(
-                                                    subscription.startDate
-                                                ).toLocaleDateString()}
-                                            </span>
+                                            <span>{formatDate(subscription.startDate)}</span>
                                         </div>
                                     )}
                                     {subscription.endDate && (
                                         <div className="flex justify-between">
                                             <span className="text-gray-400">Next billing:</span>
-                                            <span>
-                                                {new Date(
-                                                    subscription.endDate
-                                                ).toLocaleDateString()}
-                                            </span>
+                                            <span>{formatDate(subscription.endDate)}</span>
                                         </div>
                                     )}
                                     <div className="flex justify-between">
