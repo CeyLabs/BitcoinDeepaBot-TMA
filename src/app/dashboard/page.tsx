@@ -7,7 +7,7 @@ import { FaUserPlus } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useLaunchParams } from "@telegram-apps/sdk-react";
+import { useBackButton, useLaunchParams } from "@telegram-apps/sdk-react";
 import { authenticateWithTelegram, getAuthTokenFromStorage, saveAuthToStorage } from "@/lib/auth";
 import LoadingPage from "@/components/LoadingPage";
 import fetchy from "@/lib/fetchy";
@@ -29,6 +29,7 @@ export default function WalletPage() {
     const router = useRouter();
     const { wallet, rewards, isExistingUser, setIsExistingUser, setUser } = useStore();
     const launchParams = useLaunchParams();
+    const backButton = useBackButton();
     const [isLoading, setIsLoading] = useState(true);
     const [authError, setAuthError] = useState<string | null>(null);
     const [telegramUserData, setTelegramUserData] = useState<any>(null);
@@ -38,6 +39,21 @@ export default function WalletPage() {
     const [summaryError, setSummaryError] = useState<string | null>(null);
 
     const authToken = getAuthTokenFromStorage();
+
+    useEffect(() => {
+        backButton.show();
+
+        const handleBackClick = () => {
+            router.push("/");
+        };
+
+        backButton.on("click", handleBackClick);
+
+        return () => {
+            backButton.off("click", handleBackClick);
+            backButton.hide();
+        };
+    }, [backButton, router]);
 
     useEffect(() => {
         // Hide welcome banner after 5 seconds

@@ -290,9 +290,7 @@ export default function SubscriptionPage() {
                 redirectToPayHereViaPage(payhereResult.link);
             } else {
                 // Fallback: If PayHere link generation fails, create local subscription and redirect to dashboard
-                console.warn(
-                    "⚠️ No PayHere link received, creating local subscription as fallback"
-                );
+                console.warn("⚠️ No PayHere link received, creating local membership as fallback");
 
                 // Redirect to dashboard
                 router.push("/dashboard");
@@ -429,13 +427,14 @@ export default function SubscriptionPage() {
                                         : "cursor-not-allowed bg-gray-700 opacity-50"
                                 )}
                             >
-                                <span className="flex gap-2"> Continue with Selected Plan →</span>
+                                <span className="flex gap-2"> Continue with Selected Plan </span>
                             </Button>
 
                             {/* Footer */}
                             <div className="p-4 text-center">
                                 <p className="text-xs text-gray-500">
-                                    Start small, stack consistently. Cancel anytime.
+                                    Activate your Bitcoin දීප Membership today, grow with the
+                                    community, cancel anytime.
                                 </p>
                             </div>
                         </section>

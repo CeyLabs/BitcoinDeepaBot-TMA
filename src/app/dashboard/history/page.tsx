@@ -5,6 +5,7 @@ import { getAuthTokenFromStorage } from "@/lib/auth";
 import type { ApiTransaction } from "@/lib/types";
 import { cn } from "@/lib/cn";
 import LoadingPage from "@/components/LoadingPage";
+import { formatDate, formatSatoshis } from "@/lib/formatters";
 
 export default function HistoryPage() {
     // Get auth token from localStorage
@@ -191,11 +192,6 @@ export default function HistoryPage() {
         }
     };
 
-    // Format satoshis to BTC
-    const formatSatoshis = (satoshis: number) => {
-        return (satoshis / 100000000).toFixed(8);
-    };
-
     // Show loading state
     if (loading) {
         return <LoadingPage />;
@@ -283,15 +279,12 @@ export default function HistoryPage() {
                                                 DCA Recurring Buy
                                                 {transaction.payhere_sub_id && (
                                                     <span className="ml-1 text-xs text-gray-500">
-                                                        (Subscription)
+                                                        (Membership)
                                                     </span>
                                                 )}
                                             </p>
                                             <p className="text-xs text-gray-400">
-                                                {new Date(
-                                                    transaction.created_at
-                                                ).toLocaleDateString()}{" "}
-                                                at{" "}
+                                                {formatDate(transaction.created_at)} at{" "}
                                                 {new Date(
                                                     transaction.created_at
                                                 ).toLocaleTimeString()}
@@ -372,8 +365,7 @@ export default function HistoryPage() {
                                 No Transactions Yet
                             </h3>
                             <p className="text-sm text-gray-500">
-                                Your Bitcoin purchases and subscription transactions will appear
-                                here
+                                Your Bitcoin purchases and membership transactions will appear here
                             </p>
                         </div>
                     )}
