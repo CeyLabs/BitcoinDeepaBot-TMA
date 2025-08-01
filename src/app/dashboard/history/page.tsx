@@ -5,6 +5,7 @@ import { getAuthTokenFromStorage } from "@/lib/auth";
 import type { ApiTransaction } from "@/lib/types";
 import { cn } from "@/lib/cn";
 import LoadingPage from "@/components/LoadingPage";
+import { formatDate, formatSatoshis } from "@/lib/formatters";
 
 export default function HistoryPage() {
     // Get auth token from localStorage
@@ -191,11 +192,6 @@ export default function HistoryPage() {
         }
     };
 
-    // Format satoshis to BTC
-    const formatSatoshis = (satoshis: number) => {
-        return (satoshis / 100000000).toFixed(8);
-    };
-
     // Show loading state
     if (loading) {
         return <LoadingPage />;
@@ -288,10 +284,7 @@ export default function HistoryPage() {
                                                 )}
                                             </p>
                                             <p className="text-xs text-gray-400">
-                                                {new Date(
-                                                    transaction.created_at
-                                                ).toLocaleDateString()}{" "}
-                                                at{" "}
+                                                {formatDate(transaction.created_at)} at{" "}
                                                 {new Date(
                                                     transaction.created_at
                                                 ).toLocaleTimeString()}
