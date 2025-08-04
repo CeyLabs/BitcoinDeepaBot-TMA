@@ -302,7 +302,7 @@ export default function WalletPage() {
                     {summary ? (
                         <div className="mb-6">
                             <h1 className="mb-2 text-4xl font-bold text-white">
-                                {formatLargeNumber(summary.dca.balance)}{" "}
+                                {formatLargeNumber(summary.total_balance)}{" "}
                                 <span className="text-base font-medium text-orange-400">sats</span>
                                 <span className="ml-3 rounded-md bg-blue-400/10 px-2 py-1 text-sm text-blue-400">
                                     ≈ LKR{" "}
@@ -310,7 +310,7 @@ export default function WalletPage() {
                                 </span>
                             </h1>
                             <div className="mb-2 text-lg text-gray-300">
-                                {(summary.dca.balance / 100_000_000).toFixed(8)} BTC
+                                {(summary.total_balance / 100_000_000).toFixed(8)} BTC
                             </div>
                             <div className="flex items-center gap-2">
                                 <span
