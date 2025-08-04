@@ -14,7 +14,7 @@ import fetchy from "@/lib/fetchy";
 import { UserExistsResponse } from "@/lib/types";
 import { toast } from "sonner";
 import Image from "next/image";
-// import { DCAChart } from "@/components/ui/DCAChart";
+import { DCAChart } from "@/components/ui/DCAChart";
 import { formatLargeNumber } from "@/lib/formatters";
 import { LuArrowDownRight, LuArrowUpRight } from "react-icons/lu";
 
@@ -570,7 +570,7 @@ export default function WalletPage() {
                 </div>
 
                 {/* DCA Chart Section */}
-                {/* <DCAChart authToken={authToken} /> */}
+                <DCAChart authToken={authToken} />
             </main>
         </div>
     );
