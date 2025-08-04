@@ -196,7 +196,7 @@ export default function WalletPage() {
                     <div className="flex items-center gap-3">
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-500">
                             <Image
-                                src={telegramUserData?.profilePicture || "/profile.png"}
+                                src={telegramUserData?.photoUrl || "/profile.png"}
                                 alt="User Avatar"
                                 width={48}
                                 height={48}
