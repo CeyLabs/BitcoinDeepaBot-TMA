@@ -570,7 +570,7 @@ export default function WalletPage() {
                 </div>
 
                 {/* DCA Chart Section */}
-                <DCAChart authToken={authToken} />
+                <DCAChart authToken={authToken} avgBtcPrice={summary?.dca.avg_btc_price} />
             </main>
         </div>
     );

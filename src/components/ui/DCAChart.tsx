@@ -18,15 +18,17 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip,
 
 interface DCAChartProps {
     authToken: string | null;
+    avgBtcPrice?: number;
 }
 
 interface Transaction {
     created_at: string;
     satoshis_purchased: string;
     btc_price_at_purchase: string;
+    status: string;
 }
 
-export function DCAChart({ authToken }: DCAChartProps) {
+export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -49,7 +51,10 @@ export function DCAChart({ authToken }: DCAChartProps) {
                 if (!res.ok) throw new Error("Failed to fetch transactions");
                 const data = await res.json();
                 const txList = Array.isArray(data) ? data : data.transactions.transactions || [];
-                setTransactions(txList.slice(0, 10)); // Show last 10 transactions
+
+                // Filter only successful transactions
+                const successfulTx = txList.filter((tx: Transaction) => tx.status === "SUCCESS");
+                setTransactions(successfulTx.slice(0, 10)); // Show last 10 successful transactions
             } catch (error) {
                 console.error("Error fetching transactions:", error);
             } finally {
@@ -103,6 +108,7 @@ export function DCAChart({ authToken }: DCAChartProps) {
         const priceStr = tx.btc_price_at_purchase.replace(/,/g, "");
         return Number(priceStr);
     });
+
     const data = {
         labels,
         datasets: [
@@ -120,6 +126,23 @@ export function DCAChart({ authToken }: DCAChartProps) {
                 tension: 0.4,
                 borderWidth: 3,
             },
+            // Add average price line dataset
+            ...(avgBtcPrice
+                ? [
+                      {
+                          label: "DCA Average Price",
+                          data: Array(labels.length).fill(avgBtcPrice),
+                          fill: false,
+                          backgroundColor: "#60a5fa",
+                          borderColor: "#60a5fa",
+                          borderDash: [10, 5],
+                          borderWidth: 2,
+                          pointRadius: 0,
+                          pointHoverRadius: 0,
+                          tension: 0,
+                      },
+                  ]
+                : []),
         ],
     };
 
@@ -142,14 +165,20 @@ export function DCAChart({ authToken }: DCAChartProps) {
                 callbacks: {
                     label: function (context: any) {
                         const value = context.parsed.y;
-                        return `BTC Price: LKR ${value.toLocaleString()}`;
+                        if (context.datasetIndex === 0) {
+                            return `BTC Price: LKR ${value.toLocaleString()}`;
+                        } else {
+                            return `DCA Avg: LKR ${value.toLocaleString()}`;
+                        }
                     },
                     afterLabel: function (context: any) {
-                        const tx = sortedTx[context.dataIndex];
-                        if (tx) {
-                            const satsStr = tx.satoshis_purchased.replace(/,/g, "");
-                            const sats = Number(satsStr);
-                            return `Purchased: ${formatLargeNumber(sats)} sats`;
+                        if (context.datasetIndex === 0) {
+                            const tx = sortedTx[context.dataIndex];
+                            if (tx) {
+                                const satsStr = tx.satoshis_purchased.replace(/,/g, "");
+                                const sats = Number(satsStr);
+                                return `Purchased: ${formatLargeNumber(sats)} sats`;
+                            }
                         }
                         return "";
                     },
@@ -192,12 +221,7 @@ export function DCAChart({ authToken }: DCAChartProps) {
     return (
         <div className="mb-6 rounded-2xl border border-gray-700 bg-gray-800/50 p-6">
             <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-white">DCA Progress</h2>
-                <div className="text-right">
-                    <div className="text-sm text-gray-400">
-                        {transactions.length} purchase{transactions.length !== 1 ? "s" : ""}
-                    </div>
-                </div>
+                <h2 className="text-lg font-semibold text-white">Bitcoin Price Chart</h2>
             </div>
 
             {/* Chart */}
