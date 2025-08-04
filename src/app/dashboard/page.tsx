@@ -40,7 +40,7 @@ export default function WalletPage() {
     const [telegramUserData, setTelegramUserData] = useState<any>(null);
     const [showWelcome, setShowWelcome] = useState(false);
     const [summary, setSummary] = useState<DCSummary | null>(null);
-    const [summaryLoading, setSummaryLoading] = useState(true);
+    const [summaryLoading, setSummaryLoading] = useState(false);
     const [summaryError, setSummaryError] = useState<string | null>(null);
     const [showNotifications, setShowNotifications] = useState(false);
 
@@ -144,8 +144,7 @@ export default function WalletPage() {
     useEffect(() => {
         // Fetch wallet summary
         const fetchSummary = async () => {
-            setSummaryLoading(true);
-            setSummaryError(null);
+            setIsLoading(true);
             try {
                 const res = await fetch(`/api/transaction/dca-summary`, {
                     method: "GET",
@@ -160,7 +159,7 @@ export default function WalletPage() {
             } catch (e: any) {
                 setSummaryError(e.message || "Unknown error");
             } finally {
-                setSummaryLoading(false);
+                setIsLoading(false);
             }
         };
         fetchSummary();
@@ -206,7 +205,7 @@ export default function WalletPage() {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button
+                        {/* <button
                             className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 opacity-50"
                             type="button"
                             onClick={() =>
@@ -216,13 +215,13 @@ export default function WalletPage() {
                             }
                         >
                             <MdQrCode className="text-xl text-gray-400" />
-                        </button>
-                        <button
+                        </button> */}
+                        {/* <button
                             className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800"
                             onClick={() => setShowNotifications((prev) => !prev)}
                         >
                             <MdNotifications className="text-xl text-gray-400" />
-                        </button>
+                        </button> */}
                         {showNotifications && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
                                 <div className="relative mx-3 w-full max-w-md rounded-2xl border border-gray-700 bg-gray-900 p-8 shadow-2xl">
@@ -294,9 +293,9 @@ export default function WalletPage() {
                                     className={`text-lg text-gray-400 ${summaryLoading ? "animate-spin" : ""}`}
                                 />
                             </button>
-                            <button className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700">
+                            {/* <button className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700">
                                 <MdSettings className="text-lg text-gray-400" />
-                            </button>
+                            </button> */}
                         </div>
                     </div>
 
