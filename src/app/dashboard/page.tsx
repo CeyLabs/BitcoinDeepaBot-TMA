@@ -322,8 +322,9 @@ export default function WalletPage() {
                                 >
                                     {summary["24_hr_change"] >= 0 ? "+" : ""}LKR{" "}
                                     {(
-                                        summary["24_hr_change"] *
-                                        Number(summary.total_lkr.replace(/,/g, ""))
+                                        (summary["24_hr_change"] *
+                                            Number(summary.total_lkr.replace(/,/g, ""))) /
+                                        100
                                     ).toFixed(2)}
                                 </span>
                                 <span
