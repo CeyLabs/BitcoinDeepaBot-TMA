@@ -298,7 +298,7 @@ export default function HistoryPage() {
                                                     LKR per BTC
                                                 </p>
                                             )}
-                                            {settlementInfo && (
+                                            {transaction.status === "SUCCESS" && settlementInfo && (
                                                 <div className="mt-1 flex items-center gap-1">
                                                     <span
                                                         className={cn(
