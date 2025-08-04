@@ -1,9 +1,9 @@
 "use client";
 
 import { useStore } from "@/lib/store";
-import { MdSettings, MdApps, MdTrendingUp, MdTrendingDown } from "react-icons/md";
-import { IoMdSend, IoMdDownload, IoMdTime, IoMdQrScanner } from "react-icons/io";
-import { FaUserPlus } from "react-icons/fa";
+import { MdSettings, MdNotifications, MdQrCode, MdRefresh } from "react-icons/md";
+import { IoMdSend, IoMdDownload } from "react-icons/io";
+import { FaEllipsisH } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -13,21 +13,26 @@ import LoadingPage from "@/components/LoadingPage";
 import fetchy from "@/lib/fetchy";
 import { UserExistsResponse } from "@/lib/types";
 import { toast } from "sonner";
+import Image from "next/image";
+import { DCAChart } from "@/components/ui/DCAChart";
+import { formatLargeNumber } from "@/lib/formatters";
+import { LuArrowDownRight, LuArrowUpRight } from "react-icons/lu";
 
 interface DCSummary {
-    total_transactions: number;
-    successful_transactions: number;
-    total_satoshis_purchased: string;
-    total_amount_spent: number;
-    average_btc_price: number;
+    dca: {
+        balance: number;
+        spent: number;
+        avg_btc_price: number;
+    };
+    total_balance: number;
+    total_lkr: string;
     currency: string;
-    first_purchase_date: string;
-    last_purchase_date: string;
+    "24_hr_change": number;
 }
 
 export default function WalletPage() {
     const router = useRouter();
-    const { wallet, rewards, isExistingUser, setIsExistingUser, setUser } = useStore();
+    const { wallet, isExistingUser, setIsExistingUser, setUser } = useStore();
     const launchParams = useLaunchParams();
     const backButton = useBackButton();
     const [isLoading, setIsLoading] = useState(true);
@@ -35,8 +40,9 @@ export default function WalletPage() {
     const [telegramUserData, setTelegramUserData] = useState<any>(null);
     const [showWelcome, setShowWelcome] = useState(false);
     const [summary, setSummary] = useState<DCSummary | null>(null);
-    const [summaryLoading, setSummaryLoading] = useState(true);
+    const [summaryLoading, setSummaryLoading] = useState(false);
     const [summaryError, setSummaryError] = useState<string | null>(null);
+    const [showNotifications, setShowNotifications] = useState(false);
 
     const authToken = getAuthTokenFromStorage();
 
@@ -138,8 +144,7 @@ export default function WalletPage() {
     useEffect(() => {
         // Fetch wallet summary
         const fetchSummary = async () => {
-            setSummaryLoading(true);
-            setSummaryError(null);
+            setIsLoading(true);
             try {
                 const res = await fetch(`/api/transaction/dca-summary`, {
                     method: "GET",
@@ -154,7 +159,7 @@ export default function WalletPage() {
             } catch (e: any) {
                 setSummaryError(e.message || "Unknown error");
             } finally {
-                setSummaryLoading(false);
+                setIsLoading(false);
             }
         };
         fetchSummary();
@@ -174,7 +179,7 @@ export default function WalletPage() {
                     <p className="mb-4 text-gray-400">{authError}</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="rounded bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
+                        className="rounded-xl bg-orange-600 px-4 py-2 text-white transition-colors hover:bg-orange-700"
                     >
                         Try Again
                     </button>
@@ -184,183 +189,389 @@ export default function WalletPage() {
     }
 
     return (
-        <main className="pb-20">
-            {/* Header */}
-            {/* <div className="mb-8 flex items-center justify-between"> */}
-            {/* <button className="rounded-lg bg-gray-800 p-2">
-                    <MdSettings className="text-xl text-gray-400" />
-                </button>
-                <button className="rounded-lg bg-gray-800 p-2">
-                    <MdApps className="text-xl text-gray-400" />
-                </button> */}
-            {/* </div> */}
-
-            {/* Balance Section */}
-            <div className="my-12 text-center">
-                <p className="mb-2 text-gray-400">Wallet Balance</p>
-                {summary ? (
-                    <>
-                        <h1 className="mb-2 text-4xl font-bold text-orange-400">
-                            {Number(summary.total_satoshis_purchased).toLocaleString()}{" "}
-                            <span className="text-base font-medium text-orange-300">sats</span>
-                        </h1>
-                        <div className="mb-2 text-lg text-orange-200">
-                            {(Number(summary.total_satoshis_purchased) / 100_000_000).toFixed(8)}{" "}
-                            BTC
+        <div>
+            <main className="pb-20">
+                {/* Header */}
+                <div className="mb-8 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-500">
+                            <Image
+                                src={telegramUserData?.photoUrl || "/profile.png"}
+                                alt="User Avatar"
+                                width={48}
+                                height={48}
+                                className="rounded-full"
+                            />
                         </div>
-                    </>
-                ) : (
-                    <>
-                        <h1 className="mb-2 text-4xl font-bold">${wallet.balance.toFixed(2)}</h1>
-                        <div className="flex items-center justify-center gap-2">
-                            <span
-                                className={`text-sm ${wallet.change24h < 0 ? "text-red-500" : "text-green-500"}`}
-                            >
-                                {wallet.change24h < 0 ? "-" : "+"}$
-                                {Math.abs(wallet.change24h).toFixed(2)}
-                            </span>
-                            <div className="flex items-center gap-1">
-                                {wallet.changePercent < 0 ? (
-                                    <MdTrendingDown className="text-red-500" />
-                                ) : (
-                                    <MdTrendingUp className="text-green-500" />
-                                )}
-                                <span
-                                    className={`text-sm ${wallet.changePercent < 0 ? "text-red-500" : "text-green-500"}`}
-                                >
-                                    {Math.abs(wallet.changePercent).toFixed(2)}%
-                                </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {/* <button
+                            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 opacity-50"
+                            type="button"
+                            onClick={() =>
+                                toast("This feature is not available yet.", {
+                                    className: "bg-gray-900 text-white",
+                                })
+                            }
+                        >
+                            <MdQrCode className="text-xl text-gray-400" />
+                        </button> */}
+                        {/* <button
+                            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800"
+                            onClick={() => setShowNotifications((prev) => !prev)}
+                        >
+                            <MdNotifications className="text-xl text-gray-400" />
+                        </button> */}
+                        {showNotifications && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+                                <div className="relative mx-3 w-full max-w-md rounded-2xl border border-gray-700 bg-gray-900 p-8 shadow-2xl">
+                                    <button
+                                        className="absolute right-4 top-4 text-2xl text-gray-400 hover:text-orange-500"
+                                        onClick={() => setShowNotifications(false)}
+                                        aria-label="Close"
+                                    >
+                                        &times;
+                                    </button>
+                                    <h3 className="mb-4 text-center text-2xl font-semibold text-white">
+                                        Notifications
+                                    </h3>
+                                    <div className="py-12 text-center text-lg text-gray-400">
+                                        No notifications
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </>
-                )}
-            </div>
-
-            {/* Rewards Banner */}
-            {rewards.withdrawable > 0 && (
-                <div className="mb-6 rounded-lg border border-orange-500/30 bg-gradient-to-r from-orange-600/20 to-orange-500/20 p-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="font-medium text-orange-400">Pending Rewards</h3>
-                            <p className="text-2xl font-bold text-orange-500">
-                                {rewards.withdrawable} sats
-                            </p>
-                        </div>
-                        <button className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-700">
-                            Claim
-                        </button>
+                        )}
                     </div>
                 </div>
-            )}
 
-            {/* Action Buttons */}
-            <div className="mb-8 flex justify-between">
-                {[
-                    { icon: IoMdSend, label: "Send", color: "bg-gray-800", unavailable: true },
-                    {
-                        icon: IoMdDownload,
-                        label: "Receive",
-                        color: "bg-gray-800",
-                        unavailable: true,
-                    },
-                    // {
-                    //     icon: FaUserPlus,
-                    //     label: "Invite",
-                    //     color: "bg-gray-800",
-                    //     badge: "Reward",
-                    //     link: "/dashboard/invite",
-                    // },
-                    {
-                        icon: IoMdTime,
-                        label: "Activity",
-                        color: "bg-gray-800",
-                        link: "dashboard/history",
-                    },
-                    // { icon: IoMdQrScanner, label: "Scan", color: "bg-gray-800" },
-                ].map((action, index) => (
-                    <div key={index} className="flex w-1/3 flex-col items-center justify-center">
-                        {action.link ? (
-                            <Link
-                                href={action.link}
-                                className={`relative rounded-full p-4 ${action.color} mb-2`}
-                            >
-                                <action.icon className="text-xl text-orange-500" />
-                                {/* {action.badge && (
-                                    <div className="absolute -right-1 -top-1 rounded-full bg-green-500 px-2 py-0.5 text-xs text-white">
-                                        {action.badge}
-                                    </div>
-                                )} */}
-                            </Link>
-                        ) : (
+                {/* Balance Card */}
+                <div className="mb-8 rounded-3xl border border-gray-700 bg-gradient-to-r from-gray-600/20 to-gray-500/20 p-6">
+                    <div className="mb-4 flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-gray-400">Current balance</p>
+                        </div>
+                        <div className="flex items-center gap-2">
                             <button
-                                type="button"
-                                className={`relative rounded-full p-4 ${action.color} mb-2 focus:outline-none ${action.unavailable ? "opacity-50" : ""}`}
-                                onClick={
-                                    action.unavailable
-                                        ? () =>
-                                              toast("This feature is not available yet.", {
-                                                  className: "bg-gray-900 text-white",
-                                              })
-                                        : undefined
-                                }
-                                tabIndex={0}
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 transition-colors hover:bg-gray-600"
+                                onClick={() => {
+                                    // Refetch wallet summary
+                                    const fetchSummary = async () => {
+                                        setSummaryLoading(true);
+                                        setSummaryError(null);
+                                        try {
+                                            const res = await fetch(
+                                                `/api/transaction/dca-summary`,
+                                                {
+                                                    method: "GET",
+                                                    headers: {
+                                                        "Content-Type": "application/json",
+                                                        Authorization: `Bearer ${authToken}`,
+                                                    },
+                                                }
+                                            );
+                                            if (!res.ok)
+                                                throw new Error("Failed to fetch wallet summary");
+                                            const data = await res.json();
+                                            setSummary(data);
+                                            toast("Wallet refreshed successfully", {
+                                                className: "bg-gray-900 text-white",
+                                            });
+                                        } catch (e: any) {
+                                            setSummaryError(e.message || "Unknown error");
+                                            toast("Failed to refresh wallet", {
+                                                className: "bg-gray-900 text-white",
+                                            });
+                                        } finally {
+                                            setSummaryLoading(false);
+                                        }
+                                    };
+                                    fetchSummary();
+                                }}
+                                disabled={summaryLoading}
                             >
-                                <action.icon className="text-xl text-orange-500" />
-                                {/* {action.badge && (
-                                    <div className="absolute -right-1 -top-1 rounded-full bg-green-500 px-2 py-0.5 text-xs text-white">
-                                        {action.badge}
-                                    </div>
-                                )} */}
+                                <MdRefresh
+                                    className={`text-lg text-gray-400 ${summaryLoading ? "animate-spin" : ""}`}
+                                />
                             </button>
-                        )}
-                        <span
-                            className={`text-xs ${action.unavailable ? "text-gray-500" : "text-gray-400"}`}
-                        >
-                            {action.label}
-                        </span>
+                            {/* <button className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700">
+                                <MdSettings className="text-lg text-gray-400" />
+                            </button> */}
+                        </div>
                     </div>
-                ))}
-            </div>
 
-            {/* Assets */}
-            <div className="space-y-3">
-                {wallet.assets.map((asset) => (
-                    <div
-                        key={asset.symbol}
-                        className="flex items-center justify-between rounded-lg bg-gray-800/50 p-4"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-700">
-                                <span className="text-lg">{asset.icon}</span>
+                    {summary ? (
+                        <div className="mb-6">
+                            <h1 className="mb-6 text-4xl font-bold text-white">
+                                {formatLargeNumber(summary.total_balance)}{" "}
+                                <span className="text-base font-medium text-orange-400">sats</span>
+                                <span className="ml-3 rounded-md bg-blue-400/10 px-2 py-1 text-sm text-blue-400">
+                                    ≈ LKR{" "}
+                                    {formatLargeNumber(Number(summary.total_lkr.replace(/,/g, "")))}
+                                </span>
+                            </h1>
+
+                            {/* Wallet Analytics Dashboard */}
+                            <div className="mb-4 rounded-xl border-gray-800/50 backdrop-blur-sm">
+                                <div className="mb-3 text-sm font-medium text-gray-300">
+                                    Balance Distribution
+                                </div>
+
+                                {/* Visual Progress Representation */}
+                                <div className="mb-4">
+                                    <div className="flex h-3 overflow-hidden rounded-full bg-gray-700">
+                                        <div
+                                            className="bg-gradient-to-r from-orange-500 to-orange-400 transition-all duration-500"
+                                            style={{
+                                                width: `${(summary.dca.balance / summary.total_balance) * 100}%`,
+                                            }}
+                                        ></div>
+                                        <div
+                                            className="bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
+                                            style={{
+                                                width: `${((summary.total_balance - summary.dca.balance) / summary.total_balance) * 100}%`,
+                                            }}
+                                        ></div>
+                                    </div>
+                                </div>
+
+                                {/* Compact Stats Grid */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="rounded-xl border-l-4 border-orange-500 bg-orange-500/10 p-3">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <div className="text-xs font-medium uppercase text-orange-300">
+                                                    Membership <br /> Rewards
+                                                </div>
+                                                <div className="text-lg font-bold text-white">
+                                                    {formatLargeNumber(summary.dca.balance)}
+                                                </div>
+                                                <div className="text-xs text-orange-400">
+                                                    {(
+                                                        (summary.dca.balance /
+                                                            summary.total_balance) *
+                                                        100
+                                                    ).toFixed(1)}
+                                                    % of total
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="rounded-xl border-l-4 border-green-500 bg-green-500/10 p-3">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <div className="text-xs font-medium uppercase text-green-300">
+                                                    Wallet
+                                                    <br /> Balance
+                                                </div>
+                                                <div className="text-lg font-bold text-white">
+                                                    {formatLargeNumber(
+                                                        summary.total_balance - summary.dca.balance
+                                                    )}
+                                                </div>
+                                                <div className="text-xs text-green-400">
+                                                    {(
+                                                        ((summary.total_balance -
+                                                            summary.dca.balance) /
+                                                            summary.total_balance) *
+                                                        100
+                                                    ).toFixed(1)}
+                                                    % of total
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Quick Stats Row */}
+                                <div className="mt-3 flex items-center justify-between rounded-xl bg-gray-700/30 p-3">
+                                    <div className="text-center">
+                                        <div className="text-xs text-gray-400">DCA Spent</div>
+                                        <div className="text-sm font-semibold text-white">
+                                            LKR {formatLargeNumber(summary.dca.spent)}
+                                        </div>
+                                    </div>
+                                    <div className="h-8 w-px bg-gray-600"></div>
+                                    <div className="text-center">
+                                        <div className="text-xs text-gray-400">Avg Price</div>
+                                        <div className="text-sm font-semibold text-white">
+                                            LKR {formatLargeNumber(summary.dca.avg_btc_price)}
+                                        </div>
+                                    </div>
+                                    <div className="h-8 w-px bg-gray-600"></div>
+                                    <div className="text-center">
+                                        <div className="text-xs text-gray-400">Total BTC</div>
+                                        <div className="text-sm font-semibold text-white">
+                                            {(summary.total_balance / 100_000_000).toFixed(6)}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="font-medium">{asset.symbol}</h3>
-                                <div className="flex items-center gap-2 text-sm">
-                                    <span className="text-gray-400">
-                                        ${asset.price.toFixed(asset.symbol === "BTC" ? 2 : 6)}
-                                    </span>
-                                    <span
-                                        className={`${asset.changePercent < 0 ? "text-red-500" : "text-green-500"}`}
-                                    >
-                                        {asset.changePercent > 0 ? "+" : ""}
-                                        {asset.changePercent.toFixed(2)}%
-                                    </span>
+
+                            {/* Portfolio Performance Section */}
+                            {/* 24hr P&L */}
+                            <div className="rounded-xl bg-gray-700/40 p-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                                                summary["24_hr_change"] >= 0
+                                                    ? "bg-green-500/20"
+                                                    : "bg-red-500/20"
+                                            }`}
+                                        >
+                                            <span
+                                                className={`text-sm font-bold ${
+                                                    summary["24_hr_change"] >= 0
+                                                        ? "text-green-400"
+                                                        : "text-red-400"
+                                                }`}
+                                            >
+                                                {summary["24_hr_change"] >= 0 ? (
+                                                    <LuArrowUpRight />
+                                                ) : (
+                                                    <LuArrowDownRight />
+                                                )}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs text-gray-400">24h P&L</div>
+                                            <div
+                                                className={`text-lg font-bold ${
+                                                    summary["24_hr_change"] >= 0
+                                                        ? "text-green-400"
+                                                        : "text-red-400"
+                                                }`}
+                                            >
+                                                {summary["24_hr_change"] >= 0 ? "+" : ""}LKR{" "}
+                                                {formatLargeNumber(
+                                                    (summary["24_hr_change"] *
+                                                        Number(
+                                                            summary.total_lkr.replace(/,/g, "")
+                                                        )) /
+                                                        100
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-xs text-gray-400">Change</div>
+                                        <div
+                                            className={`text-sm font-semibold ${
+                                                summary["24_hr_change"] >= 0
+                                                    ? "text-green-400"
+                                                    : "text-red-400"
+                                            }`}
+                                        >
+                                            {summary["24_hr_change"] >= 0 ? "+" : ""}
+                                            {summary["24_hr_change"].toFixed(2)}%
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="text-right">
-                            <p className="font-medium">
-                                {asset.symbol === "SATS"
-                                    ? asset.balance.toLocaleString()
-                                    : asset.symbol === "LKR"
-                                      ? asset.balance.toLocaleString()
-                                      : asset.balance.toFixed(asset.symbol === "BTC" ? 8 : 2)}
-                            </p>
-                            <p className="text-sm text-gray-400">${asset.balanceUSD.toFixed(2)}</p>
+                    ) : (
+                        <div className="mb-6">
+                            <h1 className="mb-2 text-4xl font-bold text-white">
+                                $
+                                {wallet.balance.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                })}
+                            </h1>
+                            <div className="flex items-center gap-2">
+                                <span
+                                    className={`text-sm font-medium ${
+                                        wallet.change24h < 0 ? "text-red-500" : "text-green-500"
+                                    }`}
+                                >
+                                    {wallet.change24h < 0 ? "-" : "+"}$
+                                    {Math.abs(wallet.change24h).toFixed(2)}
+                                </span>
+                                <span
+                                    className={`text-sm ${
+                                        wallet.changePercent < 0 ? "text-red-500" : "text-green-500"
+                                    }`}
+                                >
+                                    ({wallet.changePercent > 0 ? "+" : ""}
+                                    {wallet.changePercent.toFixed(2)}%)
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                ))}
-            </div>
-        </main>
+                    )}
+
+                    {/* Action Buttons */}
+                    {/* <div className="flex justify-between">
+                        {[
+                            { icon: IoMdSend, label: "Send", unavailable: true },
+                            { icon: IoMdDownload, label: "Receive", unavailable: true },
+                            { icon: IoMdDownload, label: "Swap", unavailable: true },
+                            { icon: FaEllipsisH, label: "More", link: "dashboard/history" },
+                        ].map((action, index) => (
+                            <div key={index} className="flex flex-col items-center">
+                                {action.link ? (
+                                    <Link
+                                        href={action.link}
+                                        className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-gray-700 transition-colors hover:bg-gray-600"
+                                    >
+                                        <action.icon className="text-xl text-orange-500" />
+                                    </Link>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        className={`mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-gray-700 transition-colors hover:bg-gray-600 ${
+                                            action.unavailable ? "opacity-50" : ""
+                                        }`}
+                                        onClick={
+                                            action.unavailable
+                                                ? () => {
+                                                      if (action.label === "Send") {
+                                                          toast(
+                                                              "Use /send command in bot to send sats",
+                                                              {
+                                                                  className:
+                                                                      "bg-gray-900 text-white",
+                                                              }
+                                                          );
+                                                      } else if (action.label === "Receive") {
+                                                          toast(
+                                                              "Use /receive command in bot to receive sats",
+                                                              {
+                                                                  className:
+                                                                      "bg-gray-900 text-white",
+                                                              }
+                                                          );
+                                                      } else {
+                                                          toast(
+                                                              "This feature is not available yet.",
+                                                              {
+                                                                  className:
+                                                                      "bg-gray-900 text-white",
+                                                              }
+                                                          );
+                                                      }
+                                                  }
+                                                : undefined
+                                        }
+                                    >
+                                        <action.icon className="text-xl text-orange-500" />
+                                    </button>
+                                )}
+                                <span
+                                    className={`text-xs ${
+                                        action.unavailable ? "text-gray-500" : "text-gray-400"
+                                    }`}
+                                >
+                                    {action.label}
+                                </span>
+                            </div>
+                        ))}
+                    </div> */}
+                </div>
+
+                {/* DCA Chart Section */}
+                <DCAChart authToken={authToken} avgBtcPrice={summary?.dca.avg_btc_price} />
+            </main>
+        </div>
     );
 }
