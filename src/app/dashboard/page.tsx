@@ -309,6 +309,12 @@ export default function WalletPage() {
                                     {formatLargeNumber(Number(summary.total_lkr.replace(/,/g, "")))}
                                 </span>
                             </h1>
+                            <div className="text-xs text-gray-300">
+                                DCA Balance: {formatLargeNumber(summary.dca.balance)} sats
+                            </div>
+                            <div className="mb-2 text-xs text-gray-300">
+                                Wallet Balance: {formatLargeNumber(summary.total_balance - summary.dca.balance)} sats
+                            </div>
                             <div className="mb-2 text-lg text-gray-300">
                                 {(summary.total_balance / 100_000_000).toFixed(8)} BTC
                             </div>
@@ -321,11 +327,11 @@ export default function WalletPage() {
                                     }`}
                                 >
                                     {summary["24_hr_change"] >= 0 ? "+" : ""}LKR{" "}
-                                    {(
+                                    {formatLargeNumber(
                                         (summary["24_hr_change"] *
                                             Number(summary.total_lkr.replace(/,/g, ""))) /
                                         100
-                                    ).toFixed(2)}
+                                    )}
                                 </span>
                                 <span
                                     className={`text-sm ${
