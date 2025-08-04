@@ -9,6 +9,7 @@ import { BiCheckCircle } from "react-icons/bi";
 import { getAuthTokenFromStorage } from "@/lib/auth";
 import { MdCancel } from "react-icons/md";
 import { ApiTransaction } from "@/lib/types";
+import { formatDate } from "@/lib/formatters";
 
 export default function PaymentSuccessPage() {
     const router = useRouter();
@@ -189,9 +190,7 @@ export default function PaymentSuccessPage() {
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Date:</span>
-                                    <span>
-                                        {new Date(transactionData.created_at).toLocaleString()}
-                                    </span>
+                                    <span>{formatDate(transactionData.created_at)}</span>
                                 </div>
                             </div>
                         </div>
