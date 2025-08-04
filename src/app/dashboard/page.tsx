@@ -1,12 +1,7 @@
 "use client";
 
 import { useStore } from "@/lib/store";
-import {
-    MdSettings,
-    MdNotifications,
-    MdQrCode,
-    MdRefresh,
-} from "react-icons/md";
+import { MdSettings, MdNotifications, MdQrCode, MdRefresh } from "react-icons/md";
 import { IoMdSend, IoMdDownload } from "react-icons/io";
 import { FaEllipsisH } from "react-icons/fa";
 import Link from "next/link";
@@ -310,7 +305,8 @@ export default function WalletPage() {
                                 {formatLargeNumber(summary.dca.balance)}{" "}
                                 <span className="text-base font-medium text-orange-400">sats</span>
                                 <span className="ml-3 rounded-md bg-blue-400/10 px-2 py-1 text-sm text-blue-400">
-                                    ≈ LKR {formatLargeNumber(Number(summary.total_lkr))}
+                                    ≈ LKR{" "}
+                                    {formatLargeNumber(Number(summary.total_lkr.replace(/,/g, "")))}
                                 </span>
                             </h1>
                             <div className="mb-2 text-lg text-gray-300">
@@ -325,9 +321,10 @@ export default function WalletPage() {
                                     }`}
                                 >
                                     {summary["24_hr_change"] >= 0 ? "+" : ""}LKR{" "}
-                                    {(summary["24_hr_change"] * Number(summary.total_lkr)).toFixed(
-                                        2
-                                    )}
+                                    {(
+                                        summary["24_hr_change"] *
+                                        Number(summary.total_lkr.replace(/,/g, ""))
+                                    ).toFixed(2)}
                                 </span>
                                 <span
                                     className={`text-sm ${
@@ -336,11 +333,7 @@ export default function WalletPage() {
                                             : "text-red-400"
                                     }`}
                                 >
-                                    (
-                                    {(
-                                        Number(summary.total_lkr) *
-                                        (summary["24_hr_change"] / 100)
-                                    ).toFixed(2)}
+                                    ({summary["24_hr_change"].toFixed(2)}
                                     %)
                                 </span>
                             </div>
