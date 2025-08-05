@@ -164,6 +164,12 @@ export default function SubscriptionPage() {
         fetchPackages();
     }, []);
 
+    useEffect(() => {
+        if (packages.length > 0 && !selectedPlan && !subscription?.isActive) {
+            setSelectedPlan(packages[0].id);
+        }
+    }, [packages, selectedPlan, subscription?.isActive]);
+
     // Fetch current subscription when auth token is available
     useEffect(() => {
         if (authToken && packages.length > 0) {
@@ -261,6 +267,12 @@ export default function SubscriptionPage() {
 
             // Update subscription state
             setSubscription(null);
+
+            if (packages.length > 0) {
+                setSelectedPlan(packages[0].id);
+            }
+
+            setActiveTab("plans");
         } catch (err) {
             console.error("❌ Error cancelling membership:", err);
             setCancelError(err instanceof Error ? err.message : "Failed to cancel membership");
