@@ -163,7 +163,9 @@ export default function WalletPage() {
 
     useEffect(() => {
         if (summaryError) {
-            toast.error(summaryError instanceof Error ? summaryError.message : String(summaryError));
+            toast.error(
+                summaryError instanceof Error ? summaryError.message : String(summaryError)
+            );
         }
     }, [summaryError]);
 

@@ -42,7 +42,8 @@ export default function SubscriptionPage() {
             const data = await response.json();
             if (!response.ok) {
                 throw new Error(
-                    data.message || `Failed to fetch packages: ${response.status} ${response.statusText}`
+                    data.message ||
+                        `Failed to fetch packages: ${response.status} ${response.statusText}`
                 );
             }
             return Array.isArray(data) ? data : data.packages || [];
