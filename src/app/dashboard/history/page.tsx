@@ -6,7 +6,7 @@ import type { ApiTransaction } from "@/lib/types";
 import { cn } from "@/lib/cn";
 import LoadingPage from "@/components/LoadingPage";
 import { formatDate, formatSatoshis } from "@/lib/formatters";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 export default function HistoryPage() {
     // Get auth token from localStorage
@@ -14,64 +14,43 @@ export default function HistoryPage() {
 
     const [selectedTransaction, setSelectedTransaction] = useState<ApiTransaction | null>(null);
 
-    const ITEMS_PER_PAGE = 10;
-
     const {
-        data,
+        data: apiTransactions = [],
         error,
         isLoading,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
         refetch,
-    } = useInfiniteQuery({
+    } = useQuery<ApiTransaction[]>({
         queryKey: ["transactions"],
-        queryFn: async ({ pageParam = 1 }) => {
-            const response = await fetch(
-                `/api/transaction/list?page=${pageParam}&limit=${ITEMS_PER_PAGE}`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${authToken}`,
-                    },
-                }
-            );
+        queryFn: async () => {
+            const response = await fetch(`/api/transaction/list`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+            });
             const result = await response.json();
             if (!response.ok) {
                 throw new Error(
                     result.message || `Failed to fetch transactions: ${response.statusText}`
                 );
             }
-            const transactions = Array.isArray(result.transactions)
-                ? result.transactions
-                : result.transactions?.transactions || [];
-            const transactionData = result.transactions;
-            const totalCount = transactionData?.total_count || transactions.length;
-            const hasMore = transactionData?.has_more || false;
-            return {
-                transactions,
-                totalCount,
-                hasMore,
-                nextPage: hasMore ? pageParam + 1 : undefined,
-            };
+            // Handle different response structures
+            if (Array.isArray(result)) {
+                return result;
+            }
+            if (result.transactions) {
+                return Array.isArray(result.transactions)
+                    ? result.transactions
+                    : result.transactions?.transactions || [];
+            }
+            return [];
         },
-        getNextPageParam: (lastPage) => lastPage.nextPage,
         enabled: !!authToken,
         staleTime: 1000 * 60 * 5,
     });
 
-    const apiTransactions = data?.pages.flatMap((page) => page.transactions) ?? [];
-    const totalTransactions = data?.pages[0]?.totalCount ?? 0;
-    const hasMorePages = data?.pages[data.pages.length - 1]?.hasMore ?? false;
-
     const errorMessage = error instanceof Error ? error.message : null;
-
-    const loadMoreTransactions = () => {
-        if (hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-        }
-    };
 
     const refreshTransactions = () => {
         refetch();
@@ -333,48 +312,6 @@ export default function HistoryPage() {
                             </div>
                         </div>
                     )}
-                </div>
-            )}
-
-            {/* Load More Button */}
-            {authToken && !errorMessage && apiTransactions.length > 0 && hasMorePages && (
-                <div className="mt-6 text-center">
-                    <button
-                        onClick={loadMoreTransactions}
-                        disabled={isFetchingNextPage}
-                        className="rounded-xl border border-orange-500 bg-orange-500/10 px-6 py-3 font-medium text-orange-400 transition-colors hover:bg-orange-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {isFetchingNextPage ? (
-                            <div className="flex items-center gap-2">
-                                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                        fill="none"
-                                    />
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    />
-                                </svg>
-                                Loading more...
-                            </div>
-                        ) : (
-                            `Load More (${totalTransactions - apiTransactions.length} remaining)`
-                        )}
-                    </button>
-                </div>
-            )}
-
-            {/* Transaction Summary */}
-            {authToken && !errorMessage && apiTransactions.length > 0 && (
-                <div className="mt-4 text-center text-sm text-gray-500">
-                    Showing {apiTransactions.length} of {totalTransactions} transactions
                 </div>
             )}
 
