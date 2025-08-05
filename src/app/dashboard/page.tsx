@@ -14,7 +14,7 @@ import fetchy from "@/lib/fetchy";
 import { UserExistsResponse } from "@/lib/types";
 import { toast } from "sonner";
 import Image from "next/image";
-import { DCAChart } from "@/components/ui/DCAChart";
+import { DCAChart } from "@/components/DCAChart";
 import { formatLargeNumber } from "@/lib/formatters";
 import { LuArrowDownRight, LuArrowUpRight } from "react-icons/lu";
 
