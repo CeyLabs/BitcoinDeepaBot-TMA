@@ -11,6 +11,7 @@ import { initPopup } from "@telegram-apps/sdk-react";
 import { usePayHereRedirect } from "@/lib/hooks";
 import { Button } from "@telegram-apps/telegram-ui";
 import { formatDate } from "@/lib/formatters";
+import { useQuery } from "@tanstack/react-query";
 
 export default function SubscriptionPage() {
     const [selectedPlan, setSelectedPlan] = useState<string>();
@@ -26,9 +27,30 @@ export default function SubscriptionPage() {
     const authToken = getAuthTokenFromStorage();
 
     // Package state
-    const [packages, setPackages] = useState<SubscriptionPlan[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const {
+        data: packages = [],
+        isLoading: loading,
+        error,
+        refetch: refetchPackages,
+    } = useQuery<SubscriptionPlan[]>({
+        queryKey: ["packages"],
+        queryFn: async () => {
+            const response = await fetch("/api/packages", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(
+                    data.message || `Failed to fetch packages: ${response.status} ${response.statusText}`
+                );
+            }
+            return Array.isArray(data) ? data : data.packages || [];
+        },
+        staleTime: 1000 * 60 * 5,
+    });
+
+    const errorMessage = error instanceof Error ? error.message : null;
 
     // Subscription fetching state
     const [subscriptionLoading, setSubscriptionLoading] = useState(false);
@@ -41,40 +63,6 @@ export default function SubscriptionPage() {
         const endDate = new Date(start.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
         return endDate.toISOString();
     }, []);
-
-    // Fetch packages function
-    const fetchPackages = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-
-            const response = await fetch("/api/packages", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(
-                    errorData.message ||
-                        `Failed to fetch packages: ${response.status} ${response.statusText}`
-                );
-            }
-
-            const data = await response.json();
-
-            const packagesArray = Array.isArray(data) ? data : data.packages || [];
-            setPackages(packagesArray);
-        } catch (err) {
-            console.error("❌ Error fetching packages:", err);
-            setError(err instanceof Error ? err.message : "Failed to fetch packages");
-            setPackages([]);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // Fetch current subscription function
     const fetchCurrentSubscription = useCallback(async () => {
@@ -157,12 +145,8 @@ export default function SubscriptionPage() {
     }, [authToken, setSubscription, setSelectedPlan, packages, calculateEndDate]);
 
     const refetch = async () => {
-        await fetchPackages();
+        await refetchPackages();
     };
-
-    useEffect(() => {
-        fetchPackages();
-    }, []);
 
     useEffect(() => {
         if (packages.length > 0 && !selectedPlan && !subscription?.isActive) {
@@ -287,14 +271,14 @@ export default function SubscriptionPage() {
     }
 
     // Show error state with retry option
-    if (error) {
+    if (errorMessage) {
         return (
             <main className="flex min-h-screen items-center justify-center p-4">
                 <div className="text-center">
                     <h2 className="mb-2 text-xl font-semibold text-red-500">
                         Failed to Load Plans
                     </h2>
-                    <p className="mb-4 text-gray-400">{error}</p>
+                    <p className="mb-4 text-gray-400">{errorMessage}</p>
                     <button
                         onClick={refetch}
                         className="rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700"

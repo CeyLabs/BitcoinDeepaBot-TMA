@@ -17,6 +17,7 @@ import Image from "next/image";
 import { DCAChart } from "@/components/DCAChart";
 import { formatLargeNumber } from "@/lib/formatters";
 import { LuArrowDownRight, LuArrowUpRight } from "react-icons/lu";
+import { useQuery } from "@tanstack/react-query";
 
 interface DCSummary {
     dca: {
@@ -39,9 +40,26 @@ export default function WalletPage() {
     const [authError, setAuthError] = useState<string | null>(null);
     const [telegramUserData, setTelegramUserData] = useState<any>(null);
     const [showWelcome, setShowWelcome] = useState(false);
-    const [summary, setSummary] = useState<DCSummary | null>(null);
-    const [summaryLoading, setSummaryLoading] = useState(false);
-    const [summaryError, setSummaryError] = useState<string | null>(null);
+    const {
+        data: summary,
+        isLoading: summaryLoading,
+        error: summaryError,
+    } = useQuery<DCSummary>({
+        queryKey: ["wallet-summary"],
+        queryFn: async () => {
+            const res = await fetch(`/api/transaction/dca-summary`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+            });
+            if (!res.ok) throw new Error("Failed to fetch wallet summary");
+            return res.json();
+        },
+        enabled: !!authToken,
+        staleTime: 1000 * 60 * 5,
+    });
     const [showNotifications, setShowNotifications] = useState(false);
 
     const authToken = getAuthTokenFromStorage();
@@ -142,30 +160,12 @@ export default function WalletPage() {
     }, [launchParams, setIsExistingUser, setUser, router]);
 
     useEffect(() => {
-        // Fetch wallet summary
-        const fetchSummary = async () => {
-            setIsLoading(true);
-            try {
-                const res = await fetch(`/api/transaction/dca-summary`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${authToken}`,
-                    },
-                });
-                if (!res.ok) throw new Error("Failed to fetch wallet summary");
-                const data = await res.json();
-                setSummary(data);
-            } catch (e: any) {
-                setSummaryError(e.message || "Unknown error");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchSummary();
-    }, [authToken]);
+        if (summaryError) {
+            toast.error(summaryError instanceof Error ? summaryError.message : String(summaryError));
+        }
+    }, [summaryError]);
 
-    if (isLoading) {
+    if (isLoading || summaryLoading) {
         return <LoadingPage />;
     }
 
