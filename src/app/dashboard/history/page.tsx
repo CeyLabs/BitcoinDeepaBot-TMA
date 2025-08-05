@@ -132,11 +132,6 @@ export default function HistoryPage() {
         }
     };
 
-    // Show loading state
-    if (isLoading) {
-        return <LoadingPage />;
-    }
-
     return (
         <main className="pb-20">
             {/* Header */}
@@ -189,8 +184,10 @@ export default function HistoryPage() {
                 </div>
             )}
 
-            {/* Transactions List */}
-            {authToken && !errorMessage && (
+            {/* Loading State */}
+            {isLoading && authToken && !errorMessage ? (
+                <LoadingPage />
+            ) : (
                 <div className="space-y-0">
                     {apiTransactions.length > 0 ? (
                         apiTransactions.map((transaction) => {
