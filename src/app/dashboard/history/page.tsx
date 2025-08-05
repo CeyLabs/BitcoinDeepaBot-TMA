@@ -292,10 +292,10 @@ export default function HistoryPage() {
                                             {transaction.btc_price_at_purchase && (
                                                 <p className="text-xs italic text-gray-500">
                                                     @{" "}
-                                                    {Number(
+                                                    රු.{Number(
                                                         transaction.btc_price_at_purchase
                                                     ).toLocaleString()}{" "}
-                                                    LKR per BTC
+                                                    per BTC
                                                 </p>
                                             )}
                                             {transaction.status === "SUCCESS" && settlementInfo && (

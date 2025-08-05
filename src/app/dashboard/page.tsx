@@ -305,7 +305,7 @@ export default function WalletPage() {
                                 {formatLargeNumber(summary.total_balance)}{" "}
                                 <span className="text-base font-medium text-orange-400">sats</span>
                                 <span className="ml-3 rounded-md bg-blue-400/10 px-2 py-1 text-sm text-blue-400">
-                                    ≈ LKR{" "}
+                                    ≈ රු.{" "}
                                     {formatLargeNumber(Number(summary.total_lkr.replace(/,/g, "")))}
                                 </span>
                             </h1>
@@ -388,14 +388,14 @@ export default function WalletPage() {
                                     <div className="text-center">
                                         <div className="text-xs text-gray-400">DCA Spent</div>
                                         <div className="text-sm font-semibold text-white">
-                                            LKR {formatLargeNumber(summary.dca.spent)}
+                                            රු. {formatLargeNumber(summary.dca.spent)}
                                         </div>
                                     </div>
                                     <div className="h-8 w-px bg-gray-600"></div>
                                     <div className="text-center">
                                         <div className="text-xs text-gray-400">Avg Price</div>
                                         <div className="text-sm font-semibold text-white">
-                                            LKR {formatLargeNumber(summary.dca.avg_btc_price)}
+                                            රු. {formatLargeNumber(summary.dca.avg_btc_price)}
                                         </div>
                                     </div>
                                     <div className="h-8 w-px bg-gray-600"></div>
@@ -443,7 +443,7 @@ export default function WalletPage() {
                                                         : "text-red-400"
                                                 }`}
                                             >
-                                                {summary["24_hr_change"] >= 0 ? "+" : ""}LKR{" "}
+                                                {summary["24_hr_change"] >= 0 ? "+" : ""}රු.{" "}
                                                 {formatLargeNumber(
                                                     (summary["24_hr_change"] *
                                                         Number(

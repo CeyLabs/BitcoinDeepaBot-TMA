@@ -113,7 +113,7 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
         labels,
         datasets: [
             {
-                label: "Bitcoin Price (LKR)",
+                label: "Bitcoin Price (රු.)",
                 data: bitcoinPrices,
                 fill: false,
                 backgroundColor: "#fb923c",
@@ -166,9 +166,9 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
                     label: function (context: any) {
                         const value = context.parsed.y;
                         if (context.datasetIndex === 0) {
-                            return `BTC Price: LKR ${value.toLocaleString()}`;
+                            return `BTC Price: රු. ${value.toLocaleString()}`;
                         } else {
-                            return `DCA Avg: LKR ${value.toLocaleString()}`;
+                            return `DCA Avg: රු. ${value.toLocaleString()}`;
                         }
                     },
                     afterLabel: function (context: any) {
@@ -207,7 +207,7 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
                         size: 12,
                     },
                     callback: function (value: any) {
-                        return `LKR ${formatLargeNumber(Number(value))}`;
+                        return `රු. ${formatLargeNumber(Number(value))}`;
                     },
                 },
             },

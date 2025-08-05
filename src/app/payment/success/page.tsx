@@ -160,7 +160,7 @@ export default function PaymentSuccessPage() {
                                 <div className="flex justify-between">
                                     <span>Amount:</span>
                                     <span>
-                                        LKR{" "}
+                                        රු.{" "}
                                         {Number(transactionData.package_amount).toLocaleString(
                                             "en-LK",
                                             {

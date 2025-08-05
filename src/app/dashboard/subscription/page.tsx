@@ -122,7 +122,7 @@ export default function SubscriptionPage() {
                     planName: matchingPackage?.name || "Unknown Plan",
                     planType: subscriptionData.frequency || "monthly",
                     price: matchingPackage?.amount || 0,
-                    currency: matchingPackage?.currency || "LKR",
+                    currency: matchingPackage?.currency || "රු.",
                     startDate: subscriptionData.created_at,
                     endDate:
                         subscriptionData.next_billing_date ||
