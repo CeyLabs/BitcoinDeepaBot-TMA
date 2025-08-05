@@ -116,6 +116,7 @@ export default function SubscriptionPage() {
 
             const packagesArray = Array.isArray(data) ? data : data.packages || [];
             setPackages(packagesArray);
+            setSelectedPlan(packagesArray[0].id);
         } catch (err) {
             console.error("❌ Error fetching packages:", err);
             setPackagesError(err instanceof Error ? err.message : "Failed to fetch packages");

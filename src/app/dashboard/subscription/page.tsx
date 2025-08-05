@@ -137,6 +137,7 @@ export default function SubscriptionPage() {
                 };
 
                 setSubscription(enhancedSubscription);
+                setSelectedPlan(subscriptionData.package_id);
 
                 if (!matchingPackage) {
                     console.warn(
@@ -153,7 +154,7 @@ export default function SubscriptionPage() {
         } finally {
             setSubscriptionLoading(false);
         }
-    }, [authToken, setSubscription, packages, calculateEndDate]);
+    }, [authToken, setSubscription, setSelectedPlan, packages, calculateEndDate]);
 
     const refetch = async () => {
         await fetchPackages();
@@ -411,12 +412,14 @@ export default function SubscriptionPage() {
                                   : "cursor-not-allowed bg-gray-700 opacity-50"
                         )}
                         onClick={() => {
-                            const plan = packages.find(
-                                (p: SubscriptionPlan) => p.id === selectedPlan
-                            );
-                            if (plan) handleSubscribe(plan);
+                            if (selectedPlan && selectedPlan !== subscription?.packageId) {
+                                const plan = packages.find(
+                                    (p: SubscriptionPlan) => p.id === selectedPlan
+                                );
+                                if (plan) handleSubscribe(plan);
+                            }
                         }}
-                        disabled={payhereLinkLoading}
+                        disabled={payhereLinkLoading || selectedPlan === subscription?.packageId}
                     >
                         {payhereLinkLoading ? (
                             <>
