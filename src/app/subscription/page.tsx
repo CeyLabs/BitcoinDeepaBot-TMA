@@ -406,7 +406,7 @@ export default function SubscriptionPage() {
                                     </div>
                                     <div className="text-right">
                                         <div className="text-sm font-semibold text-orange-500">
-                                            {plan.currency} {plan.amount.toLocaleString()}
+                                            රු. {plan.amount.toLocaleString()}
                                         </div>
                                         <div className="text-xs text-gray-400">{plan.type}</div>
                                     </div>
@@ -475,8 +475,7 @@ export default function SubscriptionPage() {
                                                 {selectedPlanData.name}
                                             </p>
                                             <p className="text-xs text-gray-400">
-                                                {selectedPlanData.currency}{" "}
-                                                {selectedPlanData.amount.toLocaleString()}{" "}
+                                                රු. {selectedPlanData.amount.toLocaleString()}{" "}
                                                 {selectedPlanData.type}
                                             </p>
                                         </div>

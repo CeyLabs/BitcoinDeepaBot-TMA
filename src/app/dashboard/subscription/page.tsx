@@ -122,7 +122,7 @@ export default function SubscriptionPage() {
                     planName: matchingPackage?.name || "Unknown Plan",
                     planType: subscriptionData.frequency || "monthly",
                     price: matchingPackage?.amount || 0,
-                    currency: matchingPackage?.currency || "රු.",
+                    currency: "රු.",
                     startDate: subscriptionData.created_at,
                     endDate:
                         subscriptionData.next_billing_date ||
@@ -392,7 +392,7 @@ export default function SubscriptionPage() {
                                     </div>
                                     <div className="text-right">
                                         <div className="text-sm font-semibold text-orange-500">
-                                            {plan.currency} {plan.amount.toLocaleString()}
+                                            රු. {plan.amount.toLocaleString()}
                                         </div>
                                         <div className="text-xs text-gray-400">{plan.type}</div>
                                     </div>
@@ -488,13 +488,10 @@ export default function SubscriptionPage() {
 
                                 {/* Subscription Details */}
                                 <div className="mt-4 space-y-2 text-sm">
-                                    {subscription.price && subscription.currency && (
+                                    {subscription.price && (
                                         <div className="flex justify-between">
                                             <span className="text-gray-400">Price:</span>
-                                            <span>
-                                                {subscription.currency}{" "}
-                                                {subscription.price.toLocaleString()}
-                                            </span>
+                                            <span>රු. {subscription.price.toLocaleString()}</span>
                                         </div>
                                     )}
                                     {subscription.startDate && (
