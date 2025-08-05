@@ -40,10 +40,15 @@ export default function WalletPage() {
     const [authError, setAuthError] = useState<string | null>(null);
     const [telegramUserData, setTelegramUserData] = useState<any>(null);
     const [showWelcome, setShowWelcome] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
+
+    const authToken = getAuthTokenFromStorage();
+
     const {
         data: summary,
         isLoading: summaryLoading,
         error: summaryError,
+        refetch: refetchSummary,
     } = useQuery<DCSummary>({
         queryKey: ["wallet-summary"],
         queryFn: async () => {
@@ -60,9 +65,6 @@ export default function WalletPage() {
         enabled: !!authToken,
         staleTime: 1000 * 60 * 5,
     });
-    const [showNotifications, setShowNotifications] = useState(false);
-
-    const authToken = getAuthTokenFromStorage();
 
     useEffect(() => {
         backButton.show();
@@ -253,39 +255,17 @@ export default function WalletPage() {
                         <div className="flex items-center gap-2">
                             <button
                                 className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 transition-colors hover:bg-gray-600"
-                                onClick={() => {
-                                    // Refetch wallet summary
-                                    const fetchSummary = async () => {
-                                        setSummaryLoading(true);
-                                        setSummaryError(null);
-                                        try {
-                                            const res = await fetch(
-                                                `/api/transaction/dca-summary`,
-                                                {
-                                                    method: "GET",
-                                                    headers: {
-                                                        "Content-Type": "application/json",
-                                                        Authorization: `Bearer ${authToken}`,
-                                                    },
-                                                }
-                                            );
-                                            if (!res.ok)
-                                                throw new Error("Failed to fetch wallet summary");
-                                            const data = await res.json();
-                                            setSummary(data);
-                                            toast("Wallet refreshed successfully", {
-                                                className: "bg-gray-900 text-white",
-                                            });
-                                        } catch (e: any) {
-                                            setSummaryError(e.message || "Unknown error");
-                                            toast("Failed to refresh wallet", {
-                                                className: "bg-gray-900 text-white",
-                                            });
-                                        } finally {
-                                            setSummaryLoading(false);
-                                        }
-                                    };
-                                    fetchSummary();
+                                onClick={async () => {
+                                    try {
+                                        await refetchSummary();
+                                        toast("Wallet refreshed successfully", {
+                                            className: "bg-gray-900 text-white",
+                                        });
+                                    } catch (error) {
+                                        toast("Failed to refresh wallet", {
+                                            className: "bg-gray-900 text-white",
+                                        });
+                                    }
                                 }}
                                 disabled={summaryLoading}
                             >
