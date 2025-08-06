@@ -327,8 +327,6 @@ export default function SubscriptionPage() {
         }
     };
 
-    const loading = isLoading || packagesLoading;
-
     if (authError || packagesError) {
         return (
             <div className="flex min-h-screen items-center justify-center p-4">
@@ -375,7 +373,7 @@ export default function SubscriptionPage() {
 
                         {/* Plans */}
                         <div className="mb-2 space-y-3 p-4">
-                            {loading
+                            {isLoading || packagesLoading
                                 ? Array.from({ length: 3 }).map((_, i) => (
                                       <ListItemSkeleton key={i} />
                                   ))

@@ -132,8 +132,6 @@ export default function HistoryPage() {
         }
     };
 
-    const loading = isLoading;
-
     return (
         <main className="pb-20">
             {/* Header */}
@@ -163,7 +161,7 @@ export default function HistoryPage() {
             </div>
 
             {/* Error State */}
-            {errorMessage && !loading && (
+            {errorMessage && !isLoading && (
                 <div className="mb-6 rounded-xl border border-red-500/30 bg-zinc-900/50 p-4 backdrop-blur-sm">
                     <h3 className="mb-2 font-medium text-red-400">Failed to Load Transactions</h3>
                     <p className="mb-4 text-sm text-gray-400">{errorMessage}</p>
@@ -177,7 +175,7 @@ export default function HistoryPage() {
             )}
 
             {/* No Auth Token */}
-            {!authToken && !loading && (
+            {!authToken && !isLoading && (
                 <div className="py-8 text-center text-gray-400">
                     <p className="mb-2">Please authenticate to view transactions</p>
                     <p className="text-sm text-gray-500">
@@ -188,7 +186,7 @@ export default function HistoryPage() {
 
             {/* Transactions List */}
             {authToken && !errorMessage && (
-                loading ? (
+                isLoading ? (
                     <div className="space-y-2">
                         {Array.from({ length: 5 }).map((_, i) => (
                             <ListItemSkeleton key={i} />

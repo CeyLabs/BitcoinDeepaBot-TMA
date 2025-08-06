@@ -170,8 +170,6 @@ export default function WalletPage() {
         }
     }, [summaryError]);
 
-    const loading = isLoading || summaryLoading;
-
     if (authError) {
         return (
             <div className="flex min-h-screen items-center justify-center p-4">
@@ -248,7 +246,7 @@ export default function WalletPage() {
                 </div>
 
                 {/* Balance Card */}
-                {loading ? (
+                {isLoading || summaryLoading ? (
                     <BalanceCardSkeleton />
                 ) : (
                 <div className="mb-8 rounded-3xl border border-gray-700 bg-gradient-to-r from-gray-600/20 to-gray-500/20 p-6">
@@ -555,7 +553,7 @@ export default function WalletPage() {
                 )}
 
                 {/* DCA Chart Section */}
-                {loading ? (
+                {isLoading || summaryLoading ? (
                     <ChartSkeleton />
                 ) : (
                     <DCAChart authToken={authToken} avgBtcPrice={summary?.dca.avg_btc_price} />
