@@ -9,7 +9,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useBackButton, useLaunchParams } from "@telegram-apps/sdk-react";
 import { authenticateWithTelegram, getAuthTokenFromStorage, saveAuthToStorage } from "@/lib/auth";
-import LoadingPage from "@/components/LoadingPage";
+import BalanceCardSkeleton from "@/components/skeletons/BalanceCardSkeleton";
+import ChartSkeleton from "@/components/skeletons/ChartSkeleton";
 import fetchy from "@/lib/fetchy";
 import { UserExistsResponse } from "@/lib/types";
 import { toast } from "sonner";
@@ -169,9 +170,7 @@ export default function WalletPage() {
         }
     }, [summaryError]);
 
-    if (isLoading || summaryLoading) {
-        return <LoadingPage />;
-    }
+    const loading = isLoading || summaryLoading;
 
     if (authError) {
         return (
@@ -249,6 +248,9 @@ export default function WalletPage() {
                 </div>
 
                 {/* Balance Card */}
+                {loading ? (
+                    <BalanceCardSkeleton />
+                ) : (
                 <div className="mb-8 rounded-3xl border border-gray-700 bg-gradient-to-r from-gray-600/20 to-gray-500/20 p-6">
                     <div className="mb-4 flex items-center justify-between">
                         <div>
@@ -550,9 +552,14 @@ export default function WalletPage() {
                         ))}
                     </div> */}
                 </div>
+                )}
 
                 {/* DCA Chart Section */}
-                <DCAChart authToken={authToken} avgBtcPrice={summary?.dca.avg_btc_price} />
+                {loading ? (
+                    <ChartSkeleton />
+                ) : (
+                    <DCAChart authToken={authToken} avgBtcPrice={summary?.dca.avg_btc_price} />
+                )}
             </main>
         </div>
     );
