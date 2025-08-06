@@ -12,7 +12,8 @@ import {
 import { useStore } from "@/lib/store";
 import type { SubscriptionPlan } from "@/lib/types";
 import { cn } from "@/lib/cn";
-import LoadingPage from "@/components/LoadingPage";
+import { LoadingSpinner } from "@/components/LoadingPage";
+import ListItemSkeleton from "@/components/skeletons/ListItemSkeleton";
 import Image from "next/image";
 import { Button, Input } from "@telegram-apps/telegram-ui";
 import { usePayHereRedirect } from "@/lib/hooks";
@@ -326,10 +327,6 @@ export default function SubscriptionPage() {
         }
     };
 
-    if (isLoading || isRegistering || packagesLoading) {
-        return <LoadingPage />;
-    }
-
     if (authError || packagesError) {
         return (
             <div className="flex min-h-screen items-center justify-center p-4">
@@ -350,7 +347,12 @@ export default function SubscriptionPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#202020]">
+        <div className="relative min-h-screen bg-[#202020]">
+            {isRegistering && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <LoadingSpinner />
+                </div>
+            )}
             <div className="mx-auto max-w-md">
                 {!showRegistrationForm ? (
                     // Plan Selection Screen
@@ -371,17 +373,21 @@ export default function SubscriptionPage() {
 
                         {/* Plans */}
                         <div className="mb-2 space-y-3 p-4">
-                            {packages.map((plan) => (
-                                <div
-                                    key={plan.id}
-                                    className={cn(
-                                        "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all duration-300",
-                                        selectedPlan === plan.id
-                                            ? "border-orange-500 bg-gradient-to-r from-orange-500/10 to-orange-600/10 shadow-lg shadow-orange-500/20"
-                                            : "border-gray-700 bg-gradient-to-r from-gray-800/50 to-gray-900/50 hover:border-gray-600"
-                                    )}
-                                    onClick={() => setSelectedPlan(plan.id)}
-                                >
+                            {isLoading || packagesLoading
+                                ? Array.from({ length: 3 }).map((_, i) => (
+                                      <ListItemSkeleton key={i} />
+                                  ))
+                                : packages.map((plan) => (
+                                      <div
+                                          key={plan.id}
+                                          className={cn(
+                                              "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all duration-300",
+                                              selectedPlan === plan.id
+                                                  ? "border-orange-500 bg-gradient-to-r from-orange-500/10 to-orange-600/10 shadow-lg shadow-orange-500/20"
+                                                  : "border-gray-700 bg-gradient-to-r from-gray-800/50 to-gray-900/50 hover:border-gray-600"
+                                          )}
+                                          onClick={() => setSelectedPlan(plan.id)}
+                                      >
                                     <div className="flex items-center gap-3">
                                         <div
                                             className={cn(

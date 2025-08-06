@@ -1,11 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MdWallet, MdHistory } from "react-icons/md";
 // import { FaUserPlus } from "react-icons/fa";
 import { Sprout } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { usePageTransition } from "@/app/context/transition";
 
 const navItems = [
     {
@@ -32,7 +32,6 @@ const navItems = [
 
 export default function BottomNavigation() {
     const pathname = usePathname();
-    const { navigateWithLoading } = usePageTransition();
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 border-t border-gray-700 bg-[#1a1a1a]">
@@ -43,11 +42,9 @@ export default function BottomNavigation() {
                         const isActive = pathname === item.href;
 
                         return (
-                            <button
+                            <Link
                                 key={item.href}
-                                onClick={() =>
-                                    navigateWithLoading(item.href, `Loading ${item.label}...`)
-                                }
+                                href={item.href}
                                 className={cn(
                                     "flex flex-col items-center justify-center rounded-lg px-3 py-2 transition-colors",
                                     isActive ? "text-orange-500" : "text-gray-400 hover:text-white"
@@ -55,7 +52,7 @@ export default function BottomNavigation() {
                             >
                                 <Icon className="mb-1 text-xl" />
                                 <span className="text-xs">{item.label}</span>
-                            </button>
+                            </Link>
                         );
                     })}
                 </div>

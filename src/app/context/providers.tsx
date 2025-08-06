@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { SDKProvider as TMAProvider } from "@telegram-apps/sdk-react";
-import { PageTransitionProvider } from "./transition";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -13,9 +12,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     return (
         <TMAProvider>
             <TMASetupProvider>
-                <QueryClientProvider client={queryClient}>
-                    <PageTransitionProvider>{children}</PageTransitionProvider>
-                </QueryClientProvider>
+                <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
             </TMASetupProvider>
         </TMAProvider>
     );

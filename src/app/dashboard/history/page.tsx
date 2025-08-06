@@ -4,7 +4,7 @@ import { useState } from "react";
 import { getAuthTokenFromStorage } from "@/lib/auth";
 import type { ApiTransaction } from "@/lib/types";
 import { cn } from "@/lib/cn";
-import LoadingPage from "@/components/LoadingPage";
+import ListItemSkeleton from "@/components/skeletons/ListItemSkeleton";
 import { formatDate, formatSatoshis } from "@/lib/formatters";
 import { useQuery } from "@tanstack/react-query";
 
@@ -132,11 +132,6 @@ export default function HistoryPage() {
         }
     };
 
-    // Show loading state
-    if (isLoading) {
-        return <LoadingPage />;
-    }
-
     return (
         <main className="pb-20">
             {/* Header */}
@@ -166,7 +161,7 @@ export default function HistoryPage() {
             </div>
 
             {/* Error State */}
-            {errorMessage && (
+            {errorMessage && !isLoading && (
                 <div className="mb-6 rounded-xl border border-red-500/30 bg-zinc-900/50 p-4 backdrop-blur-sm">
                     <h3 className="mb-2 font-medium text-red-400">Failed to Load Transactions</h3>
                     <p className="mb-4 text-sm text-gray-400">{errorMessage}</p>
@@ -180,7 +175,7 @@ export default function HistoryPage() {
             )}
 
             {/* No Auth Token */}
-            {!authToken && (
+            {!authToken && !isLoading && (
                 <div className="py-8 text-center text-gray-400">
                     <p className="mb-2">Please authenticate to view transactions</p>
                     <p className="text-sm text-gray-500">
@@ -191,6 +186,13 @@ export default function HistoryPage() {
 
             {/* Transactions List */}
             {authToken && !errorMessage && (
+                isLoading ? (
+                    <div className="space-y-2">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <ListItemSkeleton key={i} />
+                        ))}
+                    </div>
+                ) : (
                 <div className="space-y-0">
                     {apiTransactions.length > 0 ? (
                         apiTransactions.map((transaction) => {
@@ -313,7 +315,8 @@ export default function HistoryPage() {
                         </div>
                     )}
                 </div>
-            )}
+            )
+        )}
 
             {/* Transaction Detail Modal */}
             {selectedTransaction && (
