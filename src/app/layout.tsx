@@ -21,7 +21,7 @@ export default function RootLayout({
                     strategy="beforeInteractive"
                 />
             </head>
-            <body className={`${inter.className} min-h-screen bg-[#202020] leading-tight`}>
+            <body className={`${inter.className} min-h-screen leading-tight`}>
                 <Providers>
                     <AppRoot appearance="dark" platform="base" id="tg-ui-root">
                         {children}
