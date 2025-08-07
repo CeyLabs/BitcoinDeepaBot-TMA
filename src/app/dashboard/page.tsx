@@ -165,6 +165,33 @@ export default function WalletPage() {
         fetchSummary();
     }, [authToken]);
 
+    useEffect(() => {
+        const checkKycStatus = async () => {
+            if (authToken) {
+                try {
+                    const res = await fetch(`/api/user/kyc/status`, {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${authToken}`,
+                        },
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.status !== "APPROVED") {
+                            router.push("/verification");
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error checking KYC status:", error);
+                }
+            }
+        };
+
+        checkKycStatus();
+    }, [authToken, router]);
+
     if (isLoading) {
         return <LoadingPage />;
     }
