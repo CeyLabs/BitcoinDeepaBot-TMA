@@ -2,7 +2,7 @@
 
 export function ListItemSkeleton() {
     return (
-        <div className="rounded-xl border border-gray-700 p-4 animate-pulse">
+        <div className="animate-pulse rounded-xl border border-gray-700 p-4">
             <div className="mb-2 flex items-center justify-between">
                 <div className="h-4 w-24 rounded bg-gray-700"></div>
                 <div className="h-4 w-16 rounded bg-gray-700"></div>

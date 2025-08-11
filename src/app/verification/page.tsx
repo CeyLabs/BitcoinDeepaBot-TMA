@@ -40,7 +40,7 @@ export default function VerificationPage() {
         backButton.show();
 
         const handleBackClick = () => {
-            router.back();
+            router.push("/");
         };
 
         backButton.on("click", handleBackClick);
@@ -204,7 +204,7 @@ export default function VerificationPage() {
             if ((window as any).Telegram?.WebApp) {
                 (window as any).Telegram.WebApp.openLink(verificationUrl);
             } else {
-                window.open(verificationUrl, "_blank");
+                window.open(verificationUrl);
             }
         }
     };
@@ -493,35 +493,34 @@ export default function VerificationPage() {
                     )}
 
                     {/* Desktop Warning */}
-                    {!isMobile &&
-                        verificationStatus !== "APPROVED" && (
-                            <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-left">
-                                <div className="flex items-start space-x-3">
-                                    <svg
-                                        className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-500"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z"
-                                        />
-                                    </svg>
-                                    <div>
-                                        <p className="text-sm font-medium text-yellow-400">
-                                            Desktop Detected
-                                        </p>
-                                        <p className="mt-1 text-xs text-yellow-300">
-                                            For the best experience, use your mobile device for
-                                            verification.
-                                        </p>
-                                    </div>
+                    {!isMobile && verificationStatus !== "APPROVED" && (
+                        <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-left">
+                            <div className="flex items-start space-x-3">
+                                <svg
+                                    className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z"
+                                    />
+                                </svg>
+                                <div>
+                                    <p className="text-sm font-medium text-yellow-400">
+                                        Desktop Detected
+                                    </p>
+                                    <p className="mt-1 text-xs text-yellow-300">
+                                        For the best experience, use your mobile device for
+                                        verification.
+                                    </p>
                                 </div>
                             </div>
-                        )}
+                        </div>
+                    )}
 
                     {/* Error Message */}
                     {error && (

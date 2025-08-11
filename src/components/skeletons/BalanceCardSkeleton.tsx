@@ -2,7 +2,7 @@
 
 export function BalanceCardSkeleton() {
     return (
-        <div className="mb-8 rounded-3xl border border-gray-700 bg-gradient-to-r from-gray-600/20 to-gray-500/20 p-6 animate-pulse">
+        <div className="mb-8 animate-pulse rounded-3xl border border-gray-700 bg-gradient-to-r from-gray-600/20 to-gray-500/20 p-6">
             <div className="mb-4 flex items-center justify-between">
                 <div className="h-4 w-24 rounded bg-gray-700"></div>
                 <div className="flex items-center gap-2">

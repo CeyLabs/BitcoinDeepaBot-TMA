@@ -179,6 +179,33 @@ export default function WalletPage() {
         }
     }, [summaryError]);
 
+    useEffect(() => {
+        const checkKycStatus = async () => {
+            if (authToken) {
+                try {
+                    const res = await fetch(`/api/user/kyc/status`, {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${authToken}`,
+                        },
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.status !== "APPROVED") {
+                            router.push("/verification");
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error checking KYC status:", error);
+                }
+            }
+        };
+
+        checkKycStatus();
+    }, [authToken, router]);
+
     if (authError) {
         return (
             <div className="flex min-h-screen items-center justify-center p-4">
@@ -288,7 +315,11 @@ export default function WalletPage() {
                                     </span>
                                     <span className="ml-3 rounded-md bg-blue-400/10 px-2 py-1 text-sm text-blue-400">
                                         ≈ රු.{" "}
-                                        {summary.total_lkr ? formatLargeNumber(Number(summary.total_lkr.replace(/,/g, ""))) : "0"}
+                                        {summary.total_lkr
+                                            ? formatLargeNumber(
+                                                  Number(summary.total_lkr.replace(/,/g, ""))
+                                              )
+                                            : "0"}
                                     </span>
                                 </h1>
 

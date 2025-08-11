@@ -220,6 +220,12 @@ export default function SubscriptionPage() {
             const payhereResult = await payhereResponse.json();
 
             if (!payhereResponse.ok) {
+                // Handle KYC verification requirement
+                if (payhereResponse.status === 403 && payhereResult.redirectTo) {
+                    router.push(payhereResult.redirectTo);
+                    return;
+                }
+
                 throw new Error(
                     payhereResult.message ||
                         `Failed to generate PayHere link: ${payhereResponse.statusText}`
@@ -300,36 +306,40 @@ export default function SubscriptionPage() {
                                           )}
                                           onClick={() => setSelectedPlan(plan.id)}
                                       >
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className={cn(
-                                                "flex h-5 w-5 items-center justify-center rounded-full border-2",
-                                                selectedPlan === plan.id
-                                                    ? "border-orange-500"
-                                                    : "border-gray-500"
-                                            )}
-                                        >
-                                            {selectedPlan === plan.id && (
-                                                <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <h3 className="font-medium text-white">{plan.name}</h3>
-                                            {plan.popular && (
-                                                <span className="text-xs text-orange-500">
-                                                    Most Popular
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-sm font-semibold text-orange-500">
-                                            රු. {plan.amount.toLocaleString()}
-                                        </div>
-                                        <div className="text-xs text-gray-400">{plan.type}</div>
-                                    </div>
-                                </div>
-                            ))}
+                                          <div className="flex items-center gap-3">
+                                              <div
+                                                  className={cn(
+                                                      "flex h-5 w-5 items-center justify-center rounded-full border-2",
+                                                      selectedPlan === plan.id
+                                                          ? "border-orange-500"
+                                                          : "border-gray-500"
+                                                  )}
+                                              >
+                                                  {selectedPlan === plan.id && (
+                                                      <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />
+                                                  )}
+                                              </div>
+                                              <div>
+                                                  <h3 className="font-medium text-white">
+                                                      {plan.name}
+                                                  </h3>
+                                                  {plan.popular && (
+                                                      <span className="text-xs text-orange-500">
+                                                          Most Popular
+                                                      </span>
+                                                  )}
+                                              </div>
+                                          </div>
+                                          <div className="text-right">
+                                              <div className="text-sm font-semibold text-orange-500">
+                                                  රු. {plan.amount.toLocaleString()}
+                                              </div>
+                                              <div className="text-xs text-gray-400">
+                                                  {plan.type}
+                                              </div>
+                                          </div>
+                                      </div>
+                                  ))}
                         </div>
 
                         <section className="p-4">

@@ -181,138 +181,140 @@ export default function HistoryPage() {
             )}
 
             {/* Transactions List */}
-            {authToken && !errorMessage && (
-                isLoading ? (
+            {authToken &&
+                !errorMessage &&
+                (isLoading ? (
                     <div className="space-y-2">
                         {Array.from({ length: 5 }).map((_, i) => (
                             <ListItemSkeleton key={i} />
                         ))}
                     </div>
                 ) : (
-                <div className="space-y-0">
-                    {apiTransactions.length > 0 ? (
-                        apiTransactions.map((transaction) => {
-                            const statusInfo = getStatusInfo(transaction.status);
-                            const settlementInfo = getSettlementInfo(transaction.settled);
+                    <div className="space-y-0">
+                        {apiTransactions.length > 0 ? (
+                            apiTransactions.map((transaction) => {
+                                const statusInfo = getStatusInfo(transaction.status);
+                                const settlementInfo = getSettlementInfo(transaction.settled);
 
-                            return (
-                                <div
-                                    key={transaction.payhere_pay_id}
-                                    className="group cursor-pointer border-b border-gray-800 py-3 transition-all duration-200 last:border-b-0 hover:border-gray-700 hover:bg-gray-800/30"
-                                    onClick={() => setSelectedTransaction(transaction)}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className={cn(
-                                                    "flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-200",
-                                                    statusInfo.bgColor,
-                                                    statusInfo.borderColor,
-                                                    "group-hover:scale-105"
-                                                )}
-                                            >
-                                                <span className={cn("text-sm", statusInfo.color)}>
-                                                    {statusInfo.icon}
-                                                </span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="text-sm font-medium transition-colors group-hover:text-white">
-                                                    DCA Purchase
-                                                </p>
-                                                <p className="text-xs text-gray-400">
-                                                    {formatDate(transaction.created_at)}
-                                                </p>
-                                                <p className="mt-0.5 text-xs text-gray-500 transition-colors duration-200 group-hover:text-orange-300">
-                                                    Tap to view details
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="text-right">
-                                                {transaction.satoshis_purchased && (
-                                                    <p className="font-semibold text-orange-400 transition-colors group-hover:text-orange-300">
-                                                        {Number(
-                                                            transaction.satoshis_purchased
-                                                        ).toLocaleString()}{" "}
-                                                        <span className="text-sm font-medium text-orange-300">
-                                                            sats
-                                                        </span>
-                                                    </p>
-                                                )}
-                                                <p
+                                return (
+                                    <div
+                                        key={transaction.payhere_pay_id}
+                                        className="group cursor-pointer border-b border-gray-800 py-3 transition-all duration-200 last:border-b-0 hover:border-gray-700 hover:bg-gray-800/30"
+                                        onClick={() => setSelectedTransaction(transaction)}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div
                                                     className={cn(
-                                                        "text-xs font-medium",
-                                                        statusInfo.color
+                                                        "flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-200",
+                                                        statusInfo.bgColor,
+                                                        statusInfo.borderColor,
+                                                        "group-hover:scale-105"
                                                     )}
                                                 >
-                                                    {statusInfo.label}
-                                                </p>
+                                                    <span
+                                                        className={cn("text-sm", statusInfo.color)}
+                                                    >
+                                                        {statusInfo.icon}
+                                                    </span>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium transition-colors group-hover:text-white">
+                                                        DCA Purchase
+                                                    </p>
+                                                    <p className="text-xs text-gray-400">
+                                                        {formatDate(transaction.created_at)}
+                                                    </p>
+                                                    <p className="mt-0.5 text-xs text-gray-500 transition-colors duration-200 group-hover:text-orange-300">
+                                                        Tap to view details
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div className="transform text-gray-400 transition-all duration-200 group-hover:translate-x-1 group-hover:text-orange-400">
-                                                <svg
-                                                    className="h-4 w-4"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M9 5l7 7-7 7"
-                                                    />
-                                                </svg>
+                                            <div className="flex items-center gap-2">
+                                                <div className="text-right">
+                                                    {transaction.satoshis_purchased && (
+                                                        <p className="font-semibold text-orange-400 transition-colors group-hover:text-orange-300">
+                                                            {Number(
+                                                                transaction.satoshis_purchased
+                                                            ).toLocaleString()}{" "}
+                                                            <span className="text-sm font-medium text-orange-300">
+                                                                sats
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                    <p
+                                                        className={cn(
+                                                            "text-xs font-medium",
+                                                            statusInfo.color
+                                                        )}
+                                                    >
+                                                        {statusInfo.label}
+                                                    </p>
+                                                </div>
+                                                <div className="transform text-gray-400 transition-all duration-200 group-hover:translate-x-1 group-hover:text-orange-400">
+                                                    <svg
+                                                        className="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M9 5l7 7-7 7"
+                                                        />
+                                                    </svg>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+                                );
+                            })
+                        ) : (
+                            <div className="py-12 text-center">
+                                <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full border border-gray-600 bg-gradient-to-br from-gray-700 to-gray-800">
+                                    <svg
+                                        className="h-10 w-10 text-gray-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={1.5}
+                                            d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                        />
+                                    </svg>
                                 </div>
-                            );
-                        })
-                    ) : (
-                        <div className="py-12 text-center">
-                            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full border border-gray-600 bg-gradient-to-br from-gray-700 to-gray-800">
-                                <svg
-                                    className="h-10 w-10 text-gray-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={1.5}
-                                        d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                    />
-                                </svg>
+                                <h3 className="mb-3 text-xl font-semibold text-gray-300">
+                                    No Transactions Yet
+                                </h3>
+                                <p className="mx-auto mb-4 max-w-sm text-sm text-gray-500">
+                                    Your Bitcoin DCA purchases and membership transactions will
+                                    appear here once you start using the service.
+                                </p>
+                                <div className="inline-flex items-center gap-2 rounded-full border border-gray-700 bg-gray-800/50 px-3 py-2 text-xs text-gray-600">
+                                    <svg
+                                        className="h-3 w-3"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    Transactions will be clickable for detailed view
+                                </div>
                             </div>
-                            <h3 className="mb-3 text-xl font-semibold text-gray-300">
-                                No Transactions Yet
-                            </h3>
-                            <p className="mx-auto mb-4 max-w-sm text-sm text-gray-500">
-                                Your Bitcoin DCA purchases and membership transactions will appear
-                                here once you start using the service.
-                            </p>
-                            <div className="inline-flex items-center gap-2 rounded-full border border-gray-700 bg-gray-800/50 px-3 py-2 text-xs text-gray-600">
-                                <svg
-                                    className="h-3 w-3"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                    />
-                                </svg>
-                                Transactions will be clickable for detailed view
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )
-        )}
+                        )}
+                    </div>
+                ))}
 
             {/* Transaction Detail Modal */}
             {selectedTransaction && (

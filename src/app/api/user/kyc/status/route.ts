@@ -23,11 +23,9 @@ export async function GET(request: NextRequest) {
 
         // If the external API returns an error
         if (!response.ok) {
-            const errorData = await response
-                .json()
-                .catch(() => ({
-                    message: "An unexpected error occurred while fetching KYC status.",
-                }));
+            const errorData = await response.json().catch(() => ({
+                message: "An unexpected error occurred while fetching KYC status.",
+            }));
             return NextResponse.json(errorData, { status: response.status });
         }
 
