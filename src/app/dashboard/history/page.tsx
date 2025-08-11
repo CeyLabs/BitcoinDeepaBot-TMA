@@ -52,10 +52,6 @@ export default function HistoryPage() {
 
     const errorMessage = error instanceof Error ? error.message : null;
 
-    const refreshTransactions = () => {
-        refetch();
-    };
-
     // Get settlement status info
     const getSettlementInfo = (settled?: boolean) => {
         if (settled === undefined) {
@@ -139,7 +135,7 @@ export default function HistoryPage() {
                 <h1 className="text-xl font-bold">Transaction History</h1>
                 {authToken && (
                     <button
-                        onClick={refreshTransactions}
+                        onClick={() => refetch()}
                         className="rounded-xl border border-gray-600 p-2 text-gray-400 transition-colors hover:border-orange-500 hover:text-orange-500"
                         title="Refresh transactions"
                     >
@@ -166,7 +162,7 @@ export default function HistoryPage() {
                     <h3 className="mb-2 font-medium text-red-400">Failed to Load Transactions</h3>
                     <p className="mb-4 text-sm text-gray-400">{errorMessage}</p>
                     <button
-                        onClick={refreshTransactions}
+                        onClick={() => refetch()}
                         className="rounded bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-sm font-medium text-white hover:from-red-700 hover:to-red-800"
                     >
                         Try Again
