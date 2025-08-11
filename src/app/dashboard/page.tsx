@@ -288,9 +288,7 @@ export default function WalletPage() {
                                     </span>
                                     <span className="ml-3 rounded-md bg-blue-400/10 px-2 py-1 text-sm text-blue-400">
                                         ≈ රු.{" "}
-                                        {formatLargeNumber(
-                                            Number(summary.total_lkr.replace(/,/g, ""))
-                                        )}
+                                        {summary.total_lkr ? formatLargeNumber(Number(summary.total_lkr.replace(/,/g, ""))) : "0"}
                                     </span>
                                 </h1>
 
