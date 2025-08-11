@@ -9,10 +9,12 @@ import { BiCheckCircle } from "react-icons/bi";
 import { getAuthTokenFromStorage } from "@/lib/auth";
 import { MdCancel } from "react-icons/md";
 import { ApiTransaction } from "@/lib/types";
+import { initUtils } from "@telegram-apps/sdk-react";
 import { formatDate } from "@/lib/formatters";
 
 export default function PaymentSuccessPage() {
     const router = useRouter();
+    const utils = initUtils();
     const { setSubscription } = useStore();
     const [isProcessing, setIsProcessing] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -197,6 +199,18 @@ export default function PaymentSuccessPage() {
                     )}
 
                     <div className="space-y-3">
+                        {process.env.NEXT_PUBLIC_TELEGRAM_ALPHA_GROUP_LINK && (
+                            <Button
+                                onClick={() =>
+                                    utils.openTelegramLink(
+                                        process.env.NEXT_PUBLIC_TELEGRAM_ALPHA_GROUP_LINK!
+                                    )
+                                }
+                                className="w-full bg-green-600 hover:bg-green-700"
+                            >
+                                Join Alpha Group
+                            </Button>
+                        )}
                         <Button
                             onClick={() => router.push("/dashboard")}
                             className="w-full bg-orange-600 hover:bg-orange-700"
