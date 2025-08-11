@@ -59,7 +59,7 @@ export default function WalletPage() {
 
     const {
         data: summary,
-        isLoading: summaryLoading,
+        isLoading,
         error: summaryError,
         refetch: refetchSummary,
     } = useQuery<DCSummary>({
@@ -255,7 +255,7 @@ export default function WalletPage() {
                 </div>
 
                 {/* Balance Card */}
-                {summaryLoading ? (
+                {isLoading ? (
                     <BalanceCardSkeleton />
                 ) : (
                     <div className="mb-8 rounded-3xl border border-gray-700 bg-gradient-to-r from-gray-600/20 to-gray-500/20 p-6">
@@ -267,10 +267,10 @@ export default function WalletPage() {
                                 <button
                                     className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 transition-colors hover:bg-gray-600"
                                     onClick={() => handleRefreshWallet(refetchSummary)}
-                                    disabled={summaryLoading}
+                                    disabled={isLoading}
                                 >
                                     <MdRefresh
-                                        className={`text-lg text-gray-400 ${summaryLoading ? "animate-spin" : ""}`}
+                                        className={`text-lg text-gray-400 ${isLoading ? "animate-spin" : ""}`}
                                     />
                                 </button>
                                 {/* <button className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700">
@@ -558,7 +558,7 @@ export default function WalletPage() {
                 )}
 
                 {/* DCA Chart Section */}
-                {summaryLoading ? (
+                {isLoading ? (
                     <ChartSkeleton />
                 ) : (
                     <DCAChart authToken={authToken} avgBtcPrice={summary?.dca.avg_btc_price} />
