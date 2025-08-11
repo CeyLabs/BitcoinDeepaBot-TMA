@@ -12,7 +12,8 @@ import {
 import { useStore } from "@/lib/store";
 import type { SubscriptionPlan } from "@/lib/types";
 import { cn } from "@/lib/cn";
-import LoadingPage from "@/components/LoadingPage";
+import LoadingPage, { LoadingSpinner } from "@/components/LoadingPage";
+import ListItemSkeleton from "@/components/skeletons/ListItemSkeleton";
 import Image from "next/image";
 import { Button, Input } from "@telegram-apps/telegram-ui";
 import { usePayHereRedirect } from "@/lib/hooks";
@@ -70,7 +71,6 @@ export default function SubscriptionPage() {
             setPackagesError(null);
 
             const response = await fetch("/api/packages", {
-                method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -285,17 +285,21 @@ export default function SubscriptionPage() {
 
                         {/* Plans */}
                         <div className="mb-2 space-y-3 p-4">
-                            {packages.map((plan) => (
-                                <div
-                                    key={plan.id}
-                                    className={cn(
-                                        "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all duration-300",
-                                        selectedPlan === plan.id
-                                            ? "border-orange-500 bg-gradient-to-r from-orange-500/10 to-orange-600/10 shadow-lg shadow-orange-500/20"
-                                            : "border-gray-700 bg-gradient-to-r from-gray-800/50 to-gray-900/50 hover:border-gray-600"
-                                    )}
-                                    onClick={() => setSelectedPlan(plan.id)}
-                                >
+                            {isLoading || packagesLoading
+                                ? Array.from({ length: 3 }).map((_, i) => (
+                                      <ListItemSkeleton key={i} />
+                                  ))
+                                : packages.map((plan) => (
+                                      <div
+                                          key={plan.id}
+                                          className={cn(
+                                              "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all duration-300",
+                                              selectedPlan === plan.id
+                                                  ? "border-orange-500 bg-gradient-to-r from-orange-500/10 to-orange-600/10 shadow-lg shadow-orange-500/20"
+                                                  : "border-gray-700 bg-gradient-to-r from-gray-800/50 to-gray-900/50 hover:border-gray-600"
+                                          )}
+                                          onClick={() => setSelectedPlan(plan.id)}
+                                      >
                                     <div className="flex items-center gap-3">
                                         <div
                                             className={cn(
@@ -563,36 +567,6 @@ export default function SubscriptionPage() {
                                 </div>
                             </div>
                         </form>
-
-                        {/* <section className="p-4"> */}
-                        {/* Submit Button */}
-                        {/* <Button
-                                onClick={handleRegistrationSubmit}
-                                disabled={isRegistering || !isFormValid()}
-                                className={cn(
-                                    "mt-2 w-full rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300",
-                                    isRegistering || !isFormValid()
-                                        ? "cursor-not-allowed opacity-50"
-                                        : "hover:scale-105 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl"
-                                )}
-                            >
-                                {isRegistering ? (
-                                    <div className="flex items-center justify-center">
-                                        <div className="mr-3 h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                        Creating account and payment link...
-                                    </div>
-                                ) : (
-                                    "Complete Registration & Pay →"
-                                )}
-                            </Button> */}
-
-                        {/* Required Fields Note */}
-                        {/* <div className="mt-4 text-center">
-                                <p className="text-sm text-gray-500">
-                                    <span className="text-red-500">*</span> Required fields
-                                </p>
-                            </div> */}
-                        {/* </section> */}
                     </>
                 )}
             </div>

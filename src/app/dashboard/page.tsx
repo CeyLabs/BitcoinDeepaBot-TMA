@@ -9,7 +9,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useBackButton, useLaunchParams } from "@telegram-apps/sdk-react";
 import { authenticateWithTelegram, getAuthTokenFromStorage, saveAuthToStorage } from "@/lib/auth";
-import LoadingPage from "@/components/LoadingPage";
+import BalanceCardSkeleton from "@/components/skeletons/BalanceCardSkeleton";
+import ChartSkeleton from "@/components/skeletons/ChartSkeleton";
 import fetchy from "@/lib/fetchy";
 import { UserExistsResponse } from "@/lib/types";
 import { toast } from "sonner";
@@ -17,6 +18,8 @@ import Image from "next/image";
 import { DCAChart } from "@/components/DCAChart";
 import { formatLargeNumber } from "@/lib/formatters";
 import { LuArrowDownRight, LuArrowUpRight } from "react-icons/lu";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 interface DCSummary {
     dca: {
@@ -30,21 +33,51 @@ interface DCSummary {
     "24_hr_change": number;
 }
 
+const handleRefreshWallet = async (refetchSummary: () => Promise<any>) => {
+    try {
+        await refetchSummary();
+        toast("Wallet refreshed successfully", {
+            className: "bg-gray-900 text-white",
+        });
+    } catch (error) {
+        toast("Failed to refresh wallet", {
+            className: "bg-gray-900 text-white",
+        });
+    }
+};
+
 export default function WalletPage() {
     const router = useRouter();
     const { wallet, isExistingUser, setIsExistingUser, setUser } = useStore();
     const launchParams = useLaunchParams();
     const backButton = useBackButton();
-    const [isLoading, setIsLoading] = useState(true);
     const [authError, setAuthError] = useState<string | null>(null);
     const [telegramUserData, setTelegramUserData] = useState<any>(null);
     const [showWelcome, setShowWelcome] = useState(false);
-    const [summary, setSummary] = useState<DCSummary | null>(null);
-    const [summaryLoading, setSummaryLoading] = useState(false);
-    const [summaryError, setSummaryError] = useState<string | null>(null);
     const [showNotifications, setShowNotifications] = useState(false);
 
     const authToken = getAuthTokenFromStorage();
+
+    const {
+        data: summary,
+        isLoading,
+        error: summaryError,
+        refetch: refetchSummary,
+    } = useQuery<DCSummary>({
+        queryKey: queryKeys.walletSummary,
+        queryFn: async () => {
+            const res = await fetch(`/api/transaction/dca-summary`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+            });
+            if (!res.ok) throw new Error("Failed to fetch wallet summary");
+            return res.json();
+        },
+        enabled: !!authToken,
+        staleTime: 1000 * 60 * 5,
+    });
 
     useEffect(() => {
         backButton.show();
@@ -72,7 +105,6 @@ export default function WalletPage() {
     useEffect(() => {
         const initializeAuth = async () => {
             try {
-                setIsLoading(true);
                 setAuthError(null);
 
                 const initDataRaw = launchParams.initDataRaw;
@@ -133,8 +165,6 @@ export default function WalletPage() {
             } catch (error) {
                 console.error("Error during authentication:", error);
                 setAuthError("Authentication failed. Please try again.");
-            } finally {
-                setIsLoading(false);
             }
         };
 
@@ -142,59 +172,12 @@ export default function WalletPage() {
     }, [launchParams, setIsExistingUser, setUser, router]);
 
     useEffect(() => {
-        // Fetch wallet summary
-        const fetchSummary = async () => {
-            setIsLoading(true);
-            try {
-                const res = await fetch(`/api/transaction/dca-summary`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${authToken}`,
-                    },
-                });
-                if (!res.ok) throw new Error("Failed to fetch wallet summary");
-                const data = await res.json();
-                setSummary(data);
-            } catch (e: any) {
-                setSummaryError(e.message || "Unknown error");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchSummary();
-    }, [authToken]);
-
-    useEffect(() => {
-        const checkKycStatus = async () => {
-            if (authToken) {
-                try {
-                    const res = await fetch(`/api/user/kyc/status`, {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${authToken}`,
-                        },
-                    });
-
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.status !== "APPROVED") {
-                            router.push("/verification");
-                        }
-                    }
-                } catch (error) {
-                    console.error("Error checking KYC status:", error);
-                }
-            }
-        };
-
-        checkKycStatus();
-    }, [authToken, router]);
-
-    if (isLoading) {
-        return <LoadingPage />;
-    }
+        if (summaryError) {
+            toast.error(
+                summaryError instanceof Error ? summaryError.message : String(summaryError)
+            );
+        }
+    }, [summaryError]);
 
     if (authError) {
         return (
@@ -272,263 +255,238 @@ export default function WalletPage() {
                 </div>
 
                 {/* Balance Card */}
-                <div className="mb-8 rounded-3xl border border-gray-700 bg-gradient-to-r from-gray-600/20 to-gray-500/20 p-6">
-                    <div className="mb-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-medium text-gray-400">Current balance</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 transition-colors hover:bg-gray-600"
-                                onClick={() => {
-                                    // Refetch wallet summary
-                                    const fetchSummary = async () => {
-                                        setSummaryLoading(true);
-                                        setSummaryError(null);
-                                        try {
-                                            const res = await fetch(
-                                                `/api/transaction/dca-summary`,
-                                                {
-                                                    method: "GET",
-                                                    headers: {
-                                                        "Content-Type": "application/json",
-                                                        Authorization: `Bearer ${authToken}`,
-                                                    },
-                                                }
-                                            );
-                                            if (!res.ok)
-                                                throw new Error("Failed to fetch wallet summary");
-                                            const data = await res.json();
-                                            setSummary(data);
-                                            toast("Wallet refreshed successfully", {
-                                                className: "bg-gray-900 text-white",
-                                            });
-                                        } catch (e: any) {
-                                            setSummaryError(e.message || "Unknown error");
-                                            toast("Failed to refresh wallet", {
-                                                className: "bg-gray-900 text-white",
-                                            });
-                                        } finally {
-                                            setSummaryLoading(false);
-                                        }
-                                    };
-                                    fetchSummary();
-                                }}
-                                disabled={summaryLoading}
-                            >
-                                <MdRefresh
-                                    className={`text-lg text-gray-400 ${summaryLoading ? "animate-spin" : ""}`}
-                                />
-                            </button>
-                            {/* <button className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700">
+                {isLoading ? (
+                    <BalanceCardSkeleton />
+                ) : (
+                    <div className="mb-8 rounded-3xl border border-gray-700 bg-gradient-to-r from-gray-600/20 to-gray-500/20 p-6">
+                        <div className="mb-4 flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-400">Current balance</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 transition-colors hover:bg-gray-600"
+                                    onClick={() => handleRefreshWallet(refetchSummary)}
+                                    disabled={isLoading}
+                                >
+                                    <MdRefresh
+                                        className={`text-lg text-gray-400 ${isLoading ? "animate-spin" : ""}`}
+                                    />
+                                </button>
+                                {/* <button className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700">
                                 <MdSettings className="text-lg text-gray-400" />
                             </button> */}
+                            </div>
                         </div>
-                    </div>
 
-                    {summary ? (
-                        <div className="mb-6">
-                            <h1 className="mb-6 text-4xl font-bold text-white">
-                                {formatLargeNumber(summary.total_balance)}{" "}
-                                <span className="text-base font-medium text-orange-400">sats</span>
-                                <span className="ml-3 rounded-md bg-blue-400/10 px-2 py-1 text-sm text-blue-400">
-                                    ≈ රු.{" "}
-                                    {summary.total_lkr ? formatLargeNumber(Number(summary.total_lkr.replace(/,/g, ""))) : "0"}
-                                </span>
-                            </h1>
+                        {summary ? (
+                            <div className="mb-6">
+                                <h1 className="mb-6 text-4xl font-bold text-white">
+                                    {formatLargeNumber(summary.total_balance)}{" "}
+                                    <span className="text-base font-medium text-orange-400">
+                                        sats
+                                    </span>
+                                    <span className="ml-3 rounded-md bg-blue-400/10 px-2 py-1 text-sm text-blue-400">
+                                        ≈ රු.{" "}
+                                        {summary.total_lkr ? formatLargeNumber(Number(summary.total_lkr.replace(/,/g, ""))) : "0"}
+                                    </span>
+                                </h1>
 
-                            {/* Wallet Analytics Dashboard */}
-                            <div className="mb-4 rounded-xl border-gray-800/50 backdrop-blur-sm">
-                                <div className="mb-3 text-sm font-medium text-gray-300">
-                                    Balance Distribution
-                                </div>
-
-                                {/* Visual Progress Representation */}
-                                <div className="mb-4">
-                                    <div className="flex h-3 overflow-hidden rounded-full bg-gray-700">
-                                        <div
-                                            className="bg-gradient-to-r from-orange-500 to-orange-400 transition-all duration-500"
-                                            style={{
-                                                width: `${(summary.dca.balance / summary.total_balance) * 100}%`,
-                                            }}
-                                        ></div>
-                                        <div
-                                            className="bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
-                                            style={{
-                                                width: `${((summary.total_balance - summary.dca.balance) / summary.total_balance) * 100}%`,
-                                            }}
-                                        ></div>
+                                {/* Wallet Analytics Dashboard */}
+                                <div className="mb-4 rounded-xl border-gray-800/50 backdrop-blur-sm">
+                                    <div className="mb-3 text-sm font-medium text-gray-300">
+                                        Balance Distribution
                                     </div>
-                                </div>
 
-                                {/* Compact Stats Grid */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="rounded-xl border-l-4 border-orange-500 bg-orange-500/10 p-3">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <div className="text-xs font-medium uppercase text-orange-300">
-                                                    Membership <br /> Rewards
+                                    {/* Visual Progress Representation */}
+                                    <div className="mb-4">
+                                        <div className="flex h-3 overflow-hidden rounded-full bg-gray-700">
+                                            <div
+                                                className="bg-gradient-to-r from-orange-500 to-orange-400 transition-all duration-500"
+                                                style={{
+                                                    width: `${(summary.dca.balance / summary.total_balance) * 100}%`,
+                                                }}
+                                            ></div>
+                                            <div
+                                                className="bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
+                                                style={{
+                                                    width: `${((summary.total_balance - summary.dca.balance) / summary.total_balance) * 100}%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Compact Stats Grid */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="rounded-xl border-l-4 border-orange-500 bg-orange-500/10 p-3">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <div className="text-xs font-medium uppercase text-orange-300">
+                                                        Membership <br /> Rewards
+                                                    </div>
+                                                    <div className="text-lg font-bold text-white">
+                                                        {formatLargeNumber(summary.dca.balance)}
+                                                    </div>
+                                                    <div className="text-xs text-orange-400">
+                                                        {(
+                                                            (summary.dca.balance /
+                                                                summary.total_balance) *
+                                                            100
+                                                        ).toFixed(1)}
+                                                        % of total
+                                                    </div>
                                                 </div>
-                                                <div className="text-lg font-bold text-white">
-                                                    {formatLargeNumber(summary.dca.balance)}
-                                                </div>
-                                                <div className="text-xs text-orange-400">
-                                                    {(
-                                                        (summary.dca.balance /
-                                                            summary.total_balance) *
-                                                        100
-                                                    ).toFixed(1)}
-                                                    % of total
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded-xl border-l-4 border-green-500 bg-green-500/10 p-3">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <div className="text-xs font-medium uppercase text-green-300">
+                                                        Wallet
+                                                        <br /> Balance
+                                                    </div>
+                                                    <div className="text-lg font-bold text-white">
+                                                        {formatLargeNumber(
+                                                            summary.total_balance -
+                                                                summary.dca.balance
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xs text-green-400">
+                                                        {(
+                                                            ((summary.total_balance -
+                                                                summary.dca.balance) /
+                                                                summary.total_balance) *
+                                                            100
+                                                        ).toFixed(1)}
+                                                        % of total
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="rounded-xl border-l-4 border-green-500 bg-green-500/10 p-3">
-                                        <div className="flex items-center justify-between">
+                                    {/* Quick Stats Row */}
+                                    <div className="mt-3 flex items-center justify-between rounded-xl bg-gray-700/30 p-3">
+                                        <div className="text-center">
+                                            <div className="text-xs text-gray-400">DCA Spent</div>
+                                            <div className="text-sm font-semibold text-white">
+                                                රු. {formatLargeNumber(summary.dca.spent)}
+                                            </div>
+                                        </div>
+                                        <div className="h-8 w-px bg-gray-600"></div>
+                                        <div className="text-center">
+                                            <div className="text-xs text-gray-400">Avg Price</div>
+                                            <div className="text-sm font-semibold text-white">
+                                                රු. {formatLargeNumber(summary.dca.avg_btc_price)}
+                                            </div>
+                                        </div>
+                                        <div className="h-8 w-px bg-gray-600"></div>
+                                        <div className="text-center">
+                                            <div className="text-xs text-gray-400">Total BTC</div>
+                                            <div className="text-sm font-semibold text-white">
+                                                {(summary.total_balance / 100_000_000).toFixed(6)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Portfolio Performance Section */}
+                                {/* 24hr P&L */}
+                                <div className="rounded-xl bg-gray-700/40 p-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                                                    summary["24_hr_change"] >= 0
+                                                        ? "bg-green-500/20"
+                                                        : "bg-red-500/20"
+                                                }`}
+                                            >
+                                                <span
+                                                    className={`text-sm font-bold ${
+                                                        summary["24_hr_change"] >= 0
+                                                            ? "text-green-400"
+                                                            : "text-red-400"
+                                                    }`}
+                                                >
+                                                    {summary["24_hr_change"] >= 0 ? (
+                                                        <LuArrowUpRight />
+                                                    ) : (
+                                                        <LuArrowDownRight />
+                                                    )}
+                                                </span>
+                                            </div>
                                             <div>
-                                                <div className="text-xs font-medium uppercase text-green-300">
-                                                    Wallet
-                                                    <br /> Balance
-                                                </div>
-                                                <div className="text-lg font-bold text-white">
+                                                <div className="text-xs text-gray-400">24h P&L</div>
+                                                <div
+                                                    className={`text-lg font-bold ${
+                                                        summary["24_hr_change"] >= 0
+                                                            ? "text-green-400"
+                                                            : "text-red-400"
+                                                    }`}
+                                                >
+                                                    {summary["24_hr_change"] >= 0 ? "+" : ""}රු.{" "}
                                                     {formatLargeNumber(
-                                                        summary.total_balance - summary.dca.balance
+                                                        (summary["24_hr_change"] *
+                                                            Number(
+                                                                summary.total_lkr.replace(/,/g, "")
+                                                            )) /
+                                                            100
                                                     )}
                                                 </div>
-                                                <div className="text-xs text-green-400">
-                                                    {(
-                                                        ((summary.total_balance -
-                                                            summary.dca.balance) /
-                                                            summary.total_balance) *
-                                                        100
-                                                    ).toFixed(1)}
-                                                    % of total
-                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-
-                                {/* Quick Stats Row */}
-                                <div className="mt-3 flex items-center justify-between rounded-xl bg-gray-700/30 p-3">
-                                    <div className="text-center">
-                                        <div className="text-xs text-gray-400">DCA Spent</div>
-                                        <div className="text-sm font-semibold text-white">
-                                            රු. {formatLargeNumber(summary.dca.spent)}
-                                        </div>
-                                    </div>
-                                    <div className="h-8 w-px bg-gray-600"></div>
-                                    <div className="text-center">
-                                        <div className="text-xs text-gray-400">Avg Price</div>
-                                        <div className="text-sm font-semibold text-white">
-                                            රු. {formatLargeNumber(summary.dca.avg_btc_price)}
-                                        </div>
-                                    </div>
-                                    <div className="h-8 w-px bg-gray-600"></div>
-                                    <div className="text-center">
-                                        <div className="text-xs text-gray-400">Total BTC</div>
-                                        <div className="text-sm font-semibold text-white">
-                                            {(summary.total_balance / 100_000_000).toFixed(6)}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Portfolio Performance Section */}
-                            {/* 24hr P&L */}
-                            <div className="rounded-xl bg-gray-700/40 p-3">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                                                summary["24_hr_change"] >= 0
-                                                    ? "bg-green-500/20"
-                                                    : "bg-red-500/20"
-                                            }`}
-                                        >
-                                            <span
-                                                className={`text-sm font-bold ${
-                                                    summary["24_hr_change"] >= 0
-                                                        ? "text-green-400"
-                                                        : "text-red-400"
-                                                }`}
-                                            >
-                                                {summary["24_hr_change"] >= 0 ? (
-                                                    <LuArrowUpRight />
-                                                ) : (
-                                                    <LuArrowDownRight />
-                                                )}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <div className="text-xs text-gray-400">24h P&L</div>
+                                        <div className="text-right">
+                                            <div className="text-xs text-gray-400">Change</div>
                                             <div
-                                                className={`text-lg font-bold ${
+                                                className={`text-sm font-semibold ${
                                                     summary["24_hr_change"] >= 0
                                                         ? "text-green-400"
                                                         : "text-red-400"
                                                 }`}
                                             >
-                                                {summary["24_hr_change"] >= 0 ? "+" : ""}රු.{" "}
-                                                {formatLargeNumber(
-                                                    (summary["24_hr_change"] *
-                                                        Number(
-                                                            summary.total_lkr ? summary.total_lkr.replace(/,/g, "") : "0"
-                                                        )) /
-                                                        100
-                                                )}
+                                                {summary["24_hr_change"] >= 0 ? "+" : ""}
+                                                {summary["24_hr_change"].toFixed(2)}%
                                             </div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-xs text-gray-400">Change</div>
-                                        <div
-                                            className={`text-sm font-semibold ${
-                                                summary["24_hr_change"] >= 0
-                                                    ? "text-green-400"
-                                                    : "text-red-400"
-                                            }`}
-                                        >
-                                            {summary["24_hr_change"] >= 0 ? "+" : ""}
-                                            {summary["24_hr_change"].toFixed(2)}%
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="mb-6">
-                            <h1 className="mb-2 text-4xl font-bold text-white">
-                                $
-                                {wallet.balance.toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                })}
-                            </h1>
-                            <div className="flex items-center gap-2">
-                                <span
-                                    className={`text-sm font-medium ${
-                                        wallet.change24h < 0 ? "text-red-500" : "text-green-500"
-                                    }`}
-                                >
-                                    {wallet.change24h < 0 ? "-" : "+"}$
-                                    {Math.abs(wallet.change24h).toFixed(2)}
-                                </span>
-                                <span
-                                    className={`text-sm ${
-                                        wallet.changePercent < 0 ? "text-red-500" : "text-green-500"
-                                    }`}
-                                >
-                                    ({wallet.changePercent > 0 ? "+" : ""}
-                                    {wallet.changePercent.toFixed(2)}%)
-                                </span>
+                        ) : (
+                            <div className="mb-6">
+                                <h1 className="mb-2 text-4xl font-bold text-white">
+                                    $
+                                    {wallet.balance.toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}
+                                </h1>
+                                <div className="flex items-center gap-2">
+                                    <span
+                                        className={`text-sm font-medium ${
+                                            wallet.change24h < 0 ? "text-red-500" : "text-green-500"
+                                        }`}
+                                    >
+                                        {wallet.change24h < 0 ? "-" : "+"}$
+                                        {Math.abs(wallet.change24h).toFixed(2)}
+                                    </span>
+                                    <span
+                                        className={`text-sm ${
+                                            wallet.changePercent < 0
+                                                ? "text-red-500"
+                                                : "text-green-500"
+                                        }`}
+                                    >
+                                        ({wallet.changePercent > 0 ? "+" : ""}
+                                        {wallet.changePercent.toFixed(2)}%)
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Action Buttons */}
-                    {/* <div className="flex justify-between">
+                        {/* Action Buttons */}
+                        {/* <div className="flex justify-between">
                         {[
                             { icon: IoMdSend, label: "Send", unavailable: true },
                             { icon: IoMdDownload, label: "Receive", unavailable: true },
@@ -594,10 +552,15 @@ export default function WalletPage() {
                             </div>
                         ))}
                     </div> */}
-                </div>
+                    </div>
+                )}
 
                 {/* DCA Chart Section */}
-                <DCAChart authToken={authToken} avgBtcPrice={summary?.dca.avg_btc_price} />
+                {isLoading ? (
+                    <ChartSkeleton />
+                ) : (
+                    <DCAChart authToken={authToken} avgBtcPrice={summary?.dca.avg_btc_price} />
+                )}
             </main>
         </div>
     );
