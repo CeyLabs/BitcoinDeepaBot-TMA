@@ -99,7 +99,6 @@ export default function SubscriptionPage() {
             setPackagesError(null);
 
             const response = await fetch("/api/packages", {
-                method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                 },
