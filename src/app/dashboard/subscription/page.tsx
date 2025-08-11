@@ -9,9 +9,11 @@ import LoadingPage from "@/components/LoadingPage";
 import Image from "next/image";
 import { initPopup } from "@telegram-apps/sdk-react";
 import { usePayHereRedirect } from "@/lib/hooks";
+import { Button } from "@telegram-apps/telegram-ui";
+import { formatDate } from "@/lib/formatters";
 
 export default function SubscriptionPage() {
-    const [selectedPlan, setSelectedPlan] = useState<string>("stacker-weekly");
+    const [selectedPlan, setSelectedPlan] = useState<string>();
     const [activeTab, setActiveTab] = useState<"plans" | "status">("plans");
     const { subscription, setSubscription } = useStore();
 
@@ -398,22 +400,23 @@ export default function SubscriptionPage() {
                         </div>
                     </div>
 
-                    <button
-                        onClick={() => {
-                            const plan = packages.find(
-                                (p: SubscriptionPlan) => p.id === selectedPlan
-                            );
-                            if (plan) handleSubscribe(plan);
-                        }}
-                        disabled={payhereLinkLoading || !selectedPlan}
+                    <Button
+                        Component="a"
                         className={cn(
-                            "w-full rounded-xl p-3 font-medium text-white transition-all duration-300",
+                            "w-full font-medium text-white transition-all duration-300",
                             payhereLinkLoading
                                 ? "cursor-not-allowed bg-gray-600"
                                 : selectedPlan
                                   ? "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
                                   : "cursor-not-allowed bg-gray-700 opacity-50"
                         )}
+                        onClick={() => {
+                            const plan = packages.find(
+                                (p: SubscriptionPlan) => p.id === selectedPlan
+                            );
+                            if (plan) handleSubscribe(plan);
+                        }}
+                        disabled={payhereLinkLoading}
                     >
                         {payhereLinkLoading ? (
                             <>
@@ -425,7 +428,7 @@ export default function SubscriptionPage() {
                                 Subscribe
                             </span>
                         )}
-                    </button>
+                    </Button>
                 </div>
             ) : (
                 <div className="space-y-6">
@@ -494,21 +497,13 @@ export default function SubscriptionPage() {
                                     {subscription.startDate && (
                                         <div className="flex justify-between">
                                             <span className="text-gray-400">Started:</span>
-                                            <span>
-                                                {new Date(
-                                                    subscription.startDate
-                                                ).toLocaleDateString()}
-                                            </span>
+                                            <span>{formatDate(subscription.startDate)}</span>
                                         </div>
                                     )}
                                     {subscription.endDate && (
                                         <div className="flex justify-between">
                                             <span className="text-gray-400">Next billing:</span>
-                                            <span>
-                                                {new Date(
-                                                    subscription.endDate
-                                                ).toLocaleDateString()}
-                                            </span>
+                                            <span>{formatDate(subscription.endDate)}</span>
                                         </div>
                                     )}
                                     <div className="flex justify-between">
@@ -574,12 +569,13 @@ export default function SubscriptionPage() {
                             <p className="mb-6 text-gray-400">
                                 Choose a plan to get started with your bitcoin දීප membership
                             </p>
-                            <button
+                            <Button
+                                Component="a"
+                                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3"
                                 onClick={() => setActiveTab("plans")}
-                                className="rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3 font-medium text-white transition-all duration-300 hover:from-orange-600 hover:to-orange-700"
                             >
                                 View Plans
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>
