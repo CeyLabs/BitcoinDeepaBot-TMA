@@ -350,7 +350,7 @@ export default function SubscriptionPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#202020]">
+        <div className="min-h-screen">
             <div className="mx-auto max-w-md">
                 {!showRegistrationForm ? (
                     // Plan Selection Screen
