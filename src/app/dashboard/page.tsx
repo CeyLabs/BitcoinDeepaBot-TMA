@@ -66,7 +66,6 @@ export default function WalletPage() {
         queryKey: ["wallet-summary"],
         queryFn: async () => {
             const res = await fetch(`/api/transaction/dca-summary`, {
-                method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${authToken}`,
