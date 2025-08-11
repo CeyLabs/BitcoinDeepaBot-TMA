@@ -32,6 +32,19 @@ interface DCSummary {
     "24_hr_change": number;
 }
 
+const handleRefreshWallet = async (refetchSummary: () => Promise<any>) => {
+    try {
+        await refetchSummary();
+        toast("Wallet refreshed successfully", {
+            className: "bg-gray-900 text-white",
+        });
+    } catch (error) {
+        toast("Failed to refresh wallet", {
+            className: "bg-gray-900 text-white",
+        });
+    }
+};
+
 export default function WalletPage() {
     const router = useRouter();
     const { wallet, isExistingUser, setIsExistingUser, setUser } = useStore();
@@ -253,18 +266,7 @@ export default function WalletPage() {
                             <div className="flex items-center gap-2">
                                 <button
                                     className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 transition-colors hover:bg-gray-600"
-                                    onClick={async () => {
-                                        try {
-                                            await refetchSummary();
-                                            toast("Wallet refreshed successfully", {
-                                                className: "bg-gray-900 text-white",
-                                            });
-                                        } catch (error) {
-                                            toast("Failed to refresh wallet", {
-                                                className: "bg-gray-900 text-white",
-                                            });
-                                        }
-                                    }}
+                                    onClick={() => handleRefreshWallet(refetchSummary)}
                                     disabled={summaryLoading}
                                 >
                                     <MdRefresh
