@@ -293,7 +293,7 @@ export default function WalletPage() {
                                 </h1>
 
                                 {/* Wallet Analytics Dashboard */}
-                                <div className="mb-4 rounded-xl border-gray-800/50 backdrop-blur-sm">
+                                <div className="mb-4 rounded-xl border-gray-800/50">
                                     <div className="mb-3 text-sm font-medium text-gray-300">
                                         Balance Distribution
                                     </div>
