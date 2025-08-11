@@ -12,6 +12,7 @@ import { usePayHereRedirect } from "@/lib/hooks";
 import { Button } from "@telegram-apps/telegram-ui";
 import { formatDate } from "@/lib/formatters";
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 export default function SubscriptionPage() {
     const [selectedPlan, setSelectedPlan] = useState<string>();
@@ -33,10 +34,9 @@ export default function SubscriptionPage() {
         error,
         refetch: refetchPackages,
     } = useQuery<SubscriptionPlan[]>({
-        queryKey: ["packages"],
+        queryKey: queryKeys.packages,
         queryFn: async () => {
             const response = await fetch("/api/packages", {
-                method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
             const data = await response.json();

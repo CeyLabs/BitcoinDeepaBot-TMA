@@ -7,6 +7,7 @@ import { cn } from "@/lib/cn";
 import ListItemSkeleton from "@/components/skeletons/ListItemSkeleton";
 import { formatDate, formatSatoshis } from "@/lib/formatters";
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 export default function HistoryPage() {
     // Get auth token from localStorage
@@ -20,10 +21,9 @@ export default function HistoryPage() {
         isLoading,
         refetch,
     } = useQuery<ApiTransaction[]>({
-        queryKey: ["transactions"],
+        queryKey: queryKeys.transactions,
         queryFn: async () => {
             const response = await fetch(`/api/transaction/list`, {
-                method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${authToken}`,

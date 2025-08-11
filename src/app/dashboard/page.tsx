@@ -19,6 +19,7 @@ import { DCAChart } from "@/components/DCAChart";
 import { formatLargeNumber } from "@/lib/formatters";
 import { LuArrowDownRight, LuArrowUpRight } from "react-icons/lu";
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 interface DCSummary {
     dca: {
@@ -63,7 +64,7 @@ export default function WalletPage() {
         error: summaryError,
         refetch: refetchSummary,
     } = useQuery<DCSummary>({
-        queryKey: ["wallet-summary"],
+        queryKey: queryKeys.walletSummary,
         queryFn: async () => {
             const res = await fetch(`/api/transaction/dca-summary`, {
                 headers: {
