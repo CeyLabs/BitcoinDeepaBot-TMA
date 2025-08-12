@@ -1,120 +1,56 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { getAuthTokenFromStorage } from "@/lib/auth";
 import type { ApiTransaction } from "@/lib/types";
 import { cn } from "@/lib/cn";
-import LoadingPage from "@/components/LoadingPage";
+import ListItemSkeleton from "@/components/skeletons/ListItemSkeleton";
 import { formatDate, formatSatoshis } from "@/lib/formatters";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 export default function HistoryPage() {
     // Get auth token from localStorage
     const authToken = getAuthTokenFromStorage();
 
-    // API transaction state
-    const [apiTransactions, setApiTransactions] = useState<ApiTransaction[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [hasMorePages, setHasMorePages] = useState(true);
-    const [totalTransactions, setTotalTransactions] = useState(0);
+    const [selectedTransaction, setSelectedTransaction] = useState<ApiTransaction | null>(null);
 
-    const ITEMS_PER_PAGE = 10;
-
-    // Fetch transactions from API
-    const fetchTransactions = useCallback(
-        async (page: number = 1, append: boolean = false) => {
-            if (!authToken) {
-                setLoading(false);
-                return;
-            }
-
-            try {
-                if (append) {
-                    setLoadingMore(true);
-                } else {
-                    setLoading(true);
-                    setCurrentPage(1);
-                    setApiTransactions([]);
-                    setHasMorePages(true);
-                }
-                setError(null);
-
-                const response = await fetch(
-                    `/api/transaction/list?page=${page}&limit=${ITEMS_PER_PAGE}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${authToken}`,
-                        },
-                    }
+    const {
+        data: apiTransactions = [],
+        error,
+        isLoading,
+        refetch,
+    } = useQuery<ApiTransaction[]>({
+        queryKey: queryKeys.transactions,
+        queryFn: async () => {
+            const response = await fetch(`/api/transaction/list`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(
+                    result.message || `Failed to fetch transactions: ${response.statusText}`
                 );
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(
-                        result.message || `Failed to fetch transactions: ${response.statusText}`
-                    );
-                }
-
-                const transactions = Array.isArray(result.transactions)
+            }
+            // Handle different response structures
+            if (Array.isArray(result)) {
+                return result;
+            }
+            if (result.transactions) {
+                return Array.isArray(result.transactions)
                     ? result.transactions
                     : result.transactions?.transactions || [];
-
-                // Extract pagination info from the nested transactions object
-                const transactionData = result.transactions;
-                const totalCount = transactionData?.total_count || transactions.length;
-                const currentPageFromAPI = transactionData?.current_page || page;
-                const totalPages =
-                    transactionData?.total_pages || Math.ceil(totalCount / ITEMS_PER_PAGE);
-                const hasMore = transactionData?.has_more || false;
-
-                setTotalTransactions(totalCount);
-                setCurrentPage(currentPageFromAPI);
-                setHasMorePages(hasMore);
-
-                if (append) {
-                    setApiTransactions((prev) => [...prev, ...transactions]);
-                } else {
-                    setApiTransactions(transactions);
-                }
-            } catch (err) {
-                console.error("❌ Error fetching transactions:", err);
-                setError(err instanceof Error ? err.message : "Failed to fetch transactions");
-                if (!append) {
-                    setApiTransactions([]);
-                }
-            } finally {
-                setLoading(false);
-                setLoadingMore(false);
             }
+            return [];
         },
-        [authToken, ITEMS_PER_PAGE]
-    );
+        enabled: !!authToken,
+        staleTime: 1000 * 60 * 5,
+    });
 
-    // Fetch transactions when component mounts and auth token is available
-    useEffect(() => {
-        if (authToken) {
-            fetchTransactions();
-        } else {
-            setLoading(false);
-        }
-    }, [authToken, fetchTransactions]);
-
-    // Load more transactions
-    const loadMoreTransactions = () => {
-        if (!loadingMore && hasMorePages) {
-            fetchTransactions(currentPage + 1, true);
-        }
-    };
-
-    // Refresh transactions (reset to first page)
-    const refreshTransactions = () => {
-        fetchTransactions(1, false);
-    };
+    const errorMessage = error instanceof Error ? error.message : null;
 
     // Get settlement status info
     const getSettlementInfo = (settled?: boolean) => {
@@ -192,11 +128,6 @@ export default function HistoryPage() {
         }
     };
 
-    // Show loading state
-    if (loading) {
-        return <LoadingPage />;
-    }
-
     return (
         <main className="pb-20">
             {/* Header */}
@@ -204,7 +135,7 @@ export default function HistoryPage() {
                 <h1 className="text-xl font-bold">Transaction History</h1>
                 {authToken && (
                     <button
-                        onClick={refreshTransactions}
+                        onClick={() => refetch()}
                         className="rounded-xl border border-gray-600 p-2 text-gray-400 transition-colors hover:border-orange-500 hover:text-orange-500"
                         title="Refresh transactions"
                     >
@@ -226,12 +157,12 @@ export default function HistoryPage() {
             </div>
 
             {/* Error State */}
-            {error && (
+            {errorMessage && !isLoading && (
                 <div className="mb-6 rounded-xl border border-red-500/30 bg-zinc-900/50 p-4 backdrop-blur-sm">
                     <h3 className="mb-2 font-medium text-red-400">Failed to Load Transactions</h3>
-                    <p className="mb-4 text-sm text-gray-400">{error}</p>
+                    <p className="mb-4 text-sm text-gray-400">{errorMessage}</p>
                     <button
-                        onClick={refreshTransactions}
+                        onClick={() => refetch()}
                         className="rounded bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-sm font-medium text-white hover:from-red-700 hover:to-red-800"
                     >
                         Try Again
@@ -240,7 +171,7 @@ export default function HistoryPage() {
             )}
 
             {/* No Auth Token */}
-            {!authToken && (
+            {!authToken && !isLoading && (
                 <div className="py-8 text-center text-gray-400">
                     <p className="mb-2">Please authenticate to view transactions</p>
                     <p className="text-sm text-gray-500">
@@ -250,167 +181,321 @@ export default function HistoryPage() {
             )}
 
             {/* Transactions List */}
-            {authToken && !error && (
-                <div className="space-y-0">
-                    {apiTransactions.length > 0 ? (
-                        apiTransactions.map((transaction) => {
-                            const statusInfo = getStatusInfo(transaction.status);
-                            const settlementInfo = getSettlementInfo(transaction.settled);
+            {authToken &&
+                !errorMessage &&
+                (isLoading ? (
+                    <div className="space-y-2">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <ListItemSkeleton key={i} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="space-y-0">
+                        {apiTransactions.length > 0 ? (
+                            apiTransactions.map((transaction) => {
+                                const statusInfo = getStatusInfo(transaction.status);
+                                const settlementInfo = getSettlementInfo(transaction.settled);
 
-                            return (
-                                <div
-                                    key={transaction.payhere_pay_id}
-                                    className="flex items-center justify-between border-b border-gray-800 py-4 last:border-b-0"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className={cn(
-                                                "flex h-8 w-8 items-center justify-center rounded-full border-2",
-                                                statusInfo.bgColor,
-                                                statusInfo.borderColor
-                                            )}
-                                        >
-                                            <span className={cn("text-sm", statusInfo.color)}>
-                                                {statusInfo.icon}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium">
-                                                DCA Recurring Buy
-                                                {transaction.payhere_sub_id && (
-                                                    <span className="ml-1 text-xs text-gray-500">
-                                                        (Membership)
+                                return (
+                                    <div
+                                        key={transaction.payhere_pay_id}
+                                        className="group cursor-pointer border-b border-gray-800 py-3 transition-all duration-200 last:border-b-0 hover:border-gray-700 hover:bg-gray-800/30"
+                                        onClick={() => setSelectedTransaction(transaction)}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div
+                                                    className={cn(
+                                                        "flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-200",
+                                                        statusInfo.bgColor,
+                                                        statusInfo.borderColor,
+                                                        "group-hover:scale-105"
+                                                    )}
+                                                >
+                                                    <span
+                                                        className={cn("text-sm", statusInfo.color)}
+                                                    >
+                                                        {statusInfo.icon}
                                                     </span>
-                                                )}
-                                            </p>
-                                            <p className="text-xs text-gray-400">
-                                                {formatDate(transaction.created_at)} at{" "}
-                                                {new Date(
-                                                    transaction.created_at
-                                                ).toLocaleTimeString()}
-                                            </p>
-                                            {transaction.btc_price_at_purchase && (
-                                                <p className="text-xs italic text-gray-500">
-                                                    @{" "}
-                                                    {Number(
-                                                        transaction.btc_price_at_purchase
-                                                    ).toLocaleString()}{" "}
-                                                    LKR per BTC
-                                                </p>
-                                            )}
-                                            {transaction.status === "SUCCESS" && settlementInfo && (
-                                                <div className="mt-1 flex items-center gap-1">
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium transition-colors group-hover:text-white">
+                                                        DCA Purchase
+                                                    </p>
+                                                    <p className="text-xs text-gray-400">
+                                                        {formatDate(transaction.created_at)}
+                                                    </p>
+                                                    <p className="mt-0.5 text-xs text-gray-500 transition-colors duration-200 group-hover:text-orange-300">
+                                                        Tap to view details
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="text-right">
+                                                    {transaction.satoshis_purchased && (
+                                                        <p className="font-semibold text-orange-400 transition-colors group-hover:text-orange-300">
+                                                            {Number(
+                                                                transaction.satoshis_purchased
+                                                            ).toLocaleString()}{" "}
+                                                            <span className="text-sm font-medium text-orange-300">
+                                                                sats
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                    <p
+                                                        className={cn(
+                                                            "text-xs font-medium",
+                                                            statusInfo.color
+                                                        )}
+                                                    >
+                                                        {statusInfo.label}
+                                                    </p>
+                                                </div>
+                                                <div className="transform text-gray-400 transition-all duration-200 group-hover:translate-x-1 group-hover:text-orange-400">
+                                                    <svg
+                                                        className="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M9 5l7 7-7 7"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="py-12 text-center">
+                                <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full border border-gray-600 bg-gradient-to-br from-gray-700 to-gray-800">
+                                    <svg
+                                        className="h-10 w-10 text-gray-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={1.5}
+                                            d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                        />
+                                    </svg>
+                                </div>
+                                <h3 className="mb-3 text-xl font-semibold text-gray-300">
+                                    No Transactions Yet
+                                </h3>
+                                <p className="mx-auto mb-4 max-w-sm text-sm text-gray-500">
+                                    Your Bitcoin DCA purchases and membership transactions will
+                                    appear here once you start using the service.
+                                </p>
+                                <div className="inline-flex items-center gap-2 rounded-full border border-gray-700 bg-gray-800/50 px-3 py-2 text-xs text-gray-600">
+                                    <svg
+                                        className="h-3 w-3"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    Transactions will be clickable for detailed view
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ))}
+
+            {/* Transaction Detail Modal */}
+            {selectedTransaction && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                    <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-gray-900 p-6">
+                        <div className="mb-4 flex items-center justify-between">
+                            <h3 className="text-lg font-semibold">Transaction Details</h3>
+                            <button
+                                onClick={() => setSelectedTransaction(null)}
+                                className="text-gray-400 hover:text-white"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {/* Status */}
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className={cn(
+                                        "flex h-10 w-10 items-center justify-center rounded-full border-2",
+                                        getStatusInfo(selectedTransaction.status).bgColor,
+                                        getStatusInfo(selectedTransaction.status).borderColor
+                                    )}
+                                >
+                                    <span
+                                        className={cn(
+                                            "text-base",
+                                            getStatusInfo(selectedTransaction.status).color
+                                        )}
+                                    >
+                                        {getStatusInfo(selectedTransaction.status).icon}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p className="font-medium">DCA Recurring Buy</p>
+                                    {selectedTransaction.payhere_sub_id && (
+                                        <span className="text-sm text-gray-500">(Membership)</span>
+                                    )}
+                                    <p
+                                        className={cn(
+                                            "text-sm font-medium",
+                                            getStatusInfo(selectedTransaction.status).color
+                                        )}
+                                    >
+                                        {getStatusInfo(selectedTransaction.status).label}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Purchase Details */}
+                            {selectedTransaction.satoshis_purchased && (
+                                <div className="rounded-xl bg-gray-800 p-4">
+                                    <h4 className="mb-2 text-sm font-medium text-gray-300">
+                                        Purchase Amount
+                                    </h4>
+                                    <p className="text-xl font-semibold text-orange-400">
+                                        {Number(
+                                            selectedTransaction.satoshis_purchased
+                                        ).toLocaleString()}{" "}
+                                        <span className="text-base font-medium text-orange-300">
+                                            sats
+                                        </span>
+                                    </p>
+                                    <p className="mt-1 font-mono text-sm text-gray-500">
+                                        ₿{formatSatoshis(selectedTransaction.satoshis_purchased)}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Timing */}
+                            <div>
+                                <h4 className="mb-2 text-sm font-medium text-gray-300">
+                                    Transaction Time
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                    {formatDate(selectedTransaction.created_at)} at{" "}
+                                    {new Date(selectedTransaction.created_at).toLocaleTimeString()}
+                                </p>
+                            </div>
+
+                            {/* Bitcoin Price */}
+                            {selectedTransaction.btc_price_at_purchase && (
+                                <div>
+                                    <h4 className="mb-2 text-sm font-medium text-gray-300">
+                                        Bitcoin Price
+                                    </h4>
+                                    <p className="text-sm text-gray-400">
+                                        රු.
+                                        {Number(
+                                            selectedTransaction.btc_price_at_purchase
+                                        ).toLocaleString()}{" "}
+                                        per BTC
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Settlement Status */}
+                            {selectedTransaction.status === "SUCCESS" &&
+                                (() => {
+                                    const settlementInfo = getSettlementInfo(
+                                        selectedTransaction.settled
+                                    );
+                                    if (settlementInfo) {
+                                        return (
+                                            <div>
+                                                <h4 className="mb-2 text-sm font-medium text-gray-300">
+                                                    Settlement Status
+                                                </h4>
+                                                <div className="flex items-center gap-2">
                                                     <span
                                                         className={cn(
-                                                            "text-xs",
+                                                            "text-sm",
                                                             settlementInfo.color
                                                         )}
-                                                        title={settlementInfo.description}
                                                     >
                                                         {settlementInfo.icon}
                                                     </span>
                                                     <span
                                                         className={cn(
-                                                            "text-xs",
+                                                            "text-sm",
                                                             settlementInfo.color
                                                         )}
                                                     >
                                                         {settlementInfo.label}
                                                     </span>
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        {transaction.satoshis_purchased && (
-                                            <p className="font-semibold text-orange-400">
-                                                {Number(
-                                                    transaction.satoshis_purchased
-                                                ).toLocaleString()}{" "}
-                                                <span className="text-sm font-medium text-orange-300">
-                                                    sats
-                                                </span>
-                                            </p>
-                                        )}
-                                        {transaction.satoshis_purchased && (
-                                            <p className="font-mono text-xs text-gray-500">
-                                                ₿{formatSatoshis(transaction.satoshis_purchased)}
-                                            </p>
-                                        )}
-                                        <p className={cn("text-xs font-medium", statusInfo.color)}>
-                                            {statusInfo.label}
-                                        </p>
-                                    </div>
+                                                <p className="mt-1 text-xs text-gray-500">
+                                                    {settlementInfo.description}
+                                                </p>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })()}
+
+                            {/* Transaction ID */}
+                            <div>
+                                <h4 className="mb-2 text-sm font-medium text-gray-300">
+                                    Transaction ID
+                                </h4>
+                                <div className="flex items-center gap-2">
+                                    <p className="break-all font-mono text-xs text-gray-500">
+                                        {selectedTransaction.payhere_pay_id}
+                                    </p>
+                                    <button
+                                        className="rounded p-1 hover:bg-gray-700"
+                                        title="Copy Transaction ID"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(
+                                                selectedTransaction.payhere_pay_id
+                                            );
+                                        }}
+                                    >
+                                        <svg
+                                            className="h-4 w-4 text-gray-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <rect
+                                                x="9"
+                                                y="9"
+                                                width="13"
+                                                height="13"
+                                                rx="2"
+                                                ry="2"
+                                                strokeWidth="2"
+                                                stroke="currentColor"
+                                            />
+                                            <path
+                                                d="M5 15V5a2 2 0 0 1 2-2h10"
+                                                strokeWidth="2"
+                                                stroke="currentColor"
+                                            />
+                                        </svg>
+                                    </button>
                                 </div>
-                            );
-                        })
-                    ) : (
-                        <div className="py-8 text-center">
-                            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-700">
-                                <svg
-                                    className="h-8 w-8 text-gray-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                    />
-                                </svg>
                             </div>
-                            <h3 className="mb-2 text-lg font-medium text-gray-400">
-                                No Transactions Yet
-                            </h3>
-                            <p className="text-sm text-gray-500">
-                                Your Bitcoin purchases and membership transactions will appear here
-                            </p>
                         </div>
-                    )}
-                </div>
-            )}
-
-            {/* Load More Button */}
-            {authToken && !error && apiTransactions.length > 0 && hasMorePages && (
-                <div className="mt-6 text-center">
-                    <button
-                        onClick={loadMoreTransactions}
-                        disabled={loadingMore}
-                        className="rounded-lg border border-orange-500 bg-orange-500/10 px-6 py-3 font-medium text-orange-400 transition-colors hover:bg-orange-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {loadingMore ? (
-                            <div className="flex items-center gap-2">
-                                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                        fill="none"
-                                    />
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    />
-                                </svg>
-                                Loading more...
-                            </div>
-                        ) : (
-                            `Load More (${totalTransactions - apiTransactions.length} remaining)`
-                        )}
-                    </button>
-                </div>
-            )}
-
-            {/* Transaction Summary */}
-            {authToken && !error && apiTransactions.length > 0 && (
-                <div className="mt-4 text-center text-sm text-gray-500">
-                    Showing {apiTransactions.length} of {totalTransactions} transactions
+                    </div>
                 </div>
             )}
         </main>

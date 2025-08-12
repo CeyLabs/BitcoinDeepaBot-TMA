@@ -102,7 +102,7 @@ export default function PaymentSuccessPage() {
 
     if (error) {
         return (
-            <main className="min-h-screen bg-[#202020] p-4">
+            <main className="min-h-screen p-4">
                 <div className="mx-auto max-w-md pt-20">
                     <div className="text-center">
                         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-600/20">
@@ -131,7 +131,7 @@ export default function PaymentSuccessPage() {
     }
 
     return (
-        <main className="min-h-screen bg-[#202020] p-4">
+        <main className="min-h-screen p-4">
             <div className="mx-auto max-w-md pt-20">
                 <div className="text-center">
                     <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-600/20">
@@ -162,7 +162,7 @@ export default function PaymentSuccessPage() {
                                 <div className="flex justify-between">
                                     <span>Amount:</span>
                                     <span>
-                                        LKR{" "}
+                                        රු.{" "}
                                         {Number(transactionData.package_amount).toLocaleString(
                                             "en-LK",
                                             {

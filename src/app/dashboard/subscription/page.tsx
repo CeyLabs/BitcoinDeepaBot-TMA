@@ -11,6 +11,8 @@ import { initPopup } from "@telegram-apps/sdk-react";
 import { usePayHereRedirect } from "@/lib/hooks";
 import { Button } from "@telegram-apps/telegram-ui";
 import { formatDate } from "@/lib/formatters";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 export default function SubscriptionPage() {
     const [selectedPlan, setSelectedPlan] = useState<string>();
@@ -26,9 +28,30 @@ export default function SubscriptionPage() {
     const authToken = getAuthTokenFromStorage();
 
     // Package state
-    const [packages, setPackages] = useState<SubscriptionPlan[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const {
+        data: packages = [],
+        isLoading: loading,
+        error,
+        refetch: refetchPackages,
+    } = useQuery<SubscriptionPlan[]>({
+        queryKey: queryKeys.packages,
+        queryFn: async () => {
+            const response = await fetch("/api/packages", {
+                headers: { "Content-Type": "application/json" },
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(
+                    data.message ||
+                        `Failed to fetch packages: ${response.status} ${response.statusText}`
+                );
+            }
+            return Array.isArray(data) ? data : data.packages || [];
+        },
+        staleTime: 1000 * 60 * 5,
+    });
+
+    const errorMessage = error instanceof Error ? error.message : null;
 
     // Subscription fetching state
     const [subscriptionLoading, setSubscriptionLoading] = useState(false);
@@ -41,40 +64,6 @@ export default function SubscriptionPage() {
         const endDate = new Date(start.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
         return endDate.toISOString();
     }, []);
-
-    // Fetch packages function
-    const fetchPackages = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-
-            const response = await fetch("/api/packages", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(
-                    errorData.message ||
-                        `Failed to fetch packages: ${response.status} ${response.statusText}`
-                );
-            }
-
-            const data = await response.json();
-
-            const packagesArray = Array.isArray(data) ? data : data.packages || [];
-            setPackages(packagesArray);
-        } catch (err) {
-            console.error("❌ Error fetching packages:", err);
-            setError(err instanceof Error ? err.message : "Failed to fetch packages");
-            setPackages([]);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // Fetch current subscription function
     const fetchCurrentSubscription = useCallback(async () => {
@@ -122,7 +111,7 @@ export default function SubscriptionPage() {
                     planName: matchingPackage?.name || "Unknown Plan",
                     planType: subscriptionData.frequency || "monthly",
                     price: matchingPackage?.amount || 0,
-                    currency: matchingPackage?.currency || "LKR",
+                    currency: "රු.",
                     startDate: subscriptionData.created_at,
                     endDate:
                         subscriptionData.next_billing_date ||
@@ -137,6 +126,7 @@ export default function SubscriptionPage() {
                 };
 
                 setSubscription(enhancedSubscription);
+                setSelectedPlan(subscriptionData.package_id);
 
                 if (!matchingPackage) {
                     console.warn(
@@ -153,15 +143,17 @@ export default function SubscriptionPage() {
         } finally {
             setSubscriptionLoading(false);
         }
-    }, [authToken, setSubscription, packages, calculateEndDate]);
+    }, [authToken, setSubscription, setSelectedPlan, packages, calculateEndDate]);
 
     const refetch = async () => {
-        await fetchPackages();
+        await refetchPackages();
     };
 
     useEffect(() => {
-        fetchPackages();
-    }, []);
+        if (packages.length > 0 && !selectedPlan && !subscription?.isActive) {
+            setSelectedPlan(packages[0].id);
+        }
+    }, [packages, selectedPlan, subscription?.isActive]);
 
     // Fetch current subscription when auth token is available
     useEffect(() => {
@@ -260,6 +252,12 @@ export default function SubscriptionPage() {
 
             // Update subscription state
             setSubscription(null);
+
+            if (packages.length > 0) {
+                setSelectedPlan(packages[0].id);
+            }
+
+            setActiveTab("plans");
         } catch (err) {
             console.error("❌ Error cancelling membership:", err);
             setCancelError(err instanceof Error ? err.message : "Failed to cancel membership");
@@ -274,14 +272,14 @@ export default function SubscriptionPage() {
     }
 
     // Show error state with retry option
-    if (error) {
+    if (errorMessage) {
         return (
             <main className="flex min-h-screen items-center justify-center p-4">
                 <div className="text-center">
                     <h2 className="mb-2 text-xl font-semibold text-red-500">
                         Failed to Load Plans
                     </h2>
-                    <p className="mb-4 text-gray-400">{error}</p>
+                    <p className="mb-4 text-gray-400">{errorMessage}</p>
                     <button
                         onClick={refetch}
                         className="rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700"
@@ -391,7 +389,7 @@ export default function SubscriptionPage() {
                                     </div>
                                     <div className="text-right">
                                         <div className="text-sm font-semibold text-orange-500">
-                                            {plan.currency} {plan.amount.toLocaleString()}
+                                            රු. {plan.amount.toLocaleString()}
                                         </div>
                                         <div className="text-xs text-gray-400">{plan.type}</div>
                                     </div>
@@ -411,12 +409,14 @@ export default function SubscriptionPage() {
                                   : "cursor-not-allowed bg-gray-700 opacity-50"
                         )}
                         onClick={() => {
-                            const plan = packages.find(
-                                (p: SubscriptionPlan) => p.id === selectedPlan
-                            );
-                            if (plan) handleSubscribe(plan);
+                            if (selectedPlan && selectedPlan !== subscription?.packageId) {
+                                const plan = packages.find(
+                                    (p: SubscriptionPlan) => p.id === selectedPlan
+                                );
+                                if (plan) handleSubscribe(plan);
+                            }
                         }}
-                        disabled={payhereLinkLoading}
+                        disabled={payhereLinkLoading || selectedPlan === subscription?.packageId}
                     >
                         {payhereLinkLoading ? (
                             <>
@@ -485,13 +485,10 @@ export default function SubscriptionPage() {
 
                                 {/* Subscription Details */}
                                 <div className="mt-4 space-y-2 text-sm">
-                                    {subscription.price && subscription.currency && (
+                                    {subscription.price && (
                                         <div className="flex justify-between">
                                             <span className="text-gray-400">Price:</span>
-                                            <span>
-                                                {subscription.currency}{" "}
-                                                {subscription.price.toLocaleString()}
-                                            </span>
+                                            <span>රු. {subscription.price.toLocaleString()}</span>
                                         </div>
                                     )}
                                     {subscription.startDate && (

@@ -114,7 +114,7 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
         labels,
         datasets: [
             {
-                label: "Bitcoin Price (LKR)",
+                label: "Bitcoin Price (රු.)",
                 data: bitcoinPrices,
                 fill: false,
                 backgroundColor: "#fb923c",
@@ -134,8 +134,8 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
                           label: "DCA Average Price",
                           data: Array(labels.length).fill(avgBtcPrice),
                           fill: false,
-                          backgroundColor: "#60a5fa",
-                          borderColor: "#60a5fa",
+                          backgroundColor: "#F97315",
+                          borderColor: "#F97315",
                           borderDash: [10, 5],
                           borderWidth: 2,
                           pointRadius: 0,
@@ -167,15 +167,15 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
                     label: function (context: any) {
                         const value = context.parsed.y;
                         if (context.datasetIndex === 0) {
-                            return `BTC Price: LKR ${value.toLocaleString()}`;
+                            return `BTC Price: රු. ${value.toLocaleString()}`;
                         } else {
-                            return `DCA Avg: LKR ${value.toLocaleString()}`;
+                            return `DCA Avg: රු. ${value.toLocaleString()}`;
                         }
                     },
                     afterLabel: function (context: any) {
                         if (context.datasetIndex === 0) {
                             const tx = sortedTx[context.dataIndex];
-                            if (tx && tx.satoshis_purchased) {
+                            if (tx) {
                                 const satsStr = tx.satoshis_purchased.replace(/,/g, "");
                                 const sats = Number(satsStr);
                                 return `Purchased: ${formatLargeNumber(sats)} sats`;
@@ -208,7 +208,7 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
                         size: 12,
                     },
                     callback: function (value: any) {
-                        return `LKR ${formatLargeNumber(Number(value))}`;
+                        return `රු. ${formatLargeNumber(Number(value))}`;
                     },
                 },
             },

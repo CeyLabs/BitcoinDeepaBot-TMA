@@ -54,7 +54,7 @@ export default function LoadingPage({
 
     if (fullscreen) {
         return (
-            <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#202020]">
+            <div className="fixed inset-0 z-50 flex flex-col items-center justify-center">
                 <div className="flex flex-col items-center space-y-6">
                     {/* Bitcoin themed loading animation */}
                     <div className="relative">

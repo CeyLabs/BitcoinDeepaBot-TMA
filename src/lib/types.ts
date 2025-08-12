@@ -5,6 +5,15 @@ export interface User {
     subscription?: Subscription;
     wallet?: Wallet;
     rewards?: UserRewards;
+    kycStatus?:
+        | "NOT_STARTED"
+        | "IN_PROGRESS"
+        | "APPROVED"
+        | "DECLINED"
+        | "KYC_EXPIRED"
+        | "IN_REVIEW"
+        | "EXPIRED"
+        | "ABANDONED";
 }
 
 export interface UserRewards {

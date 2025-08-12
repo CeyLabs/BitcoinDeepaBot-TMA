@@ -33,6 +33,54 @@ export async function POST(request: Request) {
             );
         }
 
+        // Check KYC status before generating PayHere link
+        try {
+            const kycResponse = await fetch(`${process.env.API_BASE_URL}/user/kyc/status`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (kycResponse.ok) {
+                const kycData = await kycResponse.json();
+
+                if (kycData.status !== "APPROVED") {
+                    return NextResponse.json(
+                        {
+                            error: "KYC Verification Required",
+                            message:
+                                "Please complete KYC verification before proceeding with payment",
+                            kycStatus: kycData.status,
+                            redirectTo: "/verification",
+                        },
+                        { status: 403 }
+                    );
+                }
+            } else {
+                // If KYC status check fails, assume KYC is required
+                return NextResponse.json(
+                    {
+                        error: "KYC Verification Required",
+                        message: "Please complete KYC verification before proceeding with payment",
+                        redirectTo: "/verification",
+                    },
+                    { status: 403 }
+                );
+            }
+        } catch (kycError) {
+            console.error("Error checking KYC status:", kycError);
+            return NextResponse.json(
+                {
+                    error: "KYC Verification Required",
+                    message: "Please complete KYC verification before proceeding with payment",
+                    redirectTo: "/verification",
+                },
+                { status: 403 }
+            );
+        }
+
         // Make request to external API to get PayHere link
         const response = await fetch(`${process.env.API_BASE_URL}/subscription/payhere-link`, {
             method: "POST",

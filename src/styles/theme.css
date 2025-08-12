@@ -20,15 +20,9 @@
 --tg-viewport-height: 100vh;
 --tg-viewport-stable-height: 100vh; */
 
-:root {
-    --bg-color: #202020;
-    background-color: var(--bg-color);
-}
-
 #tg-ui-root {
     color: white;
     --tg-theme-button-color: #ff9900;
-    --tg-theme-bg-color: var(--bg-color);
     --tg-theme-link-color: #f97316;
 }
 
