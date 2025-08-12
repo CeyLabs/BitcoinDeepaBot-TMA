@@ -105,6 +105,7 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
 
     // Extract Bitcoin prices at purchase time
     const bitcoinPrices = sortedTx.map((tx) => {
+        if (!tx.btc_price_at_purchase) return 0;
         const priceStr = tx.btc_price_at_purchase.replace(/,/g, "");
         return Number(priceStr);
     });
