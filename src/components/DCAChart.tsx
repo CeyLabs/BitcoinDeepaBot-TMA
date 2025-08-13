@@ -175,7 +175,7 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
                     afterLabel: function (context: any) {
                         if (context.datasetIndex === 0) {
                             const tx = sortedTx[context.dataIndex];
-                            if (tx) {
+                            if (tx && tx.satoshis_purchased) {
                                 const satsStr = tx.satoshis_purchased.replace(/,/g, "");
                                 const sats = Number(satsStr);
                                 return `Purchased: ${formatLargeNumber(sats)} sats`;
