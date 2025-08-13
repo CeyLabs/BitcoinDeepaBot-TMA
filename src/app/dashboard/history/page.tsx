@@ -160,7 +160,7 @@ export default function HistoryPage() {
             {errorMessage && !isLoading && (
                 <div className="mb-6 rounded-xl border border-red-500/30 bg-zinc-900/50 p-4 backdrop-blur-sm">
                     <h3 className="mb-2 font-medium text-red-400">Failed to Load Transactions</h3>
-                    <p className="mb-4 text-sm text-gray-400">{errorMessage}</p>
+                    <p className="mb-4 text-sm text-tma-text-secondary">{errorMessage}</p>
                     <button
                         onClick={() => refetch()}
                         className="rounded bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-sm font-medium text-white hover:from-red-700 hover:to-red-800"
@@ -172,9 +172,9 @@ export default function HistoryPage() {
 
             {/* No Auth Token */}
             {!authToken && !isLoading && (
-                <div className="py-8 text-center text-gray-400">
+                <div className="py-8 text-center text-tma-text-secondary">
                     <p className="mb-2">Please authenticate to view transactions</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-tma-text-secondary">
                         Your transaction history will appear here once logged in
                     </p>
                 </div>
@@ -219,13 +219,13 @@ export default function HistoryPage() {
                                                     </span>
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-sm font-medium transition-colors group-hover:text-white">
+                                                    <p className="text-sm font-medium transition-colors group-hover:text-tma-text-primary">
                                                         DCA Purchase
                                                     </p>
-                                                    <p className="text-xs text-gray-400">
+                                                    <p className="text-xs text-tma-text-secondary">
                                                         {formatDate(transaction.created_at)}
                                                     </p>
-                                                    <p className="mt-0.5 text-xs text-gray-500 transition-colors duration-200 group-hover:text-orange-300">
+                                                    <p className="mt-0.5 text-xs text-tma-text-secondary transition-colors duration-200 group-hover:text-orange-300">
                                                         Tap to view details
                                                     </p>
                                                 </div>
@@ -288,14 +288,14 @@ export default function HistoryPage() {
                                         />
                                     </svg>
                                 </div>
-                                <h3 className="mb-3 text-xl font-semibold text-gray-300">
+                                <h3 className="mb-3 text-xl font-semibold text-tma-text-secondary">
                                     No Transactions Yet
                                 </h3>
-                                <p className="mx-auto mb-4 max-w-sm text-sm text-gray-500">
+                                <p className="mx-auto mb-4 max-w-sm text-sm text-tma-text-secondary">
                                     Your Bitcoin DCA purchases and membership transactions will
                                     appear here once you start using the service.
                                 </p>
-                                <div className="inline-flex items-center gap-2 rounded-full border border-gray-700 bg-gray-800/50 px-3 py-2 text-xs text-gray-600">
+                                <div className="inline-flex items-center gap-2 rounded-full border border-gray-700 bg-tma-bg-secondary px-3 py-2 text-xs text-tma-text-secondary">
                                     <svg
                                         className="h-3 w-3"
                                         fill="none"
@@ -319,12 +319,12 @@ export default function HistoryPage() {
             {/* Transaction Detail Modal */}
             {selectedTransaction && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-                    <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-gray-900 p-6">
+                    <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-tma-bg-secondary p-6">
                         <div className="mb-4 flex items-center justify-between">
                             <h3 className="text-lg font-semibold">Transaction Details</h3>
                             <button
                                 onClick={() => setSelectedTransaction(null)}
-                                className="text-gray-400 hover:text-white"
+                                className="text-tma-text-secondary hover:text-tma-text-primary"
                             >
                                 ✕
                             </button>

@@ -7,8 +7,6 @@ export default function TMASetupProvider({ children }: { children: React.ReactNo
     useEffect(() => {
         const [miniApp] = initMiniApp();
 
-        miniApp.setHeaderColor("#202020");
-
         postEvent("web_app_expand");
     }, []);
 

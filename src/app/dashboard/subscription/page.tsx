@@ -279,7 +279,7 @@ export default function SubscriptionPage() {
                     <h2 className="mb-2 text-xl font-semibold text-red-500">
                         Failed to Load Plans
                     </h2>
-                    <p className="mb-4 text-gray-400">{errorMessage}</p>
+                    <p className="mb-4 text-tma-text-secondary">{errorMessage}</p>
                     <button
                         onClick={refetch}
                         className="rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700"
@@ -296,8 +296,8 @@ export default function SubscriptionPage() {
         return (
             <main className="flex min-h-screen items-center justify-center p-4">
                 <div className="text-center">
-                    <h2 className="mb-2 text-xl font-semibold text-gray-400">No Plans Available</h2>
-                    <p className="mb-4 text-gray-500">Please check back later</p>
+                    <h2 className="mb-2 text-xl font-semibold text-tma-text-secondary">No Plans Available</h2>
+                    <p className="mb-4 text-tma-text-secondary">Please check back later</p>
                     <button
                         onClick={refetch}
                         className="rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700"
@@ -330,7 +330,7 @@ export default function SubscriptionPage() {
                         "flex-1 border-b-2 py-3 text-center font-medium transition-colors",
                         activeTab === "plans"
                             ? "border-orange-500 text-orange-500"
-                            : "border-transparent text-gray-400"
+                            : "border-transparent text-tma-text-secondary"
                     )}
                 >
                     Plans
@@ -341,7 +341,7 @@ export default function SubscriptionPage() {
                         "flex-1 border-b-2 py-3 text-center font-medium transition-colors",
                         activeTab === "status"
                             ? "border-orange-500 text-orange-500"
-                            : "border-transparent text-gray-400"
+                            : "border-transparent text-tma-text-secondary"
                     )}
                 >
                     My Membership
@@ -379,7 +379,7 @@ export default function SubscriptionPage() {
                                             )}
                                         </div>
                                         <div>
-                                            <h3 className="font-medium text-white">{plan.name}</h3>
+                                            <h3 className="font-medium text-tma-text-primary">{plan.name}</h3>
                                             {plan.popular && (
                                                 <span className="text-xs text-orange-500">
                                                     Most Popular
@@ -391,7 +391,7 @@ export default function SubscriptionPage() {
                                         <div className="text-sm font-semibold text-orange-500">
                                             රු. {plan.amount.toLocaleString()}
                                         </div>
-                                        <div className="text-xs text-gray-400">{plan.type}</div>
+                                        <div className="text-xs text-tma-text-secondary">{plan.type}</div>
                                     </div>
                                 </div>
                             ))}
@@ -436,14 +436,14 @@ export default function SubscriptionPage() {
                     {subscriptionLoading && !subscription ? (
                         <div className="py-8 text-center">
                             <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-600 border-t-orange-500"></div>
-                            <p className="text-gray-400">Loading membership...</p>
+                            <p className="text-tma-text-secondary">Loading membership...</p>
                         </div>
                     ) : subscriptionError ? (
                         <div className="rounded-xl border border-red-500/30 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
                             <h3 className="mb-2 font-medium text-red-400">
                                 Failed to Load Membership
                             </h3>
-                            <p className="mb-4 text-sm text-gray-400">{subscriptionError}</p>
+                            <p className="mb-4 text-sm text-tma-text-secondary">{subscriptionError}</p>
                             <button
                                 onClick={fetchCurrentSubscription}
                                 className="rounded bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-sm font-medium text-white hover:from-red-700 hover:to-red-800"
@@ -477,7 +477,7 @@ export default function SubscriptionPage() {
                                         {subscription.planName || "Premium Plan"}
                                     </h3>
                                     {subscription.planType && (
-                                        <p className="mt-1 text-sm capitalize text-gray-400">
+                                        <p className="mt-1 text-sm capitalize text-tma-text-secondary">
                                             {subscription.planType} billing
                                         </p>
                                     )}
@@ -487,24 +487,24 @@ export default function SubscriptionPage() {
                                 <div className="mt-4 space-y-2 text-sm">
                                     {subscription.price && (
                                         <div className="flex justify-between">
-                                            <span className="text-gray-400">Price:</span>
+                                            <span className="text-tma-text-secondary">Price:</span>
                                             <span>රු. {subscription.price.toLocaleString()}</span>
                                         </div>
                                     )}
                                     {subscription.startDate && (
                                         <div className="flex justify-between">
-                                            <span className="text-gray-400">Started:</span>
+                                            <span className="text-tma-text-secondary">Started:</span>
                                             <span>{formatDate(subscription.startDate)}</span>
                                         </div>
                                     )}
                                     {subscription.endDate && (
                                         <div className="flex justify-between">
-                                            <span className="text-gray-400">Next billing:</span>
+                                            <span className="text-tma-text-secondary">Next billing:</span>
                                             <span>{formatDate(subscription.endDate)}</span>
                                         </div>
                                     )}
                                     <div className="flex justify-between">
-                                        <span className="text-gray-400">Status:</span>
+                                        <span className="text-tma-text-secondary">Status:</span>
                                         <span
                                             className={cn(
                                                 "font-medium",

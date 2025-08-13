@@ -106,7 +106,7 @@ export default function OnboardPage() {
                     <h2 className="mb-2 text-xl font-semibold text-red-500">
                         Authentication Error
                     </h2>
-                    <p className="mb-4 text-gray-400">{authError}</p>
+                    <p className="mb-4 text-tma-text-secondary">{authError}</p>
                     <button
                         onClick={() => window.location.reload()}
                         className="rounded bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
@@ -132,7 +132,7 @@ export default function OnboardPage() {
                         />
                         <Title weight="2">Welcome to Bitcoin Deepa! 🇱🇰</Title>
                     </section>
-                    <Subheadline className="mt-3 text-gray-300">
+                    <Subheadline className="mt-3 text-tma-text-secondary">
                         {" "}
                         Sri Lanka&#39;s Fastest Growing Bitcoin Community
                     </Subheadline>
@@ -142,23 +142,23 @@ export default function OnboardPage() {
                 <div className="mb-8 mt-8 grid grid-cols-2 gap-4">
                     <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
                         <div className="mb-2 text-2xl">📈</div>
-                        <div className="text-sm font-medium text-white">Live Prices</div>
-                        <div className="text-xs text-gray-400">Real-time tracking</div>
+                        <div className="text-sm font-medium text-tma-text-primary">Live Prices</div>
+                        <div className="text-xs text-tma-text-secondary">Real-time tracking</div>
                     </div>
                     <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
                         <div className="mb-2 text-2xl">🔒</div>
-                        <div className="text-sm font-medium text-white">Secure</div>
-                        <div className="text-xs text-gray-400">Bank-level security</div>
+                        <div className="text-sm font-medium text-tma-text-primary">Secure</div>
+                        <div className="text-xs text-tma-text-secondary">Bank-level security</div>
                     </div>
                     <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
                         <div className="mb-2 text-2xl">⚡</div>
-                        <div className="text-sm font-medium text-white">Fast Trading</div>
-                        <div className="text-xs text-gray-400">Instant transactions</div>
+                        <div className="text-sm font-medium text-tma-text-primary">Fast Trading</div>
+                        <div className="text-xs text-tma-text-secondary">Instant transactions</div>
                     </div>
                     <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
                         <div className="mb-2 text-2xl">🇱🇰</div>
-                        <div className="text-sm font-medium text-white">Local Support</div>
-                        <div className="text-xs text-gray-400">Sri Lankan team</div>
+                        <div className="text-sm font-medium text-tma-text-primary">Local Support</div>
+                        <div className="text-xs text-tma-text-secondary">Sri Lankan team</div>
                     </div>
                 </div>
 
@@ -175,7 +175,7 @@ export default function OnboardPage() {
 
                 {/* Footer */}
                 <div className="mt-4 text-center">
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-tma-text-secondary">
                         Be part of the growing Bitcoin community in Sri Lanka! 🇱🇰
                     </p>
                 </div>

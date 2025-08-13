@@ -236,7 +236,7 @@ export default function VerificationPage() {
 
                     <div className="space-y-2">
                         <h1 className="text-2xl font-bold text-white">Use Mobile Device</h1>
-                        <p className="text-gray-400">
+                        <p className="text-tma-text-secondary">
                             Identity verification works best on mobile devices for security and
                             camera access.
                         </p>
@@ -338,7 +338,7 @@ export default function VerificationPage() {
                             <h1 className="mb-4 text-3xl font-bold text-green-400">
                                 Verification Complete!
                             </h1>
-                            <p className="text-lg text-gray-300">
+                            <p className="text-lg text-tma-text-secondary">
                                 Your identity has been successfully verified. Redirecting to
                                 subscription...
                             </p>
@@ -348,7 +348,7 @@ export default function VerificationPage() {
                             <h1 className="mb-4 text-3xl font-bold text-red-400">
                                 Verification Declined
                             </h1>
-                            <p className="text-lg text-gray-300">
+                            <p className="text-lg text-tma-text-secondary">
                                 Identity verification was declined. Please contact support or try
                                 again.
                             </p>
@@ -359,7 +359,7 @@ export default function VerificationPage() {
                                 Verification{" "}
                                 {verificationStatus === "EXPIRED" ? "Expired" : "Abandoned"}
                             </h1>
-                            <p className="text-lg text-gray-300">
+                            <p className="text-lg text-tma-text-secondary">
                                 {verificationStatus === "EXPIRED"
                                     ? "Your verification session has expired. Please start a new verification."
                                     : "Verification process was abandoned. Please try again."}
@@ -368,7 +368,7 @@ export default function VerificationPage() {
                     ) : verificationStatus === "KYC_EXPIRED" ? (
                         <>
                             <h1 className="mb-4 text-3xl font-bold text-yellow-400">KYC Expired</h1>
-                            <p className="text-lg text-gray-300">
+                            <p className="text-lg text-tma-text-secondary">
                                 Your KYC verification has expired. Please complete verification
                                 again.
                             </p>
@@ -378,7 +378,7 @@ export default function VerificationPage() {
                             <h1 className="mb-4 text-3xl font-bold text-blue-400">
                                 Verification In Progress
                             </h1>
-                            <p className="text-lg text-gray-300">
+                            <p className="text-lg text-tma-text-secondary">
                                 Your verification is being processed. Please continue or wait...
                             </p>
                         </>
@@ -387,16 +387,16 @@ export default function VerificationPage() {
                             <h1 className="mb-4 text-3xl font-bold text-yellow-400">
                                 Under Review
                             </h1>
-                            <p className="text-lg text-gray-300">
+                            <p className="text-lg text-tma-text-secondary">
                                 Your verification is under manual review. This may take 24-48 hours.
                             </p>
                         </>
                     ) : (
                         <>
-                            <h1 className="mb-4 text-3xl font-bold text-white">
+                            <h1 className="mb-4 text-3xl font-bold text-tma-text-primary">
                                 Identity Verification
                             </h1>
-                            <p className="text-lg text-gray-300">
+                            <p className="text-lg text-tma-text-secondary">
                                 Complete your identity verification to continue with Bitcoin දීප
                             </p>
                         </>
@@ -420,8 +420,8 @@ export default function VerificationPage() {
                                 <div className="flex items-start gap-3">
                                     <div className="mt-1.5 h-2 w-2 rounded-full bg-orange-500"></div>
                                     <div>
-                                        <p className="text-sm text-white">Document Upload</p>
-                                        <p className="text-xs text-gray-400">
+                                        <p className="text-sm text-tma-text-primary">Document Upload</p>
+                                        <p className="text-xs text-tma-text-secondary">
                                             Upload your government-issued ID
                                         </p>
                                     </div>
@@ -429,8 +429,8 @@ export default function VerificationPage() {
                                 <div className="flex items-start gap-3">
                                     <div className="mt-1.5 h-2 w-2 rounded-full bg-orange-500"></div>
                                     <div>
-                                        <p className="text-sm text-white">Selfie Verification</p>
-                                        <p className="text-xs text-gray-400">
+                                        <p className="text-sm text-tma-text-primary">Selfie Verification</p>
+                                        <p className="text-xs text-tma-text-secondary">
                                             Take a live selfie for biometric matching
                                         </p>
                                     </div>
@@ -438,8 +438,8 @@ export default function VerificationPage() {
                                 <div className="flex items-start gap-3">
                                     <div className="mt-1.5 h-2 w-2 rounded-full bg-orange-500"></div>
                                     <div>
-                                        <p className="text-sm text-white">AI Verification</p>
-                                        <p className="text-xs text-gray-400">
+                                        <p className="text-sm text-tma-text-primary">AI Verification</p>
+                                        <p className="text-xs text-tma-text-secondary">
                                             Automated verification by didit.me
                                         </p>
                                     </div>
@@ -456,7 +456,7 @@ export default function VerificationPage() {
                                     <p className="text-sm font-medium text-yellow-400">
                                         Under Manual Review
                                     </p>
-                                    <p className="text-xs text-gray-400">
+                                    <p className="text-xs text-tma-text-secondary">
                                         Your verification is being reviewed manually (24-48 hours)
                                     </p>
                                 </div>
@@ -484,7 +484,7 @@ export default function VerificationPage() {
                                     <p className="text-sm font-medium text-orange-400">
                                         KYC Expired
                                     </p>
-                                    <p className="text-xs text-gray-400">
+                                    <p className="text-xs text-tma-text-secondary">
                                         Your previous verification has expired, please verify again
                                     </p>
                                 </div>

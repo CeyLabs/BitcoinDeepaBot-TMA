@@ -257,7 +257,7 @@ export default function SubscriptionPage() {
                     <h2 className="mb-2 text-xl font-semibold text-red-500">
                         Authentication Error
                     </h2>
-                    <p className="mb-4 text-gray-400">{authError || packagesError}</p>
+                    <p className="mb-4 text-tma-text-secondary">{authError || packagesError}</p>
                     <button
                         onClick={() => window.location.reload()}
                         className="rounded bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
@@ -285,8 +285,8 @@ export default function SubscriptionPage() {
                                     alt="Ballot Box With Ballot"
                                 />
                             </div>
-                            <h1 className="mb-2 text-3xl font-bold text-white">Choose Your Plan</h1>
-                            <p className="text-lg text-gray-300">Get your Bitcoin දීප Membership</p>
+                            <h1 className="mb-2 text-3xl font-bold text-tma-text-primary">Choose Your Plan</h1>
+                            <p className="text-lg text-tma-text-secondary">Get your Bitcoin දීප Membership</p>
                         </div>
 
                         {/* Plans */}
@@ -320,7 +320,7 @@ export default function SubscriptionPage() {
                                                   )}
                                               </div>
                                               <div>
-                                                  <h3 className="font-medium text-white">
+                                                  <h3 className="font-medium text-tma-text-primary">
                                                       {plan.name}
                                                   </h3>
                                                   {plan.popular && (
@@ -334,7 +334,7 @@ export default function SubscriptionPage() {
                                               <div className="text-sm font-semibold text-orange-500">
                                                   රු. {plan.amount.toLocaleString()}
                                               </div>
-                                              <div className="text-xs text-gray-400">
+                                              <div className="text-xs text-tma-text-secondary">
                                                   {plan.type}
                                               </div>
                                           </div>
@@ -361,7 +361,7 @@ export default function SubscriptionPage() {
 
                             {/* Footer */}
                             <div className="p-4 text-center">
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-tma-text-secondary">
                                     Activate your Bitcoin දීප Membership today, grow with the
                                     community, cancel anytime.
                                 </p>
@@ -382,10 +382,10 @@ export default function SubscriptionPage() {
                                         alt="Registration Form"
                                     />
                                 </div>
-                                <h1 className="mb-2 text-3xl font-bold text-white">
+                                <h1 className="mb-2 text-3xl font-bold text-tma-text-primary">
                                     Complete Registration
                                 </h1>
-                                <p className="text-lg text-gray-300">
+                                <p className="text-lg text-tma-text-secondary">
                                     Just a few details to get started
                                 </p>
                             </div>
@@ -398,11 +398,11 @@ export default function SubscriptionPage() {
                                 return selectedPlanData ? (
                                     <div className="mb-6 rounded-xl border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-orange-600/10 p-4">
                                         <div className="text-center">
-                                            <p className="text-md text-white">Selected Plan</p>
+                                            <p className="text-md text-tma-text-primary">Selected Plan</p>
                                             <p className="text-lg font-semibold text-orange-500">
                                                 {selectedPlanData.name}
                                             </p>
-                                            <p className="text-xs text-gray-400">
+                                            <p className="text-xs text-tma-text-secondary">
                                                 රු. {selectedPlanData.amount.toLocaleString()}{" "}
                                                 {selectedPlanData.type}
                                             </p>
@@ -571,7 +571,7 @@ export default function SubscriptionPage() {
 
                                 {/* Required Fields Note */}
                                 <div className="mt-4 text-center">
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-sm text-tma-text-secondary">
                                         <span className="text-red-500">*</span> Required fields
                                     </p>
                                 </div>

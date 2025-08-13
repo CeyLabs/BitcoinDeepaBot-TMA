@@ -37,11 +37,11 @@ const handleRefreshWallet = async (refetchSummary: () => Promise<any>) => {
     try {
         await refetchSummary();
         toast("Wallet refreshed successfully", {
-            className: "bg-gray-900 text-white",
+            className: "bg-tma-bg-secondary text-tma-text-primary",
         });
     } catch (error) {
         toast("Failed to refresh wallet", {
-            className: "bg-gray-900 text-white",
+            className: "bg-tma-bg-secondary text-tma-text-primary",
         });
     }
 };
@@ -213,10 +213,10 @@ export default function WalletPage() {
                     <h2 className="mb-2 text-xl font-semibold text-red-500">
                         Authentication Error
                     </h2>
-                    <p className="mb-4 text-gray-400">{authError}</p>
+                    <p className="mb-4 text-tma-text-secondary">{authError}</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="rounded-xl bg-orange-600 px-4 py-2 text-white transition-colors hover:bg-orange-700"
+                        className="rounded-xl bg-orange-600 px-4 py-2 text-tma-text-primary transition-colors hover:bg-orange-700"
                     >
                         Try Again
                     </button>
@@ -247,7 +247,7 @@ export default function WalletPage() {
                             type="button"
                             onClick={() =>
                                 toast("This feature is not available yet.", {
-                                    className: "bg-gray-900 text-white",
+                                    className: "bg-gray-900 text-tma-text-primary",
                                 })
                             }
                         >
@@ -269,10 +269,10 @@ export default function WalletPage() {
                                     >
                                         &times;
                                     </button>
-                                    <h3 className="mb-4 text-center text-2xl font-semibold text-white">
+                                    <h3 className="mb-4 text-center text-2xl font-semibold text-tma-text-primary">
                                         Notifications
                                     </h3>
-                                    <div className="py-12 text-center text-lg text-gray-400">
+                                    <div className="py-12 text-center text-lg text-tma-text-secondary">
                                         No notifications
                                     </div>
                                 </div>
@@ -288,7 +288,7 @@ export default function WalletPage() {
                     <div className="mb-8 rounded-3xl border border-gray-700 bg-gradient-to-r from-gray-600/20 to-gray-500/20 p-6">
                         <div className="mb-4 flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-400">Current balance</p>
+                                <p className="text-sm font-medium text-tma-text-secondary">Current balance</p>
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
@@ -308,7 +308,7 @@ export default function WalletPage() {
 
                         {summary ? (
                             <div className="mb-6">
-                                <h1 className="mb-6 text-4xl font-bold text-white">
+                                <h1 className="mb-6 text-4xl font-bold text-tma-text-primary">
                                     {formatLargeNumber(summary.total_balance)}{" "}
                                     <span className="text-base font-medium text-orange-400">
                                         sats
@@ -325,7 +325,7 @@ export default function WalletPage() {
 
                                 {/* Wallet Analytics Dashboard */}
                                 <div className="mb-4 rounded-xl border-gray-800/50">
-                                    <div className="mb-3 text-sm font-medium text-gray-300">
+                                    <div className="mb-3 text-sm font-medium text-tma-text-secondary">
                                         Balance Distribution
                                     </div>
 
@@ -355,7 +355,7 @@ export default function WalletPage() {
                                                     <div className="text-xs font-medium uppercase text-orange-300">
                                                         Membership <br /> Rewards
                                                     </div>
-                                                    <div className="text-lg font-bold text-white">
+                                                    <div className="text-lg font-bold text-tma-text-primary">
                                                         {formatLargeNumber(summary.dca.balance)}
                                                     </div>
                                                     <div className="text-xs text-orange-400">
@@ -377,7 +377,7 @@ export default function WalletPage() {
                                                         Wallet
                                                         <br /> Balance
                                                     </div>
-                                                    <div className="text-lg font-bold text-white">
+                                                    <div className="text-lg font-bold text-tma-text-primary">
                                                         {formatLargeNumber(
                                                             summary.total_balance -
                                                                 summary.dca.balance
@@ -400,22 +400,22 @@ export default function WalletPage() {
                                     {/* Quick Stats Row */}
                                     <div className="mt-3 flex items-center justify-between rounded-xl bg-gray-700/30 p-3">
                                         <div className="text-center">
-                                            <div className="text-xs text-gray-400">DCA Spent</div>
-                                            <div className="text-sm font-semibold text-white">
+                                            <div className="text-xs text-tma-text-secondary">DCA Spent</div>
+                                            <div className="text-sm font-semibold text-tma-text-primary">
                                                 රු. {formatLargeNumber(summary.dca.spent)}
                                             </div>
                                         </div>
                                         <div className="h-8 w-px bg-gray-600"></div>
                                         <div className="text-center">
-                                            <div className="text-xs text-gray-400">Avg Price</div>
-                                            <div className="text-sm font-semibold text-white">
+                                            <div className="text-xs text-tma-text-secondary">Avg Price</div>
+                                            <div className="text-sm font-semibold text-tma-text-primary">
                                                 රු. {formatLargeNumber(summary.dca.avg_btc_price)}
                                             </div>
                                         </div>
                                         <div className="h-8 w-px bg-gray-600"></div>
                                         <div className="text-center">
-                                            <div className="text-xs text-gray-400">Total BTC</div>
-                                            <div className="text-sm font-semibold text-white">
+                                            <div className="text-xs text-tma-text-secondary">Total BTC</div>
+                                            <div className="text-sm font-semibold text-tma-text-primary">
                                                 {(summary.total_balance / 100_000_000).toFixed(6)}
                                             </div>
                                         </div>
@@ -449,7 +449,7 @@ export default function WalletPage() {
                                                 </span>
                                             </div>
                                             <div>
-                                                <div className="text-xs text-gray-400">24h P&L</div>
+                                                <div className="text-xs text-tma-text-secondary">24h P&L</div>
                                                 <div
                                                     className={`text-lg font-bold ${
                                                         summary["24_hr_change"] >= 0
@@ -469,7 +469,7 @@ export default function WalletPage() {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-xs text-gray-400">Change</div>
+                                            <div className="text-xs text-tma-text-secondary">Change</div>
                                             <div
                                                 className={`text-sm font-semibold ${
                                                     summary["24_hr_change"] >= 0
@@ -486,7 +486,7 @@ export default function WalletPage() {
                             </div>
                         ) : (
                             <div className="mb-6">
-                                <h1 className="mb-2 text-4xl font-bold text-white">
+                                <h1 className="mb-2 text-4xl font-bold text-tma-text-primary">
                                     $
                                     {wallet.balance.toLocaleString(undefined, {
                                         minimumFractionDigits: 2,
@@ -546,7 +546,7 @@ export default function WalletPage() {
                                                               "Use /send command in bot to send sats",
                                                               {
                                                                   className:
-                                                                      "bg-gray-900 text-white",
+                                                                      "bg-gray-900 text-tma-text-primary",
                                                               }
                                                           );
                                                       } else if (action.label === "Receive") {
@@ -554,7 +554,7 @@ export default function WalletPage() {
                                                               "Use /receive command in bot to receive sats",
                                                               {
                                                                   className:
-                                                                      "bg-gray-900 text-white",
+                                                                      "bg-gray-900 text-tma-text-primary",
                                                               }
                                                           );
                                                       } else {
@@ -562,7 +562,7 @@ export default function WalletPage() {
                                                               "This feature is not available yet.",
                                                               {
                                                                   className:
-                                                                      "bg-gray-900 text-white",
+                                                                      "bg-gray-900 text-tma-text-primary",
                                                               }
                                                           );
                                                       }

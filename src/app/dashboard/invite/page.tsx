@@ -96,8 +96,8 @@ ${inviteLink}
                         className={cn(
                             "flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors",
                             activeTab === tab.key
-                                ? "bg-gray-700 text-white"
-                                : "text-gray-400 hover:text-white"
+                                ? "bg-gray-700 text-tma-text-primary"
+                                : "text-tma-text-secondary hover:text-tma-text-primary"
                         )}
                     >
                         {tab.label}
@@ -112,7 +112,7 @@ ${inviteLink}
                         <div className="text-6xl">😄</div>
                         <div>
                             <h1 className="mb-2 text-2xl font-bold">Invite to Earn Sats</h1>
-                            <p className="text-sm leading-relaxed text-gray-400">
+                            <p className="text-sm leading-relaxed text-tma-text-secondary">
                                 Score 10% from friends, plus 500 sats from each new member, and 100
                                 sats for each story share.
                             </p>
@@ -177,7 +177,7 @@ ${inviteLink}
                                 <div className="text-2xl font-bold text-orange-500">
                                     {rewards.totalEarned}
                                 </div>
-                                <div className="mt-1 text-xs text-gray-400">
+                                <div className="mt-1 text-xs text-tma-text-secondary">
                                     Sats earned by frens ↓
                                 </div>
                             </div>
@@ -215,7 +215,7 @@ ${inviteLink}
                                 >
                                     <div>
                                         <h3 className="font-medium">@{referral.username}</h3>
-                                        <p className="text-sm text-gray-400">
+                                        <p className="text-sm text-tma-text-secondary">
                                             Joined {referral.joinDate}
                                         </p>
                                     </div>
@@ -223,7 +223,7 @@ ${inviteLink}
                                         <p className="font-semibold text-green-400">
                                             +{referral.earnings} sats
                                         </p>
-                                        <p className="text-xs text-gray-400">
+                                        <p className="text-xs text-tma-text-secondary">
                                             {referral.isActive ? "Active" : "Inactive"}
                                         </p>
                                     </div>
@@ -235,7 +235,7 @@ ${inviteLink}
                             <div className="text-6xl">🤔</div>
                             <div>
                                 <h2 className="mb-2 text-xl font-semibold">No referrals yet</h2>
-                                <p className="text-gray-400">
+                                <p className="text-tma-text-secondary">
                                     Your friends haven&apos;t joined yet. Keep inviting!
                                 </p>
                             </div>
@@ -249,7 +249,7 @@ ${inviteLink}
                     <div className="text-6xl">👥</div>
                     <div>
                         <h2 className="mb-2 text-xl font-semibold">Community Groups</h2>
-                        <p className="mb-6 text-gray-400">Join our Bitcoin දීප community groups</p>
+                        <p className="mb-6 text-tma-text-secondary">Join our Bitcoin දීප community groups</p>
                         <div className="space-y-3">
                             <button className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700">
                                 Join Telegram Group

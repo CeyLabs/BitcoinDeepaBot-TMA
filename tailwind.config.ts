@@ -52,6 +52,15 @@ const config = {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
+                "tma-text": {
+                    primary: "var(--text-primary)",
+                    secondary: "var(--text-secondary)",
+                },
+                "tma-bg": {
+                    secondary: "var(--bg-secondary)",
+                },
+                "tma-accent": "var(--accent)",
+                "tma-link": "var(--link)",
             },
             borderRadius: {
                 lg: "var(--radius)",
