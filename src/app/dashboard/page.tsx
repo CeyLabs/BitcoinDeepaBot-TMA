@@ -243,25 +243,25 @@ export default function WalletPage() {
                     </div>
                     <div className="flex items-center gap-3">
                         {/* <button
-                            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 opacity-50"
+                            className="flex h-10 w-10 items-center justify-center rounded-full bg-tma-bg-secondary opacity-50"
                             type="button"
                             onClick={() =>
                                 toast("This feature is not available yet.", {
-                                    className: "bg-gray-900 text-tma-text-primary",
+                                    className: "bg-tma-bg-secondary text-tma-text-primary",
                                 })
                             }
                         >
                             <MdQrCode className="text-xl text-gray-400" />
                         </button> */}
                         {/* <button
-                            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800"
+                            className="flex h-10 w-10 items-center justify-center rounded-full bg-tma-bg-secondary"
                             onClick={() => setShowNotifications((prev) => !prev)}
                         >
                             <MdNotifications className="text-xl text-gray-400" />
                         </button> */}
                         {showNotifications && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-                                <div className="relative mx-3 w-full max-w-md rounded-2xl border border-gray-700 bg-gray-900 p-8 shadow-2xl">
+                                <div className="relative mx-3 w-full max-w-md rounded-2xl border border-tma-border-card bg-tma-bg-secondary p-8 shadow-2xl">
                                     <button
                                         className="absolute right-4 top-4 text-2xl text-gray-400 hover:text-orange-500"
                                         onClick={() => setShowNotifications(false)}
@@ -285,14 +285,14 @@ export default function WalletPage() {
                 {isLoading ? (
                     <BalanceCardSkeleton />
                 ) : (
-                    <div className="mb-8 rounded-3xl border border-gray-700 bg-gradient-to-r from-gray-600/20 to-gray-500/20 p-6">
+                    <div className="mb-8 rounded-3xl border border-tma-border-card bg-gradient-to-r from-tma-gradient-from to-tma-gradient-to p-6">
                         <div className="mb-4 flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-tma-text-secondary">Current balance</p>
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
-                                    className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 transition-colors hover:bg-gray-600"
+                                    className="flex h-8 w-8 items-center justify-center rounded-full bg-tma-bg-secondary transition-colors hover:bg-tma-bg-secondary"
                                     onClick={() => handleRefreshWallet(refetchSummary)}
                                     disabled={isLoading}
                                 >
@@ -300,7 +300,7 @@ export default function WalletPage() {
                                         className={`text-lg text-gray-400 ${isLoading ? "animate-spin" : ""}`}
                                     />
                                 </button>
-                                {/* <button className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700">
+                                {/* <button className="flex h-8 w-8 items-center justify-center rounded-full bg-tma-bg-secondary">
                                 <MdSettings className="text-lg text-gray-400" />
                             </button> */}
                             </div>
@@ -331,7 +331,7 @@ export default function WalletPage() {
 
                                     {/* Visual Progress Representation */}
                                     <div className="mb-4">
-                                        <div className="flex h-3 overflow-hidden rounded-full bg-gray-700">
+                                        <div className="flex h-3 overflow-hidden rounded-full bg-tma-bg-secondary">
                                             <div
                                                 className="bg-gradient-to-r from-orange-500 to-orange-400 transition-all duration-500"
                                                 style={{
@@ -398,21 +398,21 @@ export default function WalletPage() {
                                     </div>
 
                                     {/* Quick Stats Row */}
-                                    <div className="mt-3 flex items-center justify-between rounded-xl bg-gray-700/30 p-3">
+                                    <div className="mt-3 flex items-center justify-between rounded-xl bg-tma-bg-secondary/30 p-3">
                                         <div className="text-center">
                                             <div className="text-xs text-tma-text-secondary">DCA Spent</div>
                                             <div className="text-sm font-semibold text-tma-text-primary">
                                                 රු. {formatLargeNumber(summary.dca.spent)}
                                             </div>
                                         </div>
-                                        <div className="h-8 w-px bg-gray-600"></div>
+                                        <div className="h-8 w-px bg-tma-bg-secondary"></div>
                                         <div className="text-center">
                                             <div className="text-xs text-tma-text-secondary">Avg Price</div>
                                             <div className="text-sm font-semibold text-tma-text-primary">
                                                 රු. {formatLargeNumber(summary.dca.avg_btc_price)}
                                             </div>
                                         </div>
-                                        <div className="h-8 w-px bg-gray-600"></div>
+                                        <div className="h-8 w-px bg-tma-bg-secondary"></div>
                                         <div className="text-center">
                                             <div className="text-xs text-tma-text-secondary">Total BTC</div>
                                             <div className="text-sm font-semibold text-tma-text-primary">
@@ -424,7 +424,7 @@ export default function WalletPage() {
 
                                 {/* Portfolio Performance Section */}
                                 {/* 24hr P&L */}
-                                <div className="rounded-xl bg-gray-700/40 p-3">
+                                <div className="rounded-xl bg-tma-bg-secondary/40 p-3">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div
@@ -528,14 +528,14 @@ export default function WalletPage() {
                                 {action.link ? (
                                     <Link
                                         href={action.link}
-                                        className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-gray-700 transition-colors hover:bg-gray-600"
+                                        className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-tma-bg-secondary transition-colors hover:bg-tma-bg-secondary"
                                     >
                                         <action.icon className="text-xl text-orange-500" />
                                     </Link>
                                 ) : (
                                     <button
                                         type="button"
-                                        className={`mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-gray-700 transition-colors hover:bg-gray-600 ${
+                                        className={`mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-tma-bg-secondary transition-colors hover:bg-tma-bg-secondary ${
                                             action.unavailable ? "opacity-50" : ""
                                         }`}
                                         onClick={
@@ -546,7 +546,7 @@ export default function WalletPage() {
                                                               "Use /send command in bot to send sats",
                                                               {
                                                                   className:
-                                                                      "bg-gray-900 text-tma-text-primary",
+                                                                      "bg-tma-bg-secondary text-tma-text-primary",
                                                               }
                                                           );
                                                       } else if (action.label === "Receive") {
@@ -554,7 +554,7 @@ export default function WalletPage() {
                                                               "Use /receive command in bot to receive sats",
                                                               {
                                                                   className:
-                                                                      "bg-gray-900 text-tma-text-primary",
+                                                                      "bg-tma-bg-secondary text-tma-text-primary",
                                                               }
                                                           );
                                                       } else {
@@ -562,7 +562,7 @@ export default function WalletPage() {
                                                               "This feature is not available yet.",
                                                               {
                                                                   className:
-                                                                      "bg-gray-900 text-tma-text-primary",
+                                                                      "bg-tma-bg-secondary text-tma-text-primary",
                                                               }
                                                           );
                                                       }

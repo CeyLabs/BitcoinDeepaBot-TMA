@@ -353,7 +353,7 @@ export default function SubscriptionPage() {
                                     "p-4",
                                     selectedPlan
                                         ? "bg-gradient-to-r from-orange-500 to-orange-600"
-                                        : "cursor-not-allowed bg-gray-700 opacity-50"
+                                        : "cursor-not-allowed bg-tma-bg-secondary opacity-50"
                                 )}
                             >
                                 <span className="flex gap-2"> Continue with Selected Plan </span>

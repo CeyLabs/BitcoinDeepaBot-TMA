@@ -361,7 +361,7 @@ export default function SubscriptionPage() {
                                         "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all duration-300",
                                         selectedPlan === plan.id
                                             ? "border-orange-500 bg-gradient-to-r from-orange-500/10 to-orange-600/10 shadow-lg shadow-orange-500/20"
-                                            : "border-gray-700 bg-zinc-900/50 hover:border-gray-600"
+                                            : "border-gray-700 bg-tma-bg-card hover:border-gray-600"
                                     )}
                                     onClick={() => setSelectedPlan(plan.id)}
                                 >
@@ -403,10 +403,10 @@ export default function SubscriptionPage() {
                         className={cn(
                             "w-full font-medium text-white transition-all duration-300",
                             payhereLinkLoading
-                                ? "cursor-not-allowed bg-gray-600"
+                                ? "cursor-not-allowed bg-tma-bg-secondary"
                                 : selectedPlan
                                   ? "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-                                  : "cursor-not-allowed bg-gray-700 opacity-50"
+                                  : "cursor-not-allowed bg-tma-bg-secondary opacity-50"
                         )}
                         onClick={() => {
                             if (selectedPlan && selectedPlan !== subscription?.packageId) {
@@ -439,7 +439,7 @@ export default function SubscriptionPage() {
                             <p className="text-tma-text-secondary">Loading membership...</p>
                         </div>
                     ) : subscriptionError ? (
-                        <div className="rounded-xl border border-red-500/30 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
+                        <div className="rounded-xl border border-red-500/30 bg-tma-bg-card p-4 text-center backdrop-blur-sm">
                             <h3 className="mb-2 font-medium text-red-400">
                                 Failed to Load Membership
                             </h3>
@@ -453,7 +453,7 @@ export default function SubscriptionPage() {
                         </div>
                     ) : subscription ? (
                         <>
-                            <div className="rounded-xl border border-green-500/30 bg-zinc-900/50 p-6 backdrop-blur-sm">
+                            <div className="rounded-xl border border-green-500/30 bg-tma-bg-card p-6 backdrop-blur-sm">
                                 <div className="text-center">
                                     <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20">
                                         <svg
@@ -520,7 +520,7 @@ export default function SubscriptionPage() {
                             </div>
 
                             {cancelError && (
-                                <div className="mb-4 rounded-xl border border-red-500/30 bg-zinc-900/50 p-3 text-center backdrop-blur-sm">
+                                <div className="mb-4 rounded-xl border border-red-500/30 bg-tma-bg-card p-3 text-center backdrop-blur-sm">
                                     <p className="text-sm text-red-400">{cancelError}</p>
                                 </div>
                             )}
@@ -531,7 +531,7 @@ export default function SubscriptionPage() {
                                 className={cn(
                                     "w-full rounded-xl py-4 font-medium text-white transition-all duration-300",
                                     isCancelling
-                                        ? "cursor-not-allowed bg-gray-600"
+                                        ? "cursor-not-allowed bg-tma-bg-secondary"
                                         : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
                                 )}
                             >
@@ -547,7 +547,7 @@ export default function SubscriptionPage() {
                         </>
                     ) : (
                         <div className="py-8 text-center">
-                            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-700">
+                            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-tma-bg-secondary">
                                 <svg
                                     className="h-8 w-8 text-gray-400"
                                     fill="none"
