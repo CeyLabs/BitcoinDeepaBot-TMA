@@ -125,7 +125,13 @@ export default function OnboardPage() {
                 <div className="mb-8 text-center">
                     <section className="flex flex-col items-center justify-center text-center">
                         <div className="relative h-[130px] w-[130px]">
-                            <Image src="/BDLogo_White.svg" alt="Bitcoin Deepa" fill priority />
+                            <Image
+                                src="/BDLogo_White.svg"
+                                alt="Bitcoin Deepa"
+                                fill
+                                priority
+                                sizes="130px"
+                            />
                         </div>
                         <Title weight="2">Welcome to Bitcoin Deepa! 🇱🇰</Title>
                     </section>
