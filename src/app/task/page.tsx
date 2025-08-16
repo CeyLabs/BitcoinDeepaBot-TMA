@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useBackButton } from "@telegram-apps/sdk-react";
 import { Avatar, Button, Divider, Title } from "@telegram-apps/telegram-ui";
 import { TiUserAdd } from "react-icons/ti";
 import { MdWallet } from "react-icons/md";
@@ -8,14 +11,41 @@ import ShareStory from "@/components/shareStory";
 import { SiBitcoin } from "react-icons/si";
 import { FaTelegramPlane } from "react-icons/fa";
 import { CopyLink, ShareOn_X_WhatsApp } from "@/components/socialShare";
+import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import UserCount from "@/components/usercount";
 
 export default function Page() {
-    const { userID } = useStore();
+    const { userID, isExistingUser } = useStore();
+    const router = useRouter();
+    const backButton = useBackButton();
+    const [redirecting, setRedirecting] = useState(false);
+
+    useEffect(() => {
+        backButton.show();
+        const handleClick = () => router.push("/");
+        backButton.on("click", handleClick);
+        return () => {
+            backButton.off("click", handleClick);
+            backButton.hide();
+        };
+    }, [backButton, router]);
+
+    useEffect(() => {
+        const token = getAuthTokenFromStorage();
+        const existing = isExistingUser || getIsExistingUserFromStorage();
+        if (token || existing) {
+            setRedirecting(true);
+            const t = setTimeout(() => router.push("/dashboard"), 3000);
+            return () => clearTimeout(t);
+        }
+    }, [isExistingUser, router]);
 
     return (
         <main className="mt-4 space-y-10 p-5">
+            {redirecting && (
+                <p className="text-center text-sm">Redirecting to wallet…</p>
+            )}
             <section className="flex flex-col items-center justify-center text-center">
                 <Image src="/logo.png" width={250} height={250} alt="Bitcoin Deepa" />
                 <Title weight="2">Join Sri Lanka&apos;s Fastest Growing Bitcoin Community 🇱🇰</Title>
