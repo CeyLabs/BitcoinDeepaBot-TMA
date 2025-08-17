@@ -139,7 +139,7 @@ export default function PaymentSuccessPage() {
                     </div>
                     <h1 className="mb-4 text-2xl font-bold text-white">Payment Successful!</h1>
                     <p className="mb-6 text-gray-300">
-                        Your Bitcoin purchase has been processed successfully.
+                        Your membership reward has been processed successfully.
                     </p>
 
                     {/* Transaction Details */}
@@ -173,7 +173,7 @@ export default function PaymentSuccessPage() {
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span>Satoshis Purchased:</span>
+                                    <span>Satoshis Rewarded:</span>
                                     <span>
                                         {Number(
                                             transactionData.satoshis_purchased
@@ -182,7 +182,7 @@ export default function PaymentSuccessPage() {
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span>BTC Price:</span>
+                                    <span>BTC Price at Reward:</span>
                                     <span>
                                         Rs.
                                         {Number(
