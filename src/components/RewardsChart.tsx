@@ -16,7 +16,7 @@ import { formatLargeNumber } from "@/lib/formatters";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
 
-interface DCAChartProps {
+interface RewardsChartProps {
     authToken: string | null;
     avgBtcPrice?: number;
 }
@@ -28,7 +28,7 @@ interface Transaction {
     status: string;
 }
 
-export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
+export function RewardsChart({ authToken, avgBtcPrice }: RewardsChartProps) {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -68,7 +68,9 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
     if (loading) {
         return (
             <div className="mb-6 rounded-2xl border border-tma-border-card bg-tma-bg-card p-6">
-                <h2 className="mb-4 text-lg font-semibold text-tma-text-primary">Bitcoin Price Chart</h2>
+                <h2 className="mb-4 text-lg font-semibold text-tma-text-primary">
+                    Bitcoin Price Chart
+                </h2>
                 <div className="flex h-48 items-center justify-center">
                     <div className="text-tma-text-secondary">Loading chart...</div>
                 </div>
@@ -79,11 +81,13 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
     if (transactions.length === 0) {
         return (
             <div className="mb-6 rounded-2xl border border-tma-border-card bg-tma-bg-card p-6">
-                <h2 className="mb-4 text-lg font-semibold text-tma-text-primary">Bitcoin Price Chart</h2>
+                <h2 className="mb-4 text-lg font-semibold text-tma-text-primary">
+                    Bitcoin Price Chart
+                </h2>
                 <div className="flex h-48 items-center justify-center">
                     <div className="text-center text-tma-text-secondary">
                         <p>No price data available</p>
-                        <p className="text-sm">Make your first DCA purchase!</p>
+                        <p className="text-sm">Start accruing membership rewards!</p>
                     </div>
                 </div>
             </div>
@@ -131,7 +135,7 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
             ...(avgBtcPrice
                 ? [
                       {
-                          label: "DCA Average Price",
+                          label: "Average Reward Price",
                           data: Array(labels.length).fill(avgBtcPrice),
                           fill: false,
                           backgroundColor: "#F97315",
@@ -169,7 +173,7 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
                         if (context.datasetIndex === 0) {
                             return `BTC Price: රු. ${value.toLocaleString()}`;
                         } else {
-                            return `DCA Avg: රු. ${value.toLocaleString()}`;
+                            return `Reward Avg: රු. ${value.toLocaleString()}`;
                         }
                     },
                     afterLabel: function (context: any) {

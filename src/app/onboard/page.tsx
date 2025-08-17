@@ -124,12 +124,15 @@ export default function OnboardPage() {
                 {/* Header */}
                 <div className="mb-8 text-center">
                     <section className="flex flex-col items-center justify-center text-center">
-                        <Image
-                            src="/BDLogo_White.svg"
-                            width={130}
-                            height={130}
-                            alt="Bitcoin Deepa"
-                        />
+                        <div className="relative h-[130px] w-[130px]">
+                            <Image
+                                src="/BDLogo_White.svg"
+                                alt="Bitcoin Deepa"
+                                fill
+                                priority
+                                sizes="130px"
+                            />
+                        </div>
                         <Title weight="2">Welcome to Bitcoin Deepa! 🇱🇰</Title>
                     </section>
                     <Subheadline className="mt-3 text-tma-text-secondary">

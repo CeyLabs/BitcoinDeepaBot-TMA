@@ -13,9 +13,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     return (
         <TMAProvider>
             <TMASetupProvider>
-                <ThemeProvider>
-                    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-                </ThemeProvider>
+                <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
             </TMASetupProvider>
         </TMAProvider>
     );

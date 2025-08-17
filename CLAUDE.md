@@ -29,7 +29,7 @@ Always run `npm run format` and `npm run build` before committing changes.
 
 ## Project Architecture
 
-This is a **Telegram Mini App (TMA)** built with Next.js 14 that provides Bitcoin DCA (Dollar Cost Averaging) services with subscription management.
+This is a **Telegram Mini App (TMA)** built with Next.js 14 that supports membership reward accrual with subscription management.
 
 ### Tech Stack
 
@@ -73,7 +73,7 @@ This is a **Telegram Mini App (TMA)** built with Next.js 14 that provides Bitcoi
 **Core Types** (see `src/lib/types.ts`):
 
 -   `User`: User profile with subscription, wallet, and rewards
--   `Subscription`: Weekly/monthly Bitcoin DCA plans
+-   `Subscription`: Weekly/monthly membership reward accrual plans
 -   `Transaction`: Financial transactions with multiple types
 -   `Wallet`: Bitcoin wallet with USD balance tracking
 -   `UserRewards`: Referral and story sharing earnings

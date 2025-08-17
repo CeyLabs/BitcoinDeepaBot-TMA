@@ -220,7 +220,7 @@ export default function HistoryPage() {
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className="text-sm font-medium transition-colors group-hover:text-tma-text-primary">
-                                                        DCA Purchase
+                                                        Membership Reward
                                                     </p>
                                                     <p className="text-xs text-tma-text-secondary">
                                                         {formatDate(transaction.created_at)}
@@ -350,7 +350,7 @@ export default function HistoryPage() {
                                     </span>
                                 </div>
                                 <div>
-                                    <p className="font-medium">DCA Recurring Buy</p>
+                                    <p className="font-medium">Recurring Membership Reward</p>
                                     {selectedTransaction.payhere_sub_id && (
                                         <span className="text-sm text-gray-500">(Membership)</span>
                                     )}
@@ -365,11 +365,11 @@ export default function HistoryPage() {
                                 </div>
                             </div>
 
-                            {/* Purchase Details */}
+                            {/* Reward Details */}
                             {selectedTransaction.satoshis_purchased && (
                                 <div className="rounded-xl bg-gray-800 p-4">
                                     <h4 className="mb-2 text-sm font-medium text-gray-300">
-                                        Purchase Amount
+                                        Reward Amount
                                     </h4>
                                     <p className="text-xl font-semibold text-orange-400">
                                         {Number(

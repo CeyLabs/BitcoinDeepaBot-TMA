@@ -108,7 +108,9 @@ export default function PaymentSuccessPage() {
                         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-600/20">
                             <MdCancel className="h-8 w-8 text-red-500" />
                         </div>
-                        <h1 className="mb-4 text-2xl font-bold text-tma-text-primary">Verification Error</h1>
+                        <h1 className="mb-4 text-2xl font-bold text-tma-text-primary">
+                            Verification Error
+                        </h1>
                         <p className="mb-8 text-tma-text-secondary">{error}</p>
                         <div className="space-y-3">
                             <Button
@@ -137,9 +139,11 @@ export default function PaymentSuccessPage() {
                     <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-600/20">
                         <BiCheckCircle className="h-8 w-8 text-green-500" />
                     </div>
-                    <h1 className="mb-4 text-2xl font-bold text-tma-text-primary">Payment Successful!</h1>
+                    <h1 className="mb-4 text-2xl font-bold text-tma-text-primary">
+                        Payment Successful!
+                    </h1>
                     <p className="mb-6 text-tma-text-secondary">
-                        Your Bitcoin purchase has been processed successfully.
+                        Your membership reward has been processed successfully.
                     </p>
 
                     {/* Transaction Details */}
@@ -173,7 +177,7 @@ export default function PaymentSuccessPage() {
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span>Satoshis Purchased:</span>
+                                    <span>Satoshis Rewarded:</span>
                                     <span>
                                         {Number(
                                             transactionData.satoshis_purchased
@@ -182,7 +186,7 @@ export default function PaymentSuccessPage() {
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span>BTC Price:</span>
+                                    <span>BTC Price at Reward:</span>
                                     <span>
                                         Rs.
                                         {Number(
