@@ -220,7 +220,7 @@ export default function HistoryPage() {
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className="text-sm font-medium transition-colors group-hover:text-white">
-                                                        DCA Purchase
+                                                        Membership Reward
                                                     </p>
                                                     <p className="text-xs text-gray-400">
                                                         {formatDate(transaction.created_at)}
@@ -292,8 +292,8 @@ export default function HistoryPage() {
                                     No Transactions Yet
                                 </h3>
                                 <p className="mx-auto mb-4 max-w-sm text-sm text-gray-500">
-                                    Your Bitcoin DCA purchases and membership transactions will
-                                    appear here once you start using the service.
+                                    Your membership rewards will appear here once you start using
+                                    the service.
                                 </p>
                                 <div className="inline-flex items-center gap-2 rounded-full border border-gray-700 bg-gray-800/50 px-3 py-2 text-xs text-gray-600">
                                     <svg
@@ -350,7 +350,7 @@ export default function HistoryPage() {
                                     </span>
                                 </div>
                                 <div>
-                                    <p className="font-medium">DCA Recurring Buy</p>
+                                    <p className="font-medium">Recurring Membership Reward</p>
                                     {selectedTransaction.payhere_sub_id && (
                                         <span className="text-sm text-gray-500">(Membership)</span>
                                     )}
@@ -365,11 +365,11 @@ export default function HistoryPage() {
                                 </div>
                             </div>
 
-                            {/* Purchase Details */}
+                            {/* Reward Details */}
                             {selectedTransaction.satoshis_purchased && (
                                 <div className="rounded-xl bg-gray-800 p-4">
                                     <h4 className="mb-2 text-sm font-medium text-gray-300">
-                                        Purchase Amount
+                                        Reward Amount
                                     </h4>
                                     <p className="text-xl font-semibold text-orange-400">
                                         {Number(
