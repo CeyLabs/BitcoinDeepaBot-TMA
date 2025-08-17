@@ -292,8 +292,8 @@ export default function HistoryPage() {
                                     No Transactions Yet
                                 </h3>
                                 <p className="mx-auto mb-4 max-w-sm text-sm text-tma-text-secondary">
-                                    Your Bitcoin DCA purchases and membership transactions will
-                                    appear here once you start using the service.
+                                    Your membership rewards will appear here once you start using
+                                    the service.
                                 </p>
                                 <div className="inline-flex items-center gap-2 rounded-full border border-gray-700 bg-tma-bg-secondary px-3 py-2 text-xs text-tma-text-secondary">
                                     <svg
