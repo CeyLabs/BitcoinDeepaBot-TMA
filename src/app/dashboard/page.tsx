@@ -19,7 +19,7 @@ import { formatLargeNumber } from "@/lib/formatters";
 import { LuArrowDownRight, LuArrowUpRight } from "react-icons/lu";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
-import { RewardsChart } from "@/components/ui/RewardsChart";
+import { RewardsChart } from "@/components/RewardsChart";
 
 interface DCSummary {
     dca: {
