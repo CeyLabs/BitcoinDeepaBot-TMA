@@ -19,7 +19,7 @@ import { formatLargeNumber } from "@/lib/formatters";
 import { LuArrowDownRight, LuArrowUpRight } from "react-icons/lu";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
-import { DCAChart } from "@/components/ui/DCAChart";
+import { RewardsChart } from "@/components/RewardsChart";
 
 interface DCSummary {
     dca: {
@@ -590,7 +590,7 @@ export default function WalletPage() {
                 {isLoading ? (
                     <ChartSkeleton />
                 ) : (
-                    <DCAChart authToken={authToken} avgBtcPrice={summary?.dca.avg_btc_price} />
+                    <RewardsChart authToken={authToken} avgBtcPrice={summary?.dca.avg_btc_price} />
                 )}
             </main>
         </div>
