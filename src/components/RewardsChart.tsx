@@ -16,7 +16,7 @@ import { formatLargeNumber } from "@/lib/formatters";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
 
-interface DCAChartProps {
+interface RewardsChartProps {
     authToken: string | null;
     avgBtcPrice?: number;
 }
@@ -28,7 +28,7 @@ interface Transaction {
     status: string;
 }
 
-export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
+export function RewardsChart({ authToken, avgBtcPrice }: RewardsChartProps) {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -83,7 +83,7 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
                 <div className="flex h-48 items-center justify-center">
                     <div className="text-center text-gray-400">
                         <p>No price data available</p>
-                        <p className="text-sm">Make your first DCA purchase!</p>
+                        <p className="text-sm">Start accruing membership rewards!</p>
                     </div>
                 </div>
             </div>
@@ -114,7 +114,7 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
         labels,
         datasets: [
             {
-                label: "Bitcoin Price (LKR)",
+                label: "Bitcoin Price (රු.)",
                 data: bitcoinPrices,
                 fill: false,
                 backgroundColor: "#fb923c",
@@ -131,11 +131,11 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
             ...(avgBtcPrice
                 ? [
                       {
-                          label: "DCA Average Price",
+                          label: "Average Reward Price",
                           data: Array(labels.length).fill(avgBtcPrice),
                           fill: false,
-                          backgroundColor: "#60a5fa",
-                          borderColor: "#60a5fa",
+                          backgroundColor: "#F97315",
+                          borderColor: "#F97315",
                           borderDash: [10, 5],
                           borderWidth: 2,
                           pointRadius: 0,
@@ -167,15 +167,15 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
                     label: function (context: any) {
                         const value = context.parsed.y;
                         if (context.datasetIndex === 0) {
-                            return `BTC Price: LKR ${value.toLocaleString()}`;
+                            return `BTC Price: රු. ${value.toLocaleString()}`;
                         } else {
-                            return `DCA Avg: LKR ${value.toLocaleString()}`;
+                            return `Reward Avg: රු. ${value.toLocaleString()}`;
                         }
                     },
                     afterLabel: function (context: any) {
                         if (context.datasetIndex === 0) {
                             const tx = sortedTx[context.dataIndex];
-                            if (tx && tx.satoshis_purchased) {
+                            if (tx) {
                                 const satsStr = tx.satoshis_purchased.replace(/,/g, "");
                                 const sats = Number(satsStr);
                                 return `Purchased: ${formatLargeNumber(sats)} sats`;
@@ -208,7 +208,7 @@ export function DCAChart({ authToken, avgBtcPrice }: DCAChartProps) {
                         size: 12,
                     },
                     callback: function (value: any) {
-                        return `LKR ${formatLargeNumber(Number(value))}`;
+                        return `රු. ${formatLargeNumber(Number(value))}`;
                     },
                 },
             },
