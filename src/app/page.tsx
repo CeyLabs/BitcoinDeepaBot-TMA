@@ -45,7 +45,15 @@ export default function Home() {
     return (
         <main className="grid min-h-screen p-5">
             <section className="flex flex-col items-center justify-center text-center">
-                <Image src="/BDLogo_White.svg" width={160} height={160} alt="Bitcoin Deepa" />
+                <div className="relative h-[160px] w-[160px]">
+                    <Image
+                        src="/BDLogo_White.svg"
+                        alt="Bitcoin Deepa"
+                        fill
+                        priority
+                        sizes="160px"
+                    />
+                </div>
                 <Title weight="2">Join Sri Lanka&apos;s Fastest Growing Bitcoin Community 🇱🇰</Title>
                 <UserCount />
             </section>

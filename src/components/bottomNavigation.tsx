@@ -21,7 +21,7 @@ const navItems = [
     {
         href: "/dashboard/subscription",
         icon: Sprout,
-        label: "Plans",
+        label: "Membership",
     },
     {
         href: "/dashboard/history",
