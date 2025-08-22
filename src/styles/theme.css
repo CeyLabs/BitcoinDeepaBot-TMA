@@ -21,7 +21,7 @@
 --tg-viewport-stable-height: 100vh; */
 
 #tg-ui-root {
-    color: white;
+    color: var(--tg-theme-text-color);
     --tg-theme-button-color: #ff9900;
     --tg-theme-link-color: #f97316;
 }
