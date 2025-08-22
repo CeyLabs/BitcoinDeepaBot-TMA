@@ -15,11 +15,16 @@ import { cn } from "@/lib/cn";
 import LoadingPage, { LoadingSpinner } from "@/components/LoadingPage";
 import ListItemSkeleton from "@/components/skeletons/ListItemSkeleton";
 import Image from "next/image";
-import { Button, Input } from "@telegram-apps/telegram-ui";
+import { Button, Input, Select } from "@telegram-apps/telegram-ui";
 import { usePayHereRedirect } from "@/lib/hooks";
 import { createUserSchema, type CreateUserFormData } from "@/lib/validations";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { countries as countryData } from "countries-list";
+
+const countryOptions = Object.values(countryData)
+    .map((c) => c.name)
+    .sort((a, b) => a.localeCompare(b));
 
 export default function SubscriptionPage() {
     const router = useRouter();
@@ -31,6 +36,7 @@ export default function SubscriptionPage() {
     const {
         register,
         handleSubmit,
+        setValue,
         formState: { errors, isValid },
     } = useForm<CreateUserFormData>({
         resolver: zodResolver(createUserSchema),
@@ -39,7 +45,7 @@ export default function SubscriptionPage() {
             first_name: "",
             last_name: "",
             email: "",
-            phone: "",
+            phone: "+94",
             address: "",
             city: "",
             country: "",
@@ -101,6 +107,22 @@ export default function SubscriptionPage() {
     useEffect(() => {
         fetchPackages();
     }, []);
+
+    useEffect(() => {
+        const detectCountry = async () => {
+            try {
+                const res = await fetch("https://ipapi.co/json/");
+                const data = await res.json();
+                if (data?.country_name && countryOptions.includes(data.country_name)) {
+                    setValue("country", data.country_name);
+                }
+            } catch (err) {
+                console.error("Failed to detect country:", err);
+            }
+        };
+
+        detectCountry();
+    }, [setValue]);
 
     // Handle Telegram back button
     useEffect(() => {
@@ -481,7 +503,13 @@ export default function SubscriptionPage() {
                                             Phone <span className="text-red-500">*</span>
                                         </>
                                     }
-                                    {...register("phone")}
+                                    {...register("phone", {
+                                        onChange: (e) => {
+                                            if (!e.target.value.startsWith("+94")) {
+                                                e.target.value = "+94";
+                                            }
+                                        },
+                                    })}
                                     placeholder="e.g. +94771234567"
                                 />
                                 {errors.phone && (
@@ -530,8 +558,7 @@ export default function SubscriptionPage() {
                             </div>
                             {/* Country */}
                             <div>
-                                <Input
-                                    type="text"
+                                <Select
                                     status={errors.country ? "error" : undefined}
                                     header={
                                         <>
@@ -539,8 +566,16 @@ export default function SubscriptionPage() {
                                         </>
                                     }
                                     {...register("country")}
-                                    placeholder="Enter your country"
-                                />
+                                >
+                                    <option value="" disabled>
+                                        Select your country
+                                    </option>
+                                    {countryOptions.map((name) => (
+                                        <option key={name} value={name}>
+                                            {name}
+                                        </option>
+                                    ))}
+                                </Select>
                                 {errors.country && (
                                     <p className="pl-6 text-sm text-red-500">
                                         {errors.country.message}
