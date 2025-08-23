@@ -185,10 +185,4 @@ function updateCSSVariables(params: TelegramThemeParams) {
             params.section_header_text_color
         );
     }
-
-    // Don't override main background - let BotFather settings handle it
-    // if (params.bg_color) { ... } - REMOVED
-    // if (params.header_bg_color) { ... } - REMOVED (handled by TMA setup)
 }
-
-// Telegram WebApp types are already declared in hooks.ts
