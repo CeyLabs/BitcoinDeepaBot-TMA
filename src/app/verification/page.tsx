@@ -420,7 +420,9 @@ export default function VerificationPage() {
                                 <div className="flex items-start gap-3">
                                     <div className="mt-1.5 h-2 w-2 rounded-full bg-orange-500"></div>
                                     <div>
-                                        <p className="text-sm text-tma-text-primary">Document Upload</p>
+                                        <p className="text-sm text-tma-text-primary">
+                                            Document Upload
+                                        </p>
                                         <p className="text-xs text-tma-text-secondary">
                                             Upload your government-issued ID
                                         </p>
@@ -429,7 +431,9 @@ export default function VerificationPage() {
                                 <div className="flex items-start gap-3">
                                     <div className="mt-1.5 h-2 w-2 rounded-full bg-orange-500"></div>
                                     <div>
-                                        <p className="text-sm text-tma-text-primary">Selfie Verification</p>
+                                        <p className="text-sm text-tma-text-primary">
+                                            Selfie Verification
+                                        </p>
                                         <p className="text-xs text-tma-text-secondary">
                                             Take a live selfie for biometric matching
                                         </p>
@@ -438,7 +442,9 @@ export default function VerificationPage() {
                                 <div className="flex items-start gap-3">
                                     <div className="mt-1.5 h-2 w-2 rounded-full bg-orange-500"></div>
                                     <div>
-                                        <p className="text-sm text-tma-text-primary">AI Verification</p>
+                                        <p className="text-sm text-tma-text-primary">
+                                            AI Verification
+                                        </p>
                                         <p className="text-xs text-tma-text-secondary">
                                             Automated verification by didit.me
                                         </p>

@@ -249,7 +249,9 @@ ${inviteLink}
                     <div className="text-6xl">👥</div>
                     <div>
                         <h2 className="mb-2 text-xl font-semibold">Community Groups</h2>
-                        <p className="mb-6 text-tma-text-secondary">Join our Bitcoin දීප community groups</p>
+                        <p className="mb-6 text-tma-text-secondary">
+                            Join our Bitcoin දීප community groups
+                        </p>
                         <div className="space-y-3">
                             <button className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700">
                                 Join Telegram Group

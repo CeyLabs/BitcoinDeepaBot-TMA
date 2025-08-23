@@ -70,7 +70,9 @@ export default function PaymentCancelPage() {
                     <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-600/20">
                         <MdCancel className="h-8 w-8 text-red-500" />
                     </div>
-                    <h1 className="mb-4 text-2xl font-bold text-tma-text-primary">Payment Cancelled</h1>
+                    <h1 className="mb-4 text-2xl font-bold text-tma-text-primary">
+                        Payment Cancelled
+                    </h1>
                     <p className="mb-6 text-tma-text-secondary">
                         Your payment was cancelled. No charges have been made to your account.
                     </p>

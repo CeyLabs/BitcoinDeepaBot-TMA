@@ -47,7 +47,9 @@ export default function BottomNavigation() {
                                 href={item.href}
                                 className={cn(
                                     "flex flex-col items-center justify-center rounded-lg px-3 py-2 transition-colors",
-                                    isActive ? "text-orange-500" : "text-tma-text-secondary hover:text-tma-text-primary"
+                                    isActive
+                                        ? "text-orange-500"
+                                        : "text-tma-text-secondary hover:text-tma-text-primary"
                                 )}
                             >
                                 <Icon className="mb-1 text-xl" />

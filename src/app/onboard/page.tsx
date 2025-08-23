@@ -155,12 +155,16 @@ export default function OnboardPage() {
                     </div>
                     <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
                         <div className="mb-2 text-2xl">⚡</div>
-                        <div className="text-sm font-medium text-tma-text-primary">Fast Trading</div>
+                        <div className="text-sm font-medium text-tma-text-primary">
+                            Fast Trading
+                        </div>
                         <div className="text-xs text-tma-text-secondary">Instant transactions</div>
                     </div>
                     <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
                         <div className="mb-2 text-2xl">🇱🇰</div>
-                        <div className="text-sm font-medium text-tma-text-primary">Local Support</div>
+                        <div className="text-sm font-medium text-tma-text-primary">
+                            Local Support
+                        </div>
                         <div className="text-xs text-tma-text-secondary">Sri Lankan team</div>
                     </div>
                 </div>

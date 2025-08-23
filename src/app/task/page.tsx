@@ -43,9 +43,7 @@ export default function Page() {
 
     return (
         <main className="mt-4 space-y-10 p-5">
-            {redirecting && (
-                <p className="text-center text-sm">Redirecting to wallet…</p>
-            )}
+            {redirecting && <p className="text-center text-sm">Redirecting to wallet…</p>}
             <section className="flex flex-col items-center justify-center text-center">
                 <Image src="/logo.png" width={250} height={250} alt="Bitcoin Deepa" />
                 <Title weight="2">Join Sri Lanka&apos;s Fastest Growing Bitcoin Community 🇱🇰</Title>

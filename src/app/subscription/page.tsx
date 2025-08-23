@@ -285,8 +285,12 @@ export default function SubscriptionPage() {
                                     alt="Ballot Box With Ballot"
                                 />
                             </div>
-                            <h1 className="mb-2 text-3xl font-bold text-tma-text-primary">Choose Your Plan</h1>
-                            <p className="text-lg text-tma-text-secondary">Get your Bitcoin දීප Membership</p>
+                            <h1 className="mb-2 text-3xl font-bold text-tma-text-primary">
+                                Choose Your Plan
+                            </h1>
+                            <p className="text-lg text-tma-text-secondary">
+                                Get your Bitcoin දීප Membership
+                            </p>
                         </div>
 
                         {/* Plans */}
@@ -398,7 +402,9 @@ export default function SubscriptionPage() {
                                 return selectedPlanData ? (
                                     <div className="mb-6 rounded-xl border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-orange-600/10 p-4">
                                         <div className="text-center">
-                                            <p className="text-md text-tma-text-primary">Selected Plan</p>
+                                            <p className="text-md text-tma-text-primary">
+                                                Selected Plan
+                                            </p>
                                             <p className="text-lg font-semibold text-orange-500">
                                                 {selectedPlanData.name}
                                             </p>

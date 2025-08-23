@@ -288,7 +288,9 @@ export default function WalletPage() {
                     <div className="mb-8 rounded-3xl border border-tma-border-card bg-gradient-to-r from-tma-gradient-from to-tma-gradient-to p-6">
                         <div className="mb-4 flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-tma-text-secondary">Current balance</p>
+                                <p className="text-sm font-medium text-tma-text-secondary">
+                                    Current balance
+                                </p>
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
@@ -398,23 +400,29 @@ export default function WalletPage() {
                                     </div>
 
                                     {/* Quick Stats Row */}
-                                    <div className="mt-3 flex items-center justify-between rounded-xl bg-tma-bg-secondary/30 p-3">
+                                    <div className="bg-tma-bg-secondary/30 mt-3 flex items-center justify-between rounded-xl p-3">
                                         <div className="text-center">
-                                            <div className="text-xs text-tma-text-secondary">DCA Spent</div>
+                                            <div className="text-xs text-tma-text-secondary">
+                                                DCA Spent
+                                            </div>
                                             <div className="text-sm font-semibold text-tma-text-primary">
                                                 රු. {formatLargeNumber(summary.dca.spent)}
                                             </div>
                                         </div>
                                         <div className="h-8 w-px bg-tma-bg-secondary"></div>
                                         <div className="text-center">
-                                            <div className="text-xs text-tma-text-secondary">Avg Price</div>
+                                            <div className="text-xs text-tma-text-secondary">
+                                                Avg Price
+                                            </div>
                                             <div className="text-sm font-semibold text-tma-text-primary">
                                                 රු. {formatLargeNumber(summary.dca.avg_btc_price)}
                                             </div>
                                         </div>
                                         <div className="h-8 w-px bg-tma-bg-secondary"></div>
                                         <div className="text-center">
-                                            <div className="text-xs text-tma-text-secondary">Total BTC</div>
+                                            <div className="text-xs text-tma-text-secondary">
+                                                Total BTC
+                                            </div>
                                             <div className="text-sm font-semibold text-tma-text-primary">
                                                 {(summary.total_balance / 100_000_000).toFixed(6)}
                                             </div>
@@ -424,7 +432,7 @@ export default function WalletPage() {
 
                                 {/* Portfolio Performance Section */}
                                 {/* 24hr P&L */}
-                                <div className="rounded-xl bg-tma-bg-secondary/40 p-3">
+                                <div className="bg-tma-bg-secondary/40 rounded-xl p-3">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div
@@ -449,7 +457,9 @@ export default function WalletPage() {
                                                 </span>
                                             </div>
                                             <div>
-                                                <div className="text-xs text-tma-text-secondary">24h P&L</div>
+                                                <div className="text-xs text-tma-text-secondary">
+                                                    24h P&L
+                                                </div>
                                                 <div
                                                     className={`text-lg font-bold ${
                                                         summary["24_hr_change"] >= 0
@@ -469,7 +479,9 @@ export default function WalletPage() {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-xs text-tma-text-secondary">Change</div>
+                                            <div className="text-xs text-tma-text-secondary">
+                                                Change
+                                            </div>
                                             <div
                                                 className={`text-sm font-semibold ${
                                                     summary["24_hr_change"] >= 0
