@@ -50,9 +50,9 @@ export default function UserCount() {
             <div className="flex w-full justify-between text-3xl">
                 <p className="text-left leading-tight">
                     {count}
-                    <span className="pl-1 text-sm font-normal text-gray-400">Joined</span>
+                    <span className="pl-1 text-sm font-normal text-tma-text-secondary">Joined</span>
                 </p>
-                <p className="text-gray-400">{currentTierMax}</p>
+                <p className="text-tma-text-secondary">{currentTierMax}</p>
             </div>
         </div>
     );

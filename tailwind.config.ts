@@ -52,6 +52,23 @@ const config = {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
+                "tma-text": {
+                    primary: "var(--text-primary)",
+                    secondary: "var(--text-secondary)",
+                },
+                "tma-bg": {
+                    secondary: "var(--bg-secondary)",
+                    card: "var(--card-bg)",
+                },
+                "tma-border": {
+                    card: "var(--card-border)",
+                },
+                "tma-gradient": {
+                    from: "var(--card-gradient-from)",
+                    to: "var(--card-gradient-to)",
+                },
+                "tma-accent": "var(--accent)",
+                "tma-link": "var(--link)",
             },
             borderRadius: {
                 lg: "var(--radius)",

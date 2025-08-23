@@ -108,8 +108,10 @@ export default function PaymentSuccessPage() {
                         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-600/20">
                             <MdCancel className="h-8 w-8 text-red-500" />
                         </div>
-                        <h1 className="mb-4 text-2xl font-bold text-white">Verification Error</h1>
-                        <p className="mb-8 text-gray-300">{error}</p>
+                        <h1 className="mb-4 text-2xl font-bold text-tma-text-primary">
+                            Verification Error
+                        </h1>
+                        <p className="mb-8 text-tma-text-secondary">{error}</p>
                         <div className="space-y-3">
                             <Button
                                 onClick={() => router.push("/dashboard/subscription")}
@@ -137,8 +139,10 @@ export default function PaymentSuccessPage() {
                     <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-600/20">
                         <BiCheckCircle className="h-8 w-8 text-green-500" />
                     </div>
-                    <h1 className="mb-4 text-2xl font-bold text-white">Payment Successful!</h1>
-                    <p className="mb-6 text-gray-300">
+                    <h1 className="mb-4 text-2xl font-bold text-tma-text-primary">
+                        Payment Successful!
+                    </h1>
+                    <p className="mb-6 text-tma-text-secondary">
                         Your membership reward has been processed successfully.
                     </p>
 
@@ -148,7 +152,7 @@ export default function PaymentSuccessPage() {
                             <h3 className="mb-3 font-medium text-orange-400">
                                 Transaction Details
                             </h3>
-                            <div className="space-y-2 text-sm text-gray-300">
+                            <div className="space-y-2 text-sm text-tma-text-secondary">
                                 <div className="flex justify-between">
                                     <span>Status:</span>
                                     <span className="text-green-400">{transactionData.status}</span>

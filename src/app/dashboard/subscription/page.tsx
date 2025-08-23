@@ -244,6 +244,8 @@ export default function SubscriptionPage() {
             setPayhereLinkError(
                 err instanceof Error ? err.message : "Failed to generate PayHere link"
             );
+        } finally {
+            setPayhereLinkLoading(false);
         }
     };
 
@@ -302,7 +304,7 @@ export default function SubscriptionPage() {
                     <h2 className="mb-2 text-xl font-semibold text-red-500">
                         Failed to Load Plans
                     </h2>
-                    <p className="mb-4 text-gray-400">{errorMessage}</p>
+                    <p className="mb-4 text-tma-text-secondary">{errorMessage}</p>
                     <button
                         onClick={refetch}
                         className="rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700"
@@ -319,8 +321,10 @@ export default function SubscriptionPage() {
         return (
             <main className="flex min-h-screen items-center justify-center p-4">
                 <div className="text-center">
-                    <h2 className="mb-2 text-xl font-semibold text-gray-400">No Plans Available</h2>
-                    <p className="mb-4 text-gray-500">Please check back later</p>
+                    <h2 className="mb-2 text-xl font-semibold text-tma-text-secondary">
+                        No Plans Available
+                    </h2>
+                    <p className="mb-4 text-tma-text-secondary">Please check back later</p>
                     <button
                         onClick={refetch}
                         className="rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700"
@@ -347,7 +351,7 @@ export default function SubscriptionPage() {
 
             {/* Tabs - segmented control */}
             <div className="mb-6">
-                <div className="relative grid grid-cols-2 items-center rounded-2xl border border-zinc-800 bg-zinc-950/80 p-1">
+                <div className="relative grid grid-cols-2 items-center rounded-2xl border border-zinc-800 bg-tma-bg-secondary p-1">
                     {/* Sliding background */}
                     <div
                         className={cn(
@@ -359,7 +363,7 @@ export default function SubscriptionPage() {
                         onClick={() => onTabChange("plans")}
                         className={cn(
                             "relative z-10 inline-flex items-center justify-center rounded-xl py-2.5 font-medium transition-colors",
-                            activeTab === "plans" ? "text-orange-500" : "text-gray-400"
+                            activeTab === "plans" ? "text-orange-500" : "text-tma-text-secondary"
                         )}
                     >
                         Plans
@@ -368,7 +372,7 @@ export default function SubscriptionPage() {
                         onClick={() => onTabChange("status")}
                         className={cn(
                             "relative z-10 inline-flex items-center justify-center rounded-xl py-2.5 font-medium transition-colors",
-                            activeTab === "status" ? "text-orange-500" : "text-gray-400"
+                            activeTab === "status" ? "text-orange-500" : "text-tma-text-secondary"
                         )}
                     >
                         My Membership
@@ -401,7 +405,7 @@ export default function SubscriptionPage() {
                                             "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all duration-300",
                                             selectedPlan === plan.id
                                                 ? "border-orange-500 bg-gradient-to-r from-orange-500/10 to-orange-600/10 shadow-lg shadow-orange-500/20"
-                                                : "border-gray-700 bg-zinc-900/50 hover:border-gray-600"
+                                                : "border-gray-700 bg-tma-bg-card hover:border-gray-600"
                                         )}
                                         onClick={() => setSelectedPlan(plan.id)}
                                     >
@@ -419,7 +423,7 @@ export default function SubscriptionPage() {
                                                 )}
                                             </div>
                                             <div>
-                                                <h3 className="font-medium text-white">
+                                                <h3 className="font-medium text-tma-text-primary">
                                                     {plan.name}
                                                 </h3>
                                                 {plan.popular && (
@@ -433,7 +437,9 @@ export default function SubscriptionPage() {
                                             <div className="text-sm font-semibold text-orange-500">
                                                 රු. {plan.amount.toLocaleString()}
                                             </div>
-                                            <div className="text-xs text-gray-400">{plan.type}</div>
+                                            <div className="text-xs text-tma-text-secondary">
+                                                {plan.type}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -445,10 +451,10 @@ export default function SubscriptionPage() {
                             className={cn(
                                 "w-full font-medium text-white transition-all duration-300",
                                 payhereLinkLoading
-                                    ? "cursor-not-allowed bg-gray-600"
+                                    ? "cursor-not-allowed bg-tma-bg-secondary"
                                     : selectedPlan
                                       ? "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-                                      : "cursor-not-allowed bg-gray-700 opacity-50"
+                                      : "cursor-not-allowed bg-tma-bg-secondary opacity-50"
                             )}
                             onClick={() => {
                                 if (selectedPlan && selectedPlan !== subscription?.packageId) {
@@ -490,14 +496,16 @@ export default function SubscriptionPage() {
                         {subscriptionLoading && !subscription ? (
                             <div className="py-8 text-center">
                                 <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-600 border-t-orange-500"></div>
-                                <p className="text-gray-400">Loading membership...</p>
+                                <p className="text-tma-text-secondary">Loading membership...</p>
                             </div>
                         ) : subscriptionError ? (
-                            <div className="rounded-xl border border-red-500/30 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
+                            <div className="rounded-xl border border-red-500/30 bg-tma-bg-card p-4 text-center backdrop-blur-sm">
                                 <h3 className="mb-2 font-medium text-red-400">
                                     Failed to Load Membership
                                 </h3>
-                                <p className="mb-4 text-sm text-gray-400">{subscriptionError}</p>
+                                <p className="mb-4 text-sm text-tma-text-secondary">
+                                    {subscriptionError}
+                                </p>
                                 <button
                                     onClick={fetchCurrentSubscription}
                                     className="rounded bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-sm font-medium text-white hover:from-red-700 hover:to-red-800"
@@ -507,7 +515,7 @@ export default function SubscriptionPage() {
                             </div>
                         ) : subscription ? (
                             <>
-                                <div className="rounded-xl border border-green-500/30 bg-zinc-900/50 p-6 backdrop-blur-sm">
+                                <div className="rounded-xl border border-green-500/30 bg-tma-bg-card p-6 backdrop-blur-sm">
                                     <div className="text-center">
                                         <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20">
                                             <svg
@@ -531,7 +539,7 @@ export default function SubscriptionPage() {
                                             {subscription.planName || "Premium Plan"}
                                         </h3>
                                         {subscription.planType && (
-                                            <p className="mt-1 text-sm capitalize text-gray-400">
+                                            <p className="mt-1 text-sm capitalize text-tma-text-secondary">
                                                 {subscription.planType} billing
                                             </p>
                                         )}
@@ -541,7 +549,9 @@ export default function SubscriptionPage() {
                                     <div className="mt-4 space-y-2 text-sm">
                                         {subscription.price && (
                                             <div className="flex justify-between">
-                                                <span className="text-gray-400">Price:</span>
+                                                <span className="text-tma-text-secondary">
+                                                    Price:
+                                                </span>
                                                 <span>
                                                     රු. {subscription.price.toLocaleString()}
                                                 </span>
@@ -549,18 +559,22 @@ export default function SubscriptionPage() {
                                         )}
                                         {subscription.startDate && (
                                             <div className="flex justify-between">
-                                                <span className="text-gray-400">Started:</span>
+                                                <span className="text-tma-text-secondary">
+                                                    Started:
+                                                </span>
                                                 <span>{formatDate(subscription.startDate)}</span>
                                             </div>
                                         )}
                                         {subscription.endDate && (
                                             <div className="flex justify-between">
-                                                <span className="text-gray-400">Next billing:</span>
+                                                <span className="text-tma-text-secondary">
+                                                    Next billing:
+                                                </span>
                                                 <span>{formatDate(subscription.endDate)}</span>
                                             </div>
                                         )}
                                         <div className="flex justify-between">
-                                            <span className="text-gray-400">Status:</span>
+                                            <span className="text-tma-text-secondary">Status:</span>
                                             <span
                                                 className={cn(
                                                     "font-medium",
@@ -576,7 +590,7 @@ export default function SubscriptionPage() {
                                 </div>
 
                                 {cancelError && (
-                                    <div className="mb-4 rounded-xl border border-red-500/30 bg-zinc-900/50 p-3 text-center backdrop-blur-sm">
+                                    <div className="mb-4 rounded-xl border border-red-500/30 bg-tma-bg-card p-3 text-center backdrop-blur-sm">
                                         <p className="text-sm text-red-400">{cancelError}</p>
                                     </div>
                                 )}
@@ -587,7 +601,7 @@ export default function SubscriptionPage() {
                                     className={cn(
                                         "w-full rounded-xl py-4 font-medium text-white transition-all duration-300",
                                         isCancelling
-                                            ? "cursor-not-allowed bg-gray-600"
+                                            ? "cursor-not-allowed bg-tma-bg-secondary"
                                             : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
                                     )}
                                 >
@@ -603,7 +617,7 @@ export default function SubscriptionPage() {
                             </>
                         ) : (
                             <div className="py-8 text-center">
-                                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-700">
+                                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-tma-bg-secondary">
                                     <svg
                                         className="h-8 w-8 text-gray-400"
                                         fill="none"

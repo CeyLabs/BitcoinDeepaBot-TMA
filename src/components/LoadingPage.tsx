@@ -66,11 +66,11 @@ export default function LoadingPage({
 
                     {/* Loading text with animated dots */}
                     <div className="text-center">
-                        <p className="text-lg font-medium text-white">
+                        <p className="text-lg font-medium text-tma-text-primary">
                             {message}
                             {dots}
                         </p>
-                        <p className="mt-2 text-sm text-gray-400">Bitcoin Deepa 🇱🇰</p>
+                        <p className="mt-2 text-sm text-tma-text-secondary">Bitcoin Deepa 🇱🇰</p>
                     </div>
                 </div>
             </div>
@@ -85,7 +85,7 @@ export default function LoadingPage({
                     <Image src="/Yaka.png" alt="Yaka" width={13} height={13} />
                 </div>
             </div>
-            <p className="text-sm text-white">
+            <p className="text-sm text-tma-text-primary">
                 {message}
                 {dots}
             </p>

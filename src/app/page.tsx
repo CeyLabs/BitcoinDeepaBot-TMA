@@ -58,9 +58,7 @@ export default function Home() {
     }, [isExistingUser, router]);
     return (
         <main className="grid min-h-screen p-5">
-            {redirecting && (
-                <p className="text-center text-sm">Redirecting to wallet…</p>
-            )}
+            {redirecting && <p className="text-center text-sm">Redirecting to wallet…</p>}
             <section className="flex flex-col items-center justify-center text-center">
                 <div className="relative h-[160px] w-[160px]">
                     <Image

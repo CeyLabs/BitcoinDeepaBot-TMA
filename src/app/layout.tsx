@@ -23,7 +23,7 @@ export default function RootLayout({
             </head>
             <body className={`${inter.className} min-h-screen leading-tight`}>
                 <Providers>
-                    <AppRoot appearance="dark" platform="base" id="tg-ui-root">
+                    <AppRoot platform="base" id="tg-ui-root">
                         {children}
                         <Toaster position="top-center" richColors />
                     </AppRoot>

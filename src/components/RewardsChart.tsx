@@ -67,10 +67,12 @@ export function RewardsChart({ authToken, avgBtcPrice }: RewardsChartProps) {
 
     if (loading) {
         return (
-            <div className="mb-6 rounded-2xl border border-gray-700 bg-gray-800/50 p-6">
-                <h2 className="mb-4 text-lg font-semibold text-white">Bitcoin Price Chart</h2>
+            <div className="mb-6 rounded-2xl border border-tma-border-card bg-tma-bg-card p-6">
+                <h2 className="mb-4 text-lg font-semibold text-tma-text-primary">
+                    Bitcoin Price Chart
+                </h2>
                 <div className="flex h-48 items-center justify-center">
-                    <div className="text-gray-400">Loading chart...</div>
+                    <div className="text-tma-text-secondary">Loading chart...</div>
                 </div>
             </div>
         );
@@ -78,10 +80,12 @@ export function RewardsChart({ authToken, avgBtcPrice }: RewardsChartProps) {
 
     if (transactions.length === 0) {
         return (
-            <div className="mb-6 rounded-2xl border border-gray-700 bg-gray-800/50 p-6">
-                <h2 className="mb-4 text-lg font-semibold text-white">Bitcoin Price Chart</h2>
+            <div className="mb-6 rounded-2xl border border-tma-border-card bg-tma-bg-card p-6">
+                <h2 className="mb-4 text-lg font-semibold text-tma-text-primary">
+                    Bitcoin Price Chart
+                </h2>
                 <div className="flex h-48 items-center justify-center">
-                    <div className="text-center text-gray-400">
+                    <div className="text-center text-tma-text-secondary">
                         <p>No price data available</p>
                         <p className="text-sm">Start accruing membership rewards!</p>
                     </div>
@@ -220,9 +224,9 @@ export function RewardsChart({ authToken, avgBtcPrice }: RewardsChartProps) {
     };
 
     return (
-        <div className="mb-6 rounded-2xl border border-gray-700 bg-gray-800/50 p-6">
+        <div className="mb-6 rounded-2xl border border-tma-border-card bg-tma-bg-card p-6">
             <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-white">Bitcoin Price Chart</h2>
+                <h2 className="text-lg font-semibold text-tma-text-primary">Bitcoin Price Chart</h2>
             </div>
 
             {/* Chart */}

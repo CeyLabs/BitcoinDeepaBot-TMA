@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
 const TMASetupProvider = dynamic(() => import("./tma"), { ssr: false });
+const ThemeProvider = dynamic(() => import("./theme"), { ssr: false });
 
 export default function Providers({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(() => new QueryClient());
