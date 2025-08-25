@@ -17,6 +17,7 @@
         "@telegram-apps/telegram-ui": "^2.1.8",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.1.1",
+        "countries-list": "^3.1.1",
         "date-fns": "^4.1.0",
         "framer-motion": "^11.3.31",
         "lucide-react": "^0.525.0",
