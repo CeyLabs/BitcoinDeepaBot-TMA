@@ -70,8 +70,10 @@ export default function PaymentCancelPage() {
                     <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-600/20">
                         <MdCancel className="h-8 w-8 text-red-500" />
                     </div>
-                    <h1 className="mb-4 text-2xl font-bold text-white">Payment Cancelled</h1>
-                    <p className="mb-6 text-gray-300">
+                    <h1 className="mb-4 text-2xl font-bold text-tma-text-primary">
+                        Payment Cancelled
+                    </h1>
+                    <p className="mb-6 text-tma-text-secondary">
                         Your payment was cancelled. No charges have been made to your account.
                     </p>
 
@@ -79,7 +81,7 @@ export default function PaymentCancelPage() {
                     {error && (
                         <div className="mb-8 rounded-lg border border-yellow-500/30 bg-yellow-600/20 p-4 text-left">
                             <h3 className="mb-2 font-medium text-yellow-400">Notice</h3>
-                            <p className="text-sm text-gray-300">{error}</p>
+                            <p className="text-sm text-tma-text-secondary">{error}</p>
                         </div>
                     )}
 
@@ -92,7 +94,7 @@ export default function PaymentCancelPage() {
                         </Button>
                     </div>
 
-                    <div className="mt-4 text-sm text-gray-400">
+                    <div className="mt-4 text-sm text-tma-text-secondary">
                         <p>Need help? Contact our support team.</p>
                     </div>
                 </div>

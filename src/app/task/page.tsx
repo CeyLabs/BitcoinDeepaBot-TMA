@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useBackButton } from "@telegram-apps/sdk-react";
 import { Avatar, Button, Divider, Title } from "@telegram-apps/telegram-ui";
 import { TiUserAdd } from "react-icons/ti";
 import { MdWallet } from "react-icons/md";
@@ -13,6 +16,18 @@ import UserCount from "@/components/usercount";
 
 export default function Page() {
     const { userID } = useStore();
+    const router = useRouter();
+    const backButton = useBackButton();
+
+    useEffect(() => {
+        backButton.show();
+        const handleClick = () => router.push("/");
+        backButton.on("click", handleClick);
+        return () => {
+            backButton.off("click", handleClick);
+            backButton.hide();
+        };
+    }, [backButton, router]);
 
     return (
         <main className="mt-4 space-y-10 p-5">
