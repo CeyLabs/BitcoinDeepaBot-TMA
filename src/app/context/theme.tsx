@@ -25,12 +25,7 @@ interface ThemeContextType {
     isLight: boolean;
 }
 
-const ThemeContext = createContext<ThemeContextType>({
-    theme: "dark",
-    themeParams: null,
-    isDark: true,
-    isLight: false,
-});
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const useTheme = () => {
     const context = useContext(ThemeContext);
@@ -45,57 +40,41 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     const [currentThemeParams, setCurrentThemeParams] = useState<TelegramThemeParams | null>(null);
 
     useEffect(() => {
-        const initTheme = () => {
-            // Check if Telegram WebApp is available
-            if (typeof window !== "undefined" && window.Telegram?.WebApp) {
-                const tg = window.Telegram.WebApp;
+        if (typeof window === "undefined") return;
 
-                // Get initial theme params
-                if (tg.themeParams) {
-                    const params = tg.themeParams;
-                    setCurrentThemeParams(params);
+        if (window.Telegram?.WebApp) {
+            const tg = window.Telegram.WebApp;
 
-                    // Determine theme based on background color brightness
+            const apply = (params?: TelegramThemeParams) => {
+                if (!params) return;
+                setCurrentThemeParams(params);
+                const scheme = (tg as any).colorScheme as "light" | "dark" | undefined;
+                if (scheme === "light" || scheme === "dark") {
+                    setTheme(scheme);
+                } else {
                     const bgColor = params.bg_color || "#000000";
                     const brightness = getBrightness(bgColor);
                     setTheme(brightness > 128 ? "light" : "dark");
-
-                    // Update CSS variables
-                    updateCSSVariables(params);
                 }
+                updateCSSVariables(params);
+            };
 
-                // Listen for theme changes
-                tg.onEvent("themeChanged", () => {
-                    console.log("Theme changed:", tg.themeParams);
-                    if (tg.themeParams) {
-                        setCurrentThemeParams(tg.themeParams);
+            apply(tg.themeParams);
 
-                        // Determine theme based on background color brightness
-                        const bgColor = tg.themeParams.bg_color || "#000000";
-                        const brightness = getBrightness(bgColor);
-                        setTheme(brightness > 128 ? "light" : "dark");
+            const handler = () => apply(tg.themeParams);
+            tg.onEvent("themeChanged", handler);
 
-                        // Update CSS custom properties
-                        updateCSSVariables(tg.themeParams);
-                    }
-                });
-            } else {
-                // Fallback: detect system theme
-                const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-                setTheme(prefersDark ? "dark" : "light");
-
-                // Listen for system theme changes
-                const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-                const handleChange = (e: MediaQueryListEvent) => {
-                    setTheme(e.matches ? "dark" : "light");
-                };
-
-                mediaQuery.addEventListener("change", handleChange);
-                return () => mediaQuery.removeEventListener("change", handleChange);
-            }
-        };
-
-        initTheme();
+            return () => {
+                // @ts-ignore - older SDKs may not expose offEvent
+                tg.offEvent?.("themeChanged", handler);
+            };
+        } else {
+            const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+            const handleChange = (e: MediaQueryListEvent) => setTheme(e.matches ? "dark" : "light");
+            setTheme(mediaQuery.matches ? "dark" : "light");
+            mediaQuery.addEventListener("change", handleChange);
+            return () => mediaQuery.removeEventListener("change", handleChange);
+        }
     }, []);
 
     const value: ThemeContextType = {

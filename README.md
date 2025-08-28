@@ -22,8 +22,8 @@ A Telegram Mini App built with Next.js 14 that supports Bitcoin membership rewar
 -   **Styling**: Tailwind CSS + ShadCN UI components
 -   **Database**: MongoDB with Mongoose ODM
 -   **State Management**:
-    -   Zustand (global state)
-    -   TanStack Query (server state management)
+  -   Zustand (global state)
+  -   TanStack Query (server state management)
 -   **Forms**: React Hook Form + Zod validation
 -   **Charts**: Chart.js with react-chartjs-2
 -   **Telegram SDK**: @telegram-apps/sdk-react
@@ -52,7 +52,7 @@ A Telegram Mini App built with Next.js 14 that supports Bitcoin membership rewar
 
     ```env
     MONGODB_URI=your_mongodb_connection_string
-    API_BASE_URL=http://localhost:3000
+    API_BASE_URL=http://localhost:3347
 
     ```
 

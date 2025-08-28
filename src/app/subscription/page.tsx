@@ -349,7 +349,6 @@ export default function SubscriptionPage() {
                         <section className="p-4">
                             {/* Subscribe Button */}
                             <Button
-                                Component="a"
                                 stretched
                                 onClick={handlePlanSelection}
                                 disabled={!selectedPlan}
