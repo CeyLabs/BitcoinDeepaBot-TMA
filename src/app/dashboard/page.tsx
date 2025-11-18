@@ -319,7 +319,7 @@ export default function WalletPage() {
                                         ≈ රු.{" "}
                                         {summary.total_lkr
                                             ? formatLargeNumber(
-                                                  Number(summary.total_lkr.replace(/,/g, ""))
+                                                  Number(typeof summary.total_lkr === 'string' ? summary.total_lkr.replace(/,/g, "") : summary.total_lkr)
                                               )
                                             : "0"}
                                     </span>
@@ -471,7 +471,7 @@ export default function WalletPage() {
                                                     {formatLargeNumber(
                                                         (summary["24_hr_change"] *
                                                             Number(
-                                                                summary.total_lkr.replace(/,/g, "")
+                                                                typeof summary.total_lkr === 'string' ? summary.total_lkr.replace(/,/g, "") : (summary.total_lkr || 0)
                                                             )) /
                                                             100
                                                     )}
