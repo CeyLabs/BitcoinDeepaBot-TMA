@@ -306,7 +306,7 @@ export default function SubscriptionPage() {
                                               "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all duration-300",
                                               selectedPlan === plan.id
                                                   ? "border-orange-500 bg-gradient-to-r from-orange-500/10 to-orange-600/10 shadow-lg shadow-orange-500/20"
-                                                  : "border-gray-700 bg-gradient-to-r from-gray-800/50 to-gray-900/50 hover:border-gray-600"
+                                                  : "border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/50  hover:border-gray-600"
                                           )}
                                           onClick={() => setSelectedPlan(plan.id)}
                                       >

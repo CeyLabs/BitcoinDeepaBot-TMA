@@ -10,6 +10,7 @@ import fetchy from "@/lib/fetchy";
 import { UserExistsResponse } from "@/lib/types";
 import { Button, Subheadline, Title } from "@telegram-apps/telegram-ui";
 import Image from "next/image";
+import { useTheme } from "@/app/context/theme";
 
 export default function OnboardPage() {
     const router = useRouter();
@@ -18,6 +19,7 @@ export default function OnboardPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [authError, setAuthError] = useState<string | null>(null);
     const [telegramUserData, setTelegramUserData] = useState<any>(null);
+    const { isDark } = useTheme();
 
     useEffect(() => {
         const initializeAuth = async () => {
@@ -126,7 +128,7 @@ export default function OnboardPage() {
                     <section className="flex flex-col items-center justify-center text-center">
                         <div className="relative h-[130px] w-[130px]">
                             <Image
-                                src="/BDLogo_White.svg"
+                                src={isDark ? "/BDLogo_White.svg" : "/BDLogo_Black.svg"}
                                 alt="Bitcoin Deepa"
                                 fill
                                 priority
@@ -143,24 +145,24 @@ export default function OnboardPage() {
 
                 {/* Features Preview */}
                 <div className="mb-8 mt-8 grid grid-cols-2 gap-4">
-                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
+                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-white p-4 text-center backdrop-blur-sm dark:bg-zinc-900/50">
                         <div className="mb-2 text-2xl">📈</div>
                         <div className="text-sm font-medium text-tma-text-primary">Live Prices</div>
                         <div className="text-xs text-tma-text-secondary">Real-time tracking</div>
                     </div>
-                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
+                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-white p-4 text-center backdrop-blur-sm dark:bg-zinc-900/50">
                         <div className="mb-2 text-2xl">🔒</div>
                         <div className="text-sm font-medium text-tma-text-primary">Secure</div>
                         <div className="text-xs text-tma-text-secondary">Bank-level security</div>
                     </div>
-                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
+                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-white p-4 text-center backdrop-blur-sm dark:bg-zinc-900/50">
                         <div className="mb-2 text-2xl">⚡</div>
                         <div className="text-sm font-medium text-tma-text-primary">
                             Fast Trading
                         </div>
                         <div className="text-xs text-tma-text-secondary">Instant transactions</div>
                     </div>
-                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
+                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-white p-4 text-center backdrop-blur-sm dark:bg-zinc-900/50">
                         <div className="mb-2 text-2xl">🇱🇰</div>
                         <div className="text-sm font-medium text-tma-text-primary">
                             Local Support

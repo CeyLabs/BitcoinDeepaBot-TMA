@@ -48,7 +48,7 @@ export default function UserCount() {
                 }}
             />
             <div className="flex w-full justify-between text-3xl">
-                <p className="text-left leading-tight">
+                <p className="text-left leading-tight text-primary">
                     {count}
                     <span className="pl-1 text-sm font-normal text-tma-text-secondary">Joined</span>
                 </p>

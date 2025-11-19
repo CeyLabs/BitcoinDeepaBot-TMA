@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import fetchy from "@/lib/fetchy";
 import { useStore } from "@/lib/store";
 import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
+import { useTheme } from "@/app/context/theme";
 
 export default function Home() {
     const initLaunchParams = useLaunchParams().initData;
@@ -18,6 +19,7 @@ export default function Home() {
     const { setUserID, isExistingUser } = useStore();
     const router = useRouter();
     const [redirecting, setRedirecting] = useState(false);
+    const { isDark } = useTheme();
 
     const authData = useMemo(() => {
         return initLaunchParams || initData;
@@ -62,7 +64,7 @@ export default function Home() {
             <section className="flex flex-col items-center justify-center text-center">
                 <div className="relative h-[160px] w-[160px]">
                     <Image
-                        src="/BDLogo_White.svg"
+                        src={isDark ? "/BDLogo_White.svg" : "/BDLogo_Black.svg"}
                         alt="Bitcoin Deepa"
                         fill
                         priority

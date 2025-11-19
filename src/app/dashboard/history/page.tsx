@@ -136,7 +136,7 @@ export default function HistoryPage() {
                 {authToken && (
                     <button
                         onClick={() => refetch()}
-                        className="rounded-xl border border-gray-600 p-2 text-gray-400 transition-colors hover:border-orange-500 hover:text-orange-500"
+                        className="rounded-xl border border-gray-200  dark:border-gray-600 p-2 text-gray-400 transition-colors hover:border-orange-500 hover:text-orange-500"
                         title="Refresh transactions"
                     >
                         <svg
@@ -273,9 +273,9 @@ export default function HistoryPage() {
                             })
                         ) : (
                             <div className="py-12 text-center">
-                                <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full border border-gray-600 bg-gradient-to-br from-gray-700 to-gray-800">
+                                <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full border border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-gray-700">
                                     <svg
-                                        className="h-10 w-10 text-gray-400"
+                                        className="h-10 w-10 text-gray-600 dark:text-gray-400"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"

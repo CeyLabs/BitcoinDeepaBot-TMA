@@ -13,11 +13,13 @@ import { Button } from "@telegram-apps/telegram-ui";
 import { formatDate } from "@/lib/formatters";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
+import { useTheme } from "@/app/context/theme";
 
 export default function SubscriptionPage() {
     const [selectedPlan, setSelectedPlan] = useState<string>();
     const [activeTab, setActiveTab] = useState<"plans" | "status">("plans");
     const { subscription, setSubscription } = useStore();
+    const { isDark } = useTheme();
 
     const redirectToPayHereViaPage = usePayHereRedirect();
 
@@ -341,7 +343,7 @@ export default function SubscriptionPage() {
             {/* Header */}
             <div className="mb-7 flex items-center justify-center">
                 <Image
-                    src="/DeepaLogo_WnO.svg"
+                    src={isDark ? "/DeepaLogo_WnO.svg" : "/DeepaLogo_Black.svg"}
                     alt="Bitcoin Deepa"
                     width={100}
                     height={50}
@@ -351,11 +353,11 @@ export default function SubscriptionPage() {
 
             {/* Tabs - segmented control */}
             <div className="mb-6">
-                <div className="relative grid grid-cols-2 items-center rounded-2xl border border-zinc-800 bg-tma-bg-secondary p-1">
+                <div className="relative grid grid-cols-2 items-center rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-tma-bg-secondary p-1">
                     {/* Sliding background */}
                     <div
                         className={cn(
-                            "absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] transform-gpu rounded-xl bg-zinc-800 transition-transform duration-200 ease-out",
+                            "absolute inset-y-1  left-1 w-[calc(50%-0.25rem)] transform-gpu rounded-xl bg-orange-500 dark:bg-zinc-800 transition-transform duration-200 ease-out",
                             activeTab === "status" && "translate-x-full"
                         )}
                     />
@@ -363,7 +365,7 @@ export default function SubscriptionPage() {
                         onClick={() => onTabChange("plans")}
                         className={cn(
                             "relative z-10 inline-flex items-center justify-center rounded-xl py-2.5 font-medium transition-colors",
-                            activeTab === "plans" ? "text-orange-500" : "text-tma-text-secondary"
+                            activeTab === "plans" ? "text-white dark:text-orange-500" : "text-tma-text-secondary"
                         )}
                     >
                         Plans
@@ -372,7 +374,7 @@ export default function SubscriptionPage() {
                         onClick={() => onTabChange("status")}
                         className={cn(
                             "relative z-10 inline-flex items-center justify-center rounded-xl py-2.5 font-medium transition-colors",
-                            activeTab === "status" ? "text-orange-500" : "text-tma-text-secondary"
+                            activeTab === "status" ? "text-white dark:text-orange-500" : "text-tma-text-secondary"
                         )}
                     >
                         My Membership
@@ -405,7 +407,7 @@ export default function SubscriptionPage() {
                                             "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all duration-300",
                                             selectedPlan === plan.id
                                                 ? "border-orange-500 bg-gradient-to-r from-orange-500/10 to-orange-600/10 shadow-lg shadow-orange-500/20"
-                                                : "border-gray-700 bg-tma-bg-card hover:border-gray-600"
+                                                : "border-gray-200 dark:border-gray-700 bg-tma-bg-card hover:border-gray-600"
                                         )}
                                         onClick={() => setSelectedPlan(plan.id)}
                                     >
@@ -519,7 +521,7 @@ export default function SubscriptionPage() {
                                     <div className="text-center">
                                         <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20">
                                             <svg
-                                                className="h-6 w-6 text-green-400"
+                                                className="h-6 w-6 text-green-600 dark:text-green-400"
                                                 fill="none"
                                                 stroke="currentColor"
                                                 viewBox="0 0 24 24"
@@ -532,7 +534,7 @@ export default function SubscriptionPage() {
                                                 />
                                             </svg>
                                         </div>
-                                        <h2 className="mb-2 text-lg font-medium text-green-400">
+                                        <h2 className="mb-2 text-lg font-medium text-green-600 dark:text-green-400">
                                             Active Membership
                                         </h2>
                                         <h3 className="text-xl font-semibold">
@@ -579,7 +581,7 @@ export default function SubscriptionPage() {
                                                 className={cn(
                                                     "font-medium",
                                                     subscription.isActive
-                                                        ? "text-green-400"
+                                                        ? "text-green-600 dark:text-green-400"
                                                         : "text-red-400"
                                                 )}
                                             >

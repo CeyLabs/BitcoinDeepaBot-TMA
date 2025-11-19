@@ -604,25 +604,35 @@ export default function VerificationPage() {
                             // Show a message indicating the verification is in review
                             <p></p>
                         ) : (
-                            <Button
-                                onClick={initiateVerification}
-                                disabled={isLoading || !userData}
-                                className={cn(
-                                    "w-full px-6 py-4 text-lg font-semibold text-white transition-all duration-300",
-                                    isLoading || !userData
-                                        ? "cursor-not-allowed bg-gray-700 opacity-50"
-                                        : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl"
-                                )}
-                            >
-                                {isLoading ? (
-                                    <div className="flex items-center justify-center gap-3">
-                                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                        Starting Verification...
-                                    </div>
-                                ) : (
-                                    "Start Identity Verification"
-                                )}
-                            </Button>
+                            <>
+                                <Button
+                                    onClick={initiateVerification}
+                                    disabled={isLoading || !userData}
+                                    className={cn(
+                                        "w-full px-6 py-4 text-lg font-semibold text-white transition-all duration-300",
+                                        isLoading || !userData
+                                            ? "cursor-not-allowed bg-gray-700 opacity-50"
+                                            : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl"
+                                    )}
+                                >
+                                    {isLoading ? (
+                                        <div className="flex items-center justify-center gap-3">
+                                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                            Starting Verification...
+                                        </div>
+                                    ) : (
+                                        "Start Identity Verification"
+                                    )}
+                                </Button>
+
+                                {/* Temporary bypass for testing */}
+                                <Button
+                                    onClick={() => router.push("/dashboard/subscription")}
+                                    className="w-full border border-gray-600 bg-gray-800 px-6 py-3 text-sm font-medium text-gray-300 hover:bg-gray-700"
+                                >
+                                    Skip Verification (Testing)
+                                </Button>
+                            </>
                         )}
                     </div>
                 </div>

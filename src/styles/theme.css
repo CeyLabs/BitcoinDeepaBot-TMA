@@ -37,7 +37,7 @@
 .light {
     --tg-color-scheme: light;
     --text-primary: var(--tg-theme-text-color, #000000);
-    --text-secondary: var(--tg-theme-hint-color, #666666);
+    --text-secondary: var(--tg-theme-hint-color, #a92b2b);
     --bg-secondary: var(--tg-theme-secondary-bg-color, #f5f5f5);
 
     /* Light theme card styles */
