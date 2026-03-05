@@ -19,6 +19,9 @@
     --tg-viewport-height: 100vh;
     --tg-viewport-stable-height: 100vh;
 
+    /* Brand accent — always Bitcoin Deepa orange, never overridden by Telegram */
+    --brand-accent: #ff9900;
+
     /* Custom theme-aware colors - only text and components */
     --text-primary: var(--tg-theme-text-color, #ffffff);
     --text-secondary: var(--tg-theme-hint-color, #b1c3d5);
@@ -45,6 +48,10 @@
     --card-border: rgb(209, 213, 219);
     --card-gradient-from: rgba(229, 231, 235, 0.3);
     --card-gradient-to: rgba(243, 244, 246, 0.3);
+}
+
+body {
+    background-color: var(--tg-theme-bg-color, #212121);
 }
 
 #tg-ui-root {
