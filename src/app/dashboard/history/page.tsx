@@ -75,15 +75,24 @@ export default function HistoryPage() {
               };
     };
 
-    const getStatusInfo = (status: ApiTransaction["status"]) => {
+    const getStatusInfo = (status: ApiTransaction["status"], settled?: boolean) => {
         switch (status) {
             case "SUCCESS":
+                if (settled) {
+                    return {
+                        color: "text-green-400",
+                        bgColor: "bg-green-500/20",
+                        borderColor: "border-green-500",
+                        icon: "✓",
+                        label: "Settled",
+                    };
+                }
                 return {
-                    color: "text-green-400",
-                    bgColor: "bg-green-500/20",
-                    borderColor: "border-green-500",
+                    color: "text-yellow-400",
+                    bgColor: "bg-yellow-500/20",
+                    borderColor: "border-yellow-500",
                     icon: "✓",
-                    label: "Success",
+                    label: "Paid",
                 };
             case "PENDING":
                 return {
@@ -193,7 +202,7 @@ export default function HistoryPage() {
                     <div className="space-y-0">
                         {apiTransactions.length > 0 ? (
                             apiTransactions.map((transaction) => {
-                                const statusInfo = getStatusInfo(transaction.status);
+                                const statusInfo = getStatusInfo(transaction.status, transaction.settled);
                                 const settlementInfo = getSettlementInfo(transaction.settled);
 
                                 return (
@@ -336,17 +345,17 @@ export default function HistoryPage() {
                                 <div
                                     className={cn(
                                         "flex h-10 w-10 items-center justify-center rounded-full border-2",
-                                        getStatusInfo(selectedTransaction.status).bgColor,
-                                        getStatusInfo(selectedTransaction.status).borderColor
+                                        getStatusInfo(selectedTransaction.status, selectedTransaction.settled).bgColor,
+                                        getStatusInfo(selectedTransaction.status, selectedTransaction.settled).borderColor
                                     )}
                                 >
                                     <span
                                         className={cn(
                                             "text-base",
-                                            getStatusInfo(selectedTransaction.status).color
+                                            getStatusInfo(selectedTransaction.status, selectedTransaction.settled).color
                                         )}
                                     >
-                                        {getStatusInfo(selectedTransaction.status).icon}
+                                        {getStatusInfo(selectedTransaction.status, selectedTransaction.settled).icon}
                                     </span>
                                 </div>
                                 <div>
@@ -357,10 +366,10 @@ export default function HistoryPage() {
                                     <p
                                         className={cn(
                                             "text-sm font-medium",
-                                            getStatusInfo(selectedTransaction.status).color
+                                            getStatusInfo(selectedTransaction.status, selectedTransaction.settled).color
                                         )}
                                     >
-                                        {getStatusInfo(selectedTransaction.status).label}
+                                        {getStatusInfo(selectedTransaction.status, selectedTransaction.settled).label}
                                     </p>
                                 </div>
                             </div>
