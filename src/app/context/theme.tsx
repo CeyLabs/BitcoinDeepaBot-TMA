@@ -118,6 +118,11 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 function updateCSSVariables(params: TelegramThemeParams) {
     const root = document.documentElement;
 
+    // Background color — set the CSS var so body background-color picks it up
+    if (params.bg_color) {
+        root.style.setProperty("--tg-theme-bg-color", params.bg_color);
+    }
+
     // Text colors - these need to adapt to the background set by BotFather
     if (params.text_color) {
         root.style.setProperty("--tg-theme-text-color", params.text_color);
