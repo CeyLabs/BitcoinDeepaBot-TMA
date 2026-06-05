@@ -10,6 +10,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
+  leftIcon?: React.ReactNode;
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
@@ -35,6 +36,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       size = "default",
       loading = false,
       disabled,
+      leftIcon,
       children,
       ...props
     },
@@ -60,6 +62,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {loading && (
           <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
         )}
+        {!loading && leftIcon && <span className="shrink-0">{leftIcon}</span>}
         {children}
       </button>
     );

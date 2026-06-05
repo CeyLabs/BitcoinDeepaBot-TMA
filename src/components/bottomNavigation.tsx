@@ -101,7 +101,7 @@ export default function BottomNavigation() {
                 "h-14 w-[78px] rounded-[20px]",
                 "transition-all duration-200",
                 isActive
-                  ? "bg-[#fa7119]/10 text-[#fa7119]"
+                  ? "bg-[#e2e8f0] text-[#1b2027]"
                   : "text-[#475569] hover:text-[#1b2027]"
               )}
             >
@@ -109,7 +109,7 @@ export default function BottomNavigation() {
               <span
                 className={cn(
                   "text-[14px] leading-[14px] tracking-normal",
-                  isActive ? "font-semibold" : "font-normal"
+                  isActive ? "font-medium" : "font-normal"
                 )}
               >
                 {item.label}

@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { ClickableCard } from "@/components/ui/clickable-card";
 import { PlanCard } from "@/components/ui/plan-card";
 import { TextField, TextAreaField } from "@/components/ui/text-field";
+import { PageTitle } from "@/components/ui/page-title";
+import { TogglePlan, PlanDuration } from "@/components/ui/toggle-plan";
+import { CategoryFilterGroup } from "@/components/ui/category-filter";
+import { SearchField } from "@/components/ui/search-field";
+import { CopyField } from "@/components/ui/copy-field";
 import BottomNavigation from "@/components/bottomNavigation";
 
 const BitcoinEmoji = () => (
@@ -26,6 +31,8 @@ const SharkEmoji = () => (
 export default function DevPage() {
   const [selectedPlan, setSelectedPlan] = useState<string>("shrimp");
   const [textValue, setTextValue] = useState("");
+  const [duration, setDuration] = useState<PlanDuration>("weekly");
+  const [category, setCategory] = useState("All");
 
   return (
     <div className="min-h-screen bg-[#f5f5f0] pb-32">
@@ -111,6 +118,46 @@ export default function DevPage() {
             selected={selectedPlan === "shark"}
             onSelect={() => setSelectedPlan("shark")}
           />
+        </section>
+
+        {/* PAGE TITLE */}
+        <section className="space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[#64748b]">Page Title</h2>
+          <PageTitle title="Choose Your Plan" subtitle="Get your bitcoin දීප membership" />
+          <PageTitle title="My Wallet" />
+        </section>
+
+        {/* TOGGLE PLAN */}
+        <section className="space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[#64748b]">Toggle Plan</h2>
+          <div className="flex justify-center">
+            <TogglePlan value={duration} onChange={setDuration} />
+          </div>
+          <p className="text-xs text-center text-[#64748b]">Selected: {duration}</p>
+        </section>
+
+        {/* COPY FIELD */}
+        <section className="space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[#64748b]">Copy Field</h2>
+          <CopyField value="0x1a2b3c4d5e6f7g8h9i0j" />
+          <CopyField value="https://t.me/BitcoinDeepaBot?start=ref123" />
+        </section>
+
+        {/* SEARCH FIELD */}
+        <section className="space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[#64748b]">Search Field</h2>
+          <SearchField placeholder="Search" className="w-full" />
+        </section>
+
+        {/* CATEGORY FILTER */}
+        <section className="space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[#64748b]">Category Filter</h2>
+          <CategoryFilterGroup
+            options={["All", "Deposits", "Rewards", "Withdrawals"]}
+            value={category}
+            onChange={setCategory}
+          />
+          <p className="text-xs text-[#64748b]">Selected: {category}</p>
         </section>
 
         {/* TEXT FIELDS */}

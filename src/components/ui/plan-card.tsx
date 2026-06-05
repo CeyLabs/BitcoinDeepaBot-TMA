@@ -22,6 +22,7 @@ export interface PlanCardProps {
   perYear: string;
   selected?: boolean;
   active?: boolean;
+  mostPopular?: boolean;
   onSelect?: () => void;
   className?: string;
 }
@@ -36,29 +37,39 @@ export function PlanCard({
   perYear,
   selected = false,
   active = false,
+  mostPopular = false,
   onSelect,
   className,
 }: PlanCardProps) {
+  const isHighlighted = selected || active;
   return (
     <button
       type="button"
       onClick={onSelect}
       className={cn(
-        "w-full text-left bg-white rounded-[12px]",
-        "flex flex-col items-end pb-4 pt-0",
+        "w-full text-left rounded-[12px] relative",
+        "flex flex-col items-end pt-0",
         "shadow-[-0.1px_-0.1px_10px_0px_rgba(203,213,225,0.3),3px_3px_7px_0px_rgba(203,213,225,0.3)]",
         "transition-all duration-150",
-        selected && "ring-2 ring-[#fa7119] bg-[#fa7119]/[0.03]",
-        active && "ring-2 ring-[#fa7119] bg-[#fa7119]/[0.03]",
+        isHighlighted
+          ? "border border-[#fa7119] bg-[#eeeff3]"
+          : "border border-transparent bg-white",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50",
         className
       )}
     >
+      {mostPopular && (
+        <div className="flex flex-col items-start mb-[-10px] pt-[6px] px-[10px] relative shrink-0 self-end">
+          <div className="bg-[#fa7119] flex h-4 items-center justify-center px-2.5 rounded-full">
+            <p className="text-[12px] leading-[16px] text-[#eeeff3] whitespace-nowrap">Most Popular</p>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col items-start w-full px-4 py-5 gap-0">
         {/* Top row: radio + emoji + name + price */}
         <div className="flex items-center gap-2 w-full h-10">
           <div className="flex items-center gap-2 shrink-0">
-            {selected ? <RadioSelected /> : <RadioDefault />}
+            {isHighlighted ? <RadioSelected /> : <RadioDefault />}
             <div className="size-10 flex items-center justify-center">{emoji}</div>
           </div>
           <div className="flex flex-1 items-center justify-between min-w-0 leading-[16px] tracking-normal whitespace-nowrap">
