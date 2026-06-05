@@ -22,13 +22,13 @@ export async function GET(request: Request) {
 
         // Get pagination parameters from URL
         const url = new URL(request.url);
-        const page = url.searchParams.get("page") || "1";
-        const limit = url.searchParams.get("limit") || "10";
+        const page = parseInt(url.searchParams.get("page") || "1");
+        const limit = parseInt(url.searchParams.get("limit") || "10");
 
         // Build API URL with pagination parameters
         const apiUrl = new URL(`${process.env.API_BASE_URL}/transaction/list`);
-        apiUrl.searchParams.set("page", page);
-        apiUrl.searchParams.set("limit", limit);
+        apiUrl.searchParams.set("page", String(page));
+        apiUrl.searchParams.set("limit", String(limit));
 
         // Make request to external API to get current user transactions
         const response = await fetch(apiUrl.toString(), {
@@ -46,6 +46,7 @@ export async function GET(request: Request) {
                 return NextResponse.json(
                     {
                         transactions: [],
+                        nextCursor: null,
                         message: "No transactions found",
                     },
                     { status: 200 }
@@ -62,11 +63,12 @@ export async function GET(request: Request) {
             );
         }
 
-        const transactions = await response.json();
+        const data = await response.json();
+        const transactions = data.transactions || [];
 
         return NextResponse.json({
             transactions,
-            message: "Transactions fetched successfully",
+            nextCursor: transactions.length === limit ? page + 1 : null,
         });
     } catch (error) {
         console.error("❌ Error fetching current transactions:", error);
