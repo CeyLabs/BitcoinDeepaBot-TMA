@@ -113,7 +113,7 @@
 :root {
     --tg-theme-link-color: #62bcf9;
     --tg-theme-section-bg-color: #18222d;
-    --tg-theme-button-color: #ff9900;
+    --tg-theme-button-color: #fa7119;
     --tg-color-scheme: dark;
     --tg-theme-destructive-text-color: #ef5b5b;
     --tg-theme-hint-color: #b1c3d5;
@@ -130,8 +130,8 @@
     --text-primary: var(--tg-theme-text-color, #ffffff);
     --text-secondary: var(--tg-theme-hint-color, #b1c3d5);
     --bg-secondary: var(--tg-theme-secondary-bg-color, #131415);
-    --accent: var(--tg-theme-button-color, #ff9900);
-    --link: var(--tg-theme-link-color, #f97316);
+    --accent: var(--tg-theme-button-color, #fa7119);
+    --link: var(--tg-theme-link-color, #fa7119);
 
     /* Theme-aware card and border styles */
     --card-bg: rgba(100, 100, 100, 0.2);
@@ -192,8 +192,8 @@
 #tg-ui-root {
     /* Only set text color, background handled by BotFather */
     color: var(--text-primary);
-    --tg-theme-button-color: #ff9900;
-    --tg-theme-link-color: #f97316;
+    --tg-theme-button-color: #fa7119;
+    --tg-theme-link-color: #fa7119;
 }
 
 /* Custom animations */

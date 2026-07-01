@@ -94,49 +94,8 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         <ThemeContext.Provider value={value}>
             <div className={effectiveTheme} data-theme={effectiveTheme}>
                 {children}
-                {process.env.NODE_ENV === "development" && (
-                    <DevThemeToggle theme={effectiveTheme} onChange={setThemeOverride} />
-                )}
             </div>
         </ThemeContext.Provider>
-    );
-}
-
-// ─── Dev-only theme toggle ──────────────────────────────────────────────────
-// Lets you force light/dark locally, since the Telegram WebApp script always
-// defines window.Telegram.WebApp (even outside the real client) and short-circuits
-// the prefers-color-scheme fallback below.
-
-function DevThemeToggle({
-    theme,
-    onChange,
-}: {
-    theme: "light" | "dark";
-    onChange: (theme: "light" | "dark" | null) => void;
-}) {
-    return (
-        <button
-            type="button"
-            onClick={() => onChange(theme === "light" ? "dark" : "light")}
-            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-            style={{
-                position: "fixed",
-                bottom: 12,
-                right: 12,
-                zIndex: 9999,
-                width: 36,
-                height: 36,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "50%",
-                background: "#fa7119",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-                fontSize: 18,
-            }}
-        >
-            {theme === "light" ? "🌙" : "☀️"}
-        </button>
     );
 }
 

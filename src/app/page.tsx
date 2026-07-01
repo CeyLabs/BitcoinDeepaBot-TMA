@@ -4,44 +4,34 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useInitData, useLaunchParams } from "@telegram-apps/sdk-react";
-import { useRouter } from "next/navigation";
-import fetchy from "@/lib/fetchy";
+import { Button, Cell, Navigation, Progress, Title } from "@telegram-apps/telegram-ui";
+import { useTheme } from "@/app/context/theme";
 import { useStore } from "@/lib/store";
 import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
-import { ClickableCard } from "@/components/ui/clickable-card";
-import { Progress } from "@/components/ui/progress";
-import { useTheme } from "@/app/context/theme";
 import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
+import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
+import { useUserCount } from "@/hooks/query/useUserCount";
 
 // ─── Shared progress bar ────────────────────────────────────────────────────
 
+const tierMaxCounts = [100, 200, 500, 1000, 2500, 5000, 10000];
+
+function getCurrentTierMax(n: number): number {
+  for (const max of tierMaxCounts) {
+    if (n <= max) return max;
+  }
+  return 10000;
+}
+
 function UserProgress() {
-  const { count, setCount } = useStore();
-
-  useEffect(() => {
-    async function fetchUserCount() {
-      const data = await fetchy.get<any>("/api/user");
-      setCount((data.count as number) || 80);
-    }
-    fetchUserCount();
-  }, [setCount]);
-
-  const tierMaxCounts = [100, 200, 500, 1000, 2500, 5000, 10000];
-
-  const getCurrentTierMax = (n: number): number => {
-    for (const max of tierMaxCounts) {
-      if (n <= max) return max;
-    }
-    return 10000;
-  };
+  const { count } = useUserCount();
 
   const currentTierMax = getCurrentTierMax(count);
   const progressPct = Math.min((count / currentTierMax) * 100, 100);
 
   return (
     <div className="w-full space-y-2">
-      <Progress value={progressPct} className="h-[7px] bg-[#e2e8f0] dark:bg-[#27272a]" />
+      <Progress value={progressPct} style={{ height: "8px" }} />
       <div className="flex w-full items-baseline justify-between">
         <p className="text-[22px] font-bold tabular-nums text-[#1b2027] dark:text-white">
           {count.toLocaleString()}
@@ -61,7 +51,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <main className="flex min-h-screen flex-col bg-white px-5 dark:bg-[#1b2027]">
       {/* Logo + heading slot */}
-      <section className="flex flex-col items-center justify-center pt-10 pb-2 text-center">
+      <section className="flex flex-col items-center justify-center pt-8 pb-2 text-center">
         <div className="relative mb-5 h-[150px] w-[220px]">
           <Image
             src={isDark ? "/BDLogo_White.svg" : "/BDLogo_Black.svg"}
@@ -83,7 +73,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
 function UserScreen({ isExisting, onAction }: { isExisting: boolean; onAction: () => void }) {
   return (
     <div className="flex w-full flex-col">
-      <h1 className="max-w-sm self-center text-[22px] font-bold leading-snug text-[#1b2027] dark:text-white">
+      <Title level="2" weight="2" className="max-w-sm self-center text-center leading-snug">
         {isExisting ? (
           <>
             Welcome Back!
@@ -93,36 +83,45 @@ function UserScreen({ isExisting, onAction }: { isExisting: boolean; onAction: (
         ) : (
           "Join Sri Lanka's Fastest Growing Bitcoin Community"
         )}
-      </h1>
+      </Title>
 
       <div className="mt-6 mb-8">
         <UserProgress />
       </div>
 
       <div className="space-y-3">
-        <Button variant="primary" onClick={onAction}>
+        <Button mode="filled" size="l" stretched onClick={onAction} style={{ borderRadius: "12px" }}>
           {isExisting ? "Open My Wallet" : "Start Using Wallet"}
         </Button>
 
-        <ClickableCard
-          icon={<Image src="/btc-coin-3d.png" alt="Bitcoin" width={40} height={40} className="object-contain" />}
-          title={isExisting ? "Manage My Plans" : "Subscribe to a Plan"}
-          subtitle={isExisting ? "View, extend or change plans" : "Choose Monthly or yearly subscriptions"}
+        <Cell
+          before={<Image src="/emoji/bitcoin.svg" alt="Bitcoin" width={40} height={40}/>}
+          after={<Navigation />}
           onClick={onAction}
-        />
+          style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
+          className="gap-2! px-4! rounded-[12px] border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
+        >
+          {/* {isExisting ? "Manage My Plans" : "Subscribe to a Plan"} */}
+           <p className="flex flex-col items-start font-semibold text-[#1b2027] dark:text-white pl-1">
+            {isExisting ? "Manage My Plans" : "Subscribe to a Plan"}
+            <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">{isExisting ? "View, extend or change plans" : "Choose Monthly or yearly subscriptions"}</span>
+          </p>
+        </Cell>
 
-        <ClickableCard
-          icon={
-            isExisting ? (
-              <Image src="/gift-emoji-3d.png" alt="Bitcoin" width={30} height={30} className="object-contain" />
-            ) : (
-              <span className="text-3xl">🎁</span>
-            )
-          }
-          title="Gift a Bitcoin Plan"
-          subtitle="Send a bitcoin subscription to a friend"
+        <Cell
+          before={<Image src="/emoji/gift.svg" alt="Gift" width={40} height={40} />}
+          // subtitle="Send a bitcoin subscription to a friend"
+          after={<Navigation />}
           onClick={() => window.open(TELEGRAM_BOT_URL, "_blank")}
-        />
+          style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
+          className="gap-2! px-4! rounded-[12px] border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
+        >
+          <p className="flex flex-col items-start font-semibold text-[#1b2027] dark:text-white pl-1">
+            Send a Gift
+            <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">Send a bitcoin subscription to a friend</span>
+          </p>
+
+        </Cell>
       </div>
 
       <div className="mt-5 flex flex-col items-center gap-2">
@@ -148,40 +147,22 @@ function UserScreen({ isExisting, onAction }: { isExisting: boolean; onAction: (
   );
 }
 
-// ─── Root page ────────────────────────────────────────────────────────────────
-
 export default function Home() {
   const initLaunchParams = useLaunchParams().initData;
   const launchParams = useLaunchParams();
   const initData = useInitData();
   const { setUserID, isExistingUser } = useStore();
-  const router = useRouter();
   const [isExisting, setIsExisting] = useState(false);
 
   const authData = useMemo(() => {
     return initLaunchParams || initData;
   }, [initLaunchParams, initData]);
 
+  useRegisterTelegramUser(authData, launchParams);
+
   useEffect(() => {
-    const { username, id } = authData?.user || {};
-
-    async function addUserToDb() {
-      if (id && username) {
-        try {
-          await fetchy.post("/api/user", {
-            id: id,
-            username: username,
-            data: { authdata: authData, launchparam: launchParams },
-          });
-        } catch (error) {
-          console.error("Error adding user to database:", error);
-        }
-      }
-    }
-
-    addUserToDb();
-    setUserID(id?.toString() || "");
-  }, [authData, launchParams, setUserID]);
+    setUserID(authData?.user?.id?.toString() || "");
+  }, [authData, setUserID]);
 
   useEffect(() => {
     const token = getAuthTokenFromStorage();
