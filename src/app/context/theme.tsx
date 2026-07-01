@@ -23,6 +23,8 @@ interface ThemeContextType {
     themeParams: TelegramThemeParams | null;
     isDark: boolean;
     isLight: boolean;
+    /** Dev-only: force a theme regardless of Telegram/OS detection. Pass null to go back to auto. */
+    setThemeOverride: (theme: "light" | "dark" | null) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -37,6 +39,7 @@ export const useTheme = () => {
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<"light" | "dark">("dark");
+    const [themeOverride, setThemeOverride] = useState<"light" | "dark" | null>(null);
     const [currentThemeParams, setCurrentThemeParams] = useState<TelegramThemeParams | null>(null);
 
     useEffect(() => {
@@ -77,19 +80,63 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         }
     }, []);
 
+    const effectiveTheme = themeOverride ?? theme;
+
     const value: ThemeContextType = {
-        theme,
+        theme: effectiveTheme,
         themeParams: currentThemeParams,
-        isDark: theme === "dark",
-        isLight: theme === "light",
+        isDark: effectiveTheme === "dark",
+        isLight: effectiveTheme === "light",
+        setThemeOverride,
     };
 
     return (
         <ThemeContext.Provider value={value}>
-            <div className={theme} data-theme={theme}>
+            <div className={effectiveTheme} data-theme={effectiveTheme}>
                 {children}
+                {process.env.NODE_ENV === "development" && (
+                    <DevThemeToggle theme={effectiveTheme} onChange={setThemeOverride} />
+                )}
             </div>
         </ThemeContext.Provider>
+    );
+}
+
+// ─── Dev-only theme toggle ──────────────────────────────────────────────────
+// Lets you force light/dark locally, since the Telegram WebApp script always
+// defines window.Telegram.WebApp (even outside the real client) and short-circuits
+// the prefers-color-scheme fallback below.
+
+function DevThemeToggle({
+    theme,
+    onChange,
+}: {
+    theme: "light" | "dark";
+    onChange: (theme: "light" | "dark" | null) => void;
+}) {
+    return (
+        <button
+            type="button"
+            onClick={() => onChange(theme === "light" ? "dark" : "light")}
+            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+            style={{
+                position: "fixed",
+                bottom: 12,
+                right: 12,
+                zIndex: 9999,
+                width: 36,
+                height: 36,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "50%",
+                background: "#fa7119",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                fontSize: 18,
+            }}
+        >
+            {theme === "light" ? "🌙" : "☀️"}
+        </button>
     );
 }
 

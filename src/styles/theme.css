@@ -31,6 +31,13 @@
     --card-border: rgb(75, 85, 99);
     --card-gradient-from: rgba(75, 85, 99, 0.2);
     --card-gradient-to: rgba(107, 114, 128, 0.2);
+
+    /* shadcn-style semantic tokens (brand orange #fa7119) */
+    --primary: 23 96% 54%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Muted/secondary text tone used across dark surfaces (#94a3b8) */
+    --muted-foreground: 215 20% 65%;
 }
 
 /* Light theme overrides - only text colors, not backgrounds */

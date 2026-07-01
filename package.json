@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "dev": "next dev -p 3348",
+        "dev": "next dev -p 3347",
         "build": "next build",
         "start": "next start -p 3347",
         "lint": "next lint",
@@ -12,6 +12,7 @@
     },
     "dependencies": {
         "@hookform/resolvers": "^5.2.1",
+        "@radix-ui/react-progress": "^1.1.11",
         "@tanstack/react-query": "^5.84.1",
         "@telegram-apps/sdk": "^3.11.4",
         "@telegram-apps/sdk-react": "^1.1.3",
