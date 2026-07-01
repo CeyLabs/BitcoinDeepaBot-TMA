@@ -136,9 +136,9 @@ function UserScreen({ isExisting, onAction }: { isExisting: boolean; onAction: (
         <p className="text-[13px] text-muted-foreground">@{TELEGRAM_BOT_USERNAME}</p>
       </div>
 
-      {!isExisting && (
+      {isExisting && (
         <div className="mt-6 flex justify-center">
-          <Link href="/dev" className="text-xs text-[#cbd5e1] underline">
+          <Link href="/dev" className="text-xs text-black underline">
             Component Preview (Dev)
           </Link>
         </div>
