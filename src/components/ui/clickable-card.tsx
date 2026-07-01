@@ -63,10 +63,10 @@ export function ClickableCard({
       <div className="flex items-center gap-2 min-w-0 flex-1">
         <div className="shrink-0 size-10 flex items-center justify-center">{icon}</div>
         <div className="flex flex-col gap-1 min-w-0 text-left">
-          <p className="text-[16px] font-semibold leading-[20px] text-[#1b2027] dark:text-white truncate">
+          <p className="text-[16px] font-semibold leading-5 text-[#1b2027] dark:text-white truncate">
             {title}
           </p>
-          <p className="text-[12px] font-normal leading-[16px] text-[#475569] dark:text-muted-foreground truncate">
+          <p className="text-[12px] font-normal leading-4 text-[#475569] dark:text-muted-foreground truncate">
             {subtitle}
           </p>
         </div>

@@ -15,7 +15,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" className={cn("font-sans", inter.variable)}>
+        <html lang="en" className={cn("font-sans", inter.variable)} suppressHydrationWarning>
             <head>
                 <Script
                     src="https://telegram.org/js/telegram-web-app.js"
