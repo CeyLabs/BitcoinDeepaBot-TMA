@@ -406,7 +406,7 @@ export default function SubscriptionPage() {
 
           {isAlreadySubscribed && (
             <p className="text-[12px] text-center text-[#64748b]">
-              You're already on this plan.{" "}
+              You&apos;re already on this plan.{" "}
               <button
                 className="text-[#fa7119] font-semibold"
                 onClick={() => setActiveTab("membership")}

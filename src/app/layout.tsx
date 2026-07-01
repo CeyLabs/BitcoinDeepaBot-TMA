@@ -5,8 +5,9 @@ import { AppRoot } from "@telegram-apps/telegram-ui";
 import Providers from "./context/providers";
 import Script from "next/script";
 import { Toaster } from "sonner";
+import { cn } from "@/lib/cn";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export default function RootLayout({
     children,
@@ -14,7 +15,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" className={cn("font-sans", inter.variable)}>
             <head>
                 <Script
                     src="https://telegram.org/js/telegram-web-app.js"

@@ -412,7 +412,7 @@ export default function VerificationPage() {
                         verificationStatus === "EXPIRED" ||
                         verificationStatus === "ABANDONED" ||
                         verificationStatus === "KYC_EXPIRED") && (
-                        <div className="rounded-xl border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-orange-600/10 p-4">
+                        <div className="rounded-xl border border-orange-500/30 bg-linear-to-r from-orange-500/10 to-orange-600/10 p-4">
                             <h3 className="mb-3 text-sm font-medium text-orange-400">
                                 Verification Process
                             </h3>
@@ -455,7 +455,7 @@ export default function VerificationPage() {
                     )}
 
                     {verificationStatus === "IN_REVIEW" && (
-                        <div className="rounded-xl border border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 to-yellow-600/10 p-4">
+                        <div className="rounded-xl border border-yellow-500/30 bg-linear-to-r from-yellow-500/10 to-yellow-600/10 p-4">
                             <div className="flex items-center gap-3">
                                 <div className="h-6 w-6 animate-pulse rounded-full bg-yellow-400"></div>
                                 <div>
@@ -471,7 +471,7 @@ export default function VerificationPage() {
                     )}
 
                     {verificationStatus === "KYC_EXPIRED" && (
-                        <div className="rounded-xl border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-orange-600/10 p-4">
+                        <div className="rounded-xl border border-orange-500/30 bg-linear-to-r from-orange-500/10 to-orange-600/10 p-4">
                             <div className="flex items-center gap-3">
                                 <svg
                                     className="h-6 w-6 text-orange-400"
@@ -503,7 +503,7 @@ export default function VerificationPage() {
                         <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-left">
                             <div className="flex items-start space-x-3">
                                 <svg
-                                    className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-500"
+                                    className="mt-0.5 h-5 w-5 shrink-0 text-yellow-500"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -530,7 +530,7 @@ export default function VerificationPage() {
 
                     {/* Error Message */}
                     {error && (
-                        <div className="rounded-xl border border-red-500/30 bg-gradient-to-r from-red-500/10 to-red-600/10 p-4">
+                        <div className="rounded-xl border border-red-500/30 bg-linear-to-r from-red-500/10 to-red-600/10 p-4">
                             <div className="flex items-center gap-3">
                                 <svg
                                     className="h-5 w-5 text-red-400"
@@ -560,7 +560,7 @@ export default function VerificationPage() {
                         {verificationStatus === "APPROVED" ? (
                             <Button
                                 onClick={() => router.push("/subscription")}
-                                className="w-full bg-gradient-to-r from-green-500 to-green-600 px-6 py-4 text-lg font-semibold text-white"
+                                className="w-full bg-linear-to-r from-green-500 to-green-600 px-6 py-4 text-lg font-semibold text-white"
                             >
                                 Continue to Subscription
                             </Button>
@@ -571,7 +571,7 @@ export default function VerificationPage() {
                             <Button
                                 onClick={initiateVerification}
                                 disabled={isLoading}
-                                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 text-lg font-semibold text-white"
+                                className="w-full bg-linear-to-r from-orange-500 to-orange-600 px-6 py-4 text-lg font-semibold text-white"
                             >
                                 {isLoading ? (
                                     <div className="flex items-center justify-center gap-3">
@@ -587,14 +587,14 @@ export default function VerificationPage() {
                                 {verificationUrl ? (
                                     <Button
                                         onClick={continueVerification}
-                                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 text-lg font-semibold text-white"
+                                        className="w-full bg-linear-to-r from-blue-500 to-blue-600 px-6 py-4 text-lg font-semibold text-white"
                                     >
                                         Continue Verification
                                     </Button>
                                 ) : (
                                     <Button
                                         onClick={checkVerificationStatus}
-                                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 text-lg font-semibold text-white"
+                                        className="w-full bg-linear-to-r from-blue-500 to-blue-600 px-6 py-4 text-lg font-semibold text-white"
                                     >
                                         Check Verification Status
                                     </Button>
@@ -611,7 +611,7 @@ export default function VerificationPage() {
                                     "w-full px-6 py-4 text-lg font-semibold text-white transition-all duration-300",
                                     isLoading || !userData
                                         ? "cursor-not-allowed bg-gray-700 opacity-50"
-                                        : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl"
+                                        : "bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl"
                                 )}
                             >
                                 {isLoading ? (

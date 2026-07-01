@@ -54,7 +54,7 @@ export function PlanCard({
         isHighlighted
           ? "border border-[#fa7119] bg-[#eeeff3]"
           : "border border-transparent bg-white",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50",
+        "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#fa7119]/50",
         className
       )}
     >

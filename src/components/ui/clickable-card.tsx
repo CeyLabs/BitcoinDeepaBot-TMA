@@ -55,7 +55,7 @@ export function ClickableCard({
         "active:scale-[0.99] active:shadow-[0px_1px_6px_0px_rgba(0,0,0,0.07)]",
         "hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)]",
         "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50",
+        "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#fa7119]/50",
         className
       )}
     >
