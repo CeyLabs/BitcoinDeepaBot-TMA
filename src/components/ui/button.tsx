@@ -48,7 +48,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         className={cn(
           "inline-flex items-center justify-center gap-2 rounded-[12px] px-5 py-4",
-          "text-[16px] font-semibold leading-[18px] tracking-normal whitespace-nowrap",
+          "text-[16px] font-semibold leading-4.5 tracking-normal whitespace-nowrap",
           "shadow-[1px_1px_6px_0px_rgba(203,213,225,0.3)]",
           "transition-all duration-150 active:scale-[0.98]",
           "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",

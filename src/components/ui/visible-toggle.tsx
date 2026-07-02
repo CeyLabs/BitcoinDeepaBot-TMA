@@ -3,7 +3,7 @@
 import { cn } from "@/lib/cn";
 
 const EyeOpen = ({ dark }: { dark?: boolean }) => {
-  const color = dark ? "#94a3b8" : "#111821";
+  const color = dark ? "hsl(var(--muted-foreground))" : "#111821";
   return (
     <svg width="18" height="12" viewBox="0 0 18 12" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path fillRule="evenodd" clipRule="evenodd" d="M8.9999 2.7712C10.9134 2.77135 12.4648 4.21676 12.4649 5.99967C12.4649 7.78269 10.9135 9.228 8.9999 9.22815C7.08622 9.22808 5.53489 7.78274 5.53489 5.99967C5.53503 4.21671 7.0863 2.77127 8.9999 2.7712ZM8.9999 3.44205C7.48395 3.44212 6.25503 4.58721 6.25489 5.99967C6.25489 7.41224 7.48386 8.55722 8.9999 8.5573C10.5159 8.55715 11.7449 7.41219 11.7449 5.99967C11.7448 4.58726 10.5158 3.4422 8.9999 3.44205Z" fill={color} />
@@ -13,7 +13,7 @@ const EyeOpen = ({ dark }: { dark?: boolean }) => {
 };
 
 const EyeClosed = ({ dark }: { dark?: boolean }) => {
-  const color = dark ? "#94a3b8" : "#111821";
+  const color = dark ? "hsl(var(--muted-foreground))" : "#111821";
   return (
     <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M1 1L17 13" stroke={color} strokeWidth="1.5" strokeLinecap="round" />

@@ -27,7 +27,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
           ref={ref}
           type="text"
           placeholder={placeholder}
-          className="flex-1 bg-transparent text-[14px] leading-[16px] text-[#1b2027] placeholder:text-[#cbd5e1] outline-none min-w-0"
+          className="flex-1 bg-transparent text-sm leading-4 text-[#1b2027] placeholder:text-[#cbd5e1] outline-hidden min-w-0"
           {...props}
         />
       </div>

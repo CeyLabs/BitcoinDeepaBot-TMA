@@ -143,24 +143,24 @@ export default function OnboardPage() {
 
                 {/* Features Preview */}
                 <div className="mb-8 mt-8 grid grid-cols-2 gap-4">
-                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
+                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-xs">
                         <div className="mb-2 text-2xl">📈</div>
                         <div className="text-sm font-medium text-tma-text-primary">Live Prices</div>
                         <div className="text-xs text-tma-text-secondary">Real-time tracking</div>
                     </div>
-                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
+                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-xs">
                         <div className="mb-2 text-2xl">🔒</div>
                         <div className="text-sm font-medium text-tma-text-primary">Secure</div>
                         <div className="text-xs text-tma-text-secondary">Bank-level security</div>
                     </div>
-                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
+                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-xs">
                         <div className="mb-2 text-2xl">⚡</div>
                         <div className="text-sm font-medium text-tma-text-primary">
                             Fast Trading
                         </div>
                         <div className="text-xs text-tma-text-secondary">Instant transactions</div>
                     </div>
-                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
+                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-xs">
                         <div className="mb-2 text-2xl">🇱🇰</div>
                         <div className="text-sm font-medium text-tma-text-primary">
                             Local Support
@@ -173,7 +173,7 @@ export default function OnboardPage() {
                 <div className="space-y-4">
                     <Button
                         Component="a"
-                        className="w-full bg-gradient-to-r from-orange-500 to-orange-600"
+                        className="w-full bg-linear-to-r from-orange-500 to-orange-600"
                         href="/subscription"
                     >
                         <span className="flex gap-2">🎯 Choose Your Plan</span>

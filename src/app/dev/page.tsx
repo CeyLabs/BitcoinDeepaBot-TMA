@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ClickableCard } from "@/components/ui/clickable-card";
 import { PlanCard } from "@/components/ui/plan-card";
@@ -37,6 +39,14 @@ export default function DevPage() {
   return (
     <div className="min-h-screen bg-[#f5f5f0] pb-32">
       <div className="mx-auto max-w-md px-4 py-8 space-y-10">
+
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-sm text-[#475569] hover:text-[#1b2027]"
+        >
+          <ArrowLeft className="size-4" />
+          Home
+        </Link>
 
         <div className="text-center">
           <h1 className="text-2xl font-bold text-[#1b2027]">Component Preview</h1>
