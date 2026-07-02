@@ -49,9 +49,9 @@ function PageShell({ children }: { children: React.ReactNode }) {
   const { isDark } = useTheme();
 
   return (
-    <main className="flex min-h-screen flex-col bg-white px-5 dark:bg-[#1b2027]">
+    <main className="flex min-h-screen flex-col justify-center bg-white px-5 dark:bg-[#1b2027]">
       {/* Logo + heading slot */}
-      <section className="flex flex-col items-center justify-center pt-8 pb-2 text-center">
+      <section className="flex flex-col items-center justify-center text-center">
         <div className="relative mb-5 h-[150px] w-[220px]">
           <Image
             src={isDark ? "/BDLogo_White.svg" : "/BDLogo_Black.svg"}

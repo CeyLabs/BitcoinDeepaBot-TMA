@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    allowedDevOrigins: ["nira.sats.day"],
+    allowedDevOrigins: ["*.sats.day"],
     images: {
         remotePatterns: [
             {
