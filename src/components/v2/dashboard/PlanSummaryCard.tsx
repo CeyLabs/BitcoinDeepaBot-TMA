@@ -42,14 +42,15 @@ function RewardCard({
   return (
     <Card
       type="plain"
+      className="flex flex-1 flex-col rounded-[12px] p-3"
       style={{ "--tgui--tertiary_bg_color": "#fff" } as React.CSSProperties}
     >
-      <p className="text-[14px] capitalize leading-4 text-[#1b2027]">{label}</p>
+      <p className="text-sm capitalize leading-4 text-[#1b2027] pb-2">{label}</p>
       <div className="flex items-center gap-2">
         <Image src={iconSrc} alt="" width={36} height={36} className="size-9" />
         <div className="flex flex-col items-start">
           <p className="text-[16px] font-semibold leading-4 text-[#1b2027]">
-            {dateStr ? fmtShortDate(dateStr) : "—"}
+            {dateStr ? fmtShortDate(dateStr) : "-"}
           </p>
           {dateStr && (
             <p className="text-[12px] leading-4 text-[#64748b]">{fmtRelativeDays(dateStr)}</p>
