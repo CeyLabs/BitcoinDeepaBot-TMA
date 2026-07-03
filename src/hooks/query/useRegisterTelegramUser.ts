@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
+import fetchy from "@/lib/fetchy";
 
 type TelegramAuthData = { user?: { id?: number; username?: string } } | undefined;
 
@@ -11,19 +12,9 @@ type RegisterUserPayload = {
   data: { authdata: TelegramAuthData; launchparam: unknown };
 };
 
-async function registerTelegramUser(payload: RegisterUserPayload) {
-  const res = await fetch("/api/user", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error("Failed to register user");
-  return res.json();
-}
-
 export function useRegisterTelegramUser(authData: TelegramAuthData, launchParams: unknown) {
   const { mutate } = useMutation({
-    mutationFn: registerTelegramUser,
+    mutationFn: (payload: RegisterUserPayload) => fetchy.post("/api/user", payload),
     onError: (error) => {
       console.error("Error adding user to database:", error);
     },
