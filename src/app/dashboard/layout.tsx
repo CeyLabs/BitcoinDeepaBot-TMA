@@ -23,7 +23,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }, [router, setIsExistingUser]);
 
     return (
-        <div className="mx-auto min-h-screen max-w-md p-5">
+        <div className="mx-auto min-h-screen max-w-md px-5 pb-20 pt-5">
             {children}
             {/* Only show bottom navigation for registered users */}
             {isExistingUser && <BottomNavigation />}

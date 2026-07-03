@@ -85,7 +85,7 @@ export default function BottomNavigation() {
           "flex items-center justify-between gap-0 p-1 pointer-events-auto",
           "bg-white/60 backdrop-blur-md",
           "rounded-full shadow-[0px_4px_24px_0px_rgba(0,0,0,0.10)]",
-          "w-full max-w-[390px]"
+          "w-full max-w-100"
         )}
       >
         {navItems.map((item) => {
@@ -98,7 +98,7 @@ export default function BottomNavigation() {
               href={item.href}
               className={cn(
                 "flex flex-col items-center justify-center gap-1",
-                "h-14 w-[78px] rounded-[20px]",
+                "h-14 w-20 rounded-[20px]",
                 "transition-all duration-200",
                 isActive
                   ? "bg-[#e2e8f0] text-[#1b2027]"
@@ -108,7 +108,7 @@ export default function BottomNavigation() {
               <Icon className="size-5" />
               <span
                 className={cn(
-                  "text-[14px] leading-[14px] tracking-normal",
+                  "text-[14px] leading-3 tracking-normal",
                   isActive ? "font-medium" : "font-normal"
                 )}
               >
