@@ -8,7 +8,7 @@ export default function DashboardV2Layout({ children }: { children: React.ReactN
   const { isExistingUser } = useAuthGuard();
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col gap-5 px-5 pb-20 pt-5">
+    <div className="mx-auto flex min-h-screen max-w-md flex-col gap-5 px-5 pb-20 pt-5 bg-[#EEEFF3]">
       <DashboardTopBar />
       {children}
       {isExistingUser && <BottomNavigationV2 />}

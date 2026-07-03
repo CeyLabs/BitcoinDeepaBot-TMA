@@ -42,7 +42,7 @@ function RewardCard({
   return (
     <Card
       type="plain"
-      className="flex! flex-1! flex-col! justify-center! gap-3! rounded-[16px]! bg-white! p-3! shadow-none!"
+      style={{ "--tgui--tertiary_bg_color": "#fff" } as React.CSSProperties}
     >
       <p className="text-[14px] capitalize leading-4 text-[#1b2027]">{label}</p>
       <div className="flex items-center gap-2">
@@ -74,7 +74,7 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
       <div className="flex w-full flex-col gap-2">
         <Card
           type="plain"
-          className="flex! w-full! items-center! gap-0! rounded-[12px]! bg-white! p-3! shadow-none!"
+          style={{ "--tgui--tertiary_bg_color": "#fff" } as React.CSSProperties}
         >
           <div className="flex flex-1 items-center gap-2 overflow-hidden">
             <div className="flex size-[50px] shrink-0 items-center justify-center rounded-[8px] bg-[rgba(255,155,62,0.2)]">
@@ -108,7 +108,12 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
               <Badge
                 type="number"
                 mode="primary"
-                className="flex! h-auto! items-center! gap-1! rounded-[12px]! bg-[rgba(37,167,97,0.1)]! px-2! py-1! text-[14px]! capitalize! leading-4! text-[#25a761]!"
+                style={
+                  {
+                    "--tgui--button_color": "rgba(37,167,97,0.1)",
+                    "--tgui--button_text_color": "#25a761",
+                  } as React.CSSProperties
+                }
               >
                 <div className="size-1.5 rounded-full bg-[#25a761]" />
                 Active

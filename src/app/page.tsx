@@ -90,7 +90,7 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
       </div>
 
       <div className="space-y-3">
-        <Link href="/v2/dashboard" className="block">
+        <Link href="/v2/dashboard?tab=wallet" className="block">
           <Button mode="filled" size="l" stretched style={{ borderRadius: "12px" }}>
             {isExisting ? "Open My Wallet" : "Start Using Wallet"}
           </Button>

@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
-import { cn } from "@/lib/cn";
 import { fmtLkr, fmtPriceCompact, fmtSatsCompact } from "@/lib/formatters";
 
 const MASK = "••••••";
@@ -35,7 +34,7 @@ export function PerformanceGrid({
 
       <Card
         type="plain"
-        className="flex! w-full! items-stretch! justify-between! gap-3! rounded-[16px]! bg-white! p-3! shadow-none!"
+        style={{ "--tgui--tertiary_bg_color": "#fff" } as React.CSSProperties}
       >
         <div className="flex flex-1 flex-col gap-4">
           <div className="flex flex-col items-start gap-2">
@@ -72,7 +71,8 @@ export function PerformanceGrid({
         <div className="flex flex-col gap-2">
           <Card
             type="plain"
-            className="flex! w-[160px]! flex-col! items-start! gap-2! rounded-[16px]! bg-[rgba(37,167,97,0.1)]! px-3! py-2! shadow-none!"
+            className="flex! w-[160px]! flex-col! items-start! gap-2! rounded-[16px]! px-3! py-2! shadow-none!"
+            style={{ "--tgui--tertiary_bg_color": "rgba(37,167,97,0.1)" } as React.CSSProperties}
           >
             <Image src="/emoji/coins.svg" alt="" width={36} height={36} className="size-9" />
             <p className="text-[14px] capitalize leading-4 text-[#1b2027]">Current Value</p>
@@ -84,10 +84,14 @@ export function PerformanceGrid({
                 <Badge
                   type="number"
                   mode={isProfit ? "primary" : "critical"}
-                  className={cn(
-                    "flex! h-auto! items-center! justify-center! rounded-[8px]! px-2.5! py-1! text-[12px]! font-medium! leading-4! text-white!",
-                    isProfit ? "bg-[#158348]!" : "bg-[rgba(241,49,49,0.62)]!"
-                  )}
+                  className="flex! h-auto! min-w-0! items-center! justify-center! m-0! rounded-[8px]! px-2.5! py-1! text-[12px]! font-medium! leading-4!"
+                  style={
+                    {
+                      "--tgui--button_color": "#158348",
+                      "--tgui--destructive_text_color": "rgba(241,49,49,0.62)",
+                      "--tgui--button_text_color": "#fff",
+                    } as React.CSSProperties
+                  }
                 >
                   {mask(
                     `${isProfit ? "+" : "-"} LKR ${fmtLkr(Math.abs(profitLkr))} (${isProfit ? "+" : "-"} ${Math.abs(profitPct).toFixed(0)}%)`
@@ -99,7 +103,8 @@ export function PerformanceGrid({
 
           <Card
             type="plain"
-            className="flex! flex-col! items-start! gap-2! rounded-[16px]! bg-[rgba(37,167,97,0.1)]! px-3! py-2! shadow-none!"
+            className="flex! flex-col! items-start! gap-2! rounded-[16px]! px-3! py-2! shadow-none!"
+            style={{ "--tgui--tertiary_bg_color": "rgba(37,167,97,0.1)" } as React.CSSProperties}
           >
             <Image src="/emoji/graph.svg" alt="" width={36} height={36} className="size-9" />
             <p className="text-[14px] capitalize leading-4 text-[#1b2027]">Current Price</p>

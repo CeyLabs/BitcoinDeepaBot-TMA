@@ -171,7 +171,8 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
 
       <Card
         type="plain"
-        className="w-full! rounded-[12px]! bg-white! p-3! shadow-[0px_4px_4px_0px_rgba(203,213,225,0.3)]!"
+        className="block! w-full! rounded-[12px]! p-3! shadow-[0px_4px_4px_0px_rgba(203,213,225,0.3)]!"
+        style={{ "--tgui--tertiary_bg_color": "#fff" } as React.CSSProperties}
       >
         <div className="mb-3 flex items-center gap-2">
           {PERIODS.map((p) => (
@@ -221,3 +222,4 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
     </div>
   );
 }
+
