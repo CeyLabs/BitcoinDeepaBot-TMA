@@ -82,7 +82,6 @@ export default function WalletV2Page() {
         changePercent={change24h}
         changeLkr={changeLkr}
         visible={balanceVisible}
-        isLoading={isSummaryLoading}
       />
 
       <PlanSummaryCard subscription={subscription} />

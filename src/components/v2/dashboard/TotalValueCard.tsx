@@ -3,13 +3,11 @@
 import Image from "next/image";
 import { ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
-import { fmtLkr, fmtSatsCompact } from "@/lib/formatters";
+import { fmtLkr, fmtSatsCompact, maskDigits } from "@/lib/formatters";
 
 // Card/Badge theme their background/color through --tgui-- CSS variables (same
 // convention as --tgui--cell--middle--padding on the homepage Cell) — override those
 // via style, and everything else (radius/shadow/padding/display) via `!` classNames.
-
-const MASK = "••••••";
 
 export interface TotalValueCardProps {
   totalLkr: number;
@@ -17,7 +15,6 @@ export interface TotalValueCardProps {
   changePercent: number;
   changeLkr: number;
   visible: boolean;
-  isLoading?: boolean;
 }
 
 export function TotalValueCard({
@@ -26,9 +23,8 @@ export function TotalValueCard({
   changePercent,
   changeLkr,
   visible,
-  isLoading,
 }: TotalValueCardProps) {
-  const mask = (v: string) => (visible ? v : MASK);
+  const mask = (v: string) => maskDigits(v, visible);
   const isProfit = changePercent >= 0;
   const TrendIcon = isProfit ? TrendingUp : TrendingDown;
 
@@ -47,13 +43,9 @@ export function TotalValueCard({
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="h-12 w-48 animate-pulse rounded-lg bg-white/20" />
-        ) : (
-          <p className="text-[36px] font-bold leading-12 text-white">
-            {mask(`≈ LKR ${fmtLkr(totalLkr)}`)}
-          </p>
-        )}
+        <p className="text-[36px] font-bold leading-12 text-white">
+          {mask(`≈ LKR ${fmtLkr(totalLkr)}`)}
+        </p>
 
         <div className="flex flex-col items-start gap-2">
           <div className="flex items-center gap-2">

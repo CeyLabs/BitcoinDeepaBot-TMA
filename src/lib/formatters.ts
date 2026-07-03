@@ -59,3 +59,9 @@ export function fmtRelativeDays(dateInput: string | Date): string {
     if (diff > 0) return `In ${diff} day${diff !== 1 ? "s" : ""}`;
     return `${Math.abs(diff)} day${Math.abs(diff) !== 1 ? "s" : ""} ago`;
 }
+
+// Blot out digits in a formatted string while keeping icons/currency codes/units
+// visible, e.g. "LKR 32,000" -> "LKR ****" when the user hides their balance.
+export function maskDigits(value: string, visible: boolean): string {
+    return visible ? value : value.replace(/[\d,.]+/g, "****");
+}

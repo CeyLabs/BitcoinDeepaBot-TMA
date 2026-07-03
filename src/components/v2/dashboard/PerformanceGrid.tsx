@@ -2,10 +2,8 @@
 
 import Image from "next/image";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
-import { fmtLkr, fmtPriceCompact, fmtSatsCompact } from "@/lib/formatters";
+import { fmtLkr, fmtPriceCompact, fmtSatsCompact, maskDigits } from "@/lib/formatters";
 import { useTheme } from "@/app/context/theme";
-
-const MASK = "••••••";
 
 export interface PerformanceGridProps {
   dcaSpent: number;
@@ -29,7 +27,7 @@ export function PerformanceGrid({
   visible,
 }: PerformanceGridProps) {
   const { isDark } = useTheme();
-  const mask = (v: string) => (visible ? v : MASK);
+  const mask = (v: string) => maskDigits(v, visible);
   const profitLkr = totalLkr - dcaSpent;
   const profitPct = dcaSpent > 0 ? (profitLkr / dcaSpent) * 100 : 0;
   const isProfit = profitLkr >= 0;
