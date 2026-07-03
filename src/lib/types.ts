@@ -105,3 +105,15 @@ export interface UserExistsResponse {
     registered: boolean;
     error?: string;
 }
+
+export interface DCSummary {
+    dca: {
+        balance: number;
+        spent: number;
+        avg_btc_price: number;
+    };
+    total_balance: number;
+    total_lkr: string;
+    currency: string;
+    "24_hr_change": number;
+}
