@@ -19,12 +19,12 @@ export function VisibleToggle({ visible, onToggle, dark = false, className }: Vi
       mode={dark ? "plain" : "outline"}
       size="m"
       onClick={onToggle}
-      className={cn(!dark && "bg-white!", className)}
+      className={cn(!dark && "bg-white! dark:bg-[#1b2027]!", className)}
     >
       <Icon
         size={18}
         strokeWidth={1.75}
-        className={dark ? "text-muted-foreground" : "text-[#111821]"}
+        className={dark ? "text-muted-foreground" : "text-[#111821] dark:text-[#f1f5f9]"}
       />
     </IconButton>
   );

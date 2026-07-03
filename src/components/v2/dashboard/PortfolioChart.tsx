@@ -15,6 +15,7 @@ import {
 import { Card } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
 import { fmtLkr, fmtPriceCompact } from "@/lib/formatters";
+import { useTheme } from "@/app/context/theme";
 import type { DcaTransaction } from "@/hooks/query/useTransactionHistory";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
@@ -67,6 +68,7 @@ export interface PortfolioChartProps {
 }
 
 export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChartProps) {
+  const { isDark } = useTheme();
   const [period, setPeriod] = useState<Period>("3M");
 
   const allPoints = useMemo(
@@ -143,7 +145,7 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
       },
       y: {
         position: "left" as const,
-        grid: { color: "#e2e8f0" },
+        grid: { color: isDark ? "#1f2a36" : "#e2e8f0" },
         ticks: {
           color: "#64748b",
           font: { size: 10 },
@@ -165,14 +167,14 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <p className="text-[14px] font-bold leading-4 text-[#475569]">
+      <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
         Reward Portfolio Performance
       </p>
 
       <Card
         type="plain"
-        className="block! w-full! rounded-[12px]! p-3! shadow-[0px_4px_4px_0px_rgba(203,213,225,0.3)]!"
-        style={{ "--tgui--tertiary_bg_color": "#fff" } as React.CSSProperties}
+        className="block! w-full! rounded-[12px]! p-3! "
+        style={{ "--tgui--tertiary_bg_color": isDark ? "#1b2027" : "#fff" } as React.CSSProperties}
       >
         <div className="mb-3 flex items-center gap-2">
           {PERIODS.map((p) => (
@@ -181,8 +183,10 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
               type="button"
               onClick={() => setPeriod(p)}
               className={cn(
-                "rounded-[12px] border border-[#e2e8f0] px-2 py-2 text-[12px] leading-4",
-                period === p ? "bg-[#e2e8f0] text-[#1b2027]" : "bg-[#eeeff3] text-[#64748b]"
+                "rounded-[12px] border border-[#e2e8f0] px-2 py-2 text-[12px] leading-4 dark:border-[#1f2a36]",
+                period === p
+                  ? "bg-[#e2e8f0] text-[#1b2027] dark:bg-[#334155] dark:text-[#f1f5f9]"
+                  : "bg-[#eeeff3] text-[#64748b] dark:bg-transparent dark:text-[#94a3b8]"
               )}
             >
               {p}
@@ -207,15 +211,15 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
         <div className="mt-3 flex items-center justify-center gap-3">
           <div className="flex items-center gap-1">
             <div className="h-1 w-2.5 rounded-full bg-[#218a54]" />
-            <p className="text-[14px] leading-4 text-[#1b2027]">Portfolio</p>
+            <p className="text-[14px] leading-4 text-[#1b2027] dark:text-[#f1f5f9]">Portfolio</p>
           </div>
           <div className="flex items-center gap-1">
             <div className="h-1 w-2.5 rounded-full bg-[#0088ff]" />
-            <p className="text-[14px] leading-4 text-[#1b2027]">Bitcoin</p>
+            <p className="text-[14px] leading-4 text-[#1b2027] dark:text-[#f1f5f9]">Bitcoin</p>
           </div>
           <div className="flex items-center gap-1">
             <div className="h-1 w-2.5 rounded-full bg-[#fa7119]" />
-            <p className="text-[14px] leading-4 text-[#1b2027]">Invested</p>
+            <p className="text-[14px] leading-4 text-[#1b2027] dark:text-[#f1f5f9]">Invested</p>
           </div>
         </div>
       </Card>

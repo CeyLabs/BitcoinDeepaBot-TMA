@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
 import { fmtLkr, fmtShortDate, fmtRelativeDays } from "@/lib/formatters";
+import { useTheme } from "@/app/context/theme";
 import type { Subscription } from "@/lib/types";
 
 const PLAN_ICONS: Record<string, string> = {
@@ -39,17 +40,21 @@ function RewardCard({
   dateStr?: string;
   iconSrc: string;
 }) {
+  const { isDark } = useTheme();
+
   return (
     <Card
       type="plain"
       className="flex flex-1 flex-col rounded-[12px] p-3"
-      style={{ "--tgui--tertiary_bg_color": "#fff" } as React.CSSProperties}
+      style={{ "--tgui--tertiary_bg_color": isDark ? "#1b2027" : "#fff" } as React.CSSProperties}
     >
-      <p className="text-sm capitalize leading-4 text-[#1b2027] pb-2">{label}</p>
+      <p className="text-sm capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9] pb-2">
+        {label}
+      </p>
       <div className="flex items-center gap-2">
         <Image src={iconSrc} alt="" width={36} height={36} className="size-9" />
         <div className="flex flex-col items-start">
-          <p className="text-[16px] font-semibold leading-4 text-[#1b2027]">
+          <p className="text-[16px] font-semibold leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
             {dateStr ? fmtShortDate(dateStr) : "-"}
           </p>
           {dateStr && (
@@ -66,16 +71,22 @@ export interface PlanSummaryCardProps {
 }
 
 export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
+  const { isDark } = useTheme();
+
   return (
     <div className="flex w-full flex-col items-end gap-3">
       <div className="flex w-full items-center justify-between">
-        <p className="text-[14px] font-bold leading-4 text-[#475569]">My Plan</p>
+        <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+          My Plan
+        </p>
       </div>
 
       <div className="flex w-full flex-col gap-2">
         <Card
           type="plain"
-          style={{ "--tgui--tertiary_bg_color": "#fff" } as React.CSSProperties}
+          style={
+            { "--tgui--tertiary_bg_color": isDark ? "#1b2027" : "#fff" } as React.CSSProperties
+          }
         >
           <div className="flex flex-1 items-center gap-2 overflow-hidden">
             <div className="flex size-[50px] shrink-0 items-center justify-center rounded-[8px] bg-[rgba(255,155,62,0.2)]">
@@ -88,7 +99,7 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
               />
             </div>
             <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
-              <p className="truncate text-[16px] font-semibold leading-4 text-[#1b2027]">
+              <p className="truncate text-[16px] font-semibold leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
                 {subscription ? subscription.planName : "No active plan"}
               </p>
               {subscription && (
