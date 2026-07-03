@@ -12,6 +12,7 @@ import {
   Filler,
   type TooltipItem,
 } from "chart.js";
+import { Card } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
 import { fmtLkr, fmtPriceCompact } from "@/lib/formatters";
 import type { DcaTransaction } from "@/hooks/query/useTransactionHistory";
@@ -168,7 +169,10 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
         Reward Portfolio Performance
       </p>
 
-      <div className="w-full rounded-[12px] bg-white p-3 shadow-[0px_4px_4px_0px_rgba(203,213,225,0.3)]">
+      <Card
+        type="plain"
+        className="w-full! rounded-[12px]! bg-white! p-3! shadow-[0px_4px_4px_0px_rgba(203,213,225,0.3)]!"
+      >
         <div className="mb-3 flex items-center gap-2">
           {PERIODS.map((p) => (
             <button
@@ -213,7 +217,7 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
             <p className="text-[14px] leading-4 text-[#1b2027]">Invested</p>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

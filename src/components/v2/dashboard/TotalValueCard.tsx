@@ -1,52 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import { ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
+import { Card, Badge } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
 import { fmtLkr, fmtSatsCompact } from "@/lib/formatters";
 
 const MASK = "••••••";
-
-function ChevronDown() {
-  return (
-    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M1 1L5 5L9 1"
-        stroke="white"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function TrendIcon({ isProfit }: { isProfit: boolean }) {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 14 14"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={cn(!isProfit && "rotate-180")}
-    >
-      <path
-        d="M2 9.5L5.5 6L8 8.5L12 4"
-        stroke="white"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M8.5 4H12V7.5"
-        stroke="white"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 export interface TotalValueCardProps {
   totalLkr: number;
@@ -67,16 +27,17 @@ export function TotalValueCard({
 }: TotalValueCardProps) {
   const mask = (v: string) => (visible ? v : MASK);
   const isProfit = changePercent >= 0;
+  const TrendIcon = isProfit ? TrendingUp : TrendingDown;
 
   return (
-    <div className="relative w-full overflow-hidden rounded-[24px] px-3 py-4">
+    <Card type="plain" className="relative! w-full! overflow-hidden! rounded-[24px]! px-3! py-4! bg-transparent! shadow-none!">
       <Image src="/bg/wallet.webp" alt="" fill priority sizes="400px" className="object-cover" />
       <div className="relative flex flex-col gap-2">
         <div className="flex items-end justify-between">
           <p className="text-[14px] capitalize leading-[14px] text-white">Total Value</p>
           <div className="flex items-center gap-1 rounded-[12px] border border-white py-1 pl-2 pr-1">
             <p className="text-[12px] leading-4 text-white">LKR</p>
-            <ChevronDown />
+            <ChevronDown size={14} strokeWidth={2} className="text-white" />
           </div>
         </div>
 
@@ -101,20 +62,22 @@ export function TotalValueCard({
             </div>
           </div>
 
-          <div
+          <Badge
+            type="number"
+            mode={isProfit ? "primary" : "critical"}
             className={cn(
-              "flex items-center gap-1 rounded-[8px] px-2 py-1",
-              isProfit ? "bg-[#158348]" : "bg-[rgba(241,49,49,0.62)]"
+              "flex! h-auto! items-center! gap-1! rounded-[8px]! px-2! py-1! text-[12px]! font-semibold! leading-4! text-white!",
+              isProfit ? "bg-[#158348]!" : "bg-[rgba(241,49,49,0.62)]!"
             )}
           >
-            <TrendIcon isProfit={isProfit} />
-            <p className="text-[12px] font-semibold leading-4 text-white">
-              {mask(`LKR ${fmtLkr(Math.abs(changeLkr))}  (${isProfit ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%)`)}
-            </p>
-            <p className="text-[12px] font-semibold leading-4 text-white">Last 24h</p>
-          </div>
+            <TrendIcon size={14} strokeWidth={2} className="text-white" />
+            {mask(
+              `LKR ${fmtLkr(Math.abs(changeLkr))}  (${isProfit ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%)`
+            )}
+            {"  Last 24h"}
+          </Badge>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

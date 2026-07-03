@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Card, Badge } from "@telegram-apps/telegram-ui";
 import { fmtLkr, fmtShortDate, fmtRelativeDays } from "@/lib/formatters";
 import type { Subscription } from "@/lib/types";
 
@@ -39,7 +40,10 @@ function RewardCard({
   iconSrc: string;
 }) {
   return (
-    <div className="flex flex-1 flex-col justify-center gap-3 rounded-[16px] bg-white p-3">
+    <Card
+      type="plain"
+      className="flex! flex-1! flex-col! justify-center! gap-3! rounded-[16px]! bg-white! p-3! shadow-none!"
+    >
       <p className="text-[14px] capitalize leading-4 text-[#1b2027]">{label}</p>
       <div className="flex items-center gap-2">
         <Image src={iconSrc} alt="" width={36} height={36} className="size-9" />
@@ -52,7 +56,7 @@ function RewardCard({
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -68,7 +72,10 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
       </div>
 
       <div className="flex w-full flex-col gap-2">
-        <div className="flex w-full items-center gap-0 rounded-[12px] bg-white p-3">
+        <Card
+          type="plain"
+          className="flex! w-full! items-center! gap-0! rounded-[12px]! bg-white! p-3! shadow-none!"
+        >
           <div className="flex flex-1 items-center gap-2 overflow-hidden">
             <div className="flex size-[50px] shrink-0 items-center justify-center rounded-[8px] bg-[rgba(255,155,62,0.2)]">
               <Image
@@ -98,14 +105,18 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
 
           {subscription && (
             <div className="flex shrink-0 items-center gap-1">
-              <div className="flex items-center gap-1 rounded-[12px] bg-[rgba(37,167,97,0.1)] px-2 py-1">
+              <Badge
+                type="number"
+                mode="primary"
+                className="flex! h-auto! items-center! gap-1! rounded-[12px]! bg-[rgba(37,167,97,0.1)]! px-2! py-1! text-[14px]! capitalize! leading-4! text-[#25a761]!"
+              >
                 <div className="size-1.5 rounded-full bg-[#25a761]" />
-                <p className="text-[14px] capitalize leading-4 text-[#25a761]">Active</p>
-              </div>
+                Active
+              </Badge>
               <ChevronRight />
             </div>
           )}
-        </div>
+        </Card>
 
         <div className="flex w-full items-start gap-2">
           <RewardCard

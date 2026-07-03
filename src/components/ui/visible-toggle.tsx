@@ -1,6 +1,7 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
+import { IconButton } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
 
 interface VisibleToggleProps {
@@ -14,14 +15,15 @@ export function VisibleToggle({ visible, onToggle, dark = false, className }: Vi
   const Icon = visible ? Eye : EyeOff;
 
   return (
-    <button
-      type="button"
+    <IconButton
+      mode={dark ? "plain" : "outline"}
+      size="m"
       onClick={onToggle}
       className={cn(
-        "flex items-center justify-center w-9 h-9 rounded-[12px] transition-colors",
+        "w-9! h-9! rounded-[12px]!",
         dark
-          ? "bg-transparent hover:bg-white/5 active:bg-white/10"
-          : "bg-white border border-[#e2e8f0] drop-shadow-[1px_1px_3px_rgba(203,213,225,0.3)] hover:bg-[#f8fafc] active:bg-[#f1f5f9]",
+          ? "bg-transparent! hover:bg-white/5! active:bg-white/10!"
+          : "bg-white! border-[#e2e8f0]! drop-shadow-[1px_1px_3px_rgba(203,213,225,0.3)]! hover:bg-[#f8fafc]! active:bg-[#f1f5f9]!",
         className
       )}
     >
@@ -30,6 +32,6 @@ export function VisibleToggle({ visible, onToggle, dark = false, className }: Vi
         strokeWidth={1.75}
         className={dark ? "text-muted-foreground" : "text-[#111821]"}
       />
-    </button>
+    </IconButton>
   );
 }

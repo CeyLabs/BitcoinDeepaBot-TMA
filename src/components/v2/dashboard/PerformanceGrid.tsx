@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Card, Badge } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
 import { fmtLkr, fmtPriceCompact, fmtSatsCompact } from "@/lib/formatters";
 
@@ -32,7 +33,10 @@ export function PerformanceGrid({
     <div className="flex w-full flex-col gap-3">
       <p className="text-[14px] font-bold leading-4 text-[#475569]">Performance</p>
 
-      <div className="flex w-full items-stretch justify-between gap-3 rounded-[16px] bg-white p-3">
+      <Card
+        type="plain"
+        className="flex! w-full! items-stretch! justify-between! gap-3! rounded-[16px]! bg-white! p-3! shadow-none!"
+      >
         <div className="flex flex-1 flex-col gap-4">
           <div className="flex flex-col items-start gap-2">
             <Image src="/emoji/wallet.svg" alt="" width={36} height={36} className="size-9" />
@@ -66,7 +70,10 @@ export function PerformanceGrid({
         </div>
 
         <div className="flex flex-col gap-2">
-          <div className="flex w-[160px] flex-col items-start gap-2 rounded-[16px] bg-[rgba(37,167,97,0.1)] px-3 py-2">
+          <Card
+            type="plain"
+            className="flex! w-[160px]! flex-col! items-start! gap-2! rounded-[16px]! bg-[rgba(37,167,97,0.1)]! px-3! py-2! shadow-none!"
+          >
             <Image src="/emoji/coins.svg" alt="" width={36} height={36} className="size-9" />
             <p className="text-[14px] capitalize leading-4 text-[#1b2027]">Current Value</p>
             <div className="flex flex-col items-start gap-2">
@@ -74,23 +81,26 @@ export function PerformanceGrid({
                 {mask(`LKR ${fmtLkr(totalLkr)}`)}
               </p>
               {dcaSpent > 0 && (
-                <div
+                <Badge
+                  type="number"
+                  mode={isProfit ? "primary" : "critical"}
                   className={cn(
-                    "flex items-center justify-center rounded-[8px] px-2.5 py-1",
-                    isProfit ? "bg-[#158348]" : "bg-[rgba(241,49,49,0.62)]"
+                    "flex! h-auto! items-center! justify-center! rounded-[8px]! px-2.5! py-1! text-[12px]! font-medium! leading-4! text-white!",
+                    isProfit ? "bg-[#158348]!" : "bg-[rgba(241,49,49,0.62)]!"
                   )}
                 >
-                  <p className="text-[12px] font-medium leading-4 text-white">
-                    {mask(
-                      `${isProfit ? "+" : "-"} LKR ${fmtLkr(Math.abs(profitLkr))} (${isProfit ? "+" : "-"} ${Math.abs(profitPct).toFixed(0)}%)`
-                    )}
-                  </p>
-                </div>
+                  {mask(
+                    `${isProfit ? "+" : "-"} LKR ${fmtLkr(Math.abs(profitLkr))} (${isProfit ? "+" : "-"} ${Math.abs(profitPct).toFixed(0)}%)`
+                  )}
+                </Badge>
               )}
             </div>
-          </div>
+          </Card>
 
-          <div className="flex flex-col items-start gap-2 rounded-[16px] bg-[rgba(37,167,97,0.1)] px-3 py-2">
+          <Card
+            type="plain"
+            className="flex! flex-col! items-start! gap-2! rounded-[16px]! bg-[rgba(37,167,97,0.1)]! px-3! py-2! shadow-none!"
+          >
             <Image src="/emoji/graph.svg" alt="" width={36} height={36} className="size-9" />
             <p className="text-[14px] capitalize leading-4 text-[#1b2027]">Current Price</p>
             <div className="flex items-center gap-1">
@@ -99,9 +109,9 @@ export function PerformanceGrid({
               </p>
               <p className="text-[12px] leading-4 text-[#475569]">per BTC</p>
             </div>
-          </div>
+          </Card>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
