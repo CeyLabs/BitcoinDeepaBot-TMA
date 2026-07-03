@@ -16,10 +16,11 @@ export function VisibleToggle({ visible, onToggle, dark = false, className }: Vi
 
   return (
     <IconButton
-      mode={dark ? "plain" : "outline"}
+      // mode={dark ? "plain" : "outline"}
+      mode="gray"
       size="m"
       onClick={onToggle}
-      className={cn(!dark && "bg-white! dark:bg-[#1b2027]!", className)}
+      // className={cn(!dark && "bg-white! dark:bg-[#1b2027]!", className)}
     >
       <Icon
         size={18}

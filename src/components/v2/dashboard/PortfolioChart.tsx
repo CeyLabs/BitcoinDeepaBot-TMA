@@ -12,7 +12,7 @@ import {
   Filler,
   type TooltipItem,
 } from "chart.js";
-import { Card } from "@telegram-apps/telegram-ui";
+import { Card, Button } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
 import { fmtLkr, fmtPriceCompact } from "@/lib/formatters";
 import { useTheme } from "@/app/context/theme";
@@ -178,19 +178,20 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
       >
         <div className="mb-3 flex items-center gap-2">
           {PERIODS.map((p) => (
-            <button
+            <Button
               key={p}
-              type="button"
+              mode="gray"
+              size="s" stretched
               onClick={() => setPeriod(p)}
               className={cn(
-                "rounded-[12px] border border-[#e2e8f0] px-2 py-2 text-[12px] leading-4 dark:border-[#1f2a36]",
-                period === p
-                  ? "bg-[#e2e8f0] text-[#1b2027] dark:bg-[#334155] dark:text-[#f1f5f9]"
-                  : "bg-[#eeeff3] text-[#64748b] dark:bg-transparent dark:text-[#94a3b8]"
+                "rounded-[12px]!",
+                // period === p
+                //   ? "bg-[#e2e8f0]! text-[#1b2027]! dark:bg-[#334155]! dark:text-[#f1f5f9]!"
+                //   : "bg-[#eeeff3]! text-[#64748b]! dark:bg-transparent! dark:text-[#94a3b8]!"
               )}
             >
-              {p}
-            </button>
+              <span className="text-[12px]">{p}</span>
+            </Button>
           ))}
         </div>
 
