@@ -70,7 +70,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
 
 // ─── User screen (new + existing share everything but copy/icons) ─────────────
 
-function UserScreen({ isExisting, onAction }: { isExisting: boolean; onAction: () => void }) {
+function UserScreen({ isExisting }: { isExisting: boolean }) {
   return (
     <div className="flex w-full flex-col">
       <Title level="2" weight="2" className="max-w-sm self-center text-center leading-snug">
@@ -90,23 +90,25 @@ function UserScreen({ isExisting, onAction }: { isExisting: boolean; onAction: (
       </div>
 
       <div className="space-y-3">
-        <Button mode="filled" size="l" stretched onClick={onAction} style={{ borderRadius: "12px" }}>
-          {isExisting ? "Open My Wallet" : "Start Using Wallet"}
-        </Button>
+        <Link href="/v2/dashboard?tab=wallet" className="block">
+          <Button mode="filled" size="l" stretched style={{ borderRadius: "12px" }}>
+            {isExisting ? "Open My Wallet" : "Start Using Wallet"}
+          </Button>
+        </Link>
 
-        <Cell
-          before={<Image src="/emoji/bitcoin.svg" alt="Bitcoin" width={40} height={40}/>}
-          after={<Navigation />}
-          onClick={onAction}
-          style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
-          className="gap-2! px-4! rounded-[12px] border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
-        >
-          {/* {isExisting ? "Manage My Plans" : "Subscribe to a Plan"} */}
-           <p className="flex flex-col items-start font-semibold text-[#1b2027] dark:text-white pl-1">
-            {isExisting ? "Manage My Plans" : "Subscribe to a Plan"}
-            <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">{isExisting ? "View, extend or change plans" : "Choose Monthly or yearly subscriptions"}</span>
-          </p>
-        </Cell>
+        <Link href="/v2/dashboard" className="block">
+          <Cell
+            before={<Image src="/emoji/bitcoin.svg" alt="Bitcoin" width={40} height={40}/>}
+            after={<Navigation />}
+            style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
+            className="gap-2! px-4! rounded-[12px] border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
+          >
+             <p className="flex flex-col items-start font-semibold text-[#1b2027] dark:text-white pl-1">
+              {isExisting ? "Manage My Plans" : "Subscribe to a Plan"}
+              <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">{isExisting ? "View, extend or change plans" : "Choose Monthly or yearly subscriptions"}</span>
+            </p>
+          </Cell>
+        </Link>
 
         <Cell
           before={<Image src="/emoji/gift.svg" alt="Gift" width={40} height={40} />}
@@ -172,12 +174,9 @@ export default function Home() {
     }
   }, [isExistingUser]);
 
-  // const goToDashboard = () => router.push("/dashboard");
-  const goToDashboard = () => {};
-
   return (
     <PageShell>
-      <UserScreen isExisting={isExisting} onAction={goToDashboard} />
+      <UserScreen isExisting={isExisting} />
     </PageShell>
   );
 }
