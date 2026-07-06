@@ -31,7 +31,7 @@ export function PerformanceGrid({
   const profitLkr = totalLkr - dcaSpent;
   const profitPct = dcaSpent > 0 ? (profitLkr / dcaSpent) * 100 : 0;
   const isProfit = profitLkr >= 0;
-  const surfaceBg = isDark ? "#1b2027" : "#fff";
+  const surfaceBg = isDark ? "#0B0F14" : "#fff";
 
   return (
     <div className="flex w-full flex-col gap-3">

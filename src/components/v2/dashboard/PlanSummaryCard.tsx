@@ -46,7 +46,7 @@ function RewardCard({
     <Card
       type="plain"
       className="flex flex-1 flex-col rounded-[12px] p-3"
-      style={{ "--tgui--tertiary_bg_color": isDark ? "#1b2027" : "#fff" } as React.CSSProperties}
+      style={{ "--tgui--tertiary_bg_color": isDark ? "#0B0F14" : "#fff" } as React.CSSProperties}
     >
       <p className="text-sm capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9] pb-2">
         {label}
@@ -85,7 +85,7 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
         <Card
           type="plain"
           style={
-            { "--tgui--tertiary_bg_color": isDark ? "#1b2027" : "#fff" } as React.CSSProperties
+            { "--tgui--tertiary_bg_color": isDark ? "#0B0F14" : "#fff" } as React.CSSProperties
           }
         >
           <div className="flex flex-1 items-center gap-2 overflow-hidden">

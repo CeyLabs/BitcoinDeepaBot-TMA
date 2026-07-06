@@ -25,7 +25,7 @@ export function DashboardTopBar() {
       <VisibleToggle
         visible={balanceVisible}
         onToggle={toggleBalanceVisible}
-        className="bg-white! dark:bg-[#1b2027]!"
+        className="bg-white! dark:bg-[#0B0F14]!"
       />
     </div>
   );

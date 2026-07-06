@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { ChevronDown } from "lucide-react";
 import { Accordion, Badge } from "@telegram-apps/telegram-ui";
 import { CopyField } from "@/components/ui/copy-field";
 import { ACTIVITY_ICON, ACTIVITY_TITLE } from "@/lib/activity";
@@ -41,38 +42,47 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
           </div>
         }
         subtitle={
-          <span className="text-[12px] leading-4 text-[#475569] dark:text-muted-foreground">
+          <span className="text-xs text-[#64748B]">
             {item.detailLabel ? (
               `${item.detailLabel} at ${time}`
             ) : (
               <>
                 {isOutgoing ? "To" : "From"}{" "}
-                <span className="text-[#fa7119]">@{item.counterparty}</span> at {time}
+                <span className="text-[#FA7119]">@{item.counterparty}</span> at {time}
               </>
             )}
           </span>
         }
         after={
-          <div className="flex flex-col items-end gap-0.5">
-            <p
-              className={`text-[14px] font-semibold leading-4 ${
-                isOutgoing ? "text-[#f13131]" : "text-[#25a761]"
+          <div className="flex items-center gap-1.5">
+            <div className="flex flex-col items-end gap-0.5">
+              <p
+                className={`text-[14px] leading-4 ${
+                  isOutgoing ? "text-[#F45A5A]" : "text-[#218A54]"
+                }`}
+              >
+                {mask(`${isOutgoing ? "-" : "+"}${fmtLkr(Math.abs(item.sats))} sats`)}
+              </p>
+              <p className="text-xs leading-4 text-[#475569] dark:text-[#94A3B8]">
+                {mask(`≈ LKR ${fmtLkr(item.lkr)}`)}
+              </p>
+            </div>
+            <ChevronDown
+              size={18}
+              strokeWidth={2}
+              className={`shrink-0 text-[#64748b] transition-transform duration-150 ${
+                expanded ? "rotate-180" : ""
               }`}
-            >
-              {mask(`${isOutgoing ? "-" : "+"}${fmtLkr(Math.abs(item.sats))} sats`)}
-            </p>
-            <p className="text-[12px] leading-4 text-[#64748b]">
-              {mask(`≈ LKR ${fmtLkr(item.lkr)}`)}
-            </p>
+            />
           </div>
         }
       >
-        <span className="flex items-center gap-1.5 text-[16px] font-semibold leading-5 text-[#1b2027] dark:text-white">
+        <span className="flex items-center gap-1.5 text-base font-semibold leading-5 text-[#1b2027] dark:text-white">
           {ACTIVITY_TITLE[item.type]}
           {item.statusDot && (
             <span
               className={`size-2 rounded-full ${
-                item.statusDot === "green" ? "bg-[#22c55e]" : "bg-orange-500"
+                item.statusDot === "green" ? "bg-[#25A761]" : "bg-[#FA7119]"
               }`}
             />
           )}
@@ -82,15 +92,15 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
       <Accordion.Content>
         <div className="flex flex-col gap-4 px-4 pb-4 pt-2">
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col items-start gap-2">
-              <p className="text-[14px] leading-4 text-[#64748b]">Status</p>
+            <div className="flex flex-col items-start ">
+              <p className="text-xs leading-4 text-[#475569]">Status</p>
               <Badge
                 type="number"
                 mode="primary"
-                className="flex! h-auto! min-w-0! items-center! justify-center! m-0! whitespace-nowrap! rounded-full! px-4! py-1.5! text-[14px]! font-bold! leading-4!"
+                className="flex! min-w-0! leading-3! items-center! justify-center! m-0! whitespace-nowrap! rounded-[8px]! px-2! py-1! text-sm!"
                 style={
                   {
-                    "--tgui--button_color": "#25a761",
+                    "--tgui--button_color": "#25A761",
                     "--tgui--button_text_color": "#fff",
                   } as React.CSSProperties
                 }
@@ -99,41 +109,41 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
               </Badge>
             </div>
 
-            <div className="flex flex-col items-end gap-1 text-right">
-              <p className="text-[14px] leading-4 text-[#64748b]">Settled on</p>
-              <p className="text-[16px] font-bold leading-5 text-[#1b2027] dark:text-white">
+            <div className="flex flex-col items-end text-right">
+              <p className="text-xs leading-4 text-[#475569]">Settled on</p>
+              <p className="text-sm font-semibold leading-5">
                 {fmtShortDate(item.settlement.settledOn)}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <p className="text-[14px] leading-4 text-[#64748b]">
+          <div className="flex items-center justify-start gap-3">
+            <p className="text-xs leading-4 text-[#475569]">
               BTC Value {isOutgoing ? "Sent" : "Received"}
             </p>
-            <p className="text-[18px] font-bold leading-5 text-[#1b2027] dark:text-white">
+            <p className="text-base font-semibold leading-5">
               {formatSatoshis(item.settlement.btcSats)} BTC
             </p>
           </div>
 
-          <div className="flex flex-col items-center gap-1 rounded-[12px] bg-[#e8edfc] px-3 py-3 dark:bg-white/5">
-            <p className="text-[13px] leading-4 text-[#64748b]">BTC price at transaction time</p>
-            <p className="text-[16px] leading-5">
-              <span className="font-bold text-[#2563eb]">USD</span>{" "}
-              <span className="font-bold text-[#1b2027] dark:text-white">
+          <div className="flex flex-col items-center gap-1 rounded-[12px] bg-[#e8edfc] px-3 py-1 dark:bg-white/5">
+            <p className="text-xs leading-4 text-[#475569]">BTC price at transaction time</p>
+            <p className="text-sm leading-5">
+              <span className="font-bold text-[#0088FF]">USD</span>{" "}
+              <span className="font-bold">
                 {item.settlement.btcPriceUsd.toFixed(2)}
               </span>
               <span className="text-[#64748b]"> / BTC · </span>
-              <span className="font-bold text-[#2563eb]">LKR</span>{" "}
-              <span className="font-bold text-[#1b2027] dark:text-white">
+              <span className="font-bold text-[#0088FF]">LKR</span>{" "}
+              <span className="font-bold">
                 {fmtPriceCompact(item.settlement.btcPriceLkr)}
               </span>
               <span className="text-[#64748b]"> / BTC</span>
             </p>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <p className="text-[14px] leading-4 text-[#64748b]">Transaction ID</p>
+          <div className="flex flex-col gap-1">
+            <p className="text-xs leading-4 text-[#475569]">Transaction ID</p>
             <CopyField value={item.settlement.transactionId} />
           </div>
         </div>

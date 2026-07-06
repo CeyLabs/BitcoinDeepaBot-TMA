@@ -14,7 +14,7 @@ export interface ActivityGroupProps {
 export function ActivityGroup({ date, items, visible }: ActivityGroupProps) {
   return (
     <div className="flex w-full flex-col gap-3">
-      <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+      <p className="text-sm font-bold leading-4 text-[#475569] dark:text-[#94A3B8]">
         {fmtActivityGroupLabel(date)}
       </p>
 

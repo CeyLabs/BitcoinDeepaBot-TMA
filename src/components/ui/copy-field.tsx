@@ -16,29 +16,29 @@ export function CopyButton({ onCopy, copied = false, className }: CopyButtonProp
     <IconButton
       type="button"
       mode="outline"
+      size="s"
       aria-label={copied ? "Copied" : "Copy to clipboard"}
       onClick={onCopy}
-      className={cn(
-        "relative! flex! size-9! shrink-0! items-center! justify-center! rounded-[10px]! bg-white! p-0! dark:bg-[#1b2027]!",
-        className
-      )}
+      className={cn("size-9! shrink-0! bg-white! dark:bg-[#1b2027]!", className)}
     >
-      <Check
-        size={16}
-        strokeWidth={2}
-        className={cn(
-          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[#25a761] transition-all duration-150",
-          copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
-        )}
-      />
-      <Copy
-        size={16}
-        strokeWidth={2}
-        className={cn(
-          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[#1b2027] transition-all duration-150 dark:text-[#f1f5f9]",
-          copied ? "scale-0 opacity-0" : "scale-100 opacity-100"
-        )}
-      />
+      <span className="relative flex size-4 items-center justify-center">
+        <Check
+          size={16}
+          strokeWidth={2}
+          className={cn(
+            "absolute inset-0 text-[#25a761] transition-all duration-150",
+            copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
+          )}
+        />
+        <Copy
+          size={16}
+          strokeWidth={2}
+          className={cn(
+            "absolute inset-0 text-[#1b2027] dark:text-[#f1f5f9] transition-all duration-150",
+            copied ? "scale-0 opacity-0" : "scale-100 opacity-100"
+          )}
+        />
+      </span>
     </IconButton>
   );
 }

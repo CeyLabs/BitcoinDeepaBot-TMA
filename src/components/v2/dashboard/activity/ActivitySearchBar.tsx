@@ -1,7 +1,7 @@
 "use client";
 
 import { IconButton } from "@telegram-apps/telegram-ui";
-import { SlidersHorizontal } from "lucide-react";
+import { Funnel } from "lucide-react";
 import { SearchField } from "@/components/ui/search-field";
 import { VisibleToggle } from "@/components/ui/visible-toggle";
 
@@ -28,10 +28,10 @@ export function ActivitySearchBar({
       <VisibleToggle
         visible={visible}
         onToggle={onToggleVisible}
-        className="bg-white! dark:bg-[#1b2027]!"
+        className="bg-white! dark:bg-[#0B0F14]!"
       />
-      <IconButton mode="gray" size="m" className="bg-white! dark:bg-[#1b2027]!">
-        <SlidersHorizontal
+      <IconButton mode="gray" size="m" className="bg-white! dark:bg-[#0B0F14]!">
+        <Funnel
           size={18}
           strokeWidth={1.75}
           className="text-[#111821] dark:text-[#f1f5f9]"

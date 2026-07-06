@@ -13,7 +13,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
     return (
       <div
         className={cn(
-          "flex items-center gap-1 h-9 px-3 py-2 rounded-2xl bg-white dark:bg-[#1b2027]",
+          "flex items-center gap-1 h-9 px-3 py-2 rounded-2xl bg-white dark:bg-[#0B0F14]",
           className
         )}
       >

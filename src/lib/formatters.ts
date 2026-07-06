@@ -48,8 +48,8 @@ export function fmtShortDate(dateInput: string | Date): string {
     const date = new Date(dateInput);
     const day = date.getDate();
     const month = date.toLocaleDateString("en-US", { month: "short" });
-    const year = date.getFullYear().toString().slice(-2);
-    return `${day} ${month} '${year}`;
+    const year = date.getFullYear().toString()
+    return `${day} ${month} ${year}`;
 }
 
 // Relative day text, e.g. "In 5 days" / "2 days ago" / "Today"
