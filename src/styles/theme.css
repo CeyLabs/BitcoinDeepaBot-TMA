@@ -57,6 +57,8 @@
   --color-tma-accent: var(--accent);
   --color-tma-link: var(--link);
 
+  --color-surface-gift: var(--surface-gift);
+
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
@@ -128,6 +130,9 @@
 
     /* Brand accent — always Bitcoin Deepa orange, never overridden by Telegram */
     --brand-accent: #ff9900;
+
+    /* Dark slate surface used for selected/active pill states (e.g. Activity tab filters) */
+    --surface-gift: #1f2a36;
 
     /* Custom theme-aware colors - only text and components */
     --text-primary: var(--tg-theme-text-color, #ffffff);

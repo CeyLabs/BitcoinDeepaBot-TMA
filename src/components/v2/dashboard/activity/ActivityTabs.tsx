@@ -33,7 +33,7 @@ export function ActivityTabs({ value, onChange }: ActivityTabsProps) {
               className={cn(
                 "rounded-[12px]! whitespace-nowrap!",
                 isActive
-                  ? "bg-[#1b2027]! text-white! dark:bg-[#f1f5f9]! dark:text-[#1b2027]!"
+                  ? "bg-surface-gift! text-white!"
                   : "bg-white! text-[#1b2027]! dark:bg-[#0B0F14]! dark:text-[#f1f5f9]!"
               )}
             >
