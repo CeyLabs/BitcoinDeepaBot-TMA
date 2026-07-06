@@ -9,14 +9,14 @@ const CARD_SURFACE_STYLE = {
   "--tgui--tertiary_bg_color": "var(--color-surface-primary)",
 } as React.CSSProperties;
 
-const PLAN_ICONS: Record<string, string> = {
+export const PLAN_ICONS: Record<string, string> = {
   shrimp: "/emoji/shrimp.svg",
   crab: "/emoji/crab.svg",
   shark: "/emoji/shark.svg",
   whale: "/emoji/whale.svg",
 };
 
-function getPlanIconSrc(name: string): string {
+export function getPlanIconSrc(name: string): string {
   return PLAN_ICONS[name.toLowerCase()] ?? "/emoji/bitcoin.svg";
 }
 

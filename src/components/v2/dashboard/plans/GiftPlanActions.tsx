@@ -1,0 +1,47 @@
+"use client";
+
+import Image from "next/image";
+import { Cell, Navigation } from "@telegram-apps/telegram-ui";
+
+const CELL_CLASSNAME =
+  "gap-2! px-4! rounded-[12px] border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]";
+
+export function GiftPlanActions() {
+  return (
+    <div className="flex w-full flex-col gap-3">
+      <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+        Gift Plans
+      </p>
+
+      <div className="flex flex-col gap-2">
+        <Cell
+          before={<Image src="/emoji/gift.svg" alt="Gift" width={40} height={40} />}
+          after={<Navigation />}
+          style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
+          className={CELL_CLASSNAME}
+        >
+          <p className="flex flex-col items-start pl-1 font-semibold text-[#1b2027] dark:text-white">
+            Gift a Bitcoin Plan
+            <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">
+              Send a bitcoin subscription to a friend
+            </span>
+          </p>
+        </Cell>
+
+        <Cell
+          before={<Image src="/emoji/gift_standing_order.svg" alt="Recurring Gift" width={40} height={40} />}
+          after={<Navigation />}
+          style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
+          className={CELL_CLASSNAME}
+        >
+          <p className="flex flex-col items-start pl-1 font-semibold text-[#1b2027] dark:text-white">
+            Send a Recurring Gift
+            <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">
+              Send a standing order gift to a friend
+            </span>
+          </p>
+        </Cell>
+      </div>
+    </div>
+  );
+}

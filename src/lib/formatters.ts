@@ -73,6 +73,12 @@ export function fmtActivityTime(dateInput: string | Date): string {
     return format(new Date(dateInput), "hh:mm a");
 }
 
+// Combined date+time for flat lists with no day-header (e.g. Manage Gifts),
+// e.g. "17 Mar 2026 at 05:00 PM"
+export function fmtActivityDateTime(dateInput: string | Date): string {
+    return `${fmtShortDate(dateInput)} at ${fmtActivityTime(dateInput)}`;
+}
+
 // Blot out digits in a formatted string while keeping icons/currency codes/units
 // visible, e.g. "LKR 32,000" -> "LKR ****" when the user hides their balance.
 export function maskDigits(value: string, visible: boolean): string {
