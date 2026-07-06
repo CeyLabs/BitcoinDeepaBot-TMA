@@ -33,6 +33,20 @@ export interface Referral {
     isActive: boolean;
 }
 
+export type TaskFrequency = "daily" | "one_time";
+
+export interface Task {
+    id: string;
+    title: string;
+    description: string;
+    rewardSats: number;
+    frequency: TaskFrequency;
+    /** Emoji glyph rendered inside the icon tile, e.g. "👛" */
+    icon: string;
+    /** Icon tile background color, e.g. "#FDECD1" */
+    iconBg: string;
+}
+
 export interface Subscription {
     id: string;
     planName: string;
