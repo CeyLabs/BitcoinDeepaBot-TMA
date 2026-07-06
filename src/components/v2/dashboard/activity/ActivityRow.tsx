@@ -5,7 +5,14 @@ import Image from "next/image";
 import { Accordion, Badge } from "@telegram-apps/telegram-ui";
 import { CopyField } from "@/components/ui/copy-field";
 import { ACTIVITY_ICON, ACTIVITY_TITLE } from "@/lib/activity";
-import { fmtActivityTime, fmtLkr, fmtShortDate, formatSatoshis, maskDigits } from "@/lib/formatters";
+import {
+  fmtActivityTime,
+  fmtLkr,
+  fmtPriceCompact,
+  fmtShortDate,
+  formatSatoshis,
+  maskDigits,
+} from "@/lib/formatters";
 import type { ActivityItem } from "@/lib/types";
 
 export interface ActivityRowProps {
@@ -73,53 +80,59 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
       </Accordion.Summary>
 
       <Accordion.Content>
-        <div className="flex flex-col gap-3 px-4 pb-4 pt-1">
-          <div className="flex items-center justify-between">
-            <p className="text-[14px] leading-4 text-[#64748b]">Status</p>
-            <Badge
-              type="number"
-              mode="primary"
-              className="flex! h-auto! min-w-0! items-center! justify-center! m-0! whitespace-nowrap! rounded-[8px]! px-2.5! py-1! text-[12px]! font-medium! leading-4!"
-              style={
-                {
-                  "--tgui--button_color": "#25a761",
-                  "--tgui--button_text_color": "#fff",
-                } as React.CSSProperties
-              }
-            >
-              {item.settlement.status}
-            </Badge>
-          </div>
+        <div className="flex flex-col gap-4 px-4 pb-4 pt-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col items-start gap-2">
+              <p className="text-[14px] leading-4 text-[#64748b]">Status</p>
+              <Badge
+                type="number"
+                mode="primary"
+                className="flex! h-auto! min-w-0! items-center! justify-center! m-0! whitespace-nowrap! rounded-full! px-4! py-1.5! text-[14px]! font-bold! leading-4!"
+                style={
+                  {
+                    "--tgui--button_color": "#25a761",
+                    "--tgui--button_text_color": "#fff",
+                  } as React.CSSProperties
+                }
+              >
+                {item.settlement.status}
+              </Badge>
+            </div>
 
-          <div className="flex items-center justify-between">
-            <p className="text-[14px] leading-4 text-[#64748b]">Settled on</p>
-            <p className="text-[14px] font-semibold leading-4 text-[#1b2027] dark:text-white">
-              {fmtShortDate(item.settlement.settledOn)}
-            </p>
+            <div className="flex flex-col items-end gap-1 text-right">
+              <p className="text-[14px] leading-4 text-[#64748b]">Settled on</p>
+              <p className="text-[16px] font-bold leading-5 text-[#1b2027] dark:text-white">
+                {fmtShortDate(item.settlement.settledOn)}
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center justify-between">
             <p className="text-[14px] leading-4 text-[#64748b]">
               BTC Value {isOutgoing ? "Sent" : "Received"}
             </p>
-            <p className="text-[14px] font-semibold leading-4 text-[#1b2027] dark:text-white">
+            <p className="text-[18px] font-bold leading-5 text-[#1b2027] dark:text-white">
               {formatSatoshis(item.settlement.btcSats)} BTC
             </p>
           </div>
 
-          <div className="flex flex-col items-center gap-1 rounded-[12px] bg-[rgba(37,167,97,0.08)] px-3 py-2.5 dark:bg-white/5">
-            <p className="text-[12px] leading-4 text-[#64748b]">BTC price at transaction time</p>
-            <p className="text-[14px] font-semibold leading-4">
-              <span className="text-[#2563eb]">USD {fmtLkr(item.settlement.btcPriceUsd)}</span>
+          <div className="flex flex-col items-center gap-1 rounded-[12px] bg-[#e8edfc] px-3 py-3 dark:bg-white/5">
+            <p className="text-[13px] leading-4 text-[#64748b]">BTC price at transaction time</p>
+            <p className="text-[16px] leading-5">
+              <span className="font-bold text-[#2563eb]">USD</span>{" "}
+              <span className="font-bold text-[#1b2027] dark:text-white">
+                {item.settlement.btcPriceUsd.toFixed(2)}
+              </span>
               <span className="text-[#64748b]"> / BTC · </span>
-              <span className="text-[#2563eb]">
-                LKR {fmtLkr(item.settlement.btcPriceLkr)}
+              <span className="font-bold text-[#2563eb]">LKR</span>{" "}
+              <span className="font-bold text-[#1b2027] dark:text-white">
+                {fmtPriceCompact(item.settlement.btcPriceLkr)}
               </span>
               <span className="text-[#64748b]"> / BTC</span>
             </p>
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <p className="text-[14px] leading-4 text-[#64748b]">Transaction ID</p>
             <CopyField value={item.settlement.transactionId} />
           </div>
