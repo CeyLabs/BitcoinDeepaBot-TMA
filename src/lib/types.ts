@@ -72,6 +72,41 @@ export interface ApiTransaction {
     settled?: boolean;
 }
 
+export type ActivityType =
+    | "sent"
+    | "received"
+    | "tipjar_sent"
+    | "tipjar_received"
+    | "faucet_sent"
+    | "faucet_received"
+    | "gift_sent"
+    | "gift_received"
+    | "tasks_reward"
+    | "membership_reward";
+
+export interface ActivityItem {
+    id: string;
+    type: ActivityType;
+    /** Username (without "@") for sent/received/tipjar/faucet/gift subtitles */
+    counterparty?: string;
+    /** Action/plan label for tasks/membership reward subtitles, e.g. "Share story", "Shrimp plan" */
+    detailLabel?: string;
+    timestamp: string;
+    /** Signed sats: negative = outgoing, positive = incoming */
+    sats: number;
+    /** Absolute approx LKR value shown as "≈ LKR x" */
+    lkr: number;
+    statusDot?: "green" | "orange";
+    settlement: {
+        status: string;
+        settledOn: string;
+        btcSats: number;
+        btcPriceUsd: number;
+        btcPriceLkr: number;
+        transactionId: string;
+    };
+}
+
 export interface Wallet {
     balance: number;
     balanceUSD: number;

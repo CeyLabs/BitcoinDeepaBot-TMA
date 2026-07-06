@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 
 // Format a date as YYYY/MM/DD
 export function formatDate(dateInput: string | Date): string {
@@ -58,6 +58,19 @@ export function fmtRelativeDays(dateInput: string | Date): string {
     if (diff === 0) return "Today";
     if (diff > 0) return `In ${diff} day${diff !== 1 ? "s" : ""}`;
     return `${Math.abs(diff)} day${Math.abs(diff) !== 1 ? "s" : ""} ago`;
+}
+
+// Activity feed date-group label, e.g. "Today" / "Yesterday" / "15 April 2026"
+export function fmtActivityGroupLabel(dateInput: string | Date): string {
+    const date = new Date(dateInput);
+    if (isToday(date)) return "Today";
+    if (isYesterday(date)) return "Yesterday";
+    return format(date, "d MMMM yyyy");
+}
+
+// Activity row time, e.g. "05:00 PM"
+export function fmtActivityTime(dateInput: string | Date): string {
+    return format(new Date(dateInput), "hh:mm a");
 }
 
 // Blot out digits in a formatted string while keeping icons/currency codes/units

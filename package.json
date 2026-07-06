@@ -1,7 +1,13 @@
 {
-    "name": "next-shadcn-template",
+    "name": "BitcoinDeepa Telegram Mini App",
     "version": "1.0.0",
     "private": true,
+    "description": "A Telegram Mini App built with Next.js 14 that supports Bitcoin membership reward accrual with subscription management for Sri Lankan users.",
+    "main": "index.js",
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "module",
     "scripts": {
         "dev": "next dev -p 3347",
         "build": "next build",
