@@ -39,6 +39,9 @@
 
   /* v2 telegram-ui card surface — light default, overridden for .dark below */
   --color-surface-primary: #ffffff;
+
+  /* Success green — opacity applied at the call site via color-mix() */
+  --color-success: #25a761;
 }
 
 /*
