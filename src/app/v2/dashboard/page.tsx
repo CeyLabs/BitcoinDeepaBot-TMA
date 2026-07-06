@@ -1,5 +1,6 @@
 "use client";
 
+import { DashboardTopBar } from "@/components/v2/dashboard/DashboardTopBar";
 import { TotalValueCard } from "@/components/v2/dashboard/TotalValueCard";
 import { PlanSummaryCard } from "@/components/v2/dashboard/PlanSummaryCard";
 import { PerformanceGrid } from "@/components/v2/dashboard/PerformanceGrid";
@@ -76,6 +77,8 @@ export default function WalletV2Page() {
 
   return (
     <div className="flex w-full flex-col gap-5">
+      <DashboardTopBar />
+
       <TotalValueCard
         totalLkr={totalLkr}
         totalSats={totalSats}

@@ -24,8 +24,9 @@ export function useUser() {
   return {
     id: telegramUser?.id?.toString() ?? "",
     username,
-    displayName,
+    displayName: (telegramUser?.firstName && telegramUser?.lastName ? `${telegramUser.firstName} ${telegramUser.lastName}` : telegramUser?.firstName) ?? displayName,
     initials,
+    photoUrl: telegramUser?.photoUrl,
     isExistingUser,
     subscription: subscription ?? null,
     kycStatus,
