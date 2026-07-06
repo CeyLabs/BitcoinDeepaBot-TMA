@@ -7,7 +7,7 @@ export default function DashboardV2Layout({ children }: { children: React.ReactN
   useAuthGuard();
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col gap-5 px-5 pb-22 pt-5 bg-[#EEEFF3] dark:bg-[#1B2027]">
+    <div className="mx-auto flex min-h-screen max-w-md flex-col gap-5 bg-surface-main px-5 pb-22 pt-5">
       {children}
       <BottomNavigationV2 />
     </div>

@@ -3,8 +3,11 @@
 import Image from "next/image";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
 import { fmtLkr, fmtShortDate, fmtRelativeDays } from "@/lib/formatters";
-import { useTheme } from "@/app/context/theme";
 import type { Subscription } from "@/lib/types";
+
+const CARD_SURFACE_STYLE = {
+  "--tgui--tertiary_bg_color": "var(--color-surface-primary)",
+} as React.CSSProperties;
 
 const PLAN_ICONS: Record<string, string> = {
   shrimp: "/emoji/shrimp.svg",
@@ -40,13 +43,11 @@ function RewardCard({
   dateStr?: string;
   iconSrc: string;
 }) {
-  const { isDark } = useTheme();
-
   return (
     <Card
       type="plain"
       className="flex flex-1 flex-col rounded-[12px] p-3"
-      style={{ "--tgui--tertiary_bg_color": isDark ? "#0B0F14" : "#fff" } as React.CSSProperties}
+      style={CARD_SURFACE_STYLE}
     >
       <p className="text-sm capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9] pb-2">
         {label}
@@ -71,8 +72,6 @@ export interface PlanSummaryCardProps {
 }
 
 export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
-  const { isDark } = useTheme();
-
   return (
     <div className="flex w-full flex-col items-end gap-3">
       <div className="flex w-full items-center justify-between">
@@ -82,12 +81,7 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
       </div>
 
       <div className="flex w-full flex-col gap-2">
-        <Card
-          type="plain"
-          style={
-            { "--tgui--tertiary_bg_color": isDark ? "#0B0F14" : "#fff" } as React.CSSProperties
-          }
-        >
+        <Card type="plain" style={CARD_SURFACE_STYLE}>
           <div className="flex flex-1 items-center gap-2 overflow-hidden">
             <div className="flex size-[50px] shrink-0 items-center justify-center rounded-[8px] bg-[rgba(255,155,62,0.2)]">
               <Image
