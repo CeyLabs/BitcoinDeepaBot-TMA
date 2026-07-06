@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import BottomNavigation from "@/components/bottomNavigation";
+import BottomNavigation from "@/components/bottomNavigation.txt";
 import { useStore } from "@/lib/store";
 import { useEffect } from "react";
 import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";

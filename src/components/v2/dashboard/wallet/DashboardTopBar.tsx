@@ -18,14 +18,14 @@ export function DashboardTopBar() {
           size={40}
           className="shrink-0! bg-[#ffb14c]! text-white!"
         />
-        <p className="truncate text-[14px] capitalize leading-5 text-[#64748b]">
+        <p className="truncate text-[14px] capitalize leading-5 text-muted-foreground">
           {displayName}
         </p>
       </div>
       <VisibleToggle
         visible={balanceVisible}
         onToggle={toggleBalanceVisible}
-        className="bg-white! dark:bg-[#0B0F14]!"
+        className="bg-surface-primary!"
       />
     </div>
   );

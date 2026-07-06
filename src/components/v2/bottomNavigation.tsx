@@ -100,7 +100,7 @@ export default function BottomNavigationV2() {
         className={cn(
           "flex! h-auto! w-full! rounded-full! p-1!",
           "backdrop-blur-md shadow-[0px_4px_24px_0px_rgba(0,0,0,0.10)]!",
-          "bg-white/60! dark:bg-black/60!"
+          "bg-surface-glass!",
         )}
         style={
           {

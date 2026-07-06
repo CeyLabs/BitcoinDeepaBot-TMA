@@ -42,6 +42,10 @@
 
   /* Success green — opacity applied at the call site via color-mix() */
   --color-success: #25a761;
+
+  --color-surface-glass: #FFFFFF99
+
+  --color-surface-tertiary: #E2E8F0
 }
 
 /*
@@ -103,6 +107,8 @@
 
     /* Muted/secondary text tone used across dark surfaces (#94a3b8) */
     --muted-foreground: #94a3b8;
+
+    --text-muted: var(--muted-foreground);
 }
 
 /* Light theme overrides - only text colors, not backgrounds */
@@ -125,6 +131,8 @@
        any .dark descendant. */
     --color-surface-main: #1b2027;
     --color-surface-primary: #0b0f14;
+    --color-surface-glass: #00000099;
+    --color-surface-tertiary: #334155;
 }
 
 body {
