@@ -1,10 +1,10 @@
 "use client";
 
-import { DashboardTopBar } from "@/components/v2/dashboard/DashboardTopBar";
-import { TotalValueCard } from "@/components/v2/dashboard/TotalValueCard";
-import { PlanSummaryCard } from "@/components/v2/dashboard/PlanSummaryCard";
-import { PerformanceGrid } from "@/components/v2/dashboard/PerformanceGrid";
-import { PortfolioChart } from "@/components/v2/dashboard/PortfolioChart";
+import { DashboardTopBar } from "@/components/v2/dashboard/wallet/DashboardTopBar";
+import { TotalValueCard } from "@/components/v2/dashboard/wallet/TotalValueCard";
+import { PlanSummaryCard } from "@/components/v2/dashboard/wallet/PlanSummaryCard";
+import { PerformanceGrid } from "@/components/v2/dashboard/wallet/PerformanceGrid";
+import { PortfolioChart } from "@/components/v2/dashboard/wallet/PortfolioChart";
 import { useWalletSummary } from "@/hooks/query/useWalletSummary";
 import { useTransactionHistory } from "@/hooks/query/useTransactionHistory";
 import { useUser } from "@/hooks/useUser";

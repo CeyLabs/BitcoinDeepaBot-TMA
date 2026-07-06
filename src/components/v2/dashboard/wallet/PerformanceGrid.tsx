@@ -47,7 +47,7 @@ export function PerformanceGrid({
       <div className="grid grid-cols-2 gap-2">
         <Card
           type="plain"
-          className="flex! flex-col! items-start! gap-2! rounded-[16px]! p-3! shadow-none!"
+          className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
           style={CARD_SURFACE_STYLE}
         >
           <Image src="/emoji/wallet.svg" alt="" width={36} height={36} className="size-9" />
@@ -61,7 +61,7 @@ export function PerformanceGrid({
             <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
               {mask(`₿ ${(dcaSats / 1e8).toFixed(5)}`)}
             </p>
-            <div className="size-[3px] rounded-full bg-[#e2e8f0] dark:bg-[#334155]" />
+            <div className="size-0.75 rounded-full bg-[#e2e8f0] dark:bg-[#334155]" />
             <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
               {mask(`丰 ${fmtSatsCompact(dcaSats)}`)}
             </p>
@@ -70,7 +70,7 @@ export function PerformanceGrid({
 
         <Card
           type="plain"
-          className="flex! flex-col! items-start! gap-2! rounded-[16px]! p-3! shadow-none!"
+          className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
           style={CARD_SUCCESS_STYLE}
         >
           <Image src="/emoji/coins.svg" alt="" width={36} height={36} className="size-9" />
@@ -85,7 +85,7 @@ export function PerformanceGrid({
               <Badge
                 type="number"
                 mode={isProfit ? "primary" : "critical"}
-                className="flex! h-auto! min-w-0! items-center! justify-center! m-0! whitespace-nowrap! rounded-[8px]! px-2.5! py-1! text-[12px]! font-medium! leading-4!"
+                className="flex! h-auto! min-w-0! items-center! justify-center! m-0! whitespace-nowrap! rounded-lg! px-2.5! py-1! text-[12px]! font-medium! leading-4!"
                 style={
                   {
                     "--tgui--button_color": "#158348",
@@ -104,7 +104,7 @@ export function PerformanceGrid({
 
         <Card
           type="plain"
-          className="flex! flex-col! items-start! gap-2! rounded-[16px]! p-3! shadow-none!"
+          className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
           style={CARD_SURFACE_STYLE}
         >
           <Image src="/emoji/calculator.svg" alt="" width={36} height={36} className="size-9" />
@@ -129,7 +129,7 @@ export function PerformanceGrid({
 
         <Card
           type="plain"
-          className="flex! flex-col! items-start! gap-2! rounded-[16px]! p-3! shadow-none!"
+          className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
           style={CARD_SUCCESS_STYLE}
         >
           <Image src="/emoji/graph.svg" alt="" width={36} height={36} className="size-9" />
