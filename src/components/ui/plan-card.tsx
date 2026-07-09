@@ -3,11 +3,11 @@
 import { cn } from "@/lib/cn";
 
 const RadioDefault = () => (
-  <div className="size-5 rounded-full border-2 border-[#e2e8f0] bg-white" />
+  <div className="size-5 rounded-full border-2 border-[#e2e8f0] bg-white dark:border-[#334155] dark:bg-transparent" />
 );
 
 const RadioSelected = () => (
-  <div className="size-5 rounded-full border-2 border-[#fa7119] bg-white flex items-center justify-center">
+  <div className="size-5 rounded-full border-2 border-[#fa7119] bg-white dark:bg-transparent flex items-center justify-center">
     <div className="size-2.5 rounded-full bg-[#fa7119]" />
   </div>
 );
@@ -49,11 +49,11 @@ export function PlanCard({
       className={cn(
         "w-full text-left rounded-[12px] relative",
         "flex flex-col items-end pt-0",
-        "shadow-[-0.1px_-0.1px_10px_0px_rgba(203,213,225,0.3),3px_3px_7px_0px_rgba(203,213,225,0.3)]",
+        "shadow-[-0.1px_-0.1px_10px_0px_rgba(203,213,225,0.3),3px_3px_7px_0px_rgba(203,213,225,0.3)] dark:shadow-none",
         "transition-all duration-150",
         isHighlighted
-          ? "border border-[#fa7119] bg-[#eeeff3]"
-          : "border border-transparent bg-white",
+          ? "border border-[#fa7119] bg-[#eeeff3] dark:bg-[#1b2027]"
+          : "border border-transparent bg-white dark:bg-[#0b0f14] dark:border-[#1b2027]",
         "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#fa7119]/50",
         className
       )}
@@ -73,25 +73,25 @@ export function PlanCard({
             <div className="size-10 flex items-center justify-center">{emoji}</div>
           </div>
           <div className="flex flex-1 items-center justify-between min-w-0 leading-[16px] tracking-normal whitespace-nowrap">
-            <p className="text-[16px] font-semibold text-[#1b2027]">{name}</p>
+            <p className="text-[16px] font-semibold text-[#1b2027] dark:text-white">{name}</p>
             <div className="flex items-end gap-0.5 text-center">
               <p className="text-[18px] font-bold text-[#fa7119]">{price}</p>
-              <p className="text-[12px] font-normal text-[#e2e8f0] pb-0.5">{period}</p>
+              <p className="text-[12px] font-normal text-[#e2e8f0] dark:text-[#475569] pb-0.5">{period}</p>
             </div>
           </div>
         </div>
 
         {/* Bottom: description + pricing */}
         <div className="flex flex-col items-start pl-[31px] w-full mt-1 gap-0.5">
-          <p className="text-[14px] font-normal leading-[16px] text-[#475569] w-full">
+          <p className="text-[14px] font-normal leading-[16px] text-[#475569] dark:text-[#94a3b8] w-full">
             {description}
           </p>
           <div className="flex items-center gap-2 w-full">
-            <p className="text-[12px] font-normal leading-[16px] text-[#64748b] whitespace-nowrap">
+            <p className="text-[12px] font-normal leading-[16px] text-[#64748b] dark:text-[#64748b] whitespace-nowrap">
               {perMonth}
             </p>
-            <div className="w-px h-3 bg-[#e2e8f0]" />
-            <p className="text-[12px] font-normal leading-[16px] text-[#64748b] whitespace-nowrap">
+            <div className="w-px h-3 bg-[#e2e8f0] dark:bg-[#334155]" />
+            <p className="text-[12px] font-normal leading-[16px] text-[#64748b] dark:text-[#64748b] whitespace-nowrap">
               {perYear}
             </p>
           </div>

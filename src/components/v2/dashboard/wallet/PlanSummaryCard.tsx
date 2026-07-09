@@ -17,11 +17,12 @@ export const PLAN_ICONS: Record<string, string> = {
   "blue whale": "/emoji/bluewhale.svg",
 };
 
+function stripFrequencySuffix(name: string): string {
+  return name.replace(/\s*(weekly|monthly)\s*$/i, "").trim();
+}
+
 export function getPlanIconSrc(name: string): string {
-  const key = name
-    .toLowerCase()
-    .replace(/\s*(weekly|monthly)\s*$/, "")
-    .trim();
+  const key = stripFrequencySuffix(name).toLowerCase();
   return PLAN_ICONS[key] ?? "/emoji/bitcoin.svg";
 }
 
@@ -86,7 +87,11 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
       </div>
 
       <div className="flex w-full flex-col gap-2">
-        <Card type="plain" style={CARD_SURFACE_STYLE}>
+        <Card
+          type="plain"
+          className="flex! w-full items-center justify-between gap-2 p-3"
+          style={CARD_SURFACE_STYLE}
+        >
           <div className="flex flex-1 items-center gap-2 overflow-hidden">
             <div className="flex size-[50px] shrink-0 items-center justify-center rounded-[8px] bg-[rgba(255,155,62,0.2)]">
               <Image
@@ -99,7 +104,7 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
             </div>
             <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
               <p className="truncate text-[16px] font-semibold leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
-                {subscription ? subscription.planName : "No active plan"}
+                {subscription ? stripFrequencySuffix(subscription.planName) : "No active plan"}
               </p>
               {subscription && (
                 <div className="flex items-end gap-0.5">
@@ -126,7 +131,7 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
                   } as React.CSSProperties
                 }
               >
-                <div className="size-1.5 rounded-full bg-[#25a761]" />
+                <span className="mr-1 inline-block size-1.5 rounded-full bg-[#25a761] align-middle" />
                 Active
               </Badge>
               <ChevronRight />
