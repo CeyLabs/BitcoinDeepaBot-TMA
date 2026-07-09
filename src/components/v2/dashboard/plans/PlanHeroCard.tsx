@@ -114,7 +114,7 @@ export function PlanHeroCard({
 
           <div className="flex items-stretch">
             <div className="flex flex-1 flex-col gap-1">
-              <p className="text-[12px] leading-4 text-white/70">Last Reward</p>
+              <p className="text-[12px] leading-4 text-white/70">Subscribed Since</p>
               <p className="text-[14px] font-semibold leading-4 text-white">
                 {subscription ? fmtShortDate(subscription.startDate) : "-"}
               </p>
@@ -128,9 +128,9 @@ export function PlanHeroCard({
             <div className="flex flex-1 flex-col items-end gap-1">
               <p className="text-[12px] leading-4 text-white/70">Next Reward</p>
               <p className="text-[14px] font-semibold leading-4 text-white">
-                {subscription ? fmtShortDate(subscription.endDate) : "-"}
+                {subscription?.endDate ? fmtShortDate(subscription.endDate) : "-"}
               </p>
-              {subscription && (
+              {subscription?.endDate && (
                 <p className="text-[12px] leading-4 text-white/70">
                   {fmtRelativeDays(subscription.endDate)}
                 </p>

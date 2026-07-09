@@ -104,7 +104,7 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
             </div>
             <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
               <p className="truncate text-[16px] font-semibold leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
-                {subscription ? stripFrequencySuffix(subscription.planName) : "No active plan"}
+                {subscription ? subscription.planName : "No active plan"}
               </p>
               {subscription && (
                 <div className="flex items-end gap-0.5">
@@ -141,7 +141,7 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
 
         <div className="flex w-full items-start gap-2">
           <RewardCard
-            label="Last Reward"
+            label="Subscribed Since"
             dateStr={subscription?.startDate}
             iconSrc="/emoji/calendar1.svg"
           />
