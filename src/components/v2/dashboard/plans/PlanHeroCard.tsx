@@ -46,7 +46,7 @@ export function PlanHeroCard({
         className="relative overflow-hidden rounded-[20px]! p-0! shadow-none!"
         style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-[#FF9900] via-[#FA7119] to-[#F13131]" />
+        <Image src="/bg/star.webp" alt="" fill priority className="object-cover" />
 
         <div className="relative flex flex-col gap-4 p-4">
           <div className="flex items-start justify-between gap-2">
@@ -54,9 +54,9 @@ export function PlanHeroCard({
               <Image
                 src={subscription ? getPlanIconSrc(subscription.planName) : "/emoji/bitcoin.svg"}
                 alt=""
-                width={40}
-                height={40}
-                className="size-10 shrink-0"
+                width={80}
+                height={80}
+                className="size-15 shrink-0"
               />
               <div className="flex min-w-0 flex-col items-start gap-1">
                 <p className="truncate text-[18px] font-bold leading-5 text-white">
@@ -72,14 +72,37 @@ export function PlanHeroCard({
                     </p>
                   </div>
                 )}
+                {subscription?.isActive && (
+                  <Badge
+                    type="number"
+                    mode="primary"
+                    className="w-fit! m-0! rounded-full! px-2.5! py-1! text-xs!"
+                    style={
+                      {
+                        "--tgui--button_color": "#25A761",
+                        "--tgui--button_text_color": "#fff",
+                      } as React.CSSProperties
+                    }
+                  >
+                    <span className="mr-1 inline-block size-1.5 rounded-full bg-white align-middle" />
+                    Active
+                  </Badge>
+                )}
               </div>
             </div>
 
             <Button
               mode="gray"
               size="s"
-              className="rounded-full! bg-white/20! px-3! shrink-0"
-              style={{ "--tgui--button--hovered-opacity": 0.85 } as React.CSSProperties}
+              className="rounded-full! overflow-hidden bg-white/20! px-3! shrink-0"
+              style={
+                {
+                  "--tgui--plain_background": "rgba(255,255,255,0.2)",
+                  "--tgui--plain_foreground": "#fff",
+                  "--tgui--bg_color": "rgba(255,255,255,0.3)",
+                  "--tgui--button--hovered-opacity": 0.3,
+                } as React.CSSProperties
+              }
               onClick={() => router.push("/v2/dashboard/plans/choose")}
             >
               <span className="flex items-center gap-1 whitespace-nowrap text-[12px] font-medium text-white">
@@ -88,23 +111,6 @@ export function PlanHeroCard({
               </span>
             </Button>
           </div>
-
-          {subscription?.isActive && (
-            <Badge
-              type="number"
-              mode="primary"
-              className="w-fit! m-0! rounded-full! px-2! py-1!"
-              style={
-                {
-                  "--tgui--button_color": "rgba(255,255,255,0.2)",
-                  "--tgui--button_text_color": "#fff",
-                } as React.CSSProperties
-              }
-            >
-              <div className="size-1.5 rounded-full bg-[#25A761]" />
-              Active
-            </Badge>
-          )}
 
           <div className="flex items-stretch">
             <div className="flex flex-1 flex-col gap-1">

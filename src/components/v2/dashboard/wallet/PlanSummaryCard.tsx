@@ -14,10 +14,15 @@ export const PLAN_ICONS: Record<string, string> = {
   crab: "/emoji/crab.svg",
   shark: "/emoji/shark.svg",
   whale: "/emoji/whale.svg",
+  "blue whale": "/emoji/bluewhale.svg",
 };
 
 export function getPlanIconSrc(name: string): string {
-  return PLAN_ICONS[name.toLowerCase()] ?? "/emoji/bitcoin.svg";
+  const key = name
+    .toLowerCase()
+    .replace(/\s*(weekly|monthly)\s*$/, "")
+    .trim();
+  return PLAN_ICONS[key] ?? "/emoji/bitcoin.svg";
 }
 
 function ChevronRight() {

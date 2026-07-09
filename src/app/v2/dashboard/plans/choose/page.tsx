@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBackButton } from "@telegram-apps/sdk-react";
@@ -13,18 +14,8 @@ import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/page-title";
 import { TogglePlan, type PlanDuration } from "@/components/ui/toggle-plan";
 import { PlanCard } from "@/components/ui/plan-card";
+import { getPlanIconSrc } from "@/components/v2/dashboard/wallet/PlanSummaryCard";
 import type { SubscriptionPlan } from "@/lib/types";
-
-const PLAN_EMOJIS: Record<string, string> = {
-  shrimp: "🦐",
-  crab: "🦀",
-  shark: "🦈",
-  whale: "🐳",
-};
-
-function getPlanEmoji(name: string) {
-  return PLAN_EMOJIS[name.toLowerCase()] ?? "₿";
-}
 
 function fmtLkr(n: number) {
   return `Rs ${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
@@ -137,7 +128,15 @@ export default function ChoosePlanPage() {
             return (
               <PlanCard
                 key={plan.id}
-                emoji={<span className="text-[28px] leading-none">{getPlanEmoji(plan.name)}</span>}
+                emoji={
+                  <Image
+                    src={getPlanIconSrc(plan.name)}
+                    alt=""
+                    width={28}
+                    height={28}
+                    className="size-7"
+                  />
+                }
                 name={plan.name}
                 price={fmtLkr(plan.amount)}
                 period={`/${plan.type === "weekly" ? "week" : "month"}`}
