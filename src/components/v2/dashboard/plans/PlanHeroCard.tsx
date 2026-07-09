@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { Card, Badge, Button } from "@telegram-apps/telegram-ui";
 import {
@@ -28,6 +29,7 @@ export function PlanHeroCard({
   currentValueLkr,
   visible,
 }: PlanHeroCardProps) {
+  const router = useRouter();
   const mask = (v: string) => maskDigits(v, visible);
   const profitLkr = currentValueLkr - investedLkr;
   const profitPct = investedLkr > 0 ? (profitLkr / investedLkr) * 100 : 0;
@@ -78,6 +80,7 @@ export function PlanHeroCard({
               size="s"
               className="rounded-full! bg-white/20! px-3! shrink-0"
               style={{ "--tgui--button--hovered-opacity": 0.85 } as React.CSSProperties}
+              onClick={() => router.push("/v2/dashboard/plans/choose")}
             >
               <span className="flex items-center gap-1 whitespace-nowrap text-[12px] font-medium text-white">
                 Change Plan

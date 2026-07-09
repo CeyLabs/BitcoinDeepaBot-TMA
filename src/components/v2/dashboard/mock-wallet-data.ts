@@ -1,4 +1,4 @@
-import type { Subscription, DCSummary } from "@/lib/types";
+import type { Subscription, DCSummary, SubscriptionPlan } from "@/lib/types";
 
 // No backend/auth token wired up in this dev environment yet — fall back to mock
 // data (instead of an all-zero layout) so the UI can be reviewed visually. Only
@@ -35,3 +35,56 @@ export const MOCK_TRANSACTIONS = [
 
 // Placeholder — no real FX rate source exists yet.
 export const MOCK_LKR_USD_RATE = 453.8;
+
+export const MOCK_PACKAGES: SubscriptionPlan[] = [
+  {
+    id: "mock-shrimp-weekly",
+    name: "Shrimp",
+    type: "weekly",
+    amount: 3000,
+    currency: "LKR",
+    features: ["Basic membership benefits"],
+    popular: true,
+  },
+  {
+    id: "mock-shrimp-monthly",
+    name: "Shrimp",
+    type: "monthly",
+    amount: 12000,
+    currency: "LKR",
+    features: ["Basic membership benefits"],
+    popular: true,
+  },
+  {
+    id: "mock-crab-weekly",
+    name: "Crab",
+    type: "weekly",
+    amount: 5000,
+    currency: "LKR",
+    features: ["Enhanced benefits & faster support"],
+  },
+  {
+    id: "mock-crab-monthly",
+    name: "Crab",
+    type: "monthly",
+    amount: 20000,
+    currency: "LKR",
+    features: ["Enhanced benefits & faster support"],
+  },
+  {
+    id: "mock-shark-weekly",
+    name: "Shark",
+    type: "weekly",
+    amount: 10000,
+    currency: "LKR",
+    features: ["Premium benefits & priority support"],
+  },
+  {
+    id: "mock-shark-monthly",
+    name: "Shark",
+    type: "monthly",
+    amount: 40000,
+    currency: "LKR",
+    features: ["Premium benefits & priority support"],
+  },
+];
