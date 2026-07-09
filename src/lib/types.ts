@@ -41,10 +41,7 @@ export interface Task {
     description: string;
     rewardSats: number;
     frequency: TaskFrequency;
-    /** Emoji glyph rendered inside the icon tile, e.g. "👛" */
     icon: string;
-    /** Icon tile background color, e.g. "#FDECD1" */
-    iconBg: string;
 }
 
 export interface Subscription {

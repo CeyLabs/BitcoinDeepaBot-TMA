@@ -1,6 +1,7 @@
 "use client";
 
 import { Card } from "@telegram-apps/telegram-ui";
+import Image from "next/image";
 import { fmtLkr, fmtSatsCompact, maskDigits } from "@/lib/formatters";
 
 // Matches mock-wallet-data.ts's avg_btc_price so figures stay consistent across pages.
@@ -34,7 +35,7 @@ export function TaskHeroCard({ stats, visible }: TaskHeroCardProps) {
       className="relative overflow-hidden rounded-[20px]! p-0! shadow-none!"
       style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-[#3B7DF5] via-[#2A5AE0] to-[#1B2F8C]" />
+      <Image src="/bg/note.webp" alt="" fill priority className="object-cover" />
 
       <div className="relative flex flex-col gap-4 p-4">
         <div className="flex flex-col gap-1">

@@ -9,8 +9,7 @@ export const MOCK_TASKS: Task[] = [
     description: "Receive and store your bitcoin securely",
     rewardSats: 100,
     frequency: "one_time",
-    icon: "👛",
-    iconBg: "#FDECD1",
+    icon: "/emoji/wallet.svg",
   },
   {
     id: "task-join-community",
@@ -18,8 +17,7 @@ export const MOCK_TASKS: Task[] = [
     description: "Stay update and connect with members",
     rewardSats: 200,
     frequency: "one_time",
-    icon: "💬",
-    iconBg: "#DCE7F5",
+    icon: "/emoji/community.webp",
   },
   {
     id: "task-share-story",
@@ -27,8 +25,7 @@ export const MOCK_TASKS: Task[] = [
     description: "Inspire others with your bitcoin journey",
     rewardSats: 50,
     frequency: "daily",
-    icon: "✍️",
-    iconBg: "#FBE4D8",
+    icon: "/emoji/story.svg",
   },
   {
     id: "task-send-gift-plan",
@@ -36,8 +33,7 @@ export const MOCK_TASKS: Task[] = [
     description: "Send a subscription to grow together",
     rewardSats: 100,
     frequency: "daily",
-    icon: "🎁",
-    iconBg: "#DCEAF7",
+    icon: "/emoji/gift.svg",
   },
 ];
 

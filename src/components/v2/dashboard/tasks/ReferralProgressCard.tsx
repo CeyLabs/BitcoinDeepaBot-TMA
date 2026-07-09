@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, Avatar } from "@telegram-apps/telegram-ui";
+import { Card, Avatar, AvatarStack } from "@telegram-apps/telegram-ui";
+import Image from "next/image";
 
 export interface ReferralProgressCardProps {
   joined: number;
@@ -14,21 +15,21 @@ export function ReferralProgressCard({ joined, target, rewardSats }: ReferralPro
   return (
     <Card
       type="plain"
-      className="relative overflow-hidden rounded-[20px]! p-0! shadow-none!"
+      className="relative overflow-hidden rounded-full! p-0! shadow-none!"
       style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-[#FF9900] via-[#FA7119] to-[#F13131]" />
+      <Image src="/bg/pill.webp" alt="" fill className="object-cover" />
 
       <div className="relative flex flex-col gap-3 p-4">
-        <p className="text-[16px] font-bold leading-5 text-white">
+        <p className="max-w-15 text-[16px] font-bold leading-5 text-white">
           Orange Pill your friends and get {rewardSats}sats
         </p>
 
         <div className="flex items-center gap-3">
-          <div className="flex -space-x-2">
-            <Avatar size={28} acronym="B" className="border-2 border-white/40" />
-            <Avatar size={28} acronym="D" className="border-2 border-white/40" />
-          </div>
+          <AvatarStack style={{ "--tgui--bg_color": "transparent" } as React.CSSProperties}>
+            <Avatar size={28} src="/avatar/boy.png" />
+            <Avatar size={28} src="/avatar/girl.png" />
+          </AvatarStack>
 
           <div className="flex flex-1 flex-col gap-1">
             <div className="h-2 w-full overflow-hidden rounded-full bg-white/25">
