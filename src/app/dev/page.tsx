@@ -12,7 +12,7 @@ import { TogglePlan, PlanDuration } from "@/components/ui/toggle-plan";
 import { CategoryFilterGroup } from "@/components/ui/category-filter";
 import { SearchField } from "@/components/ui/search-field";
 import { CopyField } from "@/components/ui/copy-field";
-import BottomNavigation from "@/components/bottomNavigation.txt";
+import BottomNavigation from "@/components/bottomNavigation";
 
 const BitcoinEmoji = () => (
   <span className="text-3xl leading-none">₿</span>

@@ -12,7 +12,7 @@ import { queryKeys } from "@/lib/query-keys";
 import { RewardsChart } from "@/components/RewardsChart";
 import { cn } from "@/lib/cn";
 import { VisibleToggle } from "@/components/ui/visible-toggle";
-import BottomNavigation from "@/components/bottomNavigation.txt";
+import BottomNavigation from "@/components/bottomNavigation";
 
 interface DCSummary {
   dca: {
