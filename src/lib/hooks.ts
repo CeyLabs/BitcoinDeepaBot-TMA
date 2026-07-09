@@ -47,6 +47,19 @@ export function useTMA() {
         [webApp]
     );
 
+    // For t.me links (bot deep links, channel invites, share intents) — keeps
+    // navigation inside the Telegram client instead of bouncing to a browser.
+    const openTelegramLink = useCallback(
+        (url: string) => {
+            if (webApp) {
+                webApp.openTelegramLink(url);
+            } else {
+                throw new Error("TMA not available");
+            }
+        },
+        [webApp]
+    );
+
     const closeWebApp = useCallback(() => {
         if (webApp) {
             webApp.close();
@@ -55,7 +68,7 @@ export function useTMA() {
         }
     }, [webApp]);
 
-    return { webApp, closeWebApp, shareStory, openLink };
+    return { webApp, closeWebApp, shareStory, openLink, openTelegramLink };
 }
 
 export function usePostRedirect() {

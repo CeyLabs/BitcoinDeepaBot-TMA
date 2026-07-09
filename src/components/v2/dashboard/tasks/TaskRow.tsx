@@ -6,11 +6,14 @@ import type { Task } from "@/lib/types";
 
 export interface TaskRowProps {
   task: Task;
+  onClick?: () => void;
 }
 
-export function TaskRow({ task }: TaskRowProps) {
+export function TaskRow({ task, onClick }: TaskRowProps) {
   return (
     <Cell
+      Component={onClick ? "button" : "div"}
+      onClick={onClick}
       before={
           <Image src={task.icon} alt="" width={40} height={40} className="size-10 self-center" />
       }
@@ -27,7 +30,7 @@ export function TaskRow({ task }: TaskRowProps) {
           </span>
         </div>
       }
-      className="px-3! gap-2!"
+      className="px-3! gap-2! w-full! text-left!"
     >
       <span className="text-base font-semibold leading-5 text-[#1b2027] dark:text-white">
         {task.title}
