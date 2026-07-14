@@ -1,5 +1,6 @@
 "use client";
 
+import { Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const RadioDefault = () => (
@@ -12,13 +13,19 @@ const RadioSelected = () => (
   </div>
 );
 
+const CheckSelected = () => (
+  <div className="size-5 rounded-full border-2 border-[#16a34a] bg-white dark:bg-transparent flex items-center justify-center">
+    <Check className="size-3 text-[#16a34a]" strokeWidth={3} />
+  </div>
+);
+
 export interface PlanCardProps {
   emoji: React.ReactNode;
   name: string;
   price: string;
   period: string;
   description: string;
-  perMonth: string;
+  perMonth?: string;
   perYear: string;
   selected?: boolean;
   active?: boolean;
@@ -42,40 +49,58 @@ export function PlanCard({
   className,
 }: PlanCardProps) {
   const isHighlighted = selected || active;
+  const Component = active ? "div" : "button";
+
   return (
-    <button
-      type="button"
-      onClick={onSelect}
+    <Component
+      type={active ? undefined : "button"}
+      onClick={active ? undefined : onSelect}
       className={cn(
         "w-full text-left rounded-[12px] relative",
         "flex flex-col items-end pt-0",
         "shadow-[-0.1px_-0.1px_10px_0px_rgba(203,213,225,0.3),3px_3px_7px_0px_rgba(203,213,225,0.3)] dark:shadow-none",
         "transition-all duration-150",
-        isHighlighted
-          ? "border border-[#fa7119] bg-[#eeeff3] dark:bg-[#1b2027]"
-          : "border border-transparent bg-white dark:bg-[#0b0f14] dark:border-[#1b2027]",
-        "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#fa7119]/50",
+        active
+          ? "border border-[#16a34a] bg-white dark:bg-[#0b0f14]"
+          : isHighlighted
+            ? "border border-[#fa7119] bg-[#eeeff3] dark:bg-[#1b2027]"
+            : "border border-transparent bg-white dark:bg-[#0b0f14] dark:border-[#1b2027]",
+        !active && "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#fa7119]/50",
         className
       )}
     >
-      {mostPopular && (
+      {active && (
+        <div className="absolute top-3 right-4">
+          <div className="bg-[#16a34a] flex h-5 items-center justify-center px-2.5 rounded-full">
+            <p className="text-[12px] leading-[16px] text-white whitespace-nowrap">Current Plan</p>
+          </div>
+        </div>
+      )}
+      {mostPopular && !active && (
         <div className="flex flex-col items-start mb-[-10px] pt-[6px] px-[10px] relative shrink-0 self-end">
           <div className="bg-[#fa7119] flex h-4 items-center justify-center px-2.5 rounded-full">
             <p className="text-[12px] leading-[16px] text-[#eeeff3] whitespace-nowrap">Most Popular</p>
           </div>
         </div>
       )}
-      <div className="flex flex-col items-start w-full px-4 py-5 gap-0">
+      <div className={cn("flex flex-col items-start w-full px-4 py-5 gap-0", active && "pt-6")}>
         {/* Top row: radio + emoji + name + price */}
         <div className="flex items-center gap-2 w-full h-10">
           <div className="flex items-center gap-2 shrink-0">
-            {isHighlighted ? <RadioSelected /> : <RadioDefault />}
+            {active ? <CheckSelected /> : isHighlighted ? <RadioSelected /> : <RadioDefault />}
             <div className="size-10 flex items-center justify-center">{emoji}</div>
           </div>
           <div className="flex flex-1 items-center justify-between min-w-0 leading-[16px] tracking-normal whitespace-nowrap">
             <p className="text-[16px] font-semibold text-[#1b2027] dark:text-white">{name}</p>
             <div className="flex items-end gap-0.5 text-center">
-              <p className="text-[18px] font-bold text-[#fa7119]">{price}</p>
+              <p
+                className={cn(
+                  "text-[18px] font-bold",
+                  active ? "text-[#16a34a]" : "text-[#fa7119]"
+                )}
+              >
+                {price}
+              </p>
               <p className="text-[12px] font-normal text-[#e2e8f0] dark:text-[#475569] pb-0.5">{period}</p>
             </div>
           </div>
@@ -87,16 +112,20 @@ export function PlanCard({
             {description}
           </p>
           <div className="flex items-center gap-2 w-full">
-            <p className="text-[12px] font-normal leading-[16px] text-[#64748b] dark:text-[#64748b] whitespace-nowrap">
-              {perMonth}
-            </p>
-            <div className="w-px h-3 bg-[#e2e8f0] dark:bg-[#334155]" />
+            {perMonth && (
+              <>
+                <p className="text-[12px] font-normal leading-[16px] text-[#64748b] dark:text-[#64748b] whitespace-nowrap">
+                  {perMonth}
+                </p>
+                <div className="w-px h-3 bg-[#e2e8f0] dark:bg-[#334155]" />
+              </>
+            )}
             <p className="text-[12px] font-normal leading-[16px] text-[#64748b] dark:text-[#64748b] whitespace-nowrap">
               {perYear}
             </p>
           </div>
         </div>
       </div>
-    </button>
+    </Component>
   );
 }

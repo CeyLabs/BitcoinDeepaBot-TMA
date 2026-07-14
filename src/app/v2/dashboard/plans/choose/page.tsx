@@ -55,9 +55,18 @@ export default function ChoosePlanPage() {
     };
   }, [backButton, router]);
 
+  const currentPlan = useMemo(
+    () =>
+      subscription?.isActive
+        ? packages.find((p) => p.id === subscription.packageId)
+        : undefined,
+    [packages, subscription]
+  );
+
   const filteredPlans = useMemo(
-    () => packages.filter((p) => p.type === duration),
-    [packages, duration]
+    () =>
+      packages.filter((p) => p.type === duration && p.id !== currentPlan?.id),
+    [packages, duration, currentPlan]
   );
 
   // Derived rather than effect-driven: falls back to the first plan of the
@@ -68,9 +77,6 @@ export default function ChoosePlanPage() {
     setDuration(d);
     setSelectedId(undefined);
   };
-
-  const isAlreadySubscribed =
-    subscription?.isActive && subscription.packageId === selectedPlanId;
 
   const handleSubscribe = async () => {
     const plan = packages.find((p) => p.id === selectedPlanId);
@@ -103,7 +109,40 @@ export default function ChoosePlanPage() {
 
   return (
     <div className="flex w-full flex-col gap-5 pb-4">
-      <PageTitle title="Choose Your Plan" subtitle="Get your bitcoin දීප membership" />
+      {currentPlan ? (
+        <PageTitle title="Manage your Plan" subtitle="View or switch to another plan" />
+      ) : (
+        <PageTitle title="Choose Your Plan" subtitle="Get your bitcoin දීප membership" />
+      )}
+
+      {currentPlan && (
+        <div className="flex flex-col gap-3">
+          <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+            Current Plan
+          </p>
+          <PlanCard
+            emoji={
+              <Image
+                src={getPlanIconSrc(currentPlan.name)}
+                alt=""
+                width={28}
+                height={28}
+                className="size-7"
+              />
+            }
+            name={currentPlan.name}
+            price={fmtLkr(currentPlan.amount)}
+            period={`/${currentPlan.type === "weekly" ? "week" : "month"}`}
+            description={currentPlan.features?.[0] ?? "Bitcoin membership rewards"}
+            perYear={`Per Year ${fmtLkr(perMonthAmount(currentPlan) * 12)}`}
+            active
+          />
+        </div>
+      )}
+
+      <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+        {currentPlan ? "Choose a Different Plan" : "Select a Plan"}
+      </p>
 
       <div className="flex justify-center">
         <TogglePlan value={duration} onChange={handleDurationChange} />
@@ -124,7 +163,6 @@ export default function ChoosePlanPage() {
           {filteredPlans.map((plan) => {
             const perMonth = perMonthAmount(plan);
             const perYear = perMonth * 12;
-            const isActivePlan = subscription?.isActive && subscription.packageId === plan.id;
             return (
               <PlanCard
                 key={plan.id}
@@ -143,8 +181,7 @@ export default function ChoosePlanPage() {
                 description={plan.features?.[0] ?? "Bitcoin membership rewards"}
                 perMonth={`Per Month ${fmtLkr(perMonth)}`}
                 perYear={`Per Year ${fmtLkr(perYear)}`}
-                selected={selectedPlanId === plan.id && !isActivePlan}
-                active={isActivePlan}
+                selected={selectedPlanId === plan.id}
                 mostPopular={plan.popular}
                 onSelect={() => setSelectedId(plan.id)}
               />
@@ -157,10 +194,10 @@ export default function ChoosePlanPage() {
         <Button
           variant="primary"
           loading={payhereLinkLoading}
-          disabled={!selectedPlanId || isAlreadySubscribed || packagesLoading}
+          disabled={!selectedPlanId || packagesLoading}
           onClick={handleSubscribe}
         >
-          {isAlreadySubscribed ? "Already Subscribed" : "Continue with Selected Plan"}
+          Continue with Selected Plan
         </Button>
 
         <p className="px-2 text-center text-[12px] text-[#64748b]">
