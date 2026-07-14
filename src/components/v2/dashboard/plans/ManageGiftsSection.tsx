@@ -22,7 +22,7 @@ export function ManageGiftsSection({ items, visible }: ManageGiftsSectionProps) 
   }, [items, filter]);
 
   return (
-    <div className="flex w-full flex-col gap-3">
+    <div className="w-full flex-col gap-3 hidden">
       <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
         Manage Gifts
       </p>

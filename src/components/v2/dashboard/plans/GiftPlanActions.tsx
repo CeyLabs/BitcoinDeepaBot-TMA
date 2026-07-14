@@ -9,9 +9,14 @@ const CELL_CLASSNAME =
 export function GiftPlanActions() {
   return (
     <div className="flex w-full flex-col gap-3">
-      <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
-        Gift Plans
-      </p>
+      <div className="flex items-center gap-2">
+        <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+          Gift Plans
+        </p>
+        <span className="rounded-full bg-[#fa7119]/10 px-2 py-0.5 text-[10px] font-semibold leading-4 text-[#fa7119]">
+          Coming Soon
+        </span>
+      </div>
 
       <div className="flex flex-col gap-2">
         <Cell
