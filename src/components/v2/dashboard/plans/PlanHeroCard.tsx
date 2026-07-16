@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronRight, ClipboardList } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Card, Badge, Button, Cell, Navigation } from "@telegram-apps/telegram-ui";
 import {
   fmtLkr,
@@ -43,7 +43,7 @@ export function PlanHeroCard({
         </p>
 
         <Cell
-          before={<ClipboardList className="size-6 text-[#94a3b8]" strokeWidth={1.75} />}
+          before={<Image src="/emoji/notepad.svg" alt="" width={36} height={36} className="size-9" />}
           after={<Navigation />}
           style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
           className="gap-2! px-4! rounded-xl border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Card, Badge } from "@telegram-apps/telegram-ui";
+import { Card, Badge, Cell, Navigation } from "@telegram-apps/telegram-ui";
 import { fmtLkr, fmtShortDate, fmtRelativeDays } from "@/lib/formatters";
 import type { Subscription } from "@/lib/types";
 
@@ -25,20 +25,6 @@ function stripFrequencySuffix(name: string): string {
 export function getPlanIconSrc(name: string): string {
   const key = stripFrequencySuffix(name).toLowerCase();
   return PLAN_ICONS[key] ?? "/emoji/bitcoin.svg";
-}
-
-function ChevronRight() {
-  return (
-    <svg width="14" height="24" viewBox="0 0 14 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M4 4L10 12L4 20"
-        stroke="#25A761"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
 }
 
 function RewardCard({
@@ -89,71 +75,79 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
 
       <div className="flex w-full flex-col gap-2">
         <Link href="/v2/dashboard/plans" className="block">
-          <Card
-            type="plain"
-            className="flex! w-full items-center justify-between gap-2 p-3"
-            style={CARD_SURFACE_STYLE}
-          >
-            <div className="flex flex-1 items-center gap-2 overflow-hidden">
-              <div className="flex size-[50px] shrink-0 items-center justify-center rounded-[8px] bg-[rgba(255,155,62,0.2)]">
+          <Cell
+            before={
+              subscription ? (
                 <Image
-                  src={subscription ? getPlanIconSrc(subscription.planName) : "/emoji/bitcoin.svg"}
+                  src={getPlanIconSrc(subscription.planName)}
                   alt=""
                   width={36}
                   height={36}
                   className="size-9"
                 />
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
-                <p className="truncate text-[16px] font-semibold leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
-                  {subscription ? subscription.planName : "No active plan"}
-                </p>
-                {subscription && (
-                  <div className="flex items-end gap-0.5">
-                    <p className="text-[14px] font-bold leading-4 text-[#fa7119]">
-                      Rs {fmtLkr(subscription.price)}
-                    </p>
-                    <p className="text-[12px] leading-4 text-[#64748b]">
-                      /{subscription.planType === "weekly" ? "week" : "month"}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {subscription && (
+              ) : (
+                <Image src="/emoji/notepad.svg" alt="" width={36} height={36} className="size-9" />
+              )
+            }
+            after={
               <div className="flex shrink-0 items-center gap-1">
-                <Badge
-                  type="number"
-                  mode="primary"
-                  style={
-                    {
-                      "--tgui--button_color": "rgba(37,167,97,0.1)",
-                      "--tgui--button_text_color": "#25a761",
-                    } as React.CSSProperties
-                  }
-                >
-                  <span className="mr-1 inline-block size-1.5 rounded-full bg-[#25a761] align-middle" />
-                  Active
-                </Badge>
-                <ChevronRight />
+                {subscription && (
+                  <Badge
+                    type="number"
+                    mode="primary"
+                    style={
+                      {
+                        "--tgui--button_color": "rgba(37,167,97,0.1)",
+                        "--tgui--button_text_color": "#25a761",
+                      } as React.CSSProperties
+                    }
+                  >
+                    <span className="mr-1 inline-block size-1.5 rounded-full bg-[#25a761] align-middle" />
+                    Active
+                  </Badge>
+                )}
+                <Navigation />
               </div>
-            )}
-          </Card>
+            }
+            style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
+            className="gap-2! px-4! rounded-xl border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
+          >
+            <div className="flex min-w-0 flex-1 flex-col items-start gap-1 pl-1">
+              <p className="truncate text-[16px] font-semibold leading-4 text-[#1b2027] dark:text-white">
+                {subscription ? subscription.planName : "No Active Plan"}
+              </p>
+              {subscription ? (
+                <div className="flex items-end gap-0.5">
+                  <p className="text-[14px] font-bold leading-4 text-[#fa7119]">
+                    Rs {fmtLkr(subscription.price)}
+                  </p>
+                  <p className="text-[12px] leading-4 text-[#64748b]">
+                    /{subscription.planType === "weekly" ? "week" : "month"}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">
+                  Choose a plan to start earning rewards
+                </p>
+              )}
+            </div>
+          </Cell>
         </Link>
 
-        <div className="flex w-full items-start gap-2">
-          <RewardCard
-            label="Subscribed Since"
-            dateStr={subscription?.startDate}
-            iconSrc="/emoji/calendar1.svg"
-          />
-          <RewardCard
-            label="Next Reward"
-            dateStr={subscription?.endDate}
-            iconSrc="/emoji/calendar2.svg"
-          />
-        </div>
+        {subscription && (
+          <div className="flex w-full items-start gap-2">
+            <RewardCard
+              label="Subscribed Since"
+              dateStr={subscription.startDate}
+              iconSrc="/emoji/calendar1.svg"
+            />
+            <RewardCard
+              label="Next Reward"
+              dateStr={subscription.endDate}
+              iconSrc="/emoji/calendar2.svg"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
