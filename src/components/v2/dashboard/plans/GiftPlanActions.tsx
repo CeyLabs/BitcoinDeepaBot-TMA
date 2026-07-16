@@ -6,6 +6,35 @@ import { Cell, Navigation } from "@telegram-apps/telegram-ui";
 const CELL_CLASSNAME =
   "gap-2! px-4! rounded-[12px] border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]";
 
+// Gifting isn't launched yet, so the plans page renders GiftPlansComingSoon below
+// instead of GiftPlanActions. Swap the render back to GiftPlanActions once it's ready.
+export function GiftPlansComingSoon() {
+  return (
+    <div className="flex w-full flex-col gap-3">
+      <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+        Gift Plans
+      </p>
+
+      <div className="flex flex-col items-center gap-3 rounded-xl bg-white px-6 py-8 text-center shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)]">
+        <Image src="/emoji/gift.svg" alt="Gift" width={56} height={56} />
+
+        <div className="flex flex-col gap-1">
+          <p className="text-[16px] font-bold text-[#1b2027] dark:text-white">
+            Gifting is Coming Soon
+          </p>
+          <p className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">
+            You&apos;ll be able to send gift plans and manage gift plans here in future updates
+          </p>
+        </div>
+
+        <span className="rounded-full bg-[#f1f5f9] px-3 py-1.5 text-[13px] font-medium text-[#64748b] dark:bg-white/10 dark:text-[#94a3b8]">
+          Available Soon
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function GiftPlanActions() {
   return (
     <div className="flex w-full flex-col gap-3">

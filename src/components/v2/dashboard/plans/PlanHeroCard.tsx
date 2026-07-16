@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronRight } from "lucide-react";
-import { Card, Badge, Button } from "@telegram-apps/telegram-ui";
+import { ChevronRight, ClipboardList } from "lucide-react";
+import { Card, Badge, Button, Cell, Navigation } from "@telegram-apps/telegram-ui";
 import {
   fmtLkr,
   fmtSatsCompact,
@@ -35,6 +35,31 @@ export function PlanHeroCard({
   const profitPct = investedLkr > 0 ? (profitLkr / investedLkr) * 100 : 0;
   const isProfit = profitLkr >= 0;
 
+  if (!subscription) {
+    return (
+      <div className="flex w-full flex-col gap-3">
+        <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+          Manage My Plan
+        </p>
+
+        <Cell
+          before={<ClipboardList className="size-6 text-[#94a3b8]" strokeWidth={1.75} />}
+          after={<Navigation />}
+          style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
+          className="gap-2! px-4! rounded-xl border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
+          onClick={() => router.push("/v2/dashboard/plans/choose")}
+        >
+          <p className="flex flex-col items-start pl-1 font-semibold text-[#1b2027] dark:text-white">
+            No Active Plan
+            <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">
+              Choose a plan to start earning rewards
+            </span>
+          </p>
+        </Cell>
+      </div>
+    );
+  }
+
   return (
     <div className="flex w-full flex-col gap-3">
       <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
@@ -52,7 +77,7 @@ export function PlanHeroCard({
           <div className="flex items-start justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <Image
-                src={subscription ? getPlanIconSrc(subscription.planName) : "/emoji/bitcoin.svg"}
+                src={getPlanIconSrc(subscription.planName)}
                 alt=""
                 width={80}
                 height={80}
@@ -60,19 +85,17 @@ export function PlanHeroCard({
               />
               <div className="flex min-w-0 flex-col items-start gap-1">
                 <p className="truncate text-[18px] font-bold leading-5 text-white">
-                  {subscription ? subscription.planName : "No active plan"}
+                  {subscription.planName}
                 </p>
-                {subscription && (
-                  <div className="flex items-end gap-0.5">
-                    <p className="text-[14px] font-bold leading-4 text-white">
-                      Rs {fmtLkr(subscription.price)}
-                    </p>
-                    <p className="text-[12px] leading-4 text-white/70">
-                      /{subscription.planType === "weekly" ? "week" : "month"}
-                    </p>
-                  </div>
-                )}
-                {subscription?.isActive && (
+                <div className="flex items-end gap-0.5">
+                  <p className="text-[14px] font-bold leading-4 text-white">
+                    Rs {fmtLkr(subscription.price)}
+                  </p>
+                  <p className="text-[12px] leading-4 text-white/70">
+                    /{subscription.planType === "weekly" ? "week" : "month"}
+                  </p>
+                </div>
+                {subscription.isActive && (
                   <Badge
                     type="number"
                     mode="primary"
@@ -116,21 +139,19 @@ export function PlanHeroCard({
             <div className="flex flex-1 flex-col gap-1">
               <p className="text-[12px] leading-4 text-white/70">Subscribed Since</p>
               <p className="text-[14px] font-semibold leading-4 text-white">
-                {subscription ? fmtShortDate(subscription.startDate) : "-"}
+                {fmtShortDate(subscription.startDate)}
               </p>
-              {subscription && (
-                <p className="text-[12px] leading-4 text-white/70">
-                  {fmtRelativeDays(subscription.startDate)}
-                </p>
-              )}
+              <p className="text-[12px] leading-4 text-white/70">
+                {fmtRelativeDays(subscription.startDate)}
+              </p>
             </div>
             <div className="w-px self-stretch bg-white/25" />
             <div className="flex flex-1 flex-col items-end gap-1">
               <p className="text-[12px] leading-4 text-white/70">Next Reward</p>
               <p className="text-[14px] font-semibold leading-4 text-white">
-                {subscription?.endDate ? fmtShortDate(subscription.endDate) : "-"}
+                {subscription.endDate ? fmtShortDate(subscription.endDate) : "-"}
               </p>
-              {subscription?.endDate && (
+              {subscription.endDate && (
                 <p className="text-[12px] leading-4 text-white/70">
                   {fmtRelativeDays(subscription.endDate)}
                 </p>

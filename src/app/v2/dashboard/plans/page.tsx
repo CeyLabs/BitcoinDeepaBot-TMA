@@ -1,7 +1,9 @@
 "use client";
 
 import { PlanHeroCard } from "@/components/v2/dashboard/plans/PlanHeroCard";
-import { GiftPlanActions } from "@/components/v2/dashboard/plans/GiftPlanActions";
+// GiftPlanActions holds the real gifting UI (send/manage gift plans). Gifting isn't
+// launched yet, so GiftPlansComingSoon renders in its place — swap back in once it's ready.
+import { GiftPlansComingSoon } from "@/components/v2/dashboard/plans/GiftPlanActions";
 import { ManageGiftsSection } from "@/components/v2/dashboard/plans/ManageGiftsSection";
 import { MOCK_GIFTS } from "@/components/v2/dashboard/plans/mock-data";
 import { useWalletSummary } from "@/hooks/query/useWalletSummary";
@@ -36,7 +38,7 @@ export default function PlansV2Page() {
         visible={balanceVisible}
       />
 
-      <GiftPlanActions />
+      <GiftPlansComingSoon />
 
       <ManageGiftsSection items={MOCK_GIFTS} visible={balanceVisible} />
     </div>

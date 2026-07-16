@@ -29,7 +29,8 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
 
   return (
     <Accordion expanded={expanded} onChange={setExpanded}>
-      <Accordion.Summary className="px-3! gap-2! "
+      <Accordion.Summary
+        className="mx-1! my-0.5! gap-2! rounded-xl! px-3! transition-colors duration-150 hover:bg-[#f1f5f9]! dark:hover:bg-[#1B2027]!"
         before={
           <div className="flex size-10 shrink-0 items-center justify-center">
             <Image
