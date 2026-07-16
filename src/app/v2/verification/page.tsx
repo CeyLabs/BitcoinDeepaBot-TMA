@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useBackButton } from "@telegram-apps/sdk-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@telegram-apps/telegram-ui";
 
 const STEPS = [
   {
@@ -76,7 +76,13 @@ export default function VerificationIntroPage() {
 
         <div className="mt-auto flex flex-col gap-3">
           <p className="text-center text-[12px] text-[#64748b]">Takes less than 2 minutes</p>
-          <Button variant="primary" onClick={() => router.push("/verification")}>
+          <Button
+            mode="filled"
+            size="l"
+            stretched
+            style={{ borderRadius: "12px" }}
+            onClick={() => router.push("/verification")}
+          >
             Start Verification
           </Button>
         </div>

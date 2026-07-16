@@ -5,12 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBackButton } from "@telegram-apps/sdk-react";
+import { Button } from "@telegram-apps/telegram-ui";
 import { getAuthTokenFromStorage } from "@/lib/auth";
 import { usePayHereRedirect } from "@/lib/hooks";
 import { usePackages } from "@/hooks/query/usePackages";
 import { useUser } from "@/hooks/useUser";
 import { MOCK_PACKAGES } from "@/components/v2/dashboard/mock-wallet-data";
-import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/page-title";
 import { TogglePlan, type PlanDuration } from "@/components/ui/toggle-plan";
 import { PlanCard } from "@/components/ui/plan-card";
@@ -192,7 +192,10 @@ export default function ChoosePlanPage() {
 
       <div className="flex flex-col gap-3">
         <Button
-          variant="primary"
+          mode="filled"
+          size="l"
+          stretched
+          style={{ borderRadius: "12px" }}
           loading={payhereLinkLoading}
           disabled={!selectedPlanId || packagesLoading}
           onClick={handleSubscribe}

@@ -53,7 +53,7 @@ export async function POST(request: Request) {
                             message:
                                 "Please complete KYC verification before proceeding with payment",
                             kycStatus: kycData.status,
-                            redirectTo: "/verification",
+                            redirectTo: "/v2/verification",
                         },
                         { status: 403 }
                     );
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
                     {
                         error: "KYC Verification Required",
                         message: "Please complete KYC verification before proceeding with payment",
-                        redirectTo: "/verification",
+                        redirectTo: "/v2/verification",
                     },
                     { status: 403 }
                 );
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
                 {
                     error: "KYC Verification Required",
                     message: "Please complete KYC verification before proceeding with payment",
-                    redirectTo: "/verification",
+                    redirectTo: "/v2/verification",
                 },
                 { status: 403 }
             );
