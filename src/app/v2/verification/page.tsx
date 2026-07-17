@@ -127,8 +127,11 @@ export default function VerificationIntroPage() {
     }
   }, [status, router]);
 
+  // TODO: remove this bypass once desktop testing is done — mobile-only gate must come back.
+  const ALLOW_DESKTOP_TESTING = true;
+
   const initiateVerification = () => {
-    if (!isMobile) {
+    if (!isMobile && !ALLOW_DESKTOP_TESTING) {
       setShowMobileWarning(true);
       return;
     }
@@ -137,7 +140,7 @@ export default function VerificationIntroPage() {
   };
 
   const continueVerification = () => {
-    if (!isMobile) {
+    if (!isMobile && !ALLOW_DESKTOP_TESTING) {
       setShowMobileWarning(true);
       return;
     }
@@ -209,8 +212,8 @@ export default function VerificationIntroPage() {
         )}
 
         {showSteps && (
-          <p className="text-center text-[14px] font-medium text-white">
-            Your Data is Encrypted and never Shared
+          <p className="text-center text-sm font-medium text-white">
+            Your Data is Secured and never Shared
           </p>
         )}
 

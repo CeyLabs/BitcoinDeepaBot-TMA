@@ -40,7 +40,7 @@ export function PlanHeroCard({
     return (
       <div className="flex w-full flex-col gap-3">
         <div className="flex items-center justify-between">
-          <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+          <p className="text-sm font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
             Manage My Plan
           </p>
           <Link
@@ -72,7 +72,7 @@ export function PlanHeroCard({
   return (
     <div className="flex w-full flex-col gap-3">
       <div className="flex items-center justify-between">
-        <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+        <p className="text-sm font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
           Manage My Plan
         </p>
         <Link href="/v2/plans/choose" className="text-[12px] font-semibold text-[#fa7119]">

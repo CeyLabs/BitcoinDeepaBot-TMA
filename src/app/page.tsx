@@ -96,7 +96,7 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
           </Button>
         </Link>
 
-        <Link href="/v2/dashboard" className="block">
+        <Link href="/v2/verification" className="block">
           <Cell
             before={<Image src="/emoji/bitcoin.svg" alt="Bitcoin" width={40} height={40}/>}
             after={<Navigation />}
@@ -110,20 +110,19 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
           </Cell>
         </Link>
 
-        <Cell
-          before={<Image src="/emoji/gift.svg" alt="Gift" width={40} height={40} />}
-          // subtitle="Send a bitcoin subscription to a friend"
-          after={<Navigation />}
-          onClick={() => window.open(TELEGRAM_BOT_URL, "_blank", "noopener,noreferrer")}
-          style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
-          className="gap-2! px-4! rounded-[12px] border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
-        >
-          <p className="flex flex-col items-start font-semibold text-[#1b2027] dark:text-white pl-1">
-            Send a Gift
-            <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">Send a bitcoin subscription to a friend</span>
-          </p>
-
-        </Cell>
+        <Link href="/v2/verification" className="block">
+          <Cell
+            before={<Image src="/emoji/gift.svg" alt="Gift" width={40} height={40} />}
+            after={<Navigation />}
+            style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
+            className="gap-2! px-4! rounded-[12px] border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
+          >
+            <p className="flex flex-col items-start font-semibold text-[#1b2027] dark:text-white pl-1">
+              Send a Gift
+              <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">Send a bitcoin subscription to a friend</span>
+            </p>
+          </Cell>
+        </Link>
       </div>
 
       <div className="mt-5 flex flex-col items-center gap-2">

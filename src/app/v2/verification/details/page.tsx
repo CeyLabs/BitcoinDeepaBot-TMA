@@ -45,7 +45,7 @@ export default function VerificationDetailsPage() {
       phone: "",
       address: "",
       city: "",
-      country: "",
+      country: "Sri Lanka",
     },
   });
 
@@ -89,14 +89,23 @@ export default function VerificationDetailsPage() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col gap-3">
-          <div className="flex flex-col gap-3">
+          <div
+            className="flex flex-col gap-3"
+            style={{ "--tgui--bg_color": "#0b0f14" } as React.CSSProperties}
+          >
             {FIELDS.map((field) => (
-              <div key={field.name}>
+              <div key={field.name} className="w-full">
                 <Input
                   type={field.type}
                   status={errors[field.name] ? "error" : undefined}
-                  header={field.label}
+                  header={
+                    <span className="inline-flex items-center gap-1">
+                      {field.label}
+                      <span className="size-1 rounded-full bg-[#f13131]" />
+                    </span>
+                  }
                   placeholder={field.placeholder}
+                  className="w-full p-0"
                   {...register(field.name)}
                 />
                 {errors[field.name] && (
@@ -129,7 +138,7 @@ export default function VerificationDetailsPage() {
             >
               Start Verification
             </Button>
-            <p className="text-center text-[12px] text-[#64748b]">
+            <p className="text-center text-xs text-muted">
               Your Data is Encrypted and never Shared
             </p>
           </div>
