@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useBackButton, useLaunchParams } from "@telegram-apps/sdk-react";
 import { Button, Modal } from "@telegram-apps/telegram-ui";
+import { Drawer } from "@xelene/vaul-with-scroll-fix";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useTelegramPlatform } from "@/hooks/useTelegramPlatform";
 import { useKycStatus, useKycInitiate } from "@/hooks/query/useKyc";
 import type { User } from "@/lib/types";
@@ -284,21 +286,18 @@ export default function VerificationIntroPage() {
         header={<Modal.Header>Use Mobile Device</Modal.Header>}
       >
         <div className="flex flex-col gap-5 px-5 pb-6 pt-2">
+          <VisuallyHidden asChild>
+            <Drawer.Title>Use Mobile Device</Drawer.Title>
+          </VisuallyHidden>
           <div className="flex flex-col items-center gap-3 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#fa7119]/10">
-              <svg
-                className="h-8 w-8 text-[#fa7119]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
+            <div className="flex size-48 items-center justify-center rounded-full">
+              <Image
+                src="/emoji/animated/exclamation-mark.webp"
+                alt="Warning"
+                width={120}
+                height={120}
+                unoptimized
+              />
             </div>
             <p className="text-[14px] leading-4.5 text-[#94a3b8]">
               Identity verification works best on mobile devices for security and camera access.
