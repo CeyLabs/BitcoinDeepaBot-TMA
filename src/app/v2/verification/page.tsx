@@ -5,15 +5,20 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useBackButton, useLaunchParams } from "@telegram-apps/sdk-react";
 import { Button, Modal } from "@telegram-apps/telegram-ui";
+import { X } from "lucide-react";
 import { Drawer } from "@xelene/vaul-with-scroll-fix";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useTelegramPlatform } from "@/hooks/useTelegramPlatform";
-import { useKycStatus, useKycInitiate } from "@/hooks/query/useKyc";
+import { useKycStatus } from "@/hooks/query/useKyc";
 import type { User } from "@/lib/types";
 
 type VerificationStatus = NonNullable<User["kycStatus"]> | null;
 
 const STEPS = [
+  {
+    title: "Fill Your Details",
+    description: "Provide your basic personal information",
+  },
   {
     title: "Capture Your ID",
     description: "National ID, Passport or Driving License",
@@ -101,11 +106,9 @@ export default function VerificationIntroPage() {
   const [showMobileWarning, setShowMobileWarning] = useState(false);
 
   const { data: kycData, refetch: refetchKycStatus } = useKycStatus();
-  const kycInitiate = useKycInitiate();
 
   const status: VerificationStatus = kycData?.status ?? null;
   const verificationUrl = kycData?.url;
-  const error = kycInitiate.error instanceof Error ? kycInitiate.error.message : null;
 
   useEffect(() => {
     backButton.show();
@@ -119,7 +122,7 @@ export default function VerificationIntroPage() {
 
   useEffect(() => {
     if (status === "APPROVED") {
-      const timeout = setTimeout(() => router.push("/v2/dashboard/plans/choose"), 2000);
+      const timeout = setTimeout(() => router.push("/v2/plans/choose"), 2000);
       return () => clearTimeout(timeout);
     }
   }, [status, router]);
@@ -130,21 +133,7 @@ export default function VerificationIntroPage() {
       return;
     }
 
-    kycInitiate.mutate(
-      {
-        user_id: userData?.id,
-        username: userData?.username,
-        first_name: userData?.firstName,
-        last_name: userData?.lastName,
-      },
-      {
-        onSuccess: (result) => {
-          if (result.url) {
-            window.location.href = result.url;
-          }
-        },
-      }
-    );
+    router.push("/v2/verification/details");
   };
 
   const continueVerification = () => {
@@ -219,15 +208,6 @@ export default function VerificationIntroPage() {
           </div>
         )}
 
-        {error && (
-          <div className="rounded-2xl bg-[#f13131]/10 px-4 py-4">
-            <p className="text-[13px] font-semibold leading-4 text-[#f13131]">
-              Verification Error
-            </p>
-            <p className="mt-1 text-[13px] leading-4.5 text-[#94a3b8]">{error}</p>
-          </div>
-        )}
-
         {showSteps && (
           <p className="text-center text-[14px] font-medium text-white">
             Your Data is Encrypted and never Shared
@@ -245,7 +225,7 @@ export default function VerificationIntroPage() {
               size="l"
               stretched
               style={{ borderRadius: "12px" }}
-              onClick={() => router.push("/v2/dashboard/plans/choose")}
+              onClick={() => router.push("/v2/plans/choose")}
             >
               Continue to Plans
             </Button>
@@ -265,8 +245,7 @@ export default function VerificationIntroPage() {
               size="l"
               stretched
               style={{ borderRadius: "12px" }}
-              loading={kycInitiate.isPending}
-              disabled={kycInitiate.isPending || (showSteps && !userData)}
+              disabled={showSteps && !userData}
               onClick={initiateVerification}
             >
               {status === "DECLINED" ||
@@ -283,14 +262,24 @@ export default function VerificationIntroPage() {
       <Modal
         open={showMobileWarning}
         onOpenChange={setShowMobileWarning}
-        header={<Modal.Header>Use Mobile Device</Modal.Header>}
+        header={
+          <Modal.Header
+            after={
+              <Modal.Close>
+                <X size={20} className="text-[#94a3b8]" />
+              </Modal.Close>
+            }
+          >
+            Use Mobile Device
+          </Modal.Header>
+        }
       >
         <div className="flex flex-col gap-5 px-5 pb-6 pt-2">
           <VisuallyHidden asChild>
             <Drawer.Title>Use Mobile Device</Drawer.Title>
           </VisuallyHidden>
           <div className="flex flex-col items-center gap-3 text-center">
-            <div className="flex size-48 items-center justify-center rounded-full">
+            <div className="flex size-44 items-center justify-center rounded-full">
               <Image
                 src="/emoji/animated/exclamation-mark.webp"
                 alt="Warning"
@@ -299,6 +288,7 @@ export default function VerificationIntroPage() {
                 unoptimized
               />
             </div>
+            <h2 className="text-[16px] font-bold leading-5 text-white">Use Mobile Device</h2>
             <p className="text-[14px] leading-4.5 text-[#94a3b8]">
               Identity verification works best on mobile devices for security and camera access.
             </p>

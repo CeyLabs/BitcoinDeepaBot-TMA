@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { Card, Badge, Button, Cell, Navigation } from "@telegram-apps/telegram-ui";
@@ -38,16 +39,24 @@ export function PlanHeroCard({
   if (!subscription) {
     return (
       <div className="flex w-full flex-col gap-3">
-        <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
-          Manage My Plan
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+            Manage My Plan
+          </p>
+          <Link
+            href="/v2/plans/choose"
+            className="text-[12px] font-semibold text-[#fa7119]"
+          >
+            View Plans
+          </Link>
+        </div>
 
         <Cell
           before={<Image src="/emoji/notepad.svg" alt="" width={36} height={36} className="size-9" />}
           after={<Navigation />}
           style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
           className="gap-2! px-4! rounded-xl border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
-          onClick={() => router.push("/v2/dashboard/plans/choose")}
+          onClick={() => router.push("/v2/plans/choose")}
         >
           <p className="flex flex-col items-start pl-1 font-semibold text-[#1b2027] dark:text-white">
             No Active Plan
@@ -62,9 +71,14 @@ export function PlanHeroCard({
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
-        Manage My Plan
-      </p>
+      <div className="flex items-center justify-between">
+        <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+          Manage My Plan
+        </p>
+        <Link href="/v2/plans/choose" className="text-[12px] font-semibold text-[#fa7119]">
+          View Plans
+        </Link>
+      </div>
 
       <Card
         type="plain"
@@ -126,7 +140,7 @@ export function PlanHeroCard({
                   "--tgui--button--hovered-opacity": 0.3,
                 } as React.CSSProperties
               }
-              onClick={() => router.push("/v2/dashboard/plans/choose")}
+              onClick={() => router.push("/v2/plans/choose")}
             >
               <span className="flex items-center gap-1 whitespace-nowrap text-[12px] font-medium text-white">
                 Change Plan
