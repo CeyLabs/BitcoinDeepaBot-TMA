@@ -82,8 +82,8 @@ const STATUS_CONTENT: Record<
     image:
       "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Objects/Hourglass%20Not%20Done.webp",
     alt: "Under Review",
-    title: "Under Review",
-    description: "Your verification is under manual review. This may take 24-48 hours.",
+    title: "Verification Under Review",
+    description: "You have completed the verification",
   },
 };
 
@@ -211,6 +211,20 @@ export default function VerificationIntroPage() {
           </div>
         )}
 
+        {status === "IN_REVIEW" && (
+          <div className="flex flex-col items-center gap-2 rounded-2xl bg-[#12161d] px-4 py-5 text-center">
+            <p className="text-[15px] font-bold leading-5 text-[#fa7119]">
+              We&apos;re reviewing your documents.
+            </p>
+            <p className="text-[16px] font-bold leading-5 text-white">
+              This usually takes up to 24 hours.
+            </p>
+            <p className="text-[13px] leading-4.5 text-[#94a3b8]">
+              You&apos;ll receive a notification once approved.
+            </p>
+          </div>
+        )}
+
         {showSteps && (
           <p className="text-center text-sm font-medium text-white">
             Your Data is Secured and never Shared
@@ -242,7 +256,24 @@ export default function VerificationIntroPage() {
             >
               {verificationUrl ? "Continue Verification" : "Check Verification Status"}
             </Button>
-          ) : status === "IN_REVIEW" ? null : (
+          ) : status === "IN_REVIEW" ? (
+            <Button
+              mode="outline"
+              size="l"
+              stretched
+              style={
+                {
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  "--tgui--outline": "#fa7119",
+                  "--tgui--plain_foreground": "#fa7119",
+                } as React.CSSProperties
+              }
+              onClick={() => router.push("/v2/dashboard")}
+            >
+              Back to Home
+            </Button>
+          ) : (
             <Button
               mode="filled"
               size="l"

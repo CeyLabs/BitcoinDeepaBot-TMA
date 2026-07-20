@@ -108,7 +108,7 @@ export default function ChoosePlanPage() {
   };
 
   return (
-    <div className="flex w-full flex-col gap-5 pb-4">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pb-4 pt-5">
       {currentPlan ? (
         <PageTitle title="Manage your Plan" subtitle="View or switch to another plan" />
       ) : (
