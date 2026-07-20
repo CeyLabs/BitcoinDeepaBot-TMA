@@ -6,7 +6,7 @@ import { useBackButton, useLaunchParams } from "@telegram-apps/sdk-react";
 import { Button, Input } from "@telegram-apps/telegram-ui";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useKycInitiate } from "@/hooks/query/useKyc";
+import { useKycInitiate, useUpdateProfile } from "@/hooks/query/useKyc";
 import { createUserSchema, type CreateUserFormData } from "@/lib/validations";
 
 const FIELDS: Array<{
@@ -30,6 +30,7 @@ export default function VerificationDetailsPage() {
   const launchParams = useLaunchParams();
   const userData = launchParams.initData?.user;
   const kycInitiate = useKycInitiate();
+  const updateProfile = useUpdateProfile();
 
   const {
     register,
@@ -59,20 +60,40 @@ export default function VerificationDetailsPage() {
     };
   }, [backButton, router]);
 
-  const error = kycInitiate.error instanceof Error ? kycInitiate.error.message : null;
+  const error =
+    updateProfile.error instanceof Error
+      ? updateProfile.error.message
+      : kycInitiate.error instanceof Error
+        ? kycInitiate.error.message
+        : null;
 
   const onSubmit = (formData: CreateUserFormData) => {
-    kycInitiate.mutate(
+    updateProfile.mutate(
       {
-        user_id: userData?.id,
-        username: userData?.username,
-        ...formData,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        country: formData.country,
       },
       {
-        onSuccess: (result) => {
-          if (result.url) {
-            window.location.href = result.url;
-          }
+        onSuccess: () => {
+          kycInitiate.mutate(
+            {
+              user_id: userData?.id,
+              username: userData?.username,
+              ...formData,
+            },
+            {
+              onSuccess: (result) => {
+                if (result.url) {
+                  window.location.href = result.url;
+                }
+              },
+            }
+          );
         },
       }
     );
@@ -133,8 +154,8 @@ export default function VerificationDetailsPage() {
               size="l"
               stretched
               style={{ borderRadius: "12px" }}
-              loading={kycInitiate.isPending}
-              disabled={kycInitiate.isPending || !isValid}
+              loading={updateProfile.isPending || kycInitiate.isPending}
+              disabled={updateProfile.isPending || kycInitiate.isPending || !isValid}
             >
               Start Verification
             </Button>

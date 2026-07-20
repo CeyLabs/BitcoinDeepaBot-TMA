@@ -53,3 +53,26 @@ export function useKycInitiate() {
       ),
   });
 }
+
+interface UpdateProfilePayload {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  country: string;
+}
+
+export function useUpdateProfile() {
+  const authToken = getAuthTokenFromStorage();
+
+  return useMutation({
+    mutationFn: (payload: UpdateProfilePayload) =>
+      fetchy.post<{ success: boolean }, UpdateProfilePayload>(
+        "/api/user/profile",
+        payload,
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      ),
+  });
+}
