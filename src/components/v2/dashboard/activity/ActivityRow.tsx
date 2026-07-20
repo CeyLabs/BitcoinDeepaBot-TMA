@@ -130,11 +130,13 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
           <div className="flex flex-col items-center gap-1 rounded-[12px] bg-[#e8edfc] px-3 py-1 dark:bg-white/5">
             <p className="text-xs leading-4 text-[#475569]">BTC price at transaction time</p>
             <p className="text-sm leading-5">
-              <span className="font-bold text-[#0088FF]">USD</span>{" "}
-              <span className="font-bold">
-                {item.settlement.btcPriceUsd.toFixed(2)}
-              </span>
-              <span className="text-[#64748b]"> / BTC · </span>
+              {item.settlement.btcPriceUsd !== undefined && (
+                <>
+                  <span className="font-bold text-[#0088FF]">USD</span>{" "}
+                  <span className="font-bold">{item.settlement.btcPriceUsd.toFixed(2)}</span>
+                  <span className="text-[#64748b]"> / BTC · </span>
+                </>
+              )}
               <span className="font-bold text-[#0088FF]">LKR</span>{" "}
               <span className="font-bold">
                 {fmtPriceCompact(item.settlement.btcPriceLkr)}

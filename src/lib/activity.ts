@@ -1,4 +1,5 @@
 import type { ActivityItem, ActivityType } from "@/lib/types";
+import type { DcaTransaction } from "@/hooks/query/useTransactionHistory";
 import { fmtActivityTime } from "@/lib/formatters";
 
 export const ACTIVITY_ICON: Record<ActivityType, string> = {
@@ -45,6 +46,26 @@ export function getActivityCategory(type: ActivityType): ActivityCategory {
     if (type === "membership_reward") return "plans";
     if (TRANSACTION_TYPES.includes(type)) return "transactions";
     return "all";
+}
+
+// A successful DCA purchase credits the user with sats as their membership
+// reward for that period — maps 1:1 onto the "membership_reward" activity type.
+export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityItem {
+    return {
+        id: tx.id,
+        type: "membership_reward",
+        timestamp: tx.created_at,
+        sats: tx.satoshis_purchased,
+        lkr: tx.package_amount,
+        statusDot: "green",
+        settlement: {
+            status: "Settled",
+            settledOn: tx.created_at,
+            btcSats: tx.satoshis_purchased,
+            btcPriceLkr: tx.btc_price_at_purchase,
+            transactionId: tx.id,
+        },
+    };
 }
 
 export function getActivitySubtitle(item: ActivityItem): string {

@@ -112,7 +112,7 @@ export interface ActivityItem {
         status: string;
         settledOn: string;
         btcSats: number;
-        btcPriceUsd: number;
+        btcPriceUsd?: number;
         btcPriceLkr: number;
         transactionId: string;
     };
