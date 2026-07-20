@@ -10,7 +10,6 @@ import { getAuthTokenFromStorage } from "@/lib/auth";
 import { usePayHereRedirect } from "@/lib/hooks";
 import { usePackages } from "@/hooks/query/usePackages";
 import { useUser } from "@/hooks/useUser";
-import { MOCK_PACKAGES } from "@/components/v2/dashboard/mock-wallet-data";
 import { PageTitle } from "@/components/ui/page-title";
 import { TogglePlan, type PlanDuration } from "@/components/ui/toggle-plan";
 import { PlanCard } from "@/components/ui/plan-card";
@@ -39,11 +38,7 @@ export default function ChoosePlanPage() {
   const [payhereLinkLoading, setPayhereLinkLoading] = useState(false);
 
   const { data: fetchedPackages, isLoading: packagesLoading } = usePackages();
-  const usingMock = !packagesLoading && !fetchedPackages;
-  const packages = useMemo(
-    () => fetchedPackages ?? (usingMock ? MOCK_PACKAGES : EMPTY_PLANS),
-    [fetchedPackages, usingMock]
-  );
+  const packages = fetchedPackages ?? EMPTY_PLANS;
 
   useEffect(() => {
     backButton.show();

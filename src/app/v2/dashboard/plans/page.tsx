@@ -9,16 +9,11 @@ import { MOCK_GIFTS } from "@/components/v2/dashboard/plans/mock-data";
 import { useWalletSummary } from "@/hooks/query/useWalletSummary";
 import { useUser } from "@/hooks/useUser";
 import { useStore } from "@/lib/store";
-import { MOCK_WALLET_SUMMARY, MOCK_SUBSCRIPTION } from "@/components/v2/dashboard/mock-wallet-data";
 
 export default function PlansV2Page() {
   const { balanceVisible } = useStore();
-  const { subscription: realSubscription } = useUser();
-  const { data: rawSummary, isLoading } = useWalletSummary();
-
-  const usingMock = !isLoading && !rawSummary;
-  const summary = rawSummary ?? (usingMock ? MOCK_WALLET_SUMMARY : undefined);
-  const subscription = realSubscription ?? (usingMock ? MOCK_SUBSCRIPTION : null);
+  const { subscription } = useUser();
+  const { data: summary } = useWalletSummary();
 
   const currentValueLkr = summary
     ? Number(
