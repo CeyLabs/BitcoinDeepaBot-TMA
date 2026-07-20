@@ -11,6 +11,7 @@ export interface DcaTransaction {
   satoshis_purchased: number;
   btc_price_at_purchase: number;
   package_amount: number;
+  package_name?: string;
   status: string;
 }
 
@@ -20,6 +21,7 @@ interface RawTransaction {
   satoshis_purchased?: string | number;
   btc_price_at_purchase?: string | number;
   package_amount?: string | number;
+  package_name?: string;
   status: string;
 }
 
@@ -58,6 +60,7 @@ export function useTransactionHistory() {
           satoshis_purchased: toNumber(tx.satoshis_purchased),
           btc_price_at_purchase: toNumber(tx.btc_price_at_purchase),
           package_amount: toNumber(tx.package_amount),
+          package_name: tx.package_name,
           status: tx.status,
         }))
         .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());

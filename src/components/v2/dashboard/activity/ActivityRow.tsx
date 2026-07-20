@@ -58,13 +58,13 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
           <div className="flex items-center gap-1.5">
             <div className="flex flex-col items-end gap-0.5">
               <p
-                className={`text-[14px] leading-4 ${
+                className={`text-right text-[14px] leading-4 ${
                   isOutgoing ? "text-[#F45A5A]" : "text-[#218A54]"
                 }`}
               >
                 {mask(`${isOutgoing ? "-" : "+"}${fmtLkr(Math.abs(item.sats))} sats`)}
               </p>
-              <p className="text-xs leading-4 text-[#475569] dark:text-[#94A3B8]">
+              <p className="text-right text-xs leading-4 text-[#475569] dark:text-[#94A3B8]">
                 {mask(`≈ LKR ${fmtLkr(item.lkr)}`)}
               </p>
             </div>
