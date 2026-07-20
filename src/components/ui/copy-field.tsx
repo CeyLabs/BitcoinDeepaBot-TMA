@@ -19,14 +19,17 @@ export function CopyButton({ onCopy, copied = false, className }: CopyButtonProp
       size="s"
       aria-label={copied ? "Copied" : "Copy to clipboard"}
       onClick={onCopy}
-      className={cn("size-9! shrink-0! bg-white! dark:bg-[#1b2027]!", className)}
+      className={cn(
+        "size-9! shrink-0! flex! items-center! justify-center! bg-white! dark:bg-[#1b2027]! rounded-lg!",
+        className
+      )}
     >
       <span className="relative flex size-4 items-center justify-center">
         <Check
           size={16}
           strokeWidth={2}
           className={cn(
-            "absolute inset-0 text-[#25a761] transition-all duration-150",
+            "absolute inset-0 text-success transition-all duration-150",
             copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
           )}
         />

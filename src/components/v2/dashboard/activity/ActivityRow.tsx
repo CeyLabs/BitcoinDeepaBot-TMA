@@ -90,7 +90,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
         </span>
       </Accordion.Summary>
 
-      <Accordion.Content>
+      <Accordion.Content className="bg-white! dark:bg-[#0B0F14]!">
         <div className="flex flex-col gap-4 px-4 pb-4 pt-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col items-start ">
