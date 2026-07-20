@@ -43,11 +43,13 @@ export default function WalletV2Page() {
   const avgBtcPrice = summary?.dca.avg_btc_price ?? 0;
   const change24h = summary?.["24_hr_change"] ?? 0;
   const changeLkr = (change24h / 100) * totalLkr;
-  const currentBtcPrice = transactions?.length
-    ? transactions[transactions.length - 1].btc_price_at_purchase
-    : avgBtcPrice;
+  const currentBtcPrice =
+    summary?.current_btc_price?.lkr ??
+    (transactions?.length ? transactions[transactions.length - 1].btc_price_at_purchase : avgBtcPrice);
+  const currentBtcPriceUsd = usingMock
+    ? currentBtcPrice / MOCK_LKR_USD_RATE
+    : summary?.current_btc_price?.usd;
   const avgBtcPriceUsd = usingMock ? avgBtcPrice / MOCK_LKR_USD_RATE : undefined;
-  const currentBtcPriceUsd = usingMock ? currentBtcPrice / MOCK_LKR_USD_RATE : undefined;
 
   return (
     <div className="flex w-full flex-col gap-5">

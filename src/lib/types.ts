@@ -162,4 +162,8 @@ export interface DCSummary {
     total_lkr: string;
     currency: string;
     "24_hr_change": number;
+    current_btc_price?: {
+        usd: number;
+        lkr: number;
+    };
 }
