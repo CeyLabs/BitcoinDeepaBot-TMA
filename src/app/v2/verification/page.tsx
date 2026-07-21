@@ -45,43 +45,37 @@ const STATUS_CONTENT: Record<
   { image: string; alt: string; title: string; description: string }
 > = {
   APPROVED: {
-    image:
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Symbols/Check%20Mark%20Button.webp",
+    image: "/emoji/animated/party-popper.webp",
     alt: "Verification Success",
     title: "Verification Complete!",
     description: "Your identity has been successfully verified. Redirecting you now...",
   },
   DECLINED: {
-    image:
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Symbols/Cross%20Mark.webp",
+    image: "/emoji/animated/cross-mark.webp",
     alt: "Verification Failed",
     title: "Verification Declined",
     description: "Identity verification was declined. Please contact support or try again.",
   },
   EXPIRED: {
-    image:
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Symbols/Cross%20Mark.webp",
+    image: "/emoji/animated/bomb.webp",
     alt: "Verification Expired",
     title: "Verification Expired",
     description: "Your verification session has expired. Please start a new verification.",
   },
   ABANDONED: {
-    image:
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Symbols/Cross%20Mark.webp",
+    image: "/emoji/animated/coffin.webp",
     alt: "Verification Abandoned",
     title: "Verification Abandoned",
     description: "Verification process was abandoned. Please try again.",
   },
   KYC_EXPIRED: {
-    image:
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Symbols/Passport%20Control.webp",
+    image: "/emoji/animated/firecracker.webp",
     alt: "Verification Expired",
     title: "KYC Expired",
     description: "Your KYC verification has expired. Please complete verification again.",
   },
   IN_REVIEW: {
-    image:
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Objects/Hourglass%20Not%20Done.webp",
+    image: "/emoji/animated/microscope.webp",
     alt: "Under Review",
     title: "Verification Under Review",
     description: "You have completed the verification",
@@ -119,11 +113,8 @@ export default function VerificationIntroPage() {
     }
   }, [status, router]);
 
-  // TODO: remove this bypass once desktop testing is done — mobile-only gate must come back.
-  const ALLOW_DESKTOP_TESTING = true;
-
   const initiateVerification = () => {
-    if (!isMobile && !ALLOW_DESKTOP_TESTING) {
+    if (!isMobile) {
       setShowMobileWarning(true);
       return;
     }
@@ -132,7 +123,7 @@ export default function VerificationIntroPage() {
   };
 
   const continueVerification = () => {
-    if (!isMobile && !ALLOW_DESKTOP_TESTING) {
+    if (!isMobile) {
       setShowMobileWarning(true);
       return;
     }
@@ -167,10 +158,7 @@ export default function VerificationIntroPage() {
 
         <div className="flex justify-center py-2">
           <Image
-            src={
-              content?.image ??
-              "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Objects/Identification%20Card.webp"
-            }
+            src={content?.image ?? "/emoji/animated/id-card.webp"}
             alt={content?.alt ?? "Identity verification"}
             width={140}
             height={140}
