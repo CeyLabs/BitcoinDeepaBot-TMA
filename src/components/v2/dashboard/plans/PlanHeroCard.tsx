@@ -143,7 +143,7 @@ export function PlanHeroCard({
               onClick={() => router.push("/v2/plans/choose")}
             >
               <span className="flex items-center gap-1 whitespace-nowrap text-[12px] font-medium text-white">
-                Change Plan
+                Manage Plan
                 <ChevronRight size={14} />
               </span>
             </Button>
