@@ -136,14 +136,6 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
         </Link>
         <p className="text-[13px] text-muted-foreground">@{TELEGRAM_BOT_USERNAME}</p>
       </div>
-
-      {isExisting && process.env.NODE_ENV === "development" && (
-        <div className="mt-6 flex justify-center">
-          <Link href="/dev" className="text-xs text-black underline">
-            Component Preview (Dev)
-          </Link>
-        </div>
-      )}
     </div>
   );
 }

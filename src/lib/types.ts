@@ -152,6 +152,19 @@ export interface UserExistsResponse {
     error?: string;
 }
 
+export interface NewsArticle {
+    id: string;
+    title: string;
+    description: string;
+    thumbnailUrl?: string;
+    category: string;
+    readTimeMinutes: number;
+    publishedAt: string;
+    link: string;
+    content: string;
+    featured?: boolean;
+}
+
 export interface DCSummary {
     dca: {
         balance: number;
