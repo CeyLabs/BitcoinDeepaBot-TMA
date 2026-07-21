@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBackButton, initPopup } from "@telegram-apps/sdk-react";
 import { Button, Snackbar } from "@telegram-apps/telegram-ui";
@@ -20,6 +19,7 @@ import { TogglePlan, type PlanDuration } from "@/components/ui/toggle-plan";
 import { PlanCard } from "@/components/ui/plan-card";
 import { getPlanIconSrc } from "@/components/v2/dashboard/wallet/PlanSummaryCard";
 import type { SubscriptionPlan } from "@/lib/types";
+import Link from "next/link";
 
 function fmtLkr(n: number) {
   return `Rs ${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
@@ -182,21 +182,10 @@ export default function ChoosePlanPage() {
             perYear={`Per Year ${fmtLkr(perMonthAmount(currentPlan) * 12)}`}
             active
           />
-
-          <Button
-            mode="plain"
-            size="s"
-            stretched
-            loading={cancelSubscription.isPending}
-            onClick={handleCancel}
-            className="text-[#F45A5A]!"
-          >
-            Cancel Plan
-          </Button>
         </div>
       )}
 
-      <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+      <p className="text-sm font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
         {currentPlan ? "Choose a Different Plan" : "Select a Plan"}
       </p>
 
@@ -259,16 +248,37 @@ export default function ChoosePlanPage() {
           Continue with Selected Plan
         </Button>
 
+        {currentPlan && (
+          <Button
+            mode="outline"
+            stretched
+            loading={cancelSubscription.isPending}
+            onClick={handleCancel}
+            style={
+              {
+                borderRadius: "12px",
+                overflow: "hidden",
+                "--tgui--outline": "#F13131",
+                "--tgui--plain_foreground": "#F13131",
+              } as React.CSSProperties
+            }
+          >
+            Cancel Current Plan
+          </Button>
+        )}
+
         <p className="px-2 text-center text-[12px] text-[#64748b]">
           Activate your Bitcoin දීප Membership today, grow with the Community, cancel anytime.
         </p>
 
-        <Link
+        {!currentPlan && (
+          <Link
           href="/v2/dashboard"
           className="text-center text-[14px] font-semibold text-[#fa7119]"
         >
           Skip to Wallet
         </Link>
+        )       }
       </div>
 
       {snackbar && (
