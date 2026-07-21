@@ -5,7 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBackButton, initPopup } from "@telegram-apps/sdk-react";
-import { Button } from "@telegram-apps/telegram-ui";
+import { Button, Snackbar } from "@telegram-apps/telegram-ui";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 import { getAuthTokenFromStorage } from "@/lib/auth";
 import { usePayHereRedirect } from "@/lib/hooks";
 import { usePackages } from "@/hooks/query/usePackages";
@@ -39,6 +40,11 @@ export default function ChoosePlanPage() {
   const [duration, setDuration] = useState<PlanDuration>("weekly");
   const [selectedId, setSelectedId] = useState<string | undefined>();
   const [payhereLinkLoading, setPayhereLinkLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{
+    tone: "success" | "error";
+    title: string;
+    description: string;
+  } | null>(null);
 
   const { data: fetchedPackages, isLoading: packagesLoading } = usePackages();
   const packages = fetchedPackages ?? EMPTY_PLANS;
@@ -118,9 +124,18 @@ export default function ChoosePlanPage() {
 
     try {
       await cancelSubscription.mutateAsync();
-      router.push("/v2/dashboard/plans");
-    } catch {
-      // surfaced below via cancelSubscription.error
+      setSnackbar({
+        tone: "success",
+        title: "Plan Cancelled",
+        description: "Your membership has been cancelled successfully.",
+      });
+      setTimeout(() => router.push("/v2/dashboard/plans"), 1500);
+    } catch (err) {
+      setSnackbar({
+        tone: "error",
+        title: "Cancellation Failed",
+        description: err instanceof Error ? err.message : "Failed to cancel plan",
+      });
     }
   };
 
@@ -154,12 +169,6 @@ export default function ChoosePlanPage() {
             perYear={`Per Year ${fmtLkr(perMonthAmount(currentPlan) * 12)}`}
             active
           />
-
-          {cancelSubscription.error && (
-            <p className="text-center text-[13px] text-[#F45A5A]">
-              {cancelSubscription.error.message}
-            </p>
-          )}
 
           <Button
             mode="plain"
@@ -248,6 +257,28 @@ export default function ChoosePlanPage() {
           Skip to Wallet
         </Link>
       </div>
+
+      {snackbar && (
+        <Snackbar
+          onClose={() => setSnackbar(null)}
+          description={snackbar.description}
+          style={
+            {
+              "--tgui--surface_dark": "var(--color-surface-glass)",
+              "--tgui--white": "var(--color-tma-text-primary)",
+            } as React.CSSProperties
+          }
+          before={
+            snackbar.tone === "success" ? (
+              <CheckCircle2 size={20} className="text-success" />
+            ) : (
+              <AlertCircle size={20} className="text-[#F45A5A]" />
+            )
+          }
+        >
+          {snackbar.title}
+        </Snackbar>
+      )}
     </div>
   );
 }
