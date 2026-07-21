@@ -135,7 +135,7 @@ export default function ChoosePlanPage() {
     }
   };
 
-  if (kycLoading) return <LoadingPage fullscreen={false} />;
+  if (kycLoading) return <LoadingPage />;
   if (kyc?.status !== "APPROVED") {
     return (
       <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pb-4 pt-5">

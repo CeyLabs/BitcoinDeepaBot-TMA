@@ -19,7 +19,7 @@ export default function PlansV2Page() {
   const { subscription } = useUser();
   const { data: summary } = useWalletSummary();
 
-  if (kycLoading) return <LoadingPage fullscreen={false} />;
+  if (kycLoading) return <LoadingPage />;
   if (kyc?.status !== "APPROVED") return <KycRequiredNotice />;
 
   const currentValueLkr = summary
