@@ -12,6 +12,9 @@ import { usePayHereRedirect } from "@/lib/hooks";
 import { usePackages } from "@/hooks/query/usePackages";
 import { useCancelSubscription } from "@/hooks/query/useCancelSubscription";
 import { useUser } from "@/hooks/useUser";
+import { useKycStatus } from "@/hooks/query/useKyc";
+import LoadingPage from "@/components/LoadingPage";
+import { KycRequiredNotice } from "@/components/v2/dashboard/plans/KycRequiredNotice";
 import { PageTitle } from "@/components/ui/page-title";
 import { TogglePlan, type PlanDuration } from "@/components/ui/toggle-plan";
 import { PlanCard } from "@/components/ui/plan-card";
@@ -29,6 +32,7 @@ function perMonthAmount(plan: SubscriptionPlan) {
 const EMPTY_PLANS: SubscriptionPlan[] = [];
 
 export default function ChoosePlanPage() {
+  const { data: kyc, isLoading: kycLoading } = useKycStatus();
   const router = useRouter();
   const backButton = useBackButton();
   const redirectToPayHereViaPage = usePayHereRedirect();
@@ -138,6 +142,15 @@ export default function ChoosePlanPage() {
       });
     }
   };
+
+  if (kycLoading) return <LoadingPage fullscreen={false} />;
+  if (kyc?.status !== "APPROVED") {
+    return (
+      <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pb-4 pt-5">
+        <KycRequiredNotice />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pb-4 pt-5">

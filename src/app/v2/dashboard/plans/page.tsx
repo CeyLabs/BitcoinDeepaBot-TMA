@@ -6,14 +6,21 @@ import { PlanHeroCard } from "@/components/v2/dashboard/plans/PlanHeroCard";
 import { GiftPlansComingSoon } from "@/components/v2/dashboard/plans/GiftPlanActions";
 import { ManageGiftsSection } from "@/components/v2/dashboard/plans/ManageGiftsSection";
 import { MOCK_GIFTS } from "@/components/v2/dashboard/plans/mock-data";
+import { KycRequiredNotice } from "@/components/v2/dashboard/plans/KycRequiredNotice";
 import { useWalletSummary } from "@/hooks/query/useWalletSummary";
+import { useKycStatus } from "@/hooks/query/useKyc";
 import { useUser } from "@/hooks/useUser";
+import LoadingPage from "@/components/LoadingPage";
 import { useStore } from "@/lib/store";
 
 export default function PlansV2Page() {
+  const { data: kyc, isLoading: kycLoading } = useKycStatus();
   const { balanceVisible } = useStore();
   const { subscription } = useUser();
   const { data: summary } = useWalletSummary();
+
+  if (kycLoading) return <LoadingPage fullscreen={false} />;
+  if (kyc?.status !== "APPROVED") return <KycRequiredNotice />;
 
   const currentValueLkr = summary
     ? Number(
