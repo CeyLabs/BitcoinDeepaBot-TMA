@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAuthTokenFromStorage } from "@/lib/auth";
 import fetchy from "@/lib/fetchy";
+import { queryKeys } from "@/lib/query-keys";
 import type { Subscription } from "@/lib/types";
 
 // Shape actually returned by the external API — package name/price are
@@ -30,7 +31,7 @@ export function useSubscriptionCurrent() {
   const authToken = getAuthTokenFromStorage();
 
   return useQuery<Subscription | null>({
-    queryKey: ["subscription-current"],
+    queryKey: queryKeys.subscriptionCurrent,
     queryFn: async () => {
       const data = await fetchy.get<SubscriptionCurrentResponse>("/api/subscription/current", {
         headers: { Authorization: `Bearer ${authToken}` },

@@ -4,11 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useBackButton } from "@telegram-apps/sdk-react";
+import { useBackButton, initPopup } from "@telegram-apps/sdk-react";
 import { Button } from "@telegram-apps/telegram-ui";
 import { getAuthTokenFromStorage } from "@/lib/auth";
 import { usePayHereRedirect } from "@/lib/hooks";
 import { usePackages } from "@/hooks/query/usePackages";
+import { useCancelSubscription } from "@/hooks/query/useCancelSubscription";
 import { useUser } from "@/hooks/useUser";
 import { PageTitle } from "@/components/ui/page-title";
 import { TogglePlan, type PlanDuration } from "@/components/ui/toggle-plan";
@@ -32,6 +33,8 @@ export default function ChoosePlanPage() {
   const redirectToPayHereViaPage = usePayHereRedirect();
   const authToken = getAuthTokenFromStorage();
   const { subscription } = useUser();
+  const popup = initPopup();
+  const cancelSubscription = useCancelSubscription();
 
   const [duration, setDuration] = useState<PlanDuration>("weekly");
   const [selectedId, setSelectedId] = useState<string | undefined>();
@@ -102,6 +105,25 @@ export default function ChoosePlanPage() {
     }
   };
 
+  const handleCancel = async () => {
+    const buttonId = await popup.open({
+      title: "Cancel Plan",
+      message: "Your membership rewards will stop accruing immediately. This can't be undone.",
+      buttons: [
+        { id: "cancel", type: "destructive", text: "Cancel Plan" },
+        { id: "keep", type: "cancel" },
+      ],
+    });
+    if (buttonId !== "cancel") return;
+
+    try {
+      await cancelSubscription.mutateAsync();
+      router.push("/v2/dashboard/plans");
+    } catch {
+      // surfaced below via cancelSubscription.error
+    }
+  };
+
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pb-4 pt-5">
       {currentPlan ? (
@@ -132,6 +154,23 @@ export default function ChoosePlanPage() {
             perYear={`Per Year ${fmtLkr(perMonthAmount(currentPlan) * 12)}`}
             active
           />
+
+          {cancelSubscription.error && (
+            <p className="text-center text-[13px] text-[#F45A5A]">
+              {cancelSubscription.error.message}
+            </p>
+          )}
+
+          <Button
+            mode="plain"
+            size="s"
+            stretched
+            loading={cancelSubscription.isPending}
+            onClick={handleCancel}
+            className="text-[#F45A5A]!"
+          >
+            Cancel Plan
+          </Button>
         </div>
       )}
 
