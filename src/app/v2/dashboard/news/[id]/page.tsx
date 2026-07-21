@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { Clock } from "lucide-react";
-import { NewsDetailBackButton } from "@/components/v2/dashboard/news/NewsDetailBackButton";
-import { NewsArticleCard } from "@/components/v2/dashboard/news/NewsListSection";
+import { NewsDetailBackButton, NewsArticleCard } from "@/components/v2/dashboard/news/NewsListSection";
 import { fmtShortDate } from "@/lib/formatters";
 import { getNewsArticles } from "@/lib/news";
 
@@ -55,9 +54,9 @@ export default async function NewsArticleDetailPage({
       />
 
       {related.length > 0 && (
-        <div className="flex flex-col gap-3 pt-2">
+        <div className="flex flex-col gap-3 mt-8">
           <div className="h-px w-full bg-[#e2e8f0] dark:bg-[#334155]" />
-          <h2 className="text-[16px] font-bold leading-5 text-[#1b2027] dark:text-white">
+          <h2 className="font-bold leading-5 text-[#1b2027] dark:text-white">
             Related Articles
           </h2>
           <div className="flex w-full flex-col gap-3">

@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useBackButton, useLaunchParams } from "@telegram-apps/sdk-react";
+import { useLaunchParams } from "@telegram-apps/sdk-react";
 import { Button, Input } from "@telegram-apps/telegram-ui";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useKycInitiate, useUpdateProfile } from "@/hooks/query/useKyc";
+import { useTelegramBackButton } from "@/hooks/useTgBackButton";
 import { createUserSchema, type CreateUserFormData } from "@/lib/validations";
 
 const FIELDS: Array<{
@@ -26,7 +26,6 @@ const FIELDS: Array<{
 
 export default function VerificationDetailsPage() {
   const router = useRouter();
-  const backButton = useBackButton();
   const launchParams = useLaunchParams();
   const userData = launchParams.initData?.user;
   const kycInitiate = useKycInitiate();
@@ -50,15 +49,7 @@ export default function VerificationDetailsPage() {
     },
   });
 
-  useEffect(() => {
-    backButton.show();
-    const handleBackClick = () => router.push("/v2/verification");
-    backButton.on("click", handleBackClick);
-    return () => {
-      backButton.off("click", handleBackClick);
-      backButton.hide();
-    };
-  }, [backButton, router]);
+  useTelegramBackButton(() => router.push("/v2/verification"));
 
   const error =
     updateProfile.error instanceof Error

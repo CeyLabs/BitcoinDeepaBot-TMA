@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useBackButton, useLaunchParams } from "@telegram-apps/sdk-react";
+import { useLaunchParams } from "@telegram-apps/sdk-react";
 import { Button, Modal } from "@telegram-apps/telegram-ui";
 import { X } from "lucide-react";
 import { Drawer } from "@xelene/vaul-with-scroll-fix";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useTelegramPlatform } from "@/hooks/useTelegramPlatform";
 import { useKycStatus } from "@/hooks/query/useKyc";
+import { useTelegramBackButton } from "@/hooks/useTgBackButton";
 import type { User } from "@/lib/types";
 
 type VerificationStatus = NonNullable<User["kycStatus"]> | null;
@@ -99,7 +100,6 @@ const SHOW_STEPS_FOR: VerificationStatus[] = [
 
 export default function VerificationIntroPage() {
   const router = useRouter();
-  const backButton = useBackButton();
   const launchParams = useLaunchParams();
   const userData = launchParams.initData?.user;
   const { isMobile } = useTelegramPlatform();
@@ -110,15 +110,7 @@ export default function VerificationIntroPage() {
   const status: VerificationStatus = kycData?.status ?? null;
   const verificationUrl = kycData?.url;
 
-  useEffect(() => {
-    backButton.show();
-    const handleBackClick = () => router.push("/v2/dashboard");
-    backButton.on("click", handleBackClick);
-    return () => {
-      backButton.off("click", handleBackClick);
-      backButton.hide();
-    };
-  }, [backButton, router]);
+  useTelegramBackButton(() => router.push("/v2/dashboard"));
 
   useEffect(() => {
     if (status === "APPROVED") {

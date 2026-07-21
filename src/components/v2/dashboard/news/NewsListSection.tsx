@@ -2,10 +2,18 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Clock } from "lucide-react";
 import { Button } from "@telegram-apps/telegram-ui";
+import { useTelegramBackButton } from "@/hooks/useTgBackButton";
 import { cn } from "@/lib/cn";
 import type { NewsArticle } from "@/lib/types";
+
+export function NewsDetailBackButton() {
+  const router = useRouter();
+  useTelegramBackButton(() => router.push("/v2/dashboard/news"));
+  return null;
+}
 
 export function NewsArticleCard({ article }: { article: NewsArticle }) {
   return (

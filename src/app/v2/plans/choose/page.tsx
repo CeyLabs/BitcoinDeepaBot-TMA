@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useBackButton, initPopup } from "@telegram-apps/sdk-react";
+import { initPopup } from "@telegram-apps/sdk-react";
 import { Button, Snackbar } from "@telegram-apps/telegram-ui";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { getAuthTokenFromStorage } from "@/lib/auth";
@@ -12,6 +12,7 @@ import { usePackages } from "@/hooks/query/usePackages";
 import { useCancelSubscription } from "@/hooks/query/useCancelSubscription";
 import { useUser } from "@/hooks/useUser";
 import { useKycStatus } from "@/hooks/query/useKyc";
+import { useTelegramBackButton } from "@/hooks/useTgBackButton";
 import LoadingPage from "@/components/LoadingPage";
 import { KycRequiredNotice } from "@/components/v2/dashboard/plans/KycRequiredNotice";
 import { PageTitle } from "@/components/ui/page-title";
@@ -34,7 +35,6 @@ const EMPTY_PLANS: SubscriptionPlan[] = [];
 export default function ChoosePlanPage() {
   const { data: kyc, isLoading: kycLoading } = useKycStatus();
   const router = useRouter();
-  const backButton = useBackButton();
   const redirectToPayHereViaPage = usePayHereRedirect();
   const authToken = getAuthTokenFromStorage();
   const { subscription } = useUser();
@@ -53,15 +53,7 @@ export default function ChoosePlanPage() {
   const { data: fetchedPackages, isLoading: packagesLoading } = usePackages();
   const packages = fetchedPackages ?? EMPTY_PLANS;
 
-  useEffect(() => {
-    backButton.show();
-    const handleBackClick = () => router.push("/v2/dashboard/plans");
-    backButton.on("click", handleBackClick);
-    return () => {
-      backButton.off("click", handleBackClick);
-      backButton.hide();
-    };
-  }, [backButton, router]);
+  useTelegramBackButton(() => router.push("/v2/dashboard/plans"));
 
   const currentPlan = useMemo(
     () =>
