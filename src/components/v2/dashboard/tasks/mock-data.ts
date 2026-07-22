@@ -26,15 +26,15 @@ export const MOCK_TASKS: Task[] = [
     rewardSats: 50,
     frequency: "daily",
     icon: "/emoji/story.svg",
-  },
-  {
-    id: "task-send-gift-plan",
-    title: "Send a gift plan to a friend",
-    description: "Send a subscription to grow together",
-    rewardSats: 100,
-    frequency: "daily",
-    icon: "/emoji/gift.svg",
-  },
+  }
+  // {
+  //   id: "task-send-gift-plan",
+  //   title: "Send a gift plan to a friend",
+  //   description: "Send a subscription to grow together",
+  //   rewardSats: 100,
+  //   frequency: "daily",
+  //   icon: "/emoji/gift.svg",
+  // },
 ];
 
 export const MOCK_TASK_STATS = {
