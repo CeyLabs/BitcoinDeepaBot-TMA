@@ -6,18 +6,22 @@ import { getAuthTokenFromStorage } from "@/lib/auth";
 import fetchy from "@/lib/fetchy";
 
 export interface DcaTransaction {
+  id: string;
   created_at: string;
   satoshis_purchased: number;
   btc_price_at_purchase: number;
   package_amount: number;
+  package_name?: string;
   status: string;
 }
 
 interface RawTransaction {
+  payhere_pay_id: string;
   created_at: string;
   satoshis_purchased?: string | number;
   btc_price_at_purchase?: string | number;
   package_amount?: string | number;
+  package_name?: string;
   status: string;
 }
 
@@ -51,10 +55,12 @@ export function useTransactionHistory() {
       return raw
         .filter((tx) => tx.status === "SUCCESS")
         .map((tx) => ({
+          id: tx.payhere_pay_id,
           created_at: tx.created_at,
           satoshis_purchased: toNumber(tx.satoshis_purchased),
           btc_price_at_purchase: toNumber(tx.btc_price_at_purchase),
           package_amount: toNumber(tx.package_amount),
+          package_name: tx.package_name,
           status: tx.status,
         }))
         .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());

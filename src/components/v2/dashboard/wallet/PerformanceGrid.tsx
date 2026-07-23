@@ -3,7 +3,14 @@
 import Image from "next/image";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
 import { fmtLkr, fmtPriceCompact, fmtSatsCompact, maskDigits } from "@/lib/formatters";
-import { useTheme } from "@/app/context/theme";
+
+const CARD_SURFACE_STYLE = {
+  "--tgui--tertiary_bg_color": "var(--color-surface-primary)",
+} as React.CSSProperties;
+
+const CARD_SUCCESS_STYLE = {
+  "--tgui--tertiary_bg_color": "color-mix(in srgb, var(--color-success) 10%, transparent)",
+} as React.CSSProperties;
 
 export interface PerformanceGridProps {
   dcaSpent: number;
@@ -26,12 +33,10 @@ export function PerformanceGrid({
   currentBtcPriceUsd,
   visible,
 }: PerformanceGridProps) {
-  const { isDark } = useTheme();
   const mask = (v: string) => maskDigits(v, visible);
   const profitLkr = totalLkr - dcaSpent;
   const profitPct = dcaSpent > 0 ? (profitLkr / dcaSpent) * 100 : 0;
   const isProfit = profitLkr >= 0;
-  const surfaceBg = isDark ? "#1b2027" : "#fff";
 
   return (
     <div className="flex w-full flex-col gap-3">
@@ -42,8 +47,8 @@ export function PerformanceGrid({
       <div className="grid grid-cols-2 gap-2">
         <Card
           type="plain"
-          className="flex! flex-col! items-start! gap-2! rounded-[16px]! p-3! shadow-none!"
-          style={{ "--tgui--tertiary_bg_color": surfaceBg } as React.CSSProperties}
+          className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
+          style={CARD_SURFACE_STYLE}
         >
           <Image src="/emoji/wallet.svg" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
@@ -56,7 +61,7 @@ export function PerformanceGrid({
             <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
               {mask(`₿ ${(dcaSats / 1e8).toFixed(5)}`)}
             </p>
-            <div className="size-[3px] rounded-full bg-[#e2e8f0] dark:bg-[#334155]" />
+            <div className="size-0.75 rounded-full bg-[#e2e8f0] dark:bg-[#334155]" />
             <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
               {mask(`丰 ${fmtSatsCompact(dcaSats)}`)}
             </p>
@@ -65,8 +70,8 @@ export function PerformanceGrid({
 
         <Card
           type="plain"
-          className="flex! flex-col! items-start! gap-2! rounded-[16px]! p-3! shadow-none!"
-          style={{ "--tgui--tertiary_bg_color": "rgba(37,167,97,0.1)" } as React.CSSProperties}
+          className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
+          style={CARD_SUCCESS_STYLE}
         >
           <Image src="/emoji/coins.svg" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
@@ -80,7 +85,7 @@ export function PerformanceGrid({
               <Badge
                 type="number"
                 mode={isProfit ? "primary" : "critical"}
-                className="flex! h-auto! min-w-0! items-center! justify-center! m-0! whitespace-nowrap! rounded-[8px]! px-2.5! py-1! text-[12px]! font-medium! leading-4!"
+                className="flex! h-auto! min-w-0! items-center! justify-center! m-0! whitespace-nowrap! rounded-lg! px-2.5! py-1! text-[12px]! font-medium! leading-4!"
                 style={
                   {
                     "--tgui--button_color": "#158348",
@@ -99,8 +104,8 @@ export function PerformanceGrid({
 
         <Card
           type="plain"
-          className="flex! flex-col! items-start! gap-2! rounded-[16px]! p-3! shadow-none!"
-          style={{ "--tgui--tertiary_bg_color": surfaceBg } as React.CSSProperties}
+          className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
+          style={CARD_SURFACE_STYLE}
         >
           <Image src="/emoji/calculator.svg" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
@@ -124,8 +129,8 @@ export function PerformanceGrid({
 
         <Card
           type="plain"
-          className="flex! flex-col! items-start! gap-2! rounded-[16px]! p-3! shadow-none!"
-          style={{ "--tgui--tertiary_bg_color": "rgba(37,167,97,0.1)" } as React.CSSProperties}
+          className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
+          style={CARD_SUCCESS_STYLE}
         >
           <Image src="/emoji/graph.svg" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9]">

@@ -379,7 +379,7 @@ export default function SubscriptionPage() {
                             <div className="mb-8 text-center">
                                 <div className="mb-4 flex justify-center">
                                     <Image
-                                        src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Objects/Hourglass%20Done.webp"
+                                        src="/emoji/animated/hourglass.webp"
                                         width={100}
                                         height={100}
                                         alt="Registration Form"

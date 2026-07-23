@@ -101,19 +101,39 @@ export default function OnboardPage() {
 
     if (authError) {
         return (
-            <div className="flex min-h-screen items-center justify-center p-4">
-                <div className="text-center">
-                    <h2 className="mb-2 text-xl font-semibold text-red-500">
+            <div className="flex min-h-screen flex-col justify-between bg-[#f5f7fb] p-6">
+                <div className="flex flex-1 flex-col items-center justify-center text-center">
+                    <div className="relative mb-4 size-25">
+                        <Image
+                            src="/emoji/animated/key.webp"
+                            alt="Authentication Error"
+                            fill
+                            className="object-contain"
+                            sizes="100px"
+                        />
+                    </div>
+                    <h2 className="mb-2 text-xl font-semibold text-[#e2574c]">
                         Authentication Error
                     </h2>
-                    <p className="mb-4 text-tma-text-secondary">{authError}</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="rounded bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
-                    >
-                        Try Again
-                    </button>
+                    <p className="max-w-65 text-[15px] text-[#64748b]">{authError}</p>
                 </div>
+
+                <Button
+                    mode="outline"
+                    size="l"
+                    stretched
+                    style={
+                        {
+                            borderRadius: "12px",
+                            overflow: "hidden",
+                            "--tgui--outline": "#fa7119",
+                            "--tgui--plain_foreground": "#fa7119",
+                        } as React.CSSProperties
+                    }
+                    onClick={() => window.location.reload()}
+                >
+                    Try Again
+                </Button>
             </div>
         );
     }

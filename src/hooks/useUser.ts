@@ -3,7 +3,7 @@
 import { useLaunchParams } from "@telegram-apps/sdk-react";
 import { useStore } from "@/lib/store";
 import { useSubscriptionCurrent } from "@/hooks/query/useSubscriptionCurrent";
-import { useKycStatus } from "@/hooks/query/useKycStatus";
+import { useKycStatus } from "@/hooks/query/useKyc";
 
 /**
  * Single source of truth for user-related data: Telegram identity (client-only),
@@ -15,7 +15,7 @@ export function useUser() {
   const telegramUser = launchParams.initData?.user;
   const { isExistingUser } = useStore();
   const { data: subscription } = useSubscriptionCurrent();
-  const { data: kycStatus } = useKycStatus();
+  const { data: kycData } = useKycStatus();
 
   const username = telegramUser?.username;
   const displayName = username ?? "User";
@@ -24,10 +24,11 @@ export function useUser() {
   return {
     id: telegramUser?.id?.toString() ?? "",
     username,
-    displayName,
+    displayName: (telegramUser?.firstName && telegramUser?.lastName ? `${telegramUser.firstName} ${telegramUser.lastName}` : telegramUser?.firstName) ?? displayName,
     initials,
+    photoUrl: telegramUser?.photoUrl,
     isExistingUser,
     subscription: subscription ?? null,
-    kycStatus,
+    kycStatus: kycData?.status,
   };
 }

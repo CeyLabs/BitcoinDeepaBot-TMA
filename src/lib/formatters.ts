@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 
 // Format a date as YYYY/MM/DD
 export function formatDate(dateInput: string | Date): string {
@@ -48,8 +48,8 @@ export function fmtShortDate(dateInput: string | Date): string {
     const date = new Date(dateInput);
     const day = date.getDate();
     const month = date.toLocaleDateString("en-US", { month: "short" });
-    const year = date.getFullYear().toString().slice(-2);
-    return `${day} ${month} '${year}`;
+    const year = date.getFullYear().toString()
+    return `${day} ${month} ${year}`;
 }
 
 // Relative day text, e.g. "In 5 days" / "2 days ago" / "Today"
@@ -58,6 +58,25 @@ export function fmtRelativeDays(dateInput: string | Date): string {
     if (diff === 0) return "Today";
     if (diff > 0) return `In ${diff} day${diff !== 1 ? "s" : ""}`;
     return `${Math.abs(diff)} day${Math.abs(diff) !== 1 ? "s" : ""} ago`;
+}
+
+// Activity feed date-group label, e.g. "Today" / "Yesterday" / "15 April 2026"
+export function fmtActivityGroupLabel(dateInput: string | Date): string {
+    const date = new Date(dateInput);
+    if (isToday(date)) return "Today";
+    if (isYesterday(date)) return "Yesterday";
+    return format(date, "d MMMM yyyy");
+}
+
+// Activity row time, e.g. "05:00 PM"
+export function fmtActivityTime(dateInput: string | Date): string {
+    return format(new Date(dateInput), "hh:mm a");
+}
+
+// Combined date+time for flat lists with no day-header (e.g. Manage Gifts),
+// e.g. "17 Mar 2026 at 05:00 PM"
+export function fmtActivityDateTime(dateInput: string | Date): string {
+    return `${fmtShortDate(dateInput)} at ${fmtActivityTime(dateInput)}`;
 }
 
 // Blot out digits in a formatted string while keeping icons/currency codes/units

@@ -14,7 +14,7 @@ export function TogglePlan({ value, onChange, className }: TogglePlanProps) {
   return (
     <div
       className={cn(
-        "flex items-start p-1 rounded-full bg-[#f1f5f9]",
+        "flex items-start p-1 rounded-full bg-[#f1f5f9] dark:bg-[#242b35]",
         className
       )}
     >
@@ -28,8 +28,8 @@ export function TogglePlan({ value, onChange, className }: TogglePlanProps) {
               "flex items-center justify-center px-6 py-1 rounded-full w-[175px]",
               "text-[14px] font-semibold leading-[28px] text-center transition-colors",
               isActive
-                ? "bg-white text-[#fa7119]"
-                : "bg-transparent text-[#64748b]"
+                ? "bg-white text-[#fa7119] dark:bg-[#0b0f14]"
+                : "bg-transparent text-[#64748b] dark:text-[#94a3b8]"
             )}
           >
             {option === "weekly" ? "Weekly" : "Monthly"}

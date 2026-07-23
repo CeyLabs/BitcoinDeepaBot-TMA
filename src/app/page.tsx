@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useInitData, useLaunchParams } from "@telegram-apps/sdk-react";
-import { Button, Cell, Navigation, Progress, Title } from "@telegram-apps/telegram-ui";
+import { Badge, Button, Cell, Navigation, Progress, Title } from "@telegram-apps/telegram-ui";
 import { useTheme } from "@/app/context/theme";
 import { useStore } from "@/lib/store";
 import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
@@ -96,7 +96,7 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
           </Button>
         </Link>
 
-        <Link href="/v2/dashboard" className="block">
+        <Link href="/v2/dashboard/plans" className="block">
           <Cell
             before={<Image src="/emoji/bitcoin.svg" alt="Bitcoin" width={40} height={40}/>}
             after={<Navigation />}
@@ -110,19 +110,24 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
           </Cell>
         </Link>
 
+        {/* Gifting isn't launched yet (see GiftPlansComingSoon) — disabled, not linked. */}
         <Cell
           before={<Image src="/emoji/gift.svg" alt="Gift" width={40} height={40} />}
-          // subtitle="Send a bitcoin subscription to a friend"
-          after={<Navigation />}
-          onClick={() => window.open(TELEGRAM_BOT_URL, "_blank", "noopener,noreferrer")}
+          readOnly
+          aria-disabled="true"
+          tabIndex={-1}
           style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
-          className="gap-2! px-4! rounded-[12px] border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
+          className="gap-2! px-4! rounded-[12px] border border-transparent bg-white opacity-60 pointer-events-none shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)]"
         >
-          <p className="flex flex-col items-start font-semibold text-[#1b2027] dark:text-white pl-1">
-            Send a Gift
+          <div className="flex flex-col items-start pl-1">
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-[#1b2027] dark:text-white">Send a Gift</p>
+              <Badge type="number" mode="gray">
+                Coming Soon
+              </Badge>
+            </div>
             <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">Send a bitcoin subscription to a friend</span>
-          </p>
-
+          </div>
         </Cell>
       </div>
 
@@ -137,14 +142,6 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
         </Link>
         <p className="text-[13px] text-muted-foreground">@{TELEGRAM_BOT_USERNAME}</p>
       </div>
-
-      {isExisting && process.env.NODE_ENV === "development" && (
-        <div className="mt-6 flex justify-center">
-          <Link href="/dev" className="text-xs text-black underline">
-            Component Preview (Dev)
-          </Link>
-        </div>
-      )}
     </div>
   );
 }
