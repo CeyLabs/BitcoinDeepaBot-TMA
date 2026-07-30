@@ -23,8 +23,6 @@ interface ThemeContextType {
     themeParams: TelegramThemeParams | null;
     isDark: boolean;
     isLight: boolean;
-    /** Dev-only: force a theme regardless of Telegram/OS detection. Pass null to go back to auto. */
-    setThemeOverride: (theme: "light" | "dark" | null) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -39,7 +37,6 @@ export const useTheme = () => {
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<"light" | "dark">("dark");
-    const [themeOverride, setThemeOverride] = useState<"light" | "dark" | null>(null);
     const [currentThemeParams, setCurrentThemeParams] = useState<TelegramThemeParams | null>(null);
 
     useEffect(() => {
@@ -80,19 +77,16 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         }
     }, []);
 
-    const effectiveTheme = themeOverride ?? theme;
-
     const value: ThemeContextType = {
-        theme: effectiveTheme,
+        theme,
         themeParams: currentThemeParams,
-        isDark: effectiveTheme === "dark",
-        isLight: effectiveTheme === "light",
-        setThemeOverride,
+        isDark: theme === "dark",
+        isLight: theme === "light",
     };
 
     return (
         <ThemeContext.Provider value={value}>
-            <div className={effectiveTheme} data-theme={effectiveTheme}>
+            <div className={theme} data-theme={theme}>
                 {children}
             </div>
         </ThemeContext.Provider>

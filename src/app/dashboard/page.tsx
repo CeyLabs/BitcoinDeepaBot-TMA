@@ -1,430 +1,621 @@
 "use client";
 
 import { useStore } from "@/lib/store";
+import { MdSettings, MdNotifications, MdQrCode, MdRefresh } from "react-icons/md";
+import { IoMdSend, IoMdDownload } from "react-icons/io";
+import { FaEllipsisH } from "react-icons/fa";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useBackButton, useLaunchParams } from "@telegram-apps/sdk-react";
 import { authenticateWithTelegram, getAuthTokenFromStorage, saveAuthToStorage } from "@/lib/auth";
+import BalanceCardSkeleton from "@/components/skeletons/BalanceCardSkeleton";
+import ChartSkeleton from "@/components/skeletons/ChartSkeleton";
 import fetchy from "@/lib/fetchy";
-import { UserExistsResponse, Subscription } from "@/lib/types";
+import { UserExistsResponse } from "@/lib/types";
+import { toast } from "sonner";
+import Image from "next/image";
+import { formatLargeNumber } from "@/lib/formatters";
+import { LuArrowDownRight, LuArrowUpRight } from "react-icons/lu";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { RewardsChart } from "@/components/RewardsChart";
-import { cn } from "@/lib/cn";
-import { VisibleToggle } from "@/components/ui/visible-toggle";
-import BottomNavigation from "@/components/bottomNavigation";
 
 interface DCSummary {
-  dca: {
-    balance: number;
-    spent: number;
-    avg_btc_price: number;
-  };
-  total_balance: number;
-  total_lkr: string;
-  currency: string;
-  "24_hr_change": number;
+    dca: {
+        balance: number;
+        spent: number;
+        avg_btc_price: number;
+    };
+    total_balance: number;
+    total_lkr: string;
+    currency: string;
+    "24_hr_change": number;
 }
 
-const PLAN_EMOJIS: Record<string, string> = {
-  shrimp: "🦐",
-  crab: "🦀",
-  shark: "🦈",
-  whale: "🐳",
+const handleRefreshWallet = async (refetchSummary: () => Promise<any>) => {
+    try {
+        await refetchSummary();
+        toast("Wallet refreshed successfully", {
+            className: "bg-tma-bg-secondary text-tma-text-primary",
+        });
+    } catch (error) {
+        toast("Failed to refresh wallet", {
+            className: "bg-tma-bg-secondary text-tma-text-primary",
+        });
+    }
 };
 
-function getPlanEmoji(name: string): string {
-  return PLAN_EMOJIS[name.toLowerCase()] ?? "₿";
-}
-
-function fmtLkr(value: number): string {
-  return value.toLocaleString("en-US", { maximumFractionDigits: 0 });
-}
-
-function fmtSats(sats: number): string {
-  if (sats >= 1_000_000) return `${(sats / 1_000_000).toFixed(1)}M`;
-  if (sats >= 1_000) return `${Math.round(sats / 1_000)}K`;
-  return sats.toString();
-}
-
-function fmtPrice(value: number): string {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-  return fmtLkr(value);
-}
-
-function fmtDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function relativeTime(dateStr: string): string {
-  const diff = Math.round(
-    (new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-  );
-  if (diff === 0) return "Today";
-  if (diff > 0) return `In ${diff} day${diff !== 1 ? "s" : ""}`;
-  return `${Math.abs(diff)} day${Math.abs(diff) !== 1 ? "s" : ""} ago`;
-}
-
-const MASK = "••••••";
-
-// ─── Shared primitives ────────────────────────────────────────────────────────
-
-function DarkCard({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div
-      className={cn(
-        "rounded-[12px] bg-[#0b0f14] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.3)]",
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[12px] font-normal leading-[14px] text-[#64748b] mb-1.5">{children}</p>
-  );
-}
-
-// ─── Plan card ────────────────────────────────────────────────────────────────
-
-function PlanCard({ subscription }: { subscription: Subscription | null | undefined }) {
-  return (
-    <DarkCard className="px-4 py-4">
-      <div className="flex items-stretch gap-0 min-h-[88px]">
-        <div className="flex-1 flex flex-col justify-center pr-4 min-w-0">
-          <SectionLabel>Active Plan</SectionLabel>
-          {subscription ? (
-            <div className="flex flex-col gap-1 mt-1">
-              <div className="flex items-center gap-2">
-                <span className="text-[22px] leading-none">{getPlanEmoji(subscription.planName)}</span>
-                <span className="text-[16px] font-semibold text-[#f1f5f9]">{subscription.planName}</span>
-              </div>
-              <div className="flex items-center gap-0.5">
-                <span className="text-[14px] font-semibold text-[#f1f5f9]">
-                  Rs {fmtLkr(subscription.price)}
-                </span>
-                <span className="text-[12px] text-[#64748b]">
-                  /{subscription.planType === "weekly" ? "week" : "month"}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <p className="text-[14px] text-[#475569] mt-1">No active plan</p>
-          )}
-        </div>
-
-        <div className="w-px bg-[#1e2834] self-stretch" />
-
-        <div className="flex-1 flex flex-col justify-between pl-4 min-w-0">
-          <div>
-            <SectionLabel>Next Reward Date</SectionLabel>
-            {subscription?.endDate ? (
-              <>
-                <p className="text-[14px] font-semibold text-[#f1f5f9]">{fmtDate(subscription.endDate)}</p>
-                <p className="text-[12px] text-[#64748b]">{relativeTime(subscription.endDate)}</p>
-              </>
-            ) : (
-              <p className="text-[14px] text-[#475569]">—</p>
-            )}
-          </div>
-          <div className="mt-3">
-            <SectionLabel>Last Reward Date</SectionLabel>
-            {subscription?.startDate ? (
-              <>
-                <p className="text-[14px] font-semibold text-[#f1f5f9]">{fmtDate(subscription.startDate)}</p>
-                <p className="text-[12px] text-[#64748b]">{relativeTime(subscription.startDate)}</p>
-              </>
-            ) : (
-              <p className="text-[14px] text-[#475569]">—</p>
-            )}
-          </div>
-        </div>
-      </div>
-    </DarkCard>
-  );
-}
-
-// ─── Investment stats card ────────────────────────────────────────────────────
-
-function InvestmentCard({
-  dcaSpent,
-  dcaSats,
-  totalLkr,
-  avgBtcPrice,
-  visible,
-}: {
-  dcaSpent: number;
-  dcaSats: number;
-  totalLkr: number;
-  avgBtcPrice: number;
-  visible: boolean;
-}) {
-  const profitLkr = totalLkr - dcaSpent;
-  const profitPct = dcaSpent > 0 ? (profitLkr / dcaSpent) * 100 : 0;
-  const isProfit = profitLkr >= 0;
-  const m = (v: string) => (visible ? v : MASK);
-
-  return (
-    <DarkCard>
-      <div className="flex divide-x divide-[#1e2834]">
-        {/* Left */}
-        <div className="flex-1 flex flex-col divide-y divide-[#1e2834]">
-          <div className="p-4">
-            <SectionLabel>You Invested</SectionLabel>
-            <p className="text-[15px] font-semibold text-[#f1f5f9]">
-              {m(`LKR ${fmtLkr(dcaSpent)}`)}
-            </p>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-[12px] text-[#64748b]">₿ {m((dcaSats / 1e8).toFixed(5))}</span>
-              <div className="w-px h-3 bg-[#1e2834]" />
-              <span className="text-[12px] text-[#64748b]">丰 {m(fmtSats(dcaSats))}</span>
-            </div>
-          </div>
-          <div className="p-4">
-            <SectionLabel>Avg Price</SectionLabel>
-            <p className="text-[14px] font-medium text-[#f1f5f9]">
-              LKR {fmtPrice(avgBtcPrice)}{" "}
-              <span className="text-[11px] text-[#64748b]">per BTC</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Right */}
-        <div className="flex-1 flex flex-col divide-y divide-[#1e2834]">
-          <div className="p-4">
-            <SectionLabel>Current Value</SectionLabel>
-            <p className="text-[15px] font-semibold text-[#f1f5f9]">
-              {m(`LKR ${fmtLkr(totalLkr)}`)}
-            </p>
-            {dcaSpent > 0 && (
-              <div
-                className={cn(
-                  "inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium mt-1.5",
-                  isProfit ? "bg-[#22c55e]/15 text-[#22c55e]" : "bg-red-500/15 text-red-400"
-                )}
-              >
-                {isProfit ? "+" : ""}LKR {fmtLkr(Math.abs(profitLkr))} ({isProfit ? "+" : ""}
-                {profitPct.toFixed(0)}%)
-              </div>
-            )}
-          </div>
-          <div className="p-4">
-            <SectionLabel>Current Price</SectionLabel>
-            {avgBtcPrice > 0 ? (
-              <p className="text-[14px] font-medium text-[#f1f5f9]">
-                LKR {fmtPrice(avgBtcPrice)}{" "}
-                <span className="text-[11px] text-[#64748b]">per BTC</span>
-              </p>
-            ) : (
-              <p className="text-[14px] text-[#475569]">—</p>
-            )}
-          </div>
-        </div>
-      </div>
-    </DarkCard>
-  );
-}
-
-// ─── Main page ────────────────────────────────────────────────────────────────
-
 export default function WalletPage() {
-  const router = useRouter();
-  const { setIsExistingUser, setUser } = useStore();
-  const launchParams = useLaunchParams();
-  const backButton = useBackButton();
+    const router = useRouter();
+    const { wallet, isExistingUser, setIsExistingUser, setUser } = useStore();
+    const launchParams = useLaunchParams();
+    const backButton = useBackButton();
+    const [authError, setAuthError] = useState<string | null>(null);
+    const [telegramUserData, setTelegramUserData] = useState<any>(null);
+    const [showWelcome, setShowWelcome] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
 
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [telegramUser, setTelegramUser] = useState<{ username?: string } | null>(null);
-  const [balanceVisible, setBalanceVisible] = useState(true);
+    const authToken = getAuthTokenFromStorage();
 
-  const authToken = getAuthTokenFromStorage();
+    const {
+        data: summary,
+        isLoading,
+        error: summaryError,
+        refetch: refetchSummary,
+    } = useQuery<DCSummary>({
+        queryKey: queryKeys.walletSummary,
+        queryFn: async () => {
+            const res = await fetch(`/api/transaction/dca-summary`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+            });
+            if (!res.ok) throw new Error("Failed to fetch wallet summary");
+            return res.json();
+        },
+        enabled: !!authToken,
+        staleTime: 1000 * 60 * 5,
+    });
 
-  const { data: summary, isLoading } = useQuery<DCSummary>({
-    queryKey: queryKeys.walletSummary,
-    queryFn: async () => {
-      const res = await fetch("/api/transaction/dca-summary", {
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch wallet summary");
-      return res.json();
-    },
-    enabled: !!authToken,
-    staleTime: 1000 * 60 * 5,
-  });
+    useEffect(() => {
+        backButton.show();
 
-  const { data: subscription } = useQuery<Subscription | null>({
-    queryKey: ["subscription-current"],
-    queryFn: async () => {
-      const res = await fetch("/api/subscription/current", {
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-      });
-      if (!res.ok) return null;
-      return res.json();
-    },
-    enabled: !!authToken,
-  });
+        const handleBackClick = () => {
+            router.push("/");
+        };
 
-  useEffect(() => {
-    backButton.show();
-    const onBack = () => router.push("/");
-    backButton.on("click", onBack);
-    return () => {
-      backButton.off("click", onBack);
-      backButton.hide();
-    };
-  }, [backButton, router]);
+        backButton.on("click", handleBackClick);
 
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        setAuthError(null);
-        const initDataRaw = launchParams.initDataRaw;
-        if (!initDataRaw) { setAuthError("No Telegram data available"); return; }
-        const user = launchParams.initData?.user;
-        if (!user) { setAuthError("No user data from Telegram"); return; }
-        setTelegramUser(user);
-        const authResult = await authenticateWithTelegram(initDataRaw);
-        if (!authResult.token) { setAuthError("Authentication failed"); return; }
-        saveAuthToStorage(authResult.token);
-        const response = await fetchy.get<UserExistsResponse>(`/api/user/exists/${user.id}`);
-        if (response.registered) {
-          setIsExistingUser(true);
-          setUser({ id: user.id?.toString() ?? "", username: user.username ?? "", isExisting: true });
-        } else {
-          setIsExistingUser(false);
-          router.push("/onboard");
+        return () => {
+            backButton.off("click", handleBackClick);
+            backButton.hide();
+        };
+    }, [backButton, router]);
+
+    useEffect(() => {
+        // Hide welcome banner after 5 seconds
+        if (showWelcome) {
+            const timer = setTimeout(() => setShowWelcome(false), 5000);
+            return () => clearTimeout(timer);
         }
-      } catch {
-        setAuthError("Authentication failed. Please try again.");
-      }
-    };
-    initAuth();
-  }, [launchParams, setIsExistingUser, setUser, router]);
+    }, [showWelcome]);
 
-  useEffect(() => {
-    if (!authToken) return;
-    fetch("/api/user/kyc/status", {
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (data && data.status !== "APPROVED") router.push("/verification"); })
-      .catch(() => {});
-  }, [authToken, router]);
+    useEffect(() => {
+        const initializeAuth = async () => {
+            try {
+                setAuthError(null);
 
-  const totalLkr = summary
-    ? Number(
-        typeof summary.total_lkr === "string"
-          ? summary.total_lkr.replace(/,/g, "")
-          : summary.total_lkr
-      )
-    : 0;
-  const totalSats = summary?.total_balance ?? 0;
-  const dcaSpent = summary?.dca.spent ?? 0;
-  const dcaSats = summary?.dca.balance ?? 0;
-  const avgBtcPrice = summary?.dca.avg_btc_price ?? 0;
-  const change24h = summary?.["24_hr_change"] ?? 0;
-  const changeLkr = (change24h / 100) * totalLkr;
-  const initials = telegramUser?.username?.slice(0, 2).toUpperCase() ?? "BD";
+                const initDataRaw = launchParams.initDataRaw;
 
-  const mask = (v: string) => (balanceVisible ? v : MASK);
+                if (initDataRaw) {
+                    // Extract user data from initData
+                    const initData = launchParams.initData;
+                    const user = initData?.user;
 
-  if (authError) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#1b2027] p-4">
-        <div className="text-center">
-          <h2 className="mb-2 text-xl font-semibold text-red-400">Authentication Error</h2>
-          <p className="mb-4 text-sm text-[#64748b]">{authError}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="rounded-xl bg-[#fa7119] px-5 py-2.5 text-[15px] font-semibold text-white"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
+                    if (user) {
+                        setTelegramUserData(user);
 
-  return (
-    <div className="min-h-screen bg-[#1b2027]">
-      <main className="mx-auto max-w-[390px] px-4 pb-32 space-y-3">
+                        // Authenticate to get token
+                        const authResult = await authenticateWithTelegram(initDataRaw);
 
-        {/* Top bar */}
-        <div className="flex items-center justify-between pt-4 pb-1">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ffb14c]">
-            <span className="text-[12px] font-extrabold text-white">{initials}</span>
-          </div>
-          <VisibleToggle
-            dark
-            visible={balanceVisible}
-            onToggle={() => setBalanceVisible((v) => !v)}
-          />
-        </div>
+                        if (authResult.token) {
+                            saveAuthToStorage(authResult.token);
 
-        {/* Total Balance */}
-        <div className="flex flex-col items-center py-4 text-center">
-          <p className="text-[13px] font-normal leading-[16px] text-[#64748b] mb-2">
-            Total VALUE &nbsp;·&nbsp; LKR
-          </p>
-          {isLoading ? (
-            <div className="h-12 w-48 rounded-lg bg-white/5 animate-pulse mb-3" />
-          ) : (
-            <p className="text-[40px] font-bold leading-[46px] text-[#f1f5f9] mb-3">
-              {mask(`≈ LKR ${fmtLkr(totalLkr)}`)}
-            </p>
-          )}
-          <div className="flex items-center gap-2 text-[13px] text-[#64748b] mb-3">
-            <span>₿ {mask((totalSats / 1e8).toFixed(6))} BTC</span>
-            <div className="size-1 rounded-full bg-[#64748b]" />
-            <span>丰 {mask(fmtSats(totalSats))} SATS</span>
-          </div>
-          {summary && (
-            <div
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium",
-                change24h >= 0 ? "bg-[#22c55e]/15 text-[#22c55e]" : "bg-red-500/15 text-red-400"
-              )}
-            >
-              <span>{change24h >= 0 ? "↑" : "↙"}</span>
-              <span>24h Change</span>
-              <span>
-                LKR {fmtLkr(Math.abs(changeLkr))} ({change24h >= 0 ? "+" : ""}
-                {change24h.toFixed(2)}%)
-              </span>
+                            // Check if user is registered in the backend
+                            try {
+                                const response = await fetchy.get<UserExistsResponse>(
+                                    `/api/user/exists/${user.id}`
+                                );
+
+                                if (response.registered) {
+                                    // User is registered, set as existing user and show welcome back
+                                    setIsExistingUser(true);
+                                    setShowWelcome(true);
+
+                                    // Set user data
+                                    setUser({
+                                        id: user.id?.toString() || "",
+                                        username: user.username || "",
+                                        isExisting: true,
+                                    });
+                                    return;
+                                } else {
+                                    // User is not registered, redirect to onboarding
+                                    setIsExistingUser(false);
+                                    router.push("/onboard");
+                                    return;
+                                }
+                            } catch (error) {
+                                console.error("Error checking user registration:", error);
+                                // If check fails, redirect to onboarding for safety
+                                router.push("/onboard");
+                                return;
+                            }
+                        } else {
+                            setAuthError("Failed to authenticate with Telegram");
+                        }
+                    } else {
+                        setAuthError("No user data available from Telegram");
+                    }
+                } else {
+                    setAuthError("No Telegram data available");
+                }
+            } catch (error) {
+                console.error("Error during authentication:", error);
+                setAuthError("Authentication failed. Please try again.");
+            }
+        };
+
+        initializeAuth();
+    }, [launchParams, setIsExistingUser, setUser, router]);
+
+    useEffect(() => {
+        if (summaryError) {
+            toast.error(
+                summaryError instanceof Error ? summaryError.message : String(summaryError)
+            );
+        }
+    }, [summaryError]);
+
+    useEffect(() => {
+        const checkKycStatus = async () => {
+            if (authToken) {
+                try {
+                    const res = await fetch(`/api/user/kyc/status`, {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${authToken}`,
+                        },
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.status !== "APPROVED") {
+                            router.push("/verification");
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error checking KYC status:", error);
+                }
+            }
+        };
+
+        checkKycStatus();
+    }, [authToken, router]);
+
+    if (authError) {
+        return (
+            <div className="flex min-h-screen items-center justify-center p-4">
+                <div className="text-center">
+                    <h2 className="mb-2 text-xl font-semibold text-red-500">
+                        Authentication Error
+                    </h2>
+                    <p className="mb-4 text-tma-text-secondary">{authError}</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="rounded-xl bg-orange-600 px-4 py-2 text-tma-text-primary transition-colors hover:bg-orange-700"
+                    >
+                        Try Again
+                    </button>
+                </div>
             </div>
-          )}
+        );
+    }
+
+    return (
+        <div>
+            <main className="pb-20">
+                {/* Header */}
+                <div className="mb-8 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-500">
+                            <Image
+                                src={telegramUserData?.photoUrl || "/profile.png"}
+                                alt="User Avatar"
+                                width={48}
+                                height={48}
+                                className="rounded-full"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {/* <button
+                            className="flex h-10 w-10 items-center justify-center rounded-full bg-tma-bg-secondary opacity-50"
+                            type="button"
+                            onClick={() =>
+                                toast("This feature is not available yet.", {
+                                    className: "bg-tma-bg-secondary text-tma-text-primary",
+                                })
+                            }
+                        >
+                            <MdQrCode className="text-xl text-gray-400" />
+                        </button> */}
+                        {/* <button
+                            className="flex h-10 w-10 items-center justify-center rounded-full bg-tma-bg-secondary"
+                            onClick={() => setShowNotifications((prev) => !prev)}
+                        >
+                            <MdNotifications className="text-xl text-gray-400" />
+                        </button> */}
+                        {showNotifications && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+                                <div className="relative mx-3 w-full max-w-md rounded-2xl border border-tma-border-card bg-tma-bg-secondary p-8 shadow-2xl">
+                                    <button
+                                        className="absolute right-4 top-4 text-2xl text-gray-400 hover:text-orange-500"
+                                        onClick={() => setShowNotifications(false)}
+                                        aria-label="Close"
+                                    >
+                                        &times;
+                                    </button>
+                                    <h3 className="mb-4 text-center text-2xl font-semibold text-tma-text-primary">
+                                        Notifications
+                                    </h3>
+                                    <div className="py-12 text-center text-lg text-tma-text-secondary">
+                                        No notifications
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Balance Card */}
+                {isLoading ? (
+                    <BalanceCardSkeleton />
+                ) : (
+                    <div className="mb-8 rounded-3xl border border-tma-border-card bg-gradient-to-r from-tma-gradient-from to-tma-gradient-to p-6">
+                        <div className="mb-4 flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-tma-text-secondary">
+                                    Current balance
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    className="flex h-8 w-8 items-center justify-center rounded-full bg-tma-bg-secondary transition-colors hover:bg-tma-bg-secondary"
+                                    onClick={() => handleRefreshWallet(refetchSummary)}
+                                    disabled={isLoading}
+                                >
+                                    <MdRefresh
+                                        className={`text-lg text-gray-400 ${isLoading ? "animate-spin" : ""}`}
+                                    />
+                                </button>
+                                {/* <button className="flex h-8 w-8 items-center justify-center rounded-full bg-tma-bg-secondary">
+                                <MdSettings className="text-lg text-gray-400" />
+                            </button> */}
+                            </div>
+                        </div>
+
+                        {summary ? (
+                            <div className="mb-6">
+                                <h1 className="mb-6 text-4xl font-bold text-tma-text-primary">
+                                    {formatLargeNumber(summary.total_balance)}{" "}
+                                    <span className="text-base font-medium text-orange-400">
+                                        sats
+                                    </span>
+                                    <span className="ml-3 rounded-md bg-blue-400/10 px-2 py-1 text-sm text-blue-400">
+                                        ≈ රු.{" "}
+                                        {summary.total_lkr !== undefined &&
+                                        summary.total_lkr !== null
+                                            ? formatLargeNumber(
+                                                  Number(
+                                                      typeof summary.total_lkr === "string"
+                                                          ? summary.total_lkr.replace(/,/g, "")
+                                                          : summary.total_lkr
+                                                  )
+                                              )
+                                            : "0"}
+                                    </span>
+                                </h1>
+
+                                {/* Wallet Analytics Dashboard */}
+                                <div className="mb-4 rounded-xl border-gray-800/50">
+                                    <div className="mb-3 text-sm font-medium text-tma-text-secondary">
+                                        Balance Distribution
+                                    </div>
+
+                                    {/* Visual Progress Representation */}
+                                    <div className="mb-4">
+                                        <div className="flex h-3 overflow-hidden rounded-full bg-tma-bg-secondary">
+                                            <div
+                                                className="bg-gradient-to-r from-orange-500 to-orange-400 transition-all duration-500"
+                                                style={{
+                                                    width: `${(summary.dca.balance / summary.total_balance) * 100}%`,
+                                                }}
+                                            ></div>
+                                            <div
+                                                className="bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
+                                                style={{
+                                                    width: `${((summary.total_balance - summary.dca.balance) / summary.total_balance) * 100}%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Compact Stats Grid */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="rounded-xl border-l-4 border-orange-500 bg-orange-500/10 p-3">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <div className="text-xs font-medium uppercase text-orange-300">
+                                                        Membership <br /> Rewards
+                                                    </div>
+                                                    <div className="text-lg font-bold text-tma-text-primary">
+                                                        {formatLargeNumber(summary.dca.balance)}
+                                                    </div>
+                                                    <div className="text-xs text-orange-400">
+                                                        {(
+                                                            (summary.dca.balance /
+                                                                summary.total_balance) *
+                                                            100
+                                                        ).toFixed(1)}
+                                                        % of total
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded-xl border-l-4 border-green-500 bg-green-500/10 p-3">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <div className="text-xs font-medium uppercase text-green-300">
+                                                        Wallet
+                                                        <br /> Balance
+                                                    </div>
+                                                    <div className="text-lg font-bold text-tma-text-primary">
+                                                        {formatLargeNumber(
+                                                            summary.total_balance -
+                                                                summary.dca.balance
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xs text-green-400">
+                                                        {(
+                                                            ((summary.total_balance -
+                                                                summary.dca.balance) /
+                                                                summary.total_balance) *
+                                                            100
+                                                        ).toFixed(1)}
+                                                        % of total
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Quick Stats Row */}
+                                    <div className="bg-tma-bg-secondary/30 mt-3 flex items-center justify-between rounded-xl p-3">
+                                        <div className="text-center">
+                                            <div className="text-xs text-tma-text-secondary">
+                                                DCA Spent
+                                            </div>
+                                            <div className="text-sm font-semibold text-tma-text-primary">
+                                                රු. {formatLargeNumber(summary.dca.spent)}
+                                            </div>
+                                        </div>
+                                        <div className="h-8 w-px bg-tma-bg-secondary"></div>
+                                        <div className="text-center">
+                                            <div className="text-xs text-tma-text-secondary">
+                                                Avg Price
+                                            </div>
+                                            <div className="text-sm font-semibold text-tma-text-primary">
+                                                රු. {formatLargeNumber(summary.dca.avg_btc_price)}
+                                            </div>
+                                        </div>
+                                        <div className="h-8 w-px bg-tma-bg-secondary"></div>
+                                        <div className="text-center">
+                                            <div className="text-xs text-tma-text-secondary">
+                                                Total BTC
+                                            </div>
+                                            <div className="text-sm font-semibold text-tma-text-primary">
+                                                {(summary.total_balance / 100_000_000).toFixed(6)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Portfolio Performance Section */}
+                                {/* 24hr P&L */}
+                                <div className="bg-tma-bg-secondary/40 rounded-xl p-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                                                    summary["24_hr_change"] >= 0
+                                                        ? "bg-green-500/20"
+                                                        : "bg-red-500/20"
+                                                }`}
+                                            >
+                                                <span
+                                                    className={`text-sm font-bold ${
+                                                        summary["24_hr_change"] >= 0
+                                                            ? "text-green-400"
+                                                            : "text-red-400"
+                                                    }`}
+                                                >
+                                                    {summary["24_hr_change"] >= 0 ? (
+                                                        <LuArrowUpRight />
+                                                    ) : (
+                                                        <LuArrowDownRight />
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-tma-text-secondary">
+                                                    24h P&L
+                                                </div>
+                                                <div
+                                                    className={`text-lg font-bold ${
+                                                        summary["24_hr_change"] >= 0
+                                                            ? "text-green-400"
+                                                            : "text-red-400"
+                                                    }`}
+                                                >
+                                                    {summary["24_hr_change"] >= 0 ? "+" : ""}රු.{" "}
+                                                    {formatLargeNumber(
+                                                        (summary["24_hr_change"] *
+                                                            Number(
+                                                                typeof summary.total_lkr ===
+                                                                    "string"
+                                                                    ? summary.total_lkr.replace(
+                                                                          /,/g,
+                                                                          ""
+                                                                      )
+                                                                    : summary.total_lkr || 0
+                                                            )) /
+                                                            100
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-xs text-tma-text-secondary">
+                                                Change
+                                            </div>
+                                            <div
+                                                className={`text-sm font-semibold ${
+                                                    summary["24_hr_change"] >= 0
+                                                        ? "text-green-400"
+                                                        : "text-red-400"
+                                                }`}
+                                            >
+                                                {summary["24_hr_change"] >= 0 ? "+" : ""}
+                                                {summary["24_hr_change"].toFixed(2)}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="mb-6">
+                                <h1 className="mb-2 text-4xl font-bold text-tma-text-primary">
+                                    $
+                                    {wallet.balance.toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}
+                                </h1>
+                                <div className="flex items-center gap-2">
+                                    <span
+                                        className={`text-sm font-medium ${
+                                            wallet.change24h < 0 ? "text-red-500" : "text-green-500"
+                                        }`}
+                                    >
+                                        {wallet.change24h < 0 ? "-" : "+"}$
+                                        {Math.abs(wallet.change24h).toFixed(2)}
+                                    </span>
+                                    <span
+                                        className={`text-sm ${
+                                            wallet.changePercent < 0
+                                                ? "text-red-500"
+                                                : "text-green-500"
+                                        }`}
+                                    >
+                                        ({wallet.changePercent > 0 ? "+" : ""}
+                                        {wallet.changePercent.toFixed(2)}%)
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        {/* <div className="flex justify-between">
+                        {[
+                            { icon: IoMdSend, label: "Send", unavailable: true },
+                            { icon: IoMdDownload, label: "Receive", unavailable: true },
+                            { icon: IoMdDownload, label: "Swap", unavailable: true },
+                            { icon: FaEllipsisH, label: "More", link: "dashboard/history" },
+                        ].map((action, index) => (
+                            <div key={index} className="flex flex-col items-center">
+                                {action.link ? (
+                                    <Link
+                                        href={action.link}
+                                        className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-tma-bg-secondary transition-colors hover:bg-tma-bg-secondary"
+                                    >
+                                        <action.icon className="text-xl text-orange-500" />
+                                    </Link>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        className={`mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-tma-bg-secondary transition-colors hover:bg-tma-bg-secondary ${
+                                            action.unavailable ? "opacity-50" : ""
+                                        }`}
+                                        onClick={
+                                            action.unavailable
+                                                ? () => {
+                                                      if (action.label === "Send") {
+                                                          toast(
+                                                              "Use /send command in bot to send sats",
+                                                              {
+                                                                  className:
+                                                                      "bg-tma-bg-secondary text-tma-text-primary",
+                                                              }
+                                                          );
+                                                      } else if (action.label === "Receive") {
+                                                          toast(
+                                                              "Use /receive command in bot to receive sats",
+                                                              {
+                                                                  className:
+                                                                      "bg-tma-bg-secondary text-tma-text-primary",
+                                                              }
+                                                          );
+                                                      } else {
+                                                          toast(
+                                                              "This feature is not available yet.",
+                                                              {
+                                                                  className:
+                                                                      "bg-tma-bg-secondary text-tma-text-primary",
+                                                              }
+                                                          );
+                                                      }
+                                                  }
+                                                : undefined
+                                        }
+                                    >
+                                        <action.icon className="text-xl text-orange-500" />
+                                    </button>
+                                )}
+                                <span
+                                    className={`text-xs ${
+                                        action.unavailable ? "text-gray-500" : "text-gray-400"
+                                    }`}
+                                >
+                                    {action.label}
+                                </span>
+                            </div>
+                        ))}
+                    </div> */}
+                    </div>
+                )}
+
+                {/* DCA Chart Section */}
+                {isLoading ? (
+                    <ChartSkeleton />
+                ) : (
+                    <RewardsChart authToken={authToken} avgBtcPrice={summary?.dca.avg_btc_price} />
+                )}
+            </main>
         </div>
-
-        {/* Active Plan */}
-        <PlanCard subscription={subscription} />
-
-        {/* Investment Stats */}
-        <InvestmentCard
-          dcaSpent={dcaSpent}
-          dcaSats={dcaSats}
-          totalLkr={totalLkr}
-          avgBtcPrice={avgBtcPrice}
-          visible={balanceVisible}
-        />
-
-        {/* Reward Portfolio Chart */}
-        <DarkCard className="p-4">
-          <p className="text-[15px] font-semibold text-[#f1f5f9] text-center mb-4">
-            Reward Portfolio Performance
-          </p>
-          <RewardsChart authToken={authToken} avgBtcPrice={avgBtcPrice} />
-        </DarkCard>
-
-      </main>
-      <BottomNavigation />
-    </div>
-  );
+    );
 }

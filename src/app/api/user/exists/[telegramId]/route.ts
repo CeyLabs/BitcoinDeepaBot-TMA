@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(
-    request: NextRequest,
-    { params }: { params: Promise<{ telegramId: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: { telegramId: string } }) {
     try {
-        const { telegramId } = await params;
+        const { telegramId } = params;
 
         const response = await fetch(`${process.env.API_BASE_URL}/user/exists/${telegramId}`, {
             method: "GET",

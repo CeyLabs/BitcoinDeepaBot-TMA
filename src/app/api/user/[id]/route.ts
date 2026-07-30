@@ -2,10 +2,8 @@ import connect from "@/db/connect";
 import User from "@/db/schema";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params: { id } }: { params: { id: string } }) {
     try {
-        const { id } = await params;
-
         await connect();
 
         const position = await User.countDocuments({ id });
