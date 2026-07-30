@@ -101,39 +101,19 @@ export default function OnboardPage() {
 
     if (authError) {
         return (
-            <div className="flex min-h-screen flex-col justify-between bg-[#f5f7fb] p-6">
-                <div className="flex flex-1 flex-col items-center justify-center text-center">
-                    <div className="relative mb-4 size-25">
-                        <Image
-                            src="/emoji/animated/key.webp"
-                            alt="Authentication Error"
-                            fill
-                            className="object-contain"
-                            sizes="100px"
-                        />
-                    </div>
-                    <h2 className="mb-2 text-xl font-semibold text-[#e2574c]">
+            <div className="flex min-h-screen items-center justify-center p-4">
+                <div className="text-center">
+                    <h2 className="mb-2 text-xl font-semibold text-red-500">
                         Authentication Error
                     </h2>
-                    <p className="max-w-65 text-[15px] text-[#64748b]">{authError}</p>
+                    <p className="mb-4 text-tma-text-secondary">{authError}</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="rounded bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
+                    >
+                        Try Again
+                    </button>
                 </div>
-
-                <Button
-                    mode="outline"
-                    size="l"
-                    stretched
-                    style={
-                        {
-                            borderRadius: "12px",
-                            overflow: "hidden",
-                            "--tgui--outline": "#fa7119",
-                            "--tgui--plain_foreground": "#fa7119",
-                        } as React.CSSProperties
-                    }
-                    onClick={() => window.location.reload()}
-                >
-                    Try Again
-                </Button>
             </div>
         );
     }
@@ -163,24 +143,24 @@ export default function OnboardPage() {
 
                 {/* Features Preview */}
                 <div className="mb-8 mt-8 grid grid-cols-2 gap-4">
-                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-xs">
+                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
                         <div className="mb-2 text-2xl">📈</div>
                         <div className="text-sm font-medium text-tma-text-primary">Live Prices</div>
                         <div className="text-xs text-tma-text-secondary">Real-time tracking</div>
                     </div>
-                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-xs">
+                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
                         <div className="mb-2 text-2xl">🔒</div>
                         <div className="text-sm font-medium text-tma-text-primary">Secure</div>
                         <div className="text-xs text-tma-text-secondary">Bank-level security</div>
                     </div>
-                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-xs">
+                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
                         <div className="mb-2 text-2xl">⚡</div>
                         <div className="text-sm font-medium text-tma-text-primary">
                             Fast Trading
                         </div>
                         <div className="text-xs text-tma-text-secondary">Instant transactions</div>
                     </div>
-                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-xs">
+                    <div className="rounded-xl border border-orange-500/25 border-r-orange-600/25 bg-zinc-900/50 p-4 text-center backdrop-blur-sm">
                         <div className="mb-2 text-2xl">🇱🇰</div>
                         <div className="text-sm font-medium text-tma-text-primary">
                             Local Support
@@ -193,7 +173,7 @@ export default function OnboardPage() {
                 <div className="space-y-4">
                     <Button
                         Component="a"
-                        className="w-full bg-linear-to-r from-orange-500 to-orange-600"
+                        className="w-full bg-gradient-to-r from-orange-500 to-orange-600"
                         href="/subscription"
                     >
                         <span className="flex gap-2">🎯 Choose Your Plan</span>

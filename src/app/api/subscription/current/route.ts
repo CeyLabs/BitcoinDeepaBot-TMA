@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 export async function GET(request: Request) {
     try {
         // Get authorization header
-        const headersList = await headers();
+        const headersList = headers();
         const authorization = headersList.get("authorization");
 
         if (!authorization) {

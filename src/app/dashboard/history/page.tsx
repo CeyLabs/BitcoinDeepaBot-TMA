@@ -167,12 +167,12 @@ export default function HistoryPage() {
 
             {/* Error State */}
             {errorMessage && !isLoading && (
-                <div className="mb-6 rounded-xl border border-red-500/30 bg-zinc-900/50 p-4 backdrop-blur-xs">
+                <div className="mb-6 rounded-xl border border-red-500/30 bg-zinc-900/50 p-4 backdrop-blur-sm">
                     <h3 className="mb-2 font-medium text-red-400">Failed to Load Transactions</h3>
                     <p className="mb-4 text-sm text-tma-text-secondary">{errorMessage}</p>
                     <button
                         onClick={() => refetch()}
-                        className="rounded bg-linear-to-r from-red-600 to-red-700 px-4 py-2 text-sm font-medium text-white hover:from-red-700 hover:to-red-800"
+                        className="rounded bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-sm font-medium text-white hover:from-red-700 hover:to-red-800"
                     >
                         Try Again
                     </button>
@@ -282,7 +282,7 @@ export default function HistoryPage() {
                             })
                         ) : (
                             <div className="py-12 text-center">
-                                <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full border border-gray-600 bg-linear-to-br from-gray-700 to-gray-800">
+                                <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full border border-gray-600 bg-gradient-to-br from-gray-700 to-gray-800">
                                     <svg
                                         className="h-10 w-10 text-gray-400"
                                         fill="none"

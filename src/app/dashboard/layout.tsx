@@ -1,11 +1,11 @@
 "use client";
 
 import type React from "react";
+import BottomNavigation from "@/components/bottomNavigation";
 import { useStore } from "@/lib/store";
 import { useEffect } from "react";
 import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import BottomNavigation from "@/components/bottomNavigation";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();

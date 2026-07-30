@@ -7,15 +7,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: "Authorization token required" }, { status: 401 });
         }
 
-        const body = await request.json().catch(() => ({}));
-
         const response = await fetch(`${process.env.API_BASE_URL}/user/kyc/initiate`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: authHeader,
             },
-            body: JSON.stringify(body),
         });
 
         // If the external API returns an error
