@@ -33,6 +33,17 @@ export interface Referral {
     isActive: boolean;
 }
 
+export type TaskFrequency = "daily" | "one_time";
+
+export interface Task {
+    id: string;
+    title: string;
+    description: string;
+    rewardSats: number;
+    frequency: TaskFrequency;
+    icon: string;
+}
+
 export interface Subscription {
     id: string;
     planName: string;
@@ -72,6 +83,41 @@ export interface ApiTransaction {
     settled?: boolean;
 }
 
+export type ActivityType =
+    | "sent"
+    | "received"
+    | "tipjar_sent"
+    | "tipjar_received"
+    | "faucet_sent"
+    | "faucet_received"
+    | "gift_sent"
+    | "gift_received"
+    | "tasks_reward"
+    | "membership_reward";
+
+export interface ActivityItem {
+    id: string;
+    type: ActivityType;
+    /** Username (without "@") for sent/received/tipjar/faucet/gift subtitles */
+    counterparty?: string;
+    /** Action/plan label for tasks/membership reward subtitles, e.g. "Share story", "Shrimp plan" */
+    detailLabel?: string;
+    timestamp: string;
+    /** Signed sats: negative = outgoing, positive = incoming */
+    sats: number;
+    /** Absolute approx LKR value shown as "≈ LKR x" */
+    lkr: number;
+    statusDot?: "green" | "orange";
+    settlement: {
+        status: string;
+        settledOn: string;
+        btcSats: number;
+        btcPriceUsd?: number;
+        btcPriceLkr: number;
+        transactionId: string;
+    };
+}
+
 export interface Wallet {
     balance: number;
     balanceUSD: number;
@@ -104,4 +150,33 @@ export interface SubscriptionPlan {
 export interface UserExistsResponse {
     registered: boolean;
     error?: string;
+}
+
+export interface NewsArticle {
+    id: string;
+    title: string;
+    description: string;
+    thumbnailUrl?: string;
+    category: string;
+    readTimeMinutes: number;
+    publishedAt: string;
+    link: string;
+    content: string;
+    featured?: boolean;
+}
+
+export interface DCSummary {
+    dca: {
+        balance: number;
+        spent: number;
+        avg_btc_price: number;
+    };
+    total_balance: number;
+    total_lkr: string;
+    currency: string;
+    "24_hr_change": number;
+    current_btc_price?: {
+        usd: number;
+        lkr: number;
+    };
 }

@@ -305,8 +305,8 @@ export default function SubscriptionPage() {
                                           className={cn(
                                               "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all duration-300",
                                               selectedPlan === plan.id
-                                                  ? "border-orange-500 bg-gradient-to-r from-orange-500/10 to-orange-600/10 shadow-lg shadow-orange-500/20"
-                                                  : "border-gray-700 bg-gradient-to-r from-gray-800/50 to-gray-900/50 hover:border-gray-600"
+                                                  ? "border-orange-500 bg-linear-to-r from-orange-500/10 to-orange-600/10 shadow-lg shadow-orange-500/20"
+                                                  : "border-gray-700 bg-linear-to-r from-gray-800/50 to-gray-900/50 hover:border-gray-600"
                                           )}
                                           onClick={() => setSelectedPlan(plan.id)}
                                       >
@@ -355,7 +355,7 @@ export default function SubscriptionPage() {
                                 className={cn(
                                     "p-4",
                                     selectedPlan
-                                        ? "bg-gradient-to-r from-orange-500 to-orange-600"
+                                        ? "bg-linear-to-r from-orange-500 to-orange-600"
                                         : "cursor-not-allowed bg-tma-bg-secondary opacity-50"
                                 )}
                             >
@@ -379,7 +379,7 @@ export default function SubscriptionPage() {
                             <div className="mb-8 text-center">
                                 <div className="mb-4 flex justify-center">
                                     <Image
-                                        src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Objects/Hourglass%20Done.webp"
+                                        src="/emoji/animated/hourglass.webp"
                                         width={100}
                                         height={100}
                                         alt="Registration Form"
@@ -399,7 +399,7 @@ export default function SubscriptionPage() {
                                     (p) => p.id === selectedPlan
                                 );
                                 return selectedPlanData ? (
-                                    <div className="mb-6 rounded-xl border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-orange-600/10 p-4">
+                                    <div className="mb-6 rounded-xl border border-orange-500/30 bg-linear-to-r from-orange-500/10 to-orange-600/10 p-4">
                                         <div className="text-center">
                                             <p className="text-md text-tma-text-primary">
                                                 Selected Plan
@@ -558,7 +558,7 @@ export default function SubscriptionPage() {
                                     type="submit"
                                     disabled={isRegistering || !isFormValid}
                                     className={cn(
-                                        "mt-2 w-full rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300",
+                                        "mt-2 w-full rounded-xl bg-linear-to-r from-orange-500 to-orange-600 px-6 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300",
                                         isRegistering || !isFormValid
                                             ? "cursor-not-allowed opacity-50"
                                             : "hover:scale-105 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl"

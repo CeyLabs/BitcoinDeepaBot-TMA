@@ -1,94 +1,80 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 
 interface LoadingSpinnerProps {
-    size?: "sm" | "md" | "lg";
-    color?: "orange" | "white" | "gray";
-    className?: string;
+  size?: "sm" | "md" | "lg";
+  color?: "orange" | "white" | "gray";
+  className?: string;
 }
 
 export function LoadingSpinner({
-    size = "md",
-    color = "orange",
-    className = "",
+  size = "md",
+  color = "orange",
+  className = "",
 }: LoadingSpinnerProps) {
-    const sizeClasses = {
-        sm: "w-4 h-4",
-        md: "w-8 h-8",
-        lg: "w-12 h-12",
-    };
+  const sizeClasses = { sm: "w-4 h-4", md: "w-8 h-8", lg: "w-12 h-12" };
+  const colorClasses = {
+    orange: "border-[#fa7119]",
+    white: "border-white",
+    gray: "border-gray-400",
+  };
 
-    const colorClasses = {
-        orange: "border-orange-500",
-        white: "border-white",
-        gray: "border-gray-400",
-    };
-
-    return (
-        <div
-            className={`animate-spin rounded-full border-2 border-t-transparent ${sizeClasses[size]} ${colorClasses[color]} ${className}`}
-        />
-    );
+  return (
+    <div
+      className={`animate-spin rounded-full border-2 border-t-transparent ${sizeClasses[size]} ${colorClasses[color]} ${className}`}
+    />
+  );
 }
 
 interface LoadingPageProps {
-    message?: string;
-    fullscreen?: boolean;
+  message?: string;
+  fullscreen?: boolean;
 }
 
 export default function LoadingPage({
-    message = "Loading...",
-    fullscreen = true,
+  message = "Loading...",
+  fullscreen = true,
 }: LoadingPageProps) {
-    const [dots, setDots] = useState("");
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setDots((prev) => (prev.length >= 3 ? "" : prev + "."));
-        }, 500);
-
-        return () => clearInterval(interval);
-    }, []);
-
-    if (fullscreen) {
-        return (
-            <div className="fixed inset-0 z-50 flex flex-col items-center justify-center">
-                <div className="flex flex-col items-center space-y-6">
-                    {/* Bitcoin themed loading animation */}
-                    <div className="relative">
-                        <LoadingSpinner size="lg" color="orange" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <Image src="/Yaka.png" alt="Yaka" width={20} height={20} />
-                        </div>
-                    </div>
-
-                    {/* Loading text with animated dots */}
-                    <div className="text-center">
-                        <p className="text-lg font-medium text-tma-text-primary">
-                            {message}
-                            {dots}
-                        </p>
-                        <p className="mt-2 text-sm text-tma-text-secondary">Bitcoin Deepa 🇱🇰</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="flex flex-col items-center justify-center space-y-4 p-8">
-            <div className="relative">
-                <LoadingSpinner size="md" color="orange" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <Image src="/Yaka.png" alt="Yaka" width={13} height={13} />
-                </div>
-            </div>
-            <p className="text-sm text-tma-text-primary">
-                {message}
-                {dots}
-            </p>
+  const content = (
+    <div className="flex flex-col items-center gap-6">
+      {/* Logo inside spinning arc */}
+      <div className="relative flex items-center justify-center">
+        {/* Outer spinner ring */}
+        <div className="h-[128px] w-[128px] animate-spin rounded-full border-[3px] border-transparent border-t-[#fa7119] border-r-[#fa7119]" />
+        {/* Logo centered */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Image
+            src="/BDLogo_Black.svg"
+            alt="Bitcoin Deepa"
+            width={72}
+            height={72}
+            className="object-contain"
+          />
         </div>
+      </div>
+
+      <p className="text-[15px] font-medium text-[#64748b]">{message}</p>
+    </div>
+  );
+
+  if (fullscreen) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#f5f7fb]">
+        {content}
+      </div>
     );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-4 p-8">
+      <div className="relative flex items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-transparent border-t-[#fa7119] border-r-[#fa7119]" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Image src="/BDLogo_Black.svg" alt="Bitcoin Deepa" width={24} height={24} className="object-contain" />
+        </div>
+      </div>
+      <p className="text-sm text-[#64748b]">{message}</p>
+    </div>
+  );
 }

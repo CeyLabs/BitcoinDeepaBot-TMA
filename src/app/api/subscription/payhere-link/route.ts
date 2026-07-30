@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 export async function POST(request: Request) {
     try {
         // Get authorization header
-        const headersList = headers();
+        const headersList = await headers();
         const authorization = headersList.get("authorization");
 
         if (!authorization) {
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
                             message:
                                 "Please complete KYC verification before proceeding with payment",
                             kycStatus: kycData.status,
-                            redirectTo: "/verification",
+                            redirectTo: "/v2/verification",
                         },
                         { status: 403 }
                     );
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
                     {
                         error: "KYC Verification Required",
                         message: "Please complete KYC verification before proceeding with payment",
-                        redirectTo: "/verification",
+                        redirectTo: "/v2/verification",
                     },
                     { status: 403 }
                 );
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
                 {
                     error: "KYC Verification Required",
                     message: "Please complete KYC verification before proceeding with payment",
-                    redirectTo: "/verification",
+                    redirectTo: "/v2/verification",
                 },
                 { status: 403 }
             );
