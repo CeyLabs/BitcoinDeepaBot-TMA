@@ -45,14 +45,14 @@ export default function LoadingPage({
       {/* Logo inside spinning arc */}
       <div className="relative flex items-center justify-center">
         {/* Outer spinner ring */}
-        <div className="h-[128px] w-[128px] animate-spin rounded-full border-[3px] border-transparent border-t-[#fa7119] border-r-[#fa7119]" />
+        <div className="size-44 animate-spin rounded-full border-3 border-transparent border-t-[#fa7119] border-r-[#fa7119]" />
         {/* Logo centered */}
         <div className="absolute inset-0 flex items-center justify-center">
           <Image
             src={logoSrc}
             alt="Bitcoin Deepa"
-            width={72}
-            height={72}
+            width={100}
+            height={100}
             className="object-contain"
           />
         </div>
