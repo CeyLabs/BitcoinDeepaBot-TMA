@@ -3,651 +3,437 @@
 import { useState, useEffect, useCallback } from "react";
 import { useStore } from "@/lib/store";
 import { getAuthTokenFromStorage } from "@/lib/auth";
-import type { SubscriptionPlan } from "@/lib/types";
+import type { SubscriptionPlan, Subscription } from "@/lib/types";
 import { cn } from "@/lib/cn";
-import LoadingPage from "@/components/LoadingPage";
-import Image from "next/image";
 import { initPopup, initHapticFeedback } from "@telegram-apps/sdk-react";
 import { usePayHereRedirect } from "@/lib/hooks";
-import { Button } from "@telegram-apps/telegram-ui";
-import { formatDate } from "@/lib/formatters";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
+import { Button } from "@/components/ui/button";
+import { PageTitle } from "@/components/ui/page-title";
+import { TogglePlan, type PlanDuration } from "@/components/ui/toggle-plan";
+import { PlanCard } from "@/components/ui/plan-card";
+import { formatDate } from "@/lib/formatters";
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const PLAN_EMOJIS: Record<string, string> = {
+  shrimp: "🦐",
+  crab: "🦀",
+  shark: "🦈",
+  whale: "🐳",
+};
+
+function getPlanEmoji(name: string) {
+  return PLAN_EMOJIS[name.toLowerCase()] ?? "₿";
+}
+
+function fmtLkr(n: number) {
+  return `Rs ${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+}
+
+function perMonthLabel(plan: SubscriptionPlan): string {
+  const monthly = plan.type === "weekly" ? plan.amount * 4 : plan.amount;
+  return `Per Month ${fmtLkr(monthly)}`;
+}
+
+function perYearLabel(plan: SubscriptionPlan): string {
+  const yearly = plan.type === "weekly" ? plan.amount * 52 : plan.amount * 12;
+  return `Per Year ${fmtLkr(yearly)}`;
+}
+
+// ─── Tab switcher ─────────────────────────────────────────────────────────────
+
+type Tab = "plans" | "membership";
+
+function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
+  return (
+    <div className="flex items-start p-1 rounded-full bg-[#e2e8f0]">
+      {(["plans", "membership"] as Tab[]).map((tab) => {
+        const isActive = active === tab;
+        return (
+          <button
+            key={tab}
+            onClick={() => onChange(tab)}
+            className={cn(
+              "flex items-center justify-center px-6 py-1.5 rounded-full flex-1",
+              "text-[14px] font-semibold leading-[28px] text-center transition-colors",
+              isActive ? "bg-white text-[#fa7119]" : "bg-transparent text-[#64748b]"
+            )}
+          >
+            {tab === "plans" ? "Plans" : "My Membership"}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Active membership card ───────────────────────────────────────────────────
+
+function ActiveMembershipCard({
+  subscription,
+  onCancel,
+  isCancelling,
+  cancelError,
+}: {
+  subscription: Subscription;
+  onCancel: () => void;
+  isCancelling: boolean;
+  cancelError: string | null;
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Plan summary */}
+      <div className="bg-white rounded-[12px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] overflow-hidden">
+        {/* Active banner */}
+        <div className="flex items-center gap-2 px-4 py-2 bg-[#22c55e]/10 border-b border-[#22c55e]/20">
+          <div className="size-2 rounded-full bg-[#22c55e]" />
+          <p className="text-[13px] font-semibold text-[#22c55e]">Active</p>
+        </div>
+
+        <div className="px-4 py-4 flex items-center gap-3">
+          <span className="text-[36px] leading-none">
+            {getPlanEmoji(subscription.planName)}
+          </span>
+          <div>
+            <p className="text-[18px] font-bold text-[#1b2027]">{subscription.planName}</p>
+            <p className="text-[13px] text-[#64748b] capitalize">
+              {fmtLkr(subscription.price)}/{subscription.planType === "weekly" ? "week" : "month"}
+            </p>
+          </div>
+        </div>
+
+        <div className="px-4 pb-4 flex flex-col gap-2 border-t border-[#f1f5f9] pt-3">
+          {subscription.startDate && (
+            <div className="flex items-center justify-between">
+              <p className="text-[13px] text-[#64748b]">Started</p>
+              <p className="text-[13px] font-medium text-[#1b2027]">
+                {formatDate(subscription.startDate)}
+              </p>
+            </div>
+          )}
+          {subscription.endDate && (
+            <div className="flex items-center justify-between">
+              <p className="text-[13px] text-[#64748b]">Next billing</p>
+              <p className="text-[13px] font-medium text-[#1b2027]">
+                {formatDate(subscription.endDate)}
+              </p>
+            </div>
+          )}
+          <div className="flex items-center justify-between">
+            <p className="text-[13px] text-[#64748b]">Billing cycle</p>
+            <p className="text-[13px] font-medium text-[#1b2027] capitalize">
+              {subscription.planType}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {cancelError && (
+        <p className="text-[13px] text-red-500 text-center">{cancelError}</p>
+      )}
+
+      <Button
+        variant="destructive"
+        loading={isCancelling}
+        onClick={onCancel}
+      >
+        Cancel Membership
+      </Button>
+    </div>
+  );
+}
+
+// ─── Empty membership state ───────────────────────────────────────────────────
+
+function NoMembership({ onViewPlans }: { onViewPlans: () => void }) {
+  return (
+    <div className="flex flex-col items-center text-center py-10 gap-4">
+      <div className="size-16 rounded-full bg-[#f1f5f9] flex items-center justify-center">
+        <span className="text-[30px]">₿</span>
+      </div>
+      <div>
+        <p className="text-[17px] font-semibold text-[#1b2027]">No Active Membership</p>
+        <p className="text-[13px] text-[#64748b] mt-1">
+          Choose a plan to start your Bitcoin දීප membership
+        </p>
+      </div>
+      <Button variant="primary" size="auto" className="px-8" onClick={onViewPlans}>
+        View Plans
+      </Button>
+    </div>
+  );
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function SubscriptionPage() {
-    const [selectedPlan, setSelectedPlan] = useState<string>();
-    const [activeTab, setActiveTab] = useState<"plans" | "status">("plans");
-    const { subscription, setSubscription } = useStore();
+  const [activeTab, setActiveTab] = useState<Tab>("plans");
+  const [duration, setDuration] = useState<PlanDuration>("weekly");
+  const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>();
+  const [payhereLinkLoading, setPayhereLinkLoading] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
-    const redirectToPayHereViaPage = usePayHereRedirect();
+  const { subscription, setSubscription } = useStore();
+  const redirectToPayHereViaPage = usePayHereRedirect();
+  const popup = initPopup();
 
-    // Initialize Telegram Mini App SDK popup
-    const popup = initPopup();
-    // Initialize haptic feedback (Telegram Mini App). Safe no-op outside Telegram.
-    const haptic = initHapticFeedback();
+  const haptic = initHapticFeedback();
+  const vibrateLight = () => {
+    try { haptic?.selectionChanged?.(); } catch {}
+    try { navigator?.vibrate?.(10); } catch {}
+  };
 
-    // Light haptic helper for toggle changes
-    const vibrateLight = () => {
-        try {
-            // Prefer Telegram selection change haptic
-            // @ts-ignore - SDK provides this at runtime
-            haptic?.selectionChanged?.();
-        } catch {}
-        // Fallback for non-Telegram environments (Android Chrome, etc.)
-        try {
-            if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-                // @ts-ignore - vibrate may exist at runtime
-                navigator?.vibrate?.(10);
-            }
-        } catch {}
-    };
+  const authToken = getAuthTokenFromStorage();
 
-    const onTabChange = (tab: "plans" | "status") => {
-        vibrateLight();
-        setActiveTab(tab);
-    };
+  // Fetch packages
+  const {
+    data: packages = [],
+    isLoading: packagesLoading,
+    error: packagesError,
+    refetch: refetchPackages,
+  } = useQuery<SubscriptionPlan[]>({
+    queryKey: queryKeys.packages,
+    queryFn: async () => {
+      const res = await fetch("/api/packages", {
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to fetch packages");
+      return Array.isArray(data) ? data : data.packages || [];
+    },
+    staleTime: 1000 * 60 * 5,
+  });
 
-    // Get auth token from localStorage
-    const authToken = getAuthTokenFromStorage();
+  // Fetch current subscription
+  const calculateEndDate = useCallback((startDate: string, planType: string) => {
+    const start = new Date(startDate);
+    const daysToAdd = planType === "weekly" ? 7 : 30;
+    return new Date(start.getTime() + daysToAdd * 86400000).toISOString();
+  }, []);
 
-    // Package state
-    const {
-        data: packages = [],
-        isLoading: loading,
-        error,
-        refetch: refetchPackages,
-    } = useQuery<SubscriptionPlan[]>({
-        queryKey: queryKeys.packages,
-        queryFn: async () => {
-            const response = await fetch("/api/packages", {
-                headers: { "Content-Type": "application/json" },
-            });
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(
-                    data.message ||
-                        `Failed to fetch packages: ${response.status} ${response.statusText}`
-                );
-            }
-            return Array.isArray(data) ? data : data.packages || [];
-        },
-        staleTime: 1000 * 60 * 5,
-    });
-
-    const errorMessage = error instanceof Error ? error.message : null;
-
-    // Subscription fetching state
-    const [subscriptionLoading, setSubscriptionLoading] = useState(false);
-    const [subscriptionError, setSubscriptionError] = useState<string | null>(null);
-
-    // Helper function to calculate subscription end date
-    const calculateEndDate = useCallback((startDate: string, planType: string) => {
-        const start = new Date(startDate);
-        const daysToAdd = planType === "weekly" ? 7 : 30; // Assume monthly = 30 days
-        const endDate = new Date(start.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
-        return endDate.toISOString();
-    }, []);
-
-    // Fetch current subscription function
-    const fetchCurrentSubscription = useCallback(async () => {
-        if (!authToken) {
-            return;
+  useEffect(() => {
+    if (!authToken || packages.length === 0) return;
+    fetch("/api/subscription/current", {
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+    })
+      .then((r) => r.json())
+      .then((result) => {
+        if (result.subscription) {
+          const sub = result.subscription;
+          const pkg = packages.find((p) => p.id === sub.package_id);
+          setSubscription({
+            id: sub.payhere_sub_id,
+            planName: pkg?.name ?? "Unknown Plan",
+            planType: sub.frequency ?? "monthly",
+            price: pkg?.amount ?? 0,
+            currency: "Rs",
+            startDate: sub.created_at,
+            endDate: sub.next_billing_date ?? (pkg ? calculateEndDate(sub.created_at, pkg.type) : sub.updated_at),
+            isActive: sub.is_active,
+            packageId: sub.package_id,
+            userId: sub.user_id,
+            payhereSubId: sub.payhere_sub_id,
+          });
+          setSelectedPlanId(sub.package_id);
+        } else {
+          setSubscription(null);
         }
+      })
+      .catch(() => {});
+  }, [authToken, packages, setSubscription, calculateEndDate]);
 
-        if (packages.length === 0) {
-            return;
-        }
+  // Auto-select first plan of current duration
+  useEffect(() => {
+    if (packages.length === 0) return;
+    const filtered = packages.filter((p) => p.type === duration);
+    if (filtered.length > 0 && !selectedPlanId) {
+      setSelectedPlanId(filtered[0].id);
+    }
+  }, [packages, duration, selectedPlanId]);
 
-        try {
-            setSubscriptionLoading(true);
-            setSubscriptionError(null);
+  const handleSubscribe = async () => {
+    const plan = packages.find((p) => p.id === selectedPlanId);
+    if (!plan || !authToken) return;
 
-            const response = await fetch("/api/subscription/current", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${authToken}`,
-                },
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    result.message || `Failed to fetch membership: ${response.statusText}`
-                );
-            }
-
-            if (result.subscription) {
-                // Map subscription with package details
-                // The API returns subscription with package_id, but we need to map it to package details
-                const subscriptionData = result.subscription;
-
-                // Find the matching package by package_id to get plan name, price, etc.
-                const matchingPackage = packages.find(
-                    (pkg) => pkg.id === subscriptionData.package_id
-                );
-
-                // Create enhanced subscription object with package details
-                const enhancedSubscription = {
-                    id: subscriptionData.payhere_sub_id,
-                    planName: matchingPackage?.name || "Unknown Plan",
-                    planType: subscriptionData.frequency || "monthly",
-                    price: matchingPackage?.amount || 0,
-                    currency: "රු.",
-                    startDate: subscriptionData.created_at,
-                    endDate:
-                        subscriptionData.next_billing_date ||
-                        (matchingPackage
-                            ? calculateEndDate(subscriptionData.created_at, matchingPackage.type)
-                            : subscriptionData.updated_at),
-                    isActive: subscriptionData.is_active,
-                    // Keep original data for reference
-                    packageId: subscriptionData.package_id,
-                    userId: subscriptionData.user_id,
-                    payhereSubId: subscriptionData.payhere_sub_id,
-                };
-
-                setSubscription(enhancedSubscription);
-                setSelectedPlan(subscriptionData.package_id);
-
-                if (!matchingPackage) {
-                    console.warn(
-                        "⚠️ Package not found for package_id:",
-                        subscriptionData.package_id
-                    );
-                }
-            } else {
-                setSubscription(null);
-            }
-        } catch (err) {
-            console.error("❌ Error fetching current membership:", err);
-            setSubscriptionError(err instanceof Error ? err.message : "Failed to fetch membership");
-        } finally {
-            setSubscriptionLoading(false);
-        }
-    }, [authToken, setSubscription, setSelectedPlan, packages, calculateEndDate]);
-
-    const refetch = async () => {
-        await refetchPackages();
-    };
-
-    useEffect(() => {
-        if (packages.length > 0 && !selectedPlan && !subscription?.isActive) {
-            setSelectedPlan(packages[0].id);
-        }
-    }, [packages, selectedPlan, subscription?.isActive]);
-
-    // Fetch current subscription when auth token is available
-    useEffect(() => {
-        if (authToken && packages.length > 0) {
-            fetchCurrentSubscription();
-        }
-    }, [authToken, packages.length, fetchCurrentSubscription]);
-
-    // State for PayHere link
-    const [payhereLink, setPayhereLink] = useState<string | null>(null);
-    const [payhereLinkLoading, setPayhereLinkLoading] = useState(false);
-    const [payhereLinkError, setPayhereLinkError] = useState<string | null>(null);
-
-    const handleSubscribe = async (plan: SubscriptionPlan) => {
-        if (!authToken) {
-            console.error("No auth token available for membership");
-            return;
-        }
-        // Show Telegram popup if user has active subscription
-        if (subscription && subscription.isActive) {
-            popup.open({
-                title: "Active Membership",
-                message: "First cancel your existing membership to subscribe to another package.",
-                buttons: [{ id: "ok", type: "ok" }],
-            });
-
-            if (!popup.isOpened) {
-                alert("First cancel your existing membership to subscribe to another package.");
-            }
-            return;
-        }
-
-        try {
-            setPayhereLinkLoading(true);
-            setPayhereLinkError(null);
-
-            // Generate PayHere link
-            const response = await fetch("/api/subscription/payhere-link", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${authToken}`,
-                },
-                body: JSON.stringify({
-                    package_id: plan.id,
-                }),
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    result.message || `Failed to generate PayHere link: ${response.statusText}`
-                );
-            }
-
-            if (result.link) {
-                // Pass the complete URL directly to redirectToPayHereViaPage
-                redirectToPayHereViaPage(result.link);
-            } else {
-                throw new Error("No PayHere link received");
-            }
-        } catch (err) {
-            console.error("❌ Error generating PayHere link:", err);
-            setPayhereLinkError(
-                err instanceof Error ? err.message : "Failed to generate PayHere link"
-            );
-        } finally {
-            setPayhereLinkLoading(false);
-        }
-    };
-
-    const [isCancelling, setIsCancelling] = useState(false);
-    const [cancelError, setCancelError] = useState<string | null>(null);
-
-    const handleCancelSubscription = async () => {
-        if (!authToken) return;
-
-        try {
-            setIsCancelling(true);
-            setCancelError(null);
-
-            // Call the API to cancel subscription
-            const response = await fetch("/api/subscription/cancel", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${authToken}`,
-                },
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(
-                    errorData.message || `Failed to cancel membership: ${response.statusText}`
-                );
-            }
-
-            // Update subscription state
-            setSubscription(null);
-
-            if (packages.length > 0) {
-                setSelectedPlan(packages[0].id);
-            }
-
-            setActiveTab("plans");
-        } catch (err) {
-            console.error("❌ Error cancelling membership:", err);
-            setCancelError(err instanceof Error ? err.message : "Failed to cancel membership");
-        } finally {
-            setIsCancelling(false);
-        }
-    };
-
-    // Show loading state
-    if (loading && !packages.length) {
-        return <LoadingPage />;
+    if (subscription?.isActive) {
+      popup.open({
+        title: "Active Membership",
+        message: "Cancel your existing membership before subscribing to another plan.",
+        buttons: [{ id: "ok", type: "ok" }],
+      });
+      return;
     }
 
-    // Show error state with retry option
-    if (errorMessage) {
-        return (
-            <main className="flex min-h-screen items-center justify-center p-4">
-                <div className="text-center">
-                    <h2 className="mb-2 text-xl font-semibold text-red-500">
-                        Failed to Load Plans
-                    </h2>
-                    <p className="mb-4 text-tma-text-secondary">{errorMessage}</p>
-                    <button
-                        onClick={refetch}
-                        className="rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700"
-                    >
-                        Try Again
-                    </button>
-                </div>
-            </main>
-        );
+    try {
+      setPayhereLinkLoading(true);
+      const res = await fetch("/api/subscription/payhere-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({ package_id: plan.id }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || "Failed to generate payment link");
+      if (result.link) redirectToPayHereViaPage(result.link);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setPayhereLinkLoading(false);
     }
+  };
 
-    // Show empty state if no packages
-    if (packages.length === 0) {
-        return (
-            <main className="flex min-h-screen items-center justify-center p-4">
-                <div className="text-center">
-                    <h2 className="mb-2 text-xl font-semibold text-tma-text-secondary">
-                        No Plans Available
-                    </h2>
-                    <p className="mb-4 text-tma-text-secondary">Please check back later</p>
-                    <button
-                        onClick={refetch}
-                        className="rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700"
-                    >
-                        Refresh
-                    </button>
-                </div>
-            </main>
-        );
+  const handleCancel = async () => {
+    if (!authToken) return;
+    try {
+      setIsCancelling(true);
+      setCancelError(null);
+      const res = await fetch("/api/subscription/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to cancel membership");
+      }
+      setSubscription(null);
+      setSelectedPlanId(undefined);
+      setActiveTab("plans");
+    } catch (err) {
+      setCancelError(err instanceof Error ? err.message : "Failed to cancel membership");
+    } finally {
+      setIsCancelling(false);
     }
+  };
 
+  const filteredPlans = packages.filter((p) => p.type === duration);
+
+  const selectedPlan = packages.find((p) => p.id === selectedPlanId);
+  const isAlreadySubscribed = subscription?.isActive && subscription.packageId === selectedPlanId;
+
+  // Error state
+  if (packagesError && packages.length === 0) {
     return (
-        <main className="pb-20">
-            {/* Header */}
-            <div className="mb-7 flex items-center justify-center">
-                <Image
-                    src="/DeepaLogo_WnO.svg"
-                    alt="Bitcoin Deepa"
-                    width={100}
-                    height={50}
-                    priority
-                />
-            </div>
-
-            {/* Tabs - segmented control */}
-            <div className="mb-6">
-                <div className="relative grid grid-cols-2 items-center rounded-2xl border border-zinc-800 bg-tma-bg-secondary p-1">
-                    {/* Sliding background */}
-                    <div
-                        className={cn(
-                            "absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] transform-gpu rounded-xl bg-zinc-800 transition-transform duration-200 ease-out",
-                            activeTab === "status" && "translate-x-full"
-                        )}
-                    />
-                    <button
-                        onClick={() => onTabChange("plans")}
-                        className={cn(
-                            "relative z-10 inline-flex items-center justify-center rounded-xl py-2.5 font-medium transition-colors",
-                            activeTab === "plans" ? "text-orange-500" : "text-tma-text-secondary"
-                        )}
-                    >
-                        Plans
-                    </button>
-                    <button
-                        onClick={() => onTabChange("status")}
-                        className={cn(
-                            "relative z-10 inline-flex items-center justify-center rounded-xl py-2.5 font-medium transition-colors",
-                            activeTab === "status" ? "text-orange-500" : "text-tma-text-secondary"
-                        )}
-                    >
-                        My Membership
-                    </button>
-                </div>
-            </div>
-
-            {/* Smooth content switcher */}
-            <div className="relative">
-                {/* Plans section */}
-                <div
-                    className={cn(
-                        "w-full transition-opacity duration-200",
-                        activeTab === "plans"
-                            ? "relative opacity-100"
-                            : "pointer-events-none absolute inset-0 opacity-0"
-                    )}
-                >
-                    <div className="space-y-6">
-                        <div>
-                            <h2 className="mb-4 text-xl font-semibold">
-                                Pick your membership plan
-                            </h2>
-
-                            <div className="space-y-3">
-                                {packages.map((plan: SubscriptionPlan) => (
-                                    <div
-                                        key={plan.id}
-                                        className={cn(
-                                            "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all duration-300",
-                                            selectedPlan === plan.id
-                                                ? "border-orange-500 bg-gradient-to-r from-orange-500/10 to-orange-600/10 shadow-lg shadow-orange-500/20"
-                                                : "border-gray-700 bg-tma-bg-card hover:border-gray-600"
-                                        )}
-                                        onClick={() => setSelectedPlan(plan.id)}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className={cn(
-                                                    "flex h-5 w-5 items-center justify-center rounded-full border-2",
-                                                    selectedPlan === plan.id
-                                                        ? "border-orange-500"
-                                                        : "border-gray-500"
-                                                )}
-                                            >
-                                                {selectedPlan === plan.id && (
-                                                    <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />
-                                                )}
-                                            </div>
-                                            <div>
-                                                <h3 className="font-medium text-tma-text-primary">
-                                                    {plan.name}
-                                                </h3>
-                                                {plan.popular && (
-                                                    <span className="text-xs text-orange-500">
-                                                        Most Popular
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-sm font-semibold text-orange-500">
-                                                රු. {plan.amount.toLocaleString()}
-                                            </div>
-                                            <div className="text-xs text-tma-text-secondary">
-                                                {plan.type}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <Button
-                            Component="a"
-                            className={cn(
-                                "w-full font-medium text-white transition-all duration-300",
-                                payhereLinkLoading
-                                    ? "cursor-not-allowed bg-tma-bg-secondary"
-                                    : selectedPlan
-                                      ? "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-                                      : "cursor-not-allowed bg-tma-bg-secondary opacity-50"
-                            )}
-                            onClick={() => {
-                                if (selectedPlan && selectedPlan !== subscription?.packageId) {
-                                    const plan = packages.find(
-                                        (p: SubscriptionPlan) => p.id === selectedPlan
-                                    );
-                                    if (plan) handleSubscribe(plan);
-                                }
-                            }}
-                            disabled={
-                                payhereLinkLoading || selectedPlan === subscription?.packageId
-                            }
-                        >
-                            {payhereLinkLoading ? (
-                                <>
-                                    <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white align-text-bottom"></span>
-                                    Connecting to PayHere...
-                                </>
-                            ) : (
-                                <span className="flex items-center justify-center gap-2">
-                                    Subscribe
-                                </span>
-                            )}
-                        </Button>
-                    </div>
-                </div>
-
-                {/* Status section */}
-                <div
-                    className={cn(
-                        "w-full transition-opacity duration-300",
-                        activeTab === "status"
-                            ? "relative opacity-100"
-                            : "pointer-events-none absolute inset-0 opacity-0"
-                    )}
-                >
-                    <div className="space-y-6">
-                        {/* Show subscription loading state */}
-                        {subscriptionLoading && !subscription ? (
-                            <div className="py-8 text-center">
-                                <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-600 border-t-orange-500"></div>
-                                <p className="text-tma-text-secondary">Loading membership...</p>
-                            </div>
-                        ) : subscriptionError ? (
-                            <div className="rounded-xl border border-red-500/30 bg-tma-bg-card p-4 text-center backdrop-blur-sm">
-                                <h3 className="mb-2 font-medium text-red-400">
-                                    Failed to Load Membership
-                                </h3>
-                                <p className="mb-4 text-sm text-tma-text-secondary">
-                                    {subscriptionError}
-                                </p>
-                                <button
-                                    onClick={fetchCurrentSubscription}
-                                    className="rounded bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-sm font-medium text-white hover:from-red-700 hover:to-red-800"
-                                >
-                                    Retry
-                                </button>
-                            </div>
-                        ) : subscription ? (
-                            <>
-                                <div className="rounded-xl border border-green-500/30 bg-tma-bg-card p-6 backdrop-blur-sm">
-                                    <div className="text-center">
-                                        <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20">
-                                            <svg
-                                                className="h-6 w-6 text-green-400"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M5 13l4 4L19 7"
-                                                />
-                                            </svg>
-                                        </div>
-                                        <h2 className="mb-2 text-lg font-medium text-green-400">
-                                            Active Membership
-                                        </h2>
-                                        <h3 className="text-xl font-semibold">
-                                            {subscription.planName || "Premium Plan"}
-                                        </h3>
-                                        {subscription.planType && (
-                                            <p className="mt-1 text-sm capitalize text-tma-text-secondary">
-                                                {subscription.planType} billing
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Subscription Details */}
-                                    <div className="mt-4 space-y-2 text-sm">
-                                        {subscription.price && (
-                                            <div className="flex justify-between">
-                                                <span className="text-tma-text-secondary">
-                                                    Price:
-                                                </span>
-                                                <span>
-                                                    රු. {subscription.price.toLocaleString()}
-                                                </span>
-                                            </div>
-                                        )}
-                                        {subscription.startDate && (
-                                            <div className="flex justify-between">
-                                                <span className="text-tma-text-secondary">
-                                                    Started:
-                                                </span>
-                                                <span>{formatDate(subscription.startDate)}</span>
-                                            </div>
-                                        )}
-                                        {subscription.endDate && (
-                                            <div className="flex justify-between">
-                                                <span className="text-tma-text-secondary">
-                                                    Next billing:
-                                                </span>
-                                                <span>{formatDate(subscription.endDate)}</span>
-                                            </div>
-                                        )}
-                                        <div className="flex justify-between">
-                                            <span className="text-tma-text-secondary">Status:</span>
-                                            <span
-                                                className={cn(
-                                                    "font-medium",
-                                                    subscription.isActive
-                                                        ? "text-green-400"
-                                                        : "text-red-400"
-                                                )}
-                                            >
-                                                {subscription.isActive ? "Active" : "Inactive"}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {cancelError && (
-                                    <div className="mb-4 rounded-xl border border-red-500/30 bg-tma-bg-card p-3 text-center backdrop-blur-sm">
-                                        <p className="text-sm text-red-400">{cancelError}</p>
-                                    </div>
-                                )}
-
-                                <button
-                                    onClick={handleCancelSubscription}
-                                    disabled={isCancelling}
-                                    className={cn(
-                                        "w-full rounded-xl py-4 font-medium text-white transition-all duration-300",
-                                        isCancelling
-                                            ? "cursor-not-allowed bg-tma-bg-secondary"
-                                            : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
-                                    )}
-                                >
-                                    {isCancelling ? (
-                                        <>
-                                            <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white align-text-bottom"></span>
-                                            Cancelling...
-                                        </>
-                                    ) : (
-                                        "Cancel Membership"
-                                    )}
-                                </button>
-                            </>
-                        ) : (
-                            <div className="py-8 text-center">
-                                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-tma-bg-secondary">
-                                    <svg
-                                        className="h-8 w-8 text-gray-400"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                        />
-                                    </svg>
-                                </div>
-                                <h2 className="mb-4 text-lg font-medium">No Active Membership</h2>
-                                <p className="mb-6 text-gray-400">
-                                    Choose a plan to get started with your bitcoin දීප membership
-                                </p>
-                                <Button
-                                    Component="a"
-                                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3"
-                                    onClick={() => setActiveTab("plans")}
-                                >
-                                    View Plans
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </main>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
+        <p className="text-[16px] font-semibold text-[#1b2027]">Failed to Load Plans</p>
+        <p className="text-[13px] text-[#64748b]">
+          {packagesError instanceof Error ? packagesError.message : "Something went wrong"}
+        </p>
+        <Button variant="secondary" size="auto" className="px-8" onClick={() => refetchPackages()}>
+          Try Again
+        </Button>
+      </div>
     );
+  }
+
+  return (
+    <div className="pb-8 space-y-5">
+
+      {/* Page title */}
+      <PageTitle
+        title="Choose Your Plan"
+        subtitle="Get your Bitcoin දීප membership"
+        className="pt-2"
+      />
+
+      {/* Tab switcher */}
+      <TabBar
+        active={activeTab}
+        onChange={(t) => { vibrateLight(); setActiveTab(t); }}
+      />
+
+      {/* ── Plans tab ─────────────────────────────────────── */}
+      {activeTab === "plans" && (
+        <div className="space-y-5">
+          {/* Duration toggle */}
+          <div className="flex justify-center">
+            <TogglePlan
+              value={duration}
+              onChange={(d) => {
+                vibrateLight();
+                setDuration(d);
+                // Select first plan of new duration
+                const first = packages.find((p) => p.type === d);
+                if (first) setSelectedPlanId(first.id);
+              }}
+            />
+          </div>
+
+          {/* Plan cards */}
+          {packagesLoading ? (
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="h-[90px] rounded-[12px] bg-[#e2e8f0] animate-pulse" />
+              ))}
+            </div>
+          ) : filteredPlans.length === 0 ? (
+            <div className="py-8 text-center">
+              <p className="text-[14px] text-[#64748b]">
+                No {duration} plans available
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredPlans.map((plan) => (
+                <PlanCard
+                  key={plan.id}
+                  emoji={<span className="text-[28px] leading-none">{getPlanEmoji(plan.name)}</span>}
+                  name={plan.name}
+                  price={fmtLkr(plan.amount)}
+                  period={`/${plan.type === "weekly" ? "week" : "month"}`}
+                  description={plan.features?.[0] ?? "Bitcoin membership rewards"}
+                  perMonth={perMonthLabel(plan)}
+                  perYear={perYearLabel(plan)}
+                  selected={selectedPlanId === plan.id && !subscription?.isActive}
+                  active={subscription?.isActive && subscription.packageId === plan.id}
+                  mostPopular={plan.popular}
+                  onSelect={() => setSelectedPlanId(plan.id)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Subscribe button */}
+          <Button
+            variant="primary"
+            loading={payhereLinkLoading}
+            disabled={!selectedPlanId || isAlreadySubscribed || packagesLoading}
+            onClick={handleSubscribe}
+          >
+            {isAlreadySubscribed ? "Already Subscribed" : "Subscribe Now"}
+          </Button>
+
+          {isAlreadySubscribed && (
+            <p className="text-[12px] text-center text-[#64748b]">
+              You&apos;re already on this plan.{" "}
+              <button
+                className="text-[#fa7119] font-semibold"
+                onClick={() => setActiveTab("membership")}
+              >
+                Manage membership →
+              </button>
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ── My Membership tab ─────────────────────────────── */}
+      {activeTab === "membership" && (
+        <>
+          {subscription?.isActive ? (
+            <ActiveMembershipCard
+              subscription={subscription}
+              onCancel={handleCancel}
+              isCancelling={isCancelling}
+              cancelError={cancelError}
+            />
+          ) : (
+            <NoMembership onViewPlans={() => setActiveTab("plans")} />
+          )}
+        </>
+      )}
+
+    </div>
+  );
 }

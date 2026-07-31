@@ -158,7 +158,7 @@ ${inviteLink}
                     </div>
 
                     {/* Current Stats */}
-                    <div className="rounded-lg border border-orange-500/30 bg-gradient-to-r from-orange-600/20 to-orange-500/20 p-4">
+                    <div className="rounded-lg border border-orange-500/30 bg-linear-to-r from-orange-600/20 to-orange-500/20 p-4">
                         <h3 className="mb-3 font-medium text-orange-400">Current reward stats</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="text-center">

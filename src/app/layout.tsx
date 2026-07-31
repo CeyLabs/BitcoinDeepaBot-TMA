@@ -1,12 +1,11 @@
 import { Inter } from "next/font/google";
 import "@/styles/theme.css";
 import "@telegram-apps/telegram-ui/dist/styles.css";
-import { AppRoot } from "@telegram-apps/telegram-ui";
 import Providers from "./context/providers";
 import Script from "next/script";
-import { Toaster } from "sonner";
+import { cn } from "@/lib/cn";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export default function RootLayout({
     children,
@@ -14,7 +13,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" className={cn("font-sans", inter.variable)} suppressHydrationWarning>
             <head>
                 <Script
                     src="https://telegram.org/js/telegram-web-app.js"
@@ -35,10 +34,7 @@ export default function RootLayout({
             </head>
             <body className={`${inter.className} min-h-screen leading-tight`}>
                 <Providers>
-                    <AppRoot platform="base" id="tg-ui-root">
-                        {children}
-                        <Toaster position="top-center" richColors />
-                    </AppRoot>
+                    {children}
                 </Providers>
             </body>
         </html>
