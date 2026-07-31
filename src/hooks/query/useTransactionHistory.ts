@@ -13,6 +13,7 @@ export interface DcaTransaction {
   package_amount: number;
   package_name?: string;
   status: string;
+  settled?: boolean;
 }
 
 interface RawTransaction {
@@ -23,6 +24,7 @@ interface RawTransaction {
   package_amount?: string | number;
   package_name?: string;
   status: string;
+  settled?: boolean;
 }
 
 interface TransactionListResponse {
@@ -62,6 +64,7 @@ export function useTransactionHistory() {
           package_amount: toNumber(tx.package_amount),
           package_name: tx.package_name,
           status: tx.status,
+          settled: tx.settled,
         }))
         .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
     },

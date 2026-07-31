@@ -91,7 +91,7 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
             }
             after={
               <div className="flex shrink-0 items-center gap-1">
-                {subscription && (
+                {subscription?.isActive && (
                   <Badge
                     type="number"
                     mode="primary"

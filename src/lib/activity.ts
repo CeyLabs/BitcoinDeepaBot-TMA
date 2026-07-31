@@ -58,9 +58,9 @@ export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityIte
         timestamp: tx.created_at,
         sats: tx.satoshis_purchased,
         lkr: tx.package_amount,
-        statusDot: "green",
+        statusDot: tx.settled ? "green" : "orange",
         settlement: {
-            status: "Settled",
+            status: tx.settled ? "Settled" : "Pending",
             settledOn: tx.created_at,
             btcSats: tx.satoshis_purchased,
             btcPriceLkr: tx.btc_price_at_purchase,
