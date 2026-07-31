@@ -1,16 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     allowedDevOrigins: ["*.sats.day", "*.ngrok-free.app"],
-    images: {
-        remotePatterns: [
-            {
-                protocol: "https",
-                hostname: "raw.githubusercontent.com",
-                port: "",
-                pathname: "/**",
-            },
-        ],
-    },
     async headers() {
         return [
             {

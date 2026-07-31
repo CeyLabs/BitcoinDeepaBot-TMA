@@ -1,32 +1,15 @@
 "use client";
 
-import type React from "react";
-import { useStore } from "@/lib/store";
-import { useEffect } from "react";
-import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
-import { useRouter } from "next/navigation";
 import BottomNavigation from "@/components/bottomNavigation";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-    const router = useRouter();
-    const { isExistingUser, setIsExistingUser } = useStore();
+  useAuthGuard();
 
-    useEffect(() => {
-        const token = getAuthTokenFromStorage();
-        const isExisting = getIsExistingUserFromStorage();
-
-        if (token) {
-            setIsExistingUser(isExisting);
-        } else {
-            router.push("/onboard");
-        }
-    }, [router, setIsExistingUser]);
-
-    return (
-        <div className="mx-auto min-h-screen max-w-md px-5 pb-20 pt-5">
-            {children}
-            {/* Only show bottom navigation for registered users */}
-            {isExistingUser && <BottomNavigation />}
-        </div>
-    );
+  return (
+    <div className="mx-auto flex min-h-screen max-w-md flex-col gap-5 bg-surface-main px-5 pb-22 pt-5">
+      {children}
+      <BottomNavigation />
+    </div>
+  );
 }

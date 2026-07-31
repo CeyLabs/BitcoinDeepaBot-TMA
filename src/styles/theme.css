@@ -1,6 +1,4 @@
 @import 'tailwindcss';
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -43,9 +41,7 @@
   /* Success green — opacity applied at the call site via color-mix() */
   --color-success: #25a761;
 
-  --color-surface-glass: #FFFFFF99
-
-  --color-surface-tertiary: #E2E8F0
+  --color-surface-glass: #FFFFFF99;
 }
 
 /*
@@ -132,7 +128,6 @@
     --color-surface-main: #1b2027;
     --color-surface-primary: #0b0f14;
     --color-surface-glass: #00000099;
-    --color-surface-tertiary: #334155;
 }
 
 body {
@@ -144,34 +139,4 @@ body {
     color: var(--text-primary);
     --tg-theme-button-color: #fa7119;
     --tg-theme-link-color: #fa7119;
-}
-
-/* Custom animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes pulse {
-    0%,
-    100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-}
-
-.animate-fadeInUp {
-    animation: fadeInUp 0.6s ease-out forwards;
-}
-
-.animate-pulse-custom {
-    animation: pulse 2s ease-in-out infinite;
 }

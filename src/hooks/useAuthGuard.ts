@@ -6,7 +6,7 @@ import { useStore } from "@/lib/store";
 import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
 
 /**
- * Redirects to /onboard when there's no auth token, otherwise syncs
+ * Redirects to / when there's no auth token, otherwise syncs
  * isExistingUser from storage into the store.
  */
 export function useAuthGuard() {
@@ -19,7 +19,7 @@ export function useAuthGuard() {
     if (token) {
       setIsExistingUser(getIsExistingUserFromStorage());
     } else {
-      router.push("/onboard");
+      router.push("/");
     }
   }, [router, setIsExistingUser]);
 

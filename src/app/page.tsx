@@ -90,13 +90,13 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
       </div>
 
       <div className="space-y-3">
-        <Link href="/v2/dashboard?tab=wallet" className="block">
+        <Link href="/dashboard?tab=wallet" className="block">
           <Button mode="filled" size="l" stretched style={{ borderRadius: "12px" }}>
             {isExisting ? "Open My Wallet" : "Start Using Wallet"}
           </Button>
         </Link>
 
-        <Link href="/v2/dashboard/plans" className="block">
+        <Link href="/dashboard/plans" className="block">
           <Cell
             before={<Image src="/emoji/bitcoin.webp" alt="Bitcoin" width={40} height={40}/>}
             after={<Navigation />}
