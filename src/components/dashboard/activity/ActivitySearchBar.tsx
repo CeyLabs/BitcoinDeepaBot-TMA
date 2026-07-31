@@ -20,22 +20,14 @@ export function ActivitySearchBar({
 }: ActivitySearchBarProps) {
   return (
     <div className="flex w-full items-center gap-2">
-      <SearchField
-        className="flex-1"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      <SearchField className="flex-1" value={value} onChange={(e) => onChange(e.target.value)} />
       <VisibleToggle
         visible={visible}
         onToggle={onToggleVisible}
         className="bg-white! dark:bg-[#0B0F14]!"
       />
       <IconButton mode="gray" size="m" className="bg-white! dark:bg-[#0B0F14]!">
-        <Funnel
-          size={18}
-          strokeWidth={1.75}
-          className="text-[#111821] dark:text-[#f1f5f9]"
-        />
+        <Funnel size={18} strokeWidth={1.75} className="text-[#111821] dark:text-[#f1f5f9]" />
       </IconButton>
     </div>
   );

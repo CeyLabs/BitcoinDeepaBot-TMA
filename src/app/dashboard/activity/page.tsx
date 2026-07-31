@@ -78,7 +78,12 @@ export default function ActivityPage() {
         <p className="py-8 text-center text-[14px] text-[#64748b]">No activity found.</p>
       ) : (
         groups.map(([dayKey, items]) => (
-          <ActivityGroup key={dayKey} date={items[0].timestamp} items={items} visible={balanceVisible} />
+          <ActivityGroup
+            key={dayKey}
+            date={items[0].timestamp}
+            items={items}
+            visible={balanceVisible}
+          />
         ))
       )}
     </div>

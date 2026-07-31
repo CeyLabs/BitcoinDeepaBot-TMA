@@ -26,7 +26,7 @@ export const MOCK_TASKS: Task[] = [
     rewardSats: 50,
     frequency: "daily",
     icon: "/emoji/story.webp",
-  }
+  },
   // {
   //   id: "task-send-gift-plan",
   //   title: "Send a gift plan to a friend",

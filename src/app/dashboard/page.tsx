@@ -19,7 +19,9 @@ export default function WalletPage() {
 
   const totalLkr = summary
     ? Number(
-        typeof summary.total_lkr === "string" ? summary.total_lkr.replace(/,/g, "") : summary.total_lkr
+        typeof summary.total_lkr === "string"
+          ? summary.total_lkr.replace(/,/g, "")
+          : summary.total_lkr
       )
     : 0;
   const totalSats = summary?.total_balance ?? 0;
@@ -30,7 +32,9 @@ export default function WalletPage() {
   const changeLkr = (change24h / 100) * totalLkr;
   const currentBtcPrice =
     summary?.current_btc_price?.lkr ??
-    (transactions?.length ? transactions[transactions.length - 1].btc_price_at_purchase : avgBtcPrice);
+    (transactions?.length
+      ? transactions[transactions.length - 1].btc_price_at_purchase
+      : avgBtcPrice);
   const currentBtcPriceUsd = summary?.current_btc_price?.usd;
 
   return (

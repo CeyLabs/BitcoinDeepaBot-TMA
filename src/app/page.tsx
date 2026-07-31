@@ -33,11 +33,15 @@ function UserProgress() {
     <div className="w-full space-y-2">
       <Progress value={progressPct} style={{ height: "8px" }} />
       <div className="flex w-full items-baseline justify-between">
-        <p className="text-[22px] font-bold tabular-nums text-[#1b2027] dark:text-white">
+        <p className="text-[22px] font-bold text-[#1b2027] tabular-nums dark:text-white">
           {count.toLocaleString()}
-          <span className="pl-1 text-sm font-normal text-[#64748b] dark:text-muted-foreground">Joined</span>
+          <span className="dark:text-muted-foreground pl-1 text-sm font-normal text-[#64748b]">
+            Joined
+          </span>
         </p>
-        <p className="text-sm font-medium tabular-nums text-muted-foreground dark:text-[#64748b]">/{currentTierMax.toLocaleString()}</p>
+        <p className="text-muted-foreground text-sm font-medium tabular-nums dark:text-[#64748b]">
+          /{currentTierMax.toLocaleString()}
+        </p>
       </div>
     </div>
   );
@@ -98,14 +102,18 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
 
         <Link href="/dashboard/plans" className="block">
           <Cell
-            before={<Image src="/emoji/bitcoin.webp" alt="Bitcoin" width={40} height={40}/>}
+            before={<Image src="/emoji/bitcoin.webp" alt="Bitcoin" width={40} height={40} />}
             after={<Navigation />}
             style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
-            className="gap-2! px-4! rounded-[12px] border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
+            className="gap-2! rounded-[12px] border border-transparent bg-white px-4! shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-none dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
           >
-             <p className="flex flex-col items-start font-semibold text-[#1b2027] dark:text-white pl-1">
+            <p className="flex flex-col items-start pl-1 font-semibold text-[#1b2027] dark:text-white">
               {isExisting ? "Manage My Plans" : "Subscribe to a Plan"}
-              <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">{isExisting ? "View, extend or change plans" : "Choose Monthly or yearly subscriptions"}</span>
+              <span className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">
+                {isExisting
+                  ? "View, extend or change plans"
+                  : "Choose Monthly or yearly subscriptions"}
+              </span>
             </p>
           </Cell>
         </Link>
@@ -117,7 +125,7 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
           aria-disabled="true"
           tabIndex={-1}
           style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
-          className="gap-2! px-4! rounded-[12px] border border-transparent bg-white opacity-60 pointer-events-none shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)]"
+          className="pointer-events-none gap-2! rounded-[12px] border border-transparent bg-white px-4! opacity-60 shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)]"
         >
           <div className="flex flex-col items-start pl-1">
             <div className="flex items-center gap-2">
@@ -126,7 +134,9 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
                 Coming Soon
               </Badge>
             </div>
-            <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">Send a bitcoin subscription to a friend</span>
+            <span className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">
+              Send a bitcoin subscription to a friend
+            </span>
           </div>
         </Cell>
       </div>
@@ -136,11 +146,11 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
           href={TELEGRAM_BOT_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[15px] font-semibold text-primary"
+          className="text-primary text-[15px] font-semibold"
         >
           {isExisting ? "Open Telegram Community" : "Join Our Community"}
         </Link>
-        <p className="text-[13px] text-muted-foreground">@{TELEGRAM_BOT_USERNAME}</p>
+        <p className="text-muted-foreground text-[13px]">@{TELEGRAM_BOT_USERNAME}</p>
       </div>
     </div>
   );

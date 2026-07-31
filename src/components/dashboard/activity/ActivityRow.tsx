@@ -30,7 +30,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
   return (
     <Accordion expanded={expanded} onChange={setExpanded}>
       <Accordion.Summary
-        className="mx-1! my-0.5! gap-2! rounded-xl! pl-3! pr-1.5! transition-colors duration-150 hover:bg-[#f1f5f9]! dark:hover:bg-[#1B2027]!"
+        className="mx-1! my-0.5! gap-2! rounded-xl! pr-1.5! pl-3! transition-colors duration-150 hover:bg-[#f1f5f9]! dark:hover:bg-[#1B2027]!"
         before={
           <div className="flex size-10 shrink-0 items-center justify-center">
             <Image
@@ -78,7 +78,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
           </div>
         }
       >
-        <span className="flex items-center gap-1.5 whitespace-nowrap text-base font-semibold leading-5 text-[#1b2027] dark:text-white">
+        <span className="flex items-center gap-1.5 text-base leading-5 font-semibold whitespace-nowrap text-[#1b2027] dark:text-white">
           {ACTIVITY_TITLE[item.type]}
           {item.statusDot && (
             <span
@@ -91,18 +91,17 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
       </Accordion.Summary>
 
       <Accordion.Content className="bg-white! dark:bg-[#0B0F14]!">
-        <div className="flex flex-col gap-4 px-4 pb-4 pt-2">
+        <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col items-start ">
+            <div className="flex flex-col items-start">
               <p className="text-xs leading-4 text-[#475569]">Status</p>
               <Badge
                 type="number"
                 mode="primary"
-                className="flex! min-w-0! leading-3! items-center! justify-center! m-0! whitespace-nowrap! rounded-[8px]! px-2! py-1! text-sm!"
+                className="m-0! flex! min-w-0! items-center! justify-center! rounded-[8px]! px-2! py-1! text-sm! leading-3! whitespace-nowrap!"
                 style={
                   {
-                    "--tgui--button_color":
-                      item.statusDot === "orange" ? "#FA7119" : "#25A761",
+                    "--tgui--button_color": item.statusDot === "orange" ? "#FA7119" : "#25A761",
                     "--tgui--button_text_color": "#fff",
                   } as React.CSSProperties
                 }
@@ -113,7 +112,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
 
             <div className="flex flex-col items-end text-right">
               <p className="text-xs leading-4 text-[#475569]">Settled on</p>
-              <p className="text-sm font-semibold leading-5">
+              <p className="text-sm leading-5 font-semibold">
                 {fmtShortDate(item.settlement.settledOn)}
               </p>
             </div>
@@ -123,7 +122,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
             <p className="text-xs leading-4 text-[#475569]">
               BTC Value {isOutgoing ? "Sent" : "Received"}
             </p>
-            <p className="text-base font-semibold leading-5">
+            <p className="text-base leading-5 font-semibold">
               {formatSatoshis(item.settlement.btcSats)} BTC
             </p>
           </div>
@@ -139,9 +138,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
                 </>
               )}
               <span className="font-bold text-[#0088FF]">LKR</span>{" "}
-              <span className="font-bold">
-                {fmtPriceCompact(item.settlement.btcPriceLkr)}
-              </span>
+              <span className="font-bold">{fmtPriceCompact(item.settlement.btcPriceLkr)}</span>
               <span className="text-[#64748b]"> / BTC</span>
             </p>
           </div>

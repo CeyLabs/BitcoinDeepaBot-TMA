@@ -49,7 +49,7 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">Tasks</p>
+      <p className="text-[14px] leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">Tasks</p>
 
       <TaskFilterTabs value={filter} onChange={setFilter} />
 

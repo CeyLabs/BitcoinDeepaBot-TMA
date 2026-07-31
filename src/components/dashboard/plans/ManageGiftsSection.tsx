@@ -18,12 +18,14 @@ export function ManageGiftsSection({ items, visible }: ManageGiftsSectionProps) 
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
     if (filter === "all") return sorted;
-    return sorted.filter((item) => item.type === (filter === "sent" ? "gift_sent" : "gift_received"));
+    return sorted.filter(
+      (item) => item.type === (filter === "sent" ? "gift_sent" : "gift_received")
+    );
   }, [items, filter]);
 
   return (
-    <div className="w-full flex-col gap-3 hidden">
-      <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+    <div className="hidden w-full flex-col gap-3">
+      <p className="text-[14px] leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
         Manage Gifts
       </p>
 

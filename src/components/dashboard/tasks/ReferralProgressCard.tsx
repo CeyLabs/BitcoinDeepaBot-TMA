@@ -29,13 +29,13 @@ export function ReferralProgressCard({ joined, target, rewardSats }: ReferralPro
     <Card
       type="plain"
       onClick={handleShare}
-      className="relative w-full overflow-hidden rounded-full! p-0! shadow-none! cursor-pointer"
+      className="relative w-full cursor-pointer overflow-hidden rounded-full! p-0! shadow-none!"
       style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
     >
       <Image src="/bg/pill.webp" alt="" fill className="object-cover" />
 
       <div className="relative flex flex-col gap-1 p-2">
-        <p className="max-w-60 text-lg font-bold leading-5 text-white text-center mx-auto">
+        <p className="mx-auto max-w-60 text-center text-lg leading-5 font-bold text-white">
           Orange Pill your friends and get {rewardSats} sats
         </p>
 
@@ -54,7 +54,7 @@ export function ReferralProgressCard({ joined, target, rewardSats }: ReferralPro
             </div>
           </div>
 
-          <p className="whitespace-nowrap text-[13px] font-medium text-white">
+          <p className="text-[13px] font-medium whitespace-nowrap text-white">
             {joined}/{target} joined
           </p>
         </div>

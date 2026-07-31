@@ -18,7 +18,7 @@ export interface TaskFilterTabsProps {
 
 export function TaskFilterTabs({ value, onChange }: TaskFilterTabsProps) {
   return (
-    <div className="w-full overflow-x-auto scrollbar-none">
+    <div className="w-full scrollbar-none overflow-x-auto">
       <div className="flex w-max items-center gap-2">
         {TABS.map((tab) => {
           const isActive = value === tab.value;

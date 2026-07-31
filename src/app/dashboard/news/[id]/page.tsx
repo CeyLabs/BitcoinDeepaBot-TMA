@@ -35,7 +35,7 @@ export default async function NewsArticleDetailPage({
       )}
 
       <div className="flex flex-col gap-2">
-        <h1 className="text-[22px] font-bold leading-7 text-[#1b2027] dark:text-white">
+        <h1 className="text-[22px] leading-7 font-bold text-[#1b2027] dark:text-white">
           {article.title}
         </h1>
         <div className="flex items-center gap-1.5 text-[13px] text-[#64748b] dark:text-[#94a3b8]">
@@ -49,16 +49,14 @@ export default async function NewsArticleDetailPage({
       </div>
 
       <div
-        className="flex flex-col gap-3 text-[15px] leading-6 text-[#1b2027] [&_a]:text-[#fa7119] [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-[#e2e8f0] [&_blockquote]:pl-3 [&_blockquote]:italic [&_h2]:mt-2 [&_h2]:text-[18px] [&_h2]:font-bold [&_h3]:mt-2 [&_h3]:text-[16px] [&_h3]:font-bold [&_img]:w-full [&_img]:rounded-[12px] [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc dark:text-white"
+        className="flex flex-col gap-3 text-[15px] leading-6 text-[#1b2027] dark:text-white [&_a]:text-[#fa7119] [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-[#e2e8f0] [&_blockquote]:pl-3 [&_blockquote]:italic [&_h2]:mt-2 [&_h2]:text-[18px] [&_h2]:font-bold [&_h3]:mt-2 [&_h3]:text-[16px] [&_h3]:font-bold [&_img]:w-full [&_img]:rounded-[12px] [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc"
         dangerouslySetInnerHTML={{ __html: article.content }}
       />
 
       {related.length > 0 && (
-        <div className="flex flex-col gap-3 mt-8">
+        <div className="mt-8 flex flex-col gap-3">
           <div className="h-px w-full bg-[#e2e8f0] dark:bg-[#334155]" />
-          <h2 className="font-bold leading-5 text-[#1b2027] dark:text-white">
-            Related Articles
-          </h2>
+          <h2 className="leading-5 font-bold text-[#1b2027] dark:text-white">Related Articles</h2>
           <div className="flex w-full flex-col gap-3">
             {related.map((a) => (
               <NewsArticleCard key={a.id} article={a} />

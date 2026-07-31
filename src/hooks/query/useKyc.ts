@@ -46,11 +46,9 @@ export function useKycInitiate() {
 
   return useMutation({
     mutationFn: (payload: KycInitiatePayload) =>
-      fetchy.post<KycInitiateResponse, KycInitiatePayload>(
-        "/api/user/kyc/initiate",
-        payload,
-        { headers: { Authorization: `Bearer ${authToken}` } }
-      ),
+      fetchy.post<KycInitiateResponse, KycInitiatePayload>("/api/user/kyc/initiate", payload, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      }),
   });
 }
 
@@ -69,10 +67,8 @@ export function useUpdateProfile() {
 
   return useMutation({
     mutationFn: (payload: UpdateProfilePayload) =>
-      fetchy.post<{ success: boolean }, UpdateProfilePayload>(
-        "/api/user/profile",
-        payload,
-        { headers: { Authorization: `Bearer ${authToken}` } }
-      ),
+      fetchy.post<{ success: boolean }, UpdateProfilePayload>("/api/user/profile", payload, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      }),
   });
 }

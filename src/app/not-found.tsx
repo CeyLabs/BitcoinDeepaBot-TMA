@@ -19,7 +19,7 @@ export default function NotFound() {
         Page Not Found
       </Title>
 
-      <p className="mt-2 max-w-sm text-[15px] text-muted-foreground dark:text-[#64748b]">
+      <p className="text-muted-foreground mt-2 max-w-sm text-[15px] dark:text-[#64748b]">
         The page you&apos;re looking for doesn&apos;t exist or may have moved.
       </p>
 

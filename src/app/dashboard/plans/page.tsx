@@ -24,7 +24,9 @@ export default function PlansPage() {
 
   const currentValueLkr = summary
     ? Number(
-        typeof summary.total_lkr === "string" ? summary.total_lkr.replace(/,/g, "") : summary.total_lkr
+        typeof summary.total_lkr === "string"
+          ? summary.total_lkr.replace(/,/g, "")
+          : summary.total_lkr
       )
     : 0;
   const investedLkr = summary?.dca.spent ?? 0;

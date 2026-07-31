@@ -11,7 +11,7 @@ const CELL_CLASSNAME =
 export function GiftPlansComingSoon() {
   return (
     <div className="flex w-full flex-col gap-3">
-      <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+      <p className="text-[14px] leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
         Gift Plans
       </p>
 
@@ -22,7 +22,7 @@ export function GiftPlansComingSoon() {
           <p className="text-[16px] font-bold text-[#1b2027] dark:text-white">
             Gifting is Coming Soon
           </p>
-          <p className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">
+          <p className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">
             You&apos;ll be able to send gift plans and manage gift plans here in future updates
           </p>
         </div>
@@ -39,10 +39,10 @@ export function GiftPlanActions() {
   return (
     <div className="flex w-full flex-col gap-3">
       <div className="flex items-center gap-2">
-        <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+        <p className="text-[14px] leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
           Gift Plans
         </p>
-        <span className="rounded-full bg-[#fa7119]/10 px-2 py-0.5 text-[10px] font-semibold leading-4 text-[#fa7119]">
+        <span className="rounded-full bg-[#fa7119]/10 px-2 py-0.5 text-[10px] leading-4 font-semibold text-[#fa7119]">
           Coming Soon
         </span>
       </div>
@@ -56,21 +56,28 @@ export function GiftPlanActions() {
         >
           <p className="flex flex-col items-start pl-1 font-semibold text-[#1b2027] dark:text-white">
             Gift a Bitcoin Plan
-            <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">
+            <span className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">
               Send a bitcoin subscription to a friend
             </span>
           </p>
         </Cell>
 
         <Cell
-          before={<Image src="/emoji/gift_standing_order.webp" alt="Recurring Gift" width={40} height={40} />}
+          before={
+            <Image
+              src="/emoji/gift_standing_order.webp"
+              alt="Recurring Gift"
+              width={40}
+              height={40}
+            />
+          }
           after={<Navigation />}
           style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
           className={CELL_CLASSNAME}
         >
           <p className="flex flex-col items-start pl-1 font-semibold text-[#1b2027] dark:text-white">
             Send a Recurring Gift
-            <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">
+            <span className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">
               Send a standing order gift to a friend
             </span>
           </p>

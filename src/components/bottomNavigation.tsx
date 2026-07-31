@@ -99,8 +99,8 @@ export default function BottomNavigation() {
       <SegmentedControl
         className={cn(
           "flex! h-auto! w-full! rounded-full! p-1!",
-          "backdrop-blur-md shadow-[0px_4px_24px_0px_rgba(0,0,0,0.10)]!",
-          "bg-surface-glass!",
+          "shadow-[0px_4px_24px_0px_rgba(0,0,0,0.10)]! backdrop-blur-md",
+          "bg-surface-glass!"
         )}
         style={
           {
@@ -118,7 +118,7 @@ export default function BottomNavigation() {
               selected={isActive}
               onClick={() => router.push(item.href)}
               className={cn(
-                "h-14! w-auto! whitespace-normal! rounded-[20px]! p-0!",
+                "h-14! w-auto! rounded-[20px]! p-0! whitespace-normal!",
                 "transition-colors duration-200",
                 isActive
                   ? "text-[#1b2027]! dark:text-[#f1f5f9]!"

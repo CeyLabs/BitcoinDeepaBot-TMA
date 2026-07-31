@@ -42,13 +42,13 @@ function RewardCard({
       className="flex flex-1 flex-col rounded-[12px] p-3"
       style={CARD_SURFACE_STYLE}
     >
-      <p className="text-sm capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9] pb-2">
+      <p className="pb-2 text-sm leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
         {label}
       </p>
       <div className="flex items-center gap-2">
         <Image src={iconSrc} alt="" width={36} height={36} className="size-9" />
         <div className="flex flex-col items-start">
-          <p className="text-[16px] font-semibold leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
+          <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
             {dateStr ? fmtShortDate(dateStr) : "-"}
           </p>
           {dateStr && (
@@ -68,7 +68,7 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
   return (
     <div className="flex w-full flex-col items-end gap-3">
       <div className="flex w-full items-center justify-between">
-        <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+        <p className="text-[14px] leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
           My Plan
         </p>
       </div>
@@ -110,15 +110,15 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
               </div>
             }
             style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
-            className="gap-2! px-4! rounded-xl border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
+            className="gap-2! rounded-xl border border-transparent bg-white px-4! shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-none dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
           >
             <div className="flex min-w-0 flex-1 flex-col items-start gap-1 pl-1">
-              <p className="truncate text-[16px] font-semibold leading-4 text-[#1b2027] dark:text-white">
+              <p className="truncate text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-white">
                 {subscription ? subscription.planName : "No Active Plan"}
               </p>
               {subscription ? (
                 <div className="flex items-end gap-0.5">
-                  <p className="text-[14px] font-bold leading-4 text-[#fa7119]">
+                  <p className="text-[14px] leading-4 font-bold text-[#fa7119]">
                     Rs {fmtLkr(subscription.price)}
                   </p>
                   <p className="text-[12px] leading-4 text-[#64748b]">
@@ -126,7 +126,7 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
                   </p>
                 </div>
               ) : (
-                <p className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">
+                <p className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">
                   Choose a plan to start earning rewards
                 </p>
               )}

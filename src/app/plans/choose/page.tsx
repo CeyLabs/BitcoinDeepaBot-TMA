@@ -57,15 +57,12 @@ export default function ChoosePlanPage() {
 
   const currentPlan = useMemo(
     () =>
-      subscription?.isActive
-        ? packages.find((p) => p.id === subscription.packageId)
-        : undefined,
+      subscription?.isActive ? packages.find((p) => p.id === subscription.packageId) : undefined,
     [packages, subscription]
   );
 
   const filteredPlans = useMemo(
-    () =>
-      packages.filter((p) => p.type === duration && p.id !== currentPlan?.id),
+    () => packages.filter((p) => p.type === duration && p.id !== currentPlan?.id),
     [packages, duration, currentPlan]
   );
 
@@ -86,7 +83,10 @@ export default function ChoosePlanPage() {
       setPayhereLinkLoading(true);
       const res = await fetch("/api/subscription/payhere-link", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
         body: JSON.stringify({ package_id: plan.id }),
       });
       const result = await res.json();
@@ -138,14 +138,14 @@ export default function ChoosePlanPage() {
   if (kycLoading) return <LoadingPage />;
   if (kyc?.status !== "APPROVED") {
     return (
-      <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pb-4 pt-5">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
         <KycRequiredNotice />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pb-4 pt-5">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
       {currentPlan ? (
         <PageTitle title="Manage your Plan" subtitle="View or switch to another plan" />
       ) : (
@@ -154,7 +154,7 @@ export default function ChoosePlanPage() {
 
       {currentPlan && (
         <div className="flex flex-col gap-3">
-          <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+          <p className="text-[14px] leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
             Current Plan
           </p>
           <PlanCard
@@ -177,7 +177,7 @@ export default function ChoosePlanPage() {
         </div>
       )}
 
-      <p className="text-sm font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+      <p className="text-sm leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
         {currentPlan ? "Choose a Different Plan" : "Select a Plan"}
       </p>
 
@@ -188,7 +188,7 @@ export default function ChoosePlanPage() {
       {packagesLoading ? (
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-[90px] rounded-[12px] bg-[#e2e8f0] animate-pulse" />
+            <div key={i} className="h-[90px] animate-pulse rounded-[12px] bg-[#e2e8f0]" />
           ))}
         </div>
       ) : filteredPlans.length === 0 ? (
@@ -264,13 +264,10 @@ export default function ChoosePlanPage() {
         </p>
 
         {!currentPlan && (
-          <Link
-          href="/dashboard"
-          className="text-center text-[14px] font-semibold text-[#fa7119]"
-        >
-          Skip to Wallet
-        </Link>
-        )       }
+          <Link href="/dashboard" className="text-center text-[14px] font-semibold text-[#fa7119]">
+            Skip to Wallet
+          </Link>
+        )}
       </div>
 
       {snackbar && (

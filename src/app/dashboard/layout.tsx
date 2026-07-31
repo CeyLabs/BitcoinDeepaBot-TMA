@@ -7,7 +7,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useAuthGuard();
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col gap-5 bg-surface-main px-5 pb-22 pt-5">
+    <div className="bg-surface-main mx-auto flex min-h-screen max-w-md flex-col gap-5 px-5 pt-5 pb-22">
       {children}
       <BottomNavigation />
     </div>

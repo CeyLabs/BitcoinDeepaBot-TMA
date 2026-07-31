@@ -43,13 +43,10 @@ export function useTransactionHistory() {
   return useQuery<DcaTransaction[]>({
     queryKey: queryKeys.transactions,
     queryFn: async () => {
-      const data = await fetchy.get<TransactionListResponse>(
-        "/api/transaction/list?limit=100",
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-          shouldCache: false,
-        }
-      );
+      const data = await fetchy.get<TransactionListResponse>("/api/transaction/list?limit=100", {
+        headers: { Authorization: `Bearer ${authToken}` },
+        shouldCache: false,
+      });
       const raw = Array.isArray(data.transactions)
         ? data.transactions
         : (data.transactions?.transactions ?? []);

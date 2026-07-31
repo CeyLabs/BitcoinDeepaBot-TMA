@@ -40,7 +40,7 @@ export function PerformanceGrid({
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+      <p className="text-[14px] leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
         Performance
       </p>
 
@@ -51,10 +51,10 @@ export function PerformanceGrid({
           style={CARD_SURFACE_STYLE}
         >
           <Image src="/emoji/wallet.webp" alt="" width={36} height={36} className="size-9" />
-          <p className="text-[14px] capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
+          <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
             You Invested
           </p>
-          <p className="text-[16px] font-semibold leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
+          <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
             {mask(`LKR ${fmtLkr(dcaSpent)}`)}
           </p>
           <div className="flex items-center gap-2">
@@ -74,18 +74,18 @@ export function PerformanceGrid({
           style={CARD_SUCCESS_STYLE}
         >
           <Image src="/emoji/coins.webp" alt="" width={36} height={36} className="size-9" />
-          <p className="text-[14px] capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
+          <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
             Current Value
           </p>
           <div className="flex flex-col items-start gap-2">
-            <p className="text-[16px] font-semibold leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
+            <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
               {mask(`LKR ${fmtLkr(totalLkr)}`)}
             </p>
             {dcaSpent > 0 && (
               <Badge
                 type="number"
                 mode={isProfit ? "primary" : "critical"}
-                className="flex! h-auto! min-w-0! items-center! justify-center! m-0! whitespace-nowrap! rounded-lg! px-2.5! py-1! text-[12px]! font-medium! leading-4!"
+                className="m-0! flex! h-auto! min-w-0! items-center! justify-center! rounded-lg! px-2.5! py-1! text-[12px]! leading-4! font-medium! whitespace-nowrap!"
                 style={
                   {
                     "--tgui--button_color": "#158348",
@@ -108,18 +108,18 @@ export function PerformanceGrid({
           style={CARD_SURFACE_STYLE}
         >
           <Image src="/emoji/calculator.webp" alt="" width={36} height={36} className="size-9" />
-          <p className="text-[14px] capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
+          <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
             Avg Price
           </p>
           <div className="flex items-center gap-1">
-            <p className="text-[16px] font-semibold leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
+            <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
               LKR {fmtPriceCompact(avgBtcPrice)}
             </p>
             <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
           </div>
           {avgBtcPriceUsd !== undefined && (
             <div className="flex items-center gap-1">
-              <p className="text-[14px] font-semibold leading-4 text-[#64748b]">
+              <p className="text-[14px] leading-4 font-semibold text-[#64748b]">
                 USD {fmtPriceCompact(avgBtcPriceUsd)}
               </p>
               <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
@@ -133,18 +133,18 @@ export function PerformanceGrid({
           style={CARD_SUCCESS_STYLE}
         >
           <Image src="/emoji/graph.webp" alt="" width={36} height={36} className="size-9" />
-          <p className="text-[14px] capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
+          <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
             Current Price
           </p>
           <div className="flex items-center gap-1">
-            <p className="text-[16px] font-semibold leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
+            <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
               LKR {fmtPriceCompact(currentBtcPrice)}
             </p>
             <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
           </div>
           {currentBtcPriceUsd !== undefined && (
             <div className="flex items-center gap-1">
-              <p className="text-[14px] font-semibold leading-4 text-[#64748b]">
+              <p className="text-[14px] leading-4 font-semibold text-[#64748b]">
                 USD {fmtPriceCompact(currentBtcPriceUsd)}
               </p>
               <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>

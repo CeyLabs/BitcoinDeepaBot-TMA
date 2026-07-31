@@ -26,7 +26,8 @@ export function GiftRow({ item, visible }: GiftRowProps) {
       subtitle={
         <span className="flex flex-col text-xs text-[#64748B]">
           <span>
-            {isOutgoing ? "To" : "From"} <span className="text-[#FA7119]">@{item.counterparty}</span>
+            {isOutgoing ? "To" : "From"}{" "}
+            <span className="text-[#FA7119]">@{item.counterparty}</span>
           </span>
           <span>{fmtActivityDateTime(item.timestamp)}</span>
         </span>
@@ -34,7 +35,9 @@ export function GiftRow({ item, visible }: GiftRowProps) {
       after={
         <div className="flex items-center gap-1.5">
           <div className="flex flex-col items-end gap-0.5">
-            <p className={`text-[14px] leading-4 ${isOutgoing ? "text-[#F45A5A]" : "text-[#218A54]"}`}>
+            <p
+              className={`text-[14px] leading-4 ${isOutgoing ? "text-[#F45A5A]" : "text-[#218A54]"}`}
+            >
               {mask(`${isOutgoing ? "-" : "+"}${fmtLkr(Math.abs(item.sats))} sats`)}
             </p>
             <p className="text-xs leading-4 text-[#475569] dark:text-[#94A3B8]">
@@ -44,9 +47,9 @@ export function GiftRow({ item, visible }: GiftRowProps) {
           <ChevronRight size={18} strokeWidth={2} className="shrink-0 text-[#64748b]" />
         </div>
       }
-      className="px-3! gap-2!"
+      className="gap-2! px-3!"
     >
-      <span className="text-base font-semibold leading-5 text-[#1b2027] dark:text-white">
+      <span className="text-base leading-5 font-semibold text-[#1b2027] dark:text-white">
         {isOutgoing ? "Sent" : "Received"}
       </span>
     </Cell>

@@ -40,21 +40,23 @@ export function PlanHeroCard({
     return (
       <div className="flex w-full flex-col gap-3">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+          <p className="text-sm leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
             Manage My Plan
           </p>
         </div>
 
         <Cell
-          before={<Image src="/emoji/notepad.webp" alt="" width={36} height={36} className="size-9" />}
+          before={
+            <Image src="/emoji/notepad.webp" alt="" width={36} height={36} className="size-9" />
+          }
           after={<Navigation />}
           style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
-          className="gap-2! px-4! rounded-xl border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
+          className="gap-2! rounded-xl border border-transparent bg-white px-4! shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-none dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
           onClick={() => router.push("/plans/choose")}
         >
           <p className="flex flex-col items-start pl-1 font-semibold text-[#1b2027] dark:text-white">
             No Active Plan
-            <span className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">
+            <span className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">
               Choose a plan to start earning rewards
             </span>
           </p>
@@ -66,7 +68,7 @@ export function PlanHeroCard({
   return (
     <div className="flex w-full flex-col gap-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+        <p className="text-sm leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
           Manage My Plan
         </p>
       </div>
@@ -89,11 +91,11 @@ export function PlanHeroCard({
                 className="size-15 shrink-0"
               />
               <div className="flex min-w-0 flex-col items-start gap-1">
-                <p className="truncate text-[18px] font-bold leading-5 text-white">
+                <p className="truncate text-[18px] leading-5 font-bold text-white">
                   {subscription.planName}
                 </p>
                 <div className="flex items-end gap-0.5">
-                  <p className="text-[14px] font-bold leading-4 text-white">
+                  <p className="text-[14px] leading-4 font-bold text-white">
                     Rs {fmtLkr(subscription.price)}
                   </p>
                   <p className="text-[12px] leading-4 text-white/70">
@@ -104,7 +106,7 @@ export function PlanHeroCard({
                   <Badge
                     type="number"
                     mode="primary"
-                    className="w-fit! m-0! rounded-full! px-2.5! py-1! text-xs!"
+                    className="m-0! w-fit! rounded-full! px-2.5! py-1! text-xs!"
                     style={
                       {
                         "--tgui--button_color": "#25A761",
@@ -122,7 +124,7 @@ export function PlanHeroCard({
             <Button
               mode="gray"
               size="s"
-              className="rounded-full! overflow-hidden bg-white/20! px-3! shrink-0"
+              className="shrink-0 overflow-hidden rounded-full! bg-white/20! px-3!"
               style={
                 {
                   "--tgui--plain_background": "rgba(255,255,255,0.2)",
@@ -133,7 +135,7 @@ export function PlanHeroCard({
               }
               onClick={() => router.push("/plans/choose")}
             >
-              <span className="flex items-center gap-1 whitespace-nowrap text-[12px] font-medium text-white">
+              <span className="flex items-center gap-1 text-[12px] font-medium whitespace-nowrap text-white">
                 Manage Plan
                 <ChevronRight size={14} />
               </span>
@@ -143,7 +145,7 @@ export function PlanHeroCard({
           <div className="flex items-stretch">
             <div className="flex flex-1 flex-col gap-1">
               <p className="text-[12px] leading-4 text-white/70">Subscribed Since</p>
-              <p className="text-[14px] font-semibold leading-4 text-white">
+              <p className="text-[14px] leading-4 font-semibold text-white">
                 {fmtShortDate(subscription.startDate)}
               </p>
               <p className="text-[12px] leading-4 text-white/70">
@@ -153,7 +155,7 @@ export function PlanHeroCard({
             <div className="w-px self-stretch bg-white/25" />
             <div className="flex flex-1 flex-col items-end gap-1">
               <p className="text-[12px] leading-4 text-white/70">Next Reward</p>
-              <p className="text-[14px] font-semibold leading-4 text-white">
+              <p className="text-[14px] leading-4 font-semibold text-white">
                 {subscription.endDate ? fmtShortDate(subscription.endDate) : "-"}
               </p>
               {subscription.endDate && (
@@ -167,17 +169,19 @@ export function PlanHeroCard({
           <div className="flex rounded-[12px] bg-white/15 p-3">
             <div className="flex flex-1 flex-col gap-1">
               <p className="text-[12px] leading-4 text-white/70">You Invested</p>
-              <p className="text-[16px] font-semibold leading-4 text-white">
+              <p className="text-[16px] leading-4 font-semibold text-white">
                 {mask(`LKR ${fmtLkr(investedLkr)}`)}
               </p>
               <p className="text-[12px] leading-4 text-white/70">
-                {mask(`₿${(investedSats / 1e8).toFixed(5)} · ≈${fmtSatsCompact(investedSats)} sats`)}
+                {mask(
+                  `₿${(investedSats / 1e8).toFixed(5)} · ≈${fmtSatsCompact(investedSats)} sats`
+                )}
               </p>
             </div>
             <div className="w-px self-stretch bg-white/25" />
             <div className="flex flex-1 flex-col items-end gap-1">
               <p className="text-[12px] leading-4 text-white/70">Current Value</p>
-              <p className="text-[16px] font-bold leading-4 text-white">
+              <p className="text-[16px] leading-4 font-bold text-white">
                 {mask(`LKR ${fmtLkr(currentValueLkr)}`)}
               </p>
               {investedLkr > 0 && (

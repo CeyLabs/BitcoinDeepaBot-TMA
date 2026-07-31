@@ -23,13 +23,17 @@ export function NewsArticleCard({ article }: { article: NewsArticle }) {
     >
       {article.thumbnailUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={article.thumbnailUrl} alt="" className="size-20 shrink-0 rounded-[12px] object-cover" />
+        <img
+          src={article.thumbnailUrl}
+          alt=""
+          className="size-20 shrink-0 rounded-[12px] object-cover"
+        />
       ) : (
         <div className="size-20 shrink-0 rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
       )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <h3 className="text-[16px] font-bold leading-5 text-[#1b2027] dark:text-white">
+        <h3 className="text-[16px] leading-5 font-bold text-[#1b2027] dark:text-white">
           {article.title}
         </h3>
         <div className="flex items-center gap-1.5 text-[12px] text-[#64748b] dark:text-[#94a3b8]">
@@ -70,7 +74,7 @@ export function NewsListSection({ articles }: NewsListSectionProps) {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div className="w-full overflow-x-auto scrollbar-none">
+      <div className="w-full scrollbar-none overflow-x-auto">
         <div className="flex w-max items-center gap-2">
           {["All", ...topCategories].map((tab) => {
             const isActive = category === tab;

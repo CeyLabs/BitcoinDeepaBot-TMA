@@ -35,7 +35,7 @@ export default function Error({
         {isLaunchParamsError ? "Open This In Telegram" : "Something Went Wrong"}
       </Title>
 
-      <p className="mt-2 max-w-sm text-[15px] text-muted-foreground dark:text-[#64748b]">
+      <p className="text-muted-foreground mt-2 max-w-sm text-[15px] dark:text-[#64748b]">
         {isLaunchParamsError
           ? "Bitcoin Deepa only works inside the Telegram app. Open the bot in Telegram to continue."
           : "An unexpected error occurred. Please try again."}

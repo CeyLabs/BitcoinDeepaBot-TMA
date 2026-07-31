@@ -167,24 +167,29 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <p className="text-[14px] font-bold leading-4 text-[#475569] dark:text-[#94a3b8]">
+      <p className="text-[14px] leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
         Reward Portfolio Performance
       </p>
 
       <Card
         type="plain"
-        className="block! w-full! rounded-[12px]! p-3! "
-        style={{ "--tgui--tertiary_bg_color": "var(--color-surface-primary)" } as React.CSSProperties}
+        className="block! w-full! rounded-[12px]! p-3!"
+        style={
+          {
+            "--tgui--tertiary_bg_color": "var(--color-surface-primary)",
+          } as React.CSSProperties
+        }
       >
         <div className="mb-3 flex items-center gap-2">
           {PERIODS.map((p) => (
             <Button
               key={p}
               mode="gray"
-              size="s" stretched
+              size="s"
+              stretched
               onClick={() => setPeriod(p)}
               className={cn(
-                "rounded-[12px]!",
+                "rounded-[12px]!"
                 // period === p
                 //   ? "bg-[#e2e8f0]! text-[#1b2027]! dark:bg-[#334155]! dark:text-[#f1f5f9]!"
                 //   : "bg-[#eeeff3]! text-[#64748b]! dark:bg-transparent! dark:text-[#94a3b8]!"
@@ -227,4 +232,3 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
     </div>
   );
 }
-

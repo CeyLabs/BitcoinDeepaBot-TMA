@@ -92,9 +92,9 @@ export default function VerificationDetailsPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0b0f14]">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pb-6 pt-8">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-8 pb-6">
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-[24px] font-bold leading-7 text-white">Your Details</h1>
+          <h1 className="text-[24px] leading-7 font-bold text-white">Your Details</h1>
           <p className="text-[14px] leading-4.5 text-[#94a3b8]">
             We need a few details before starting verification
           </p>
@@ -121,7 +121,7 @@ export default function VerificationDetailsPage() {
                   {...register(field.name)}
                 />
                 {errors[field.name] && (
-                  <p className="pl-6 pt-1 text-[12px] text-[#f13131]">
+                  <p className="pt-1 pl-6 text-[12px] text-[#f13131]">
                     {errors[field.name]?.message}
                   </p>
                 )}
@@ -131,7 +131,7 @@ export default function VerificationDetailsPage() {
 
           {error && (
             <div className="rounded-2xl bg-[#f13131]/10 px-4 py-4">
-              <p className="text-[13px] font-semibold leading-4 text-[#f13131]">
+              <p className="text-[13px] leading-4 font-semibold text-[#f13131]">
                 Verification Error
               </p>
               <p className="mt-1 text-[13px] leading-4.5 text-[#94a3b8]">{error}</p>
@@ -150,7 +150,7 @@ export default function VerificationDetailsPage() {
             >
               Start Verification
             </Button>
-            <p className="text-center text-xs text-muted">
+            <p className="text-muted text-center text-xs">
               Your Data is Encrypted and never Shared
             </p>
           </div>

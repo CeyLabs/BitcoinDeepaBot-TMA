@@ -32,65 +32,65 @@
  */
 
 interface FetchOptions extends RequestInit {
-    shouldCache?: boolean;
-    headers?: Record<string, string>;
+  shouldCache?: boolean;
+  headers?: Record<string, string>;
 }
 
 interface ErrorResponse {
-    message: string;
+  message: string;
 }
 
 class Fetchy {
-    private async request<T>(url: string, options: FetchOptions = {}): Promise<T> {
-        const { shouldCache = true, ...fetchOptions } = options;
+  private async request<T>(url: string, options: FetchOptions = {}): Promise<T> {
+    const { shouldCache = true, ...fetchOptions } = options;
 
-        const response = await fetch(url, {
-            headers: {
-                "Content-Type": "application/json",
-                ...fetchOptions.headers,
-            },
-            ...(shouldCache ? {} : { cache: "no-cache" }),
-            ...fetchOptions,
-        });
+    const response = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+        ...fetchOptions.headers,
+      },
+      ...(shouldCache ? {} : { cache: "no-cache" }),
+      ...fetchOptions,
+    });
 
-        if (!response.ok) {
-            const error = (await response.json()) as ErrorResponse;
-            throw new Error(error.message || "An error occurred while fetching the data.");
-        }
-
-        return response.json() as Promise<T>;
+    if (!response.ok) {
+      const error = (await response.json()) as ErrorResponse;
+      throw new Error(error.message || "An error occurred while fetching the data.");
     }
 
-    get<T>(url: string, options: FetchOptions = {}): Promise<T> {
-        return this.request<T>(url, { ...options, method: "GET" });
-    }
+    return response.json() as Promise<T>;
+  }
 
-    post<T, B = unknown>(url: string, body: B, options: FetchOptions = {}): Promise<T> {
-        return this.request<T>(url, {
-            ...options,
-            method: "POST",
-            body: JSON.stringify(body),
-        });
-    }
+  get<T>(url: string, options: FetchOptions = {}): Promise<T> {
+    return this.request<T>(url, { ...options, method: "GET" });
+  }
 
-    put<T, B = unknown>(url: string, body: B, options: FetchOptions = {}): Promise<T> {
-        return this.request<T>(url, {
-            ...options,
-            method: "PUT",
-            body: JSON.stringify(body),
-        });
-    }
+  post<T, B = unknown>(url: string, body: B, options: FetchOptions = {}): Promise<T> {
+    return this.request<T>(url, {
+      ...options,
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
 
-    delete<T>(url: string, options: FetchOptions = {}): Promise<T> {
-        return this.request<T>(url, { ...options, method: "DELETE" });
-    }
+  put<T, B = unknown>(url: string, body: B, options: FetchOptions = {}): Promise<T> {
+    return this.request<T>(url, {
+      ...options,
+      method: "PUT",
+      body: JSON.stringify(body),
+    });
+  }
+
+  delete<T>(url: string, options: FetchOptions = {}): Promise<T> {
+    return this.request<T>(url, { ...options, method: "DELETE" });
+  }
 }
 
 const fetchy = new Fetchy();
 
 export default fetchy as {
-    get<T>(url: string, options?: FetchOptions): Promise<T>;
-    post<T, B = unknown>(url: string, body: B, options?: FetchOptions): Promise<T>;
-    put<T, B = unknown>(url: string, body: B, options?: FetchOptions): Promise<T>;
-    delete<T>(url: string, options?: FetchOptions): Promise<T>;
+  get<T>(url: string, options?: FetchOptions): Promise<T>;
+  post<T, B = unknown>(url: string, body: B, options?: FetchOptions): Promise<T>;
+  put<T, B = unknown>(url: string, body: B, options?: FetchOptions): Promise<T>;
+  delete<T>(url: string, options?: FetchOptions): Promise<T>;
 };

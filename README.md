@@ -6,62 +6,62 @@ A Telegram Mini App built with Next.js 16 that supports Bitcoin membership rewar
 
 ## 🚀 Features
 
--   **Telegram Integration**: Native Telegram Mini App experience with SDK integration
--   **Bitcoin Wallet**: Track Bitcoin balance and transactions in satoshis
--   **Membership Plans**: Weekly and monthly subscription plans with automatic Bitcoin rewards
--   **Payment Integration**: PayHere payment gateway for Sri Lankan Rupee transactions
--   **KYC Verification**: User verification system for compliance
--   **Reward Tracking**: Visual charts showing Bitcoin price history and membership rewards
--   **Referral System**: Earn rewards for inviting friends
--   **Currency Formatting**: LKR/satoshi amounts formatted for Sri Lankan users
+- **Telegram Integration**: Native Telegram Mini App experience with SDK integration
+- **Bitcoin Wallet**: Track Bitcoin balance and transactions in satoshis
+- **Membership Plans**: Weekly and monthly subscription plans with automatic Bitcoin rewards
+- **Payment Integration**: PayHere payment gateway for Sri Lankan Rupee transactions
+- **KYC Verification**: User verification system for compliance
+- **Reward Tracking**: Visual charts showing Bitcoin price history and membership rewards
+- **Referral System**: Earn rewards for inviting friends
+- **Currency Formatting**: LKR/satoshi amounts formatted for Sri Lankan users
 
 ## 🛠 Tech Stack
 
--   **Framework**: Next.js 16 with App Router
--   **Language**: TypeScript
--   **Styling**: Tailwind CSS with hand-built UI primitives (`src/components/ui/`)
--   **Database**: MongoDB with Mongoose ODM
--   **State Management**:
--   Zustand (global state)
--   TanStack Query (server state management)
--   **Forms**: React Hook Form + Zod validation
--   **Charts**: Chart.js with react-chartjs-2
--   **Telegram SDK**: @telegram-apps/sdk-react
--   **HTTP Client**: Custom `fetchy` wrapper for API calls
+- **Framework**: Next.js 16 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS with hand-built UI primitives (`src/components/ui/`)
+- **Database**: MongoDB with Mongoose ODM
+- **State Management**:
+- Zustand (global state)
+- TanStack Query (server state management)
+- **Forms**: React Hook Form + Zod validation
+- **Charts**: Chart.js with react-chartjs-2
+- **Telegram SDK**: @telegram-apps/sdk-react
+- **HTTP Client**: Custom `fetchy` wrapper for API calls
 
 ## 📦 Installation
 
 1. **Clone the repository**
 
-    ```bash
-    git clone https://github.com/your-repo/BitcoinDeepa-TMA-Bot.git
-    cd BitcoinDeepa-TMA-Bot
-    ```
+   ```bash
+   git clone https://github.com/your-repo/BitcoinDeepa-TMA-Bot.git
+   cd BitcoinDeepa-TMA-Bot
+   ```
 
 2. **Install dependencies**
 
-    ```bash
-    bun install
-    # or
-    npm install
-    ```
+   ```bash
+   bun install
+   # or
+   npm install
+   ```
 
 3. **Environment Setup**
    Create a `.env.local` file with your environment variables:
 
-    ```env
-    MONGODB_URI=your_mongodb_connection_string
-    API_BASE_URL=http://localhost:3347
+   ```env
+   MONGODB_URI=your_mongodb_connection_string
+   API_BASE_URL=http://localhost:3347
 
-    ```
+   ```
 
 4. **Run the development server**
 
-    ```bash
-    bun dev
-    # or
-    npm run dev
-    ```
+   ```bash
+   bun dev
+   # or
+   npm run dev
+   ```
 
 5. **Open in browser**
    Navigate to `http://localhost:3347`
@@ -123,51 +123,51 @@ src/
 
 ### API Layer
 
--   All HTTP requests use `fetchy` from `@/lib/fetchy`
--   RESTful API routes in `src/app/api/`
--   MongoDB connection via `src/db/connect.ts`
+- All HTTP requests use `fetchy` from `@/lib/fetchy`
+- RESTful API routes in `src/app/api/`
+- MongoDB connection via `src/db/connect.ts`
 
 ### Authentication
 
--   Telegram-based authentication using `@/lib/auth`
--   Auth token stored in localStorage
--   Dashboard layout (`src/app/dashboard/layout.tsx`) runs `useAuthGuard` to gate access
+- Telegram-based authentication using `@/lib/auth`
+- Auth token stored in localStorage
+- Dashboard layout (`src/app/dashboard/layout.tsx`) runs `useAuthGuard` to gate access
 
 ### State Management
 
--   **Global UI State**: Zustand store (`@/lib/store`)
--   **Server State**: TanStack Query with keys in `@/lib/query-keys`
--   **Form State**: React Hook Form with Zod validation
+- **Global UI State**: Zustand store (`@/lib/store`)
+- **Server State**: TanStack Query with keys in `@/lib/query-keys`
+- **Form State**: React Hook Form with Zod validation
 
 ### Database Models
 
--   **User**: Profile with subscription, wallet, and rewards data
--   **Subscription**: Weekly/monthly membership plans
--   **Transaction**: Bitcoin transactions with multiple types
--   **Wallet**: Bitcoin balance with USD/LKR tracking
+- **User**: Profile with subscription, wallet, and rewards data
+- **Subscription**: Weekly/monthly membership plans
+- **Transaction**: Bitcoin transactions with multiple types
+- **Wallet**: Bitcoin balance with USD/LKR tracking
 
 ## 💳 Payment Integration
 
 The app integrates with PayHere payment gateway for Sri Lankan users:
 
--   Subscription plans in Sri Lankan Rupees (LKR)
--   Automatic Bitcoin purchase with membership plans
--   Real-time Bitcoin price tracking
--   Transaction history with detailed analytics
+- Subscription plans in Sri Lankan Rupees (LKR)
+- Automatic Bitcoin purchase with membership plans
+- Real-time Bitcoin price tracking
+- Transaction history with detailed analytics
 
 ## 🔐 Security Features
 
--   Telegram Web App security validation
--   Token-based authentication
--   KYC verification system
--   Secure payment processing
--   Environment variable protection
+- Telegram Web App security validation
+- Token-based authentication
+- KYC verification system
+- Secure payment processing
+- Environment variable protection
 
 ## 📱 Mobile-First Design
 
--   Optimized for mobile viewing (max-width: 28rem / `max-w-md`)
--   Telegram Mini App SDK integration, expanded to full screen on launch
--   Bottom navigation for authenticated users
+- Optimized for mobile viewing (max-width: 28rem / `max-w-md`)
+- Telegram Mini App SDK integration, expanded to full screen on launch
+- Bottom navigation for authenticated users
 
 ## 🌍 Deployment
 
@@ -175,24 +175,24 @@ The app is configured for deployment on Railway:
 
 ```json
 {
-    "build": {
-        "builder": "NIXPACKS",
-        "buildCommand": "bun install && bun run build"
-    },
-    "deploy": {
-        "startCommand": "bun run start",
-        "restartPolicyType": "ON_FAILURE",
-        "restartPolicyMaxRetries": 10
-    },
-    "environments": {
-        "production": {
-            "variables": {
-                "NODE_ENV": "production",
-                "NODE_OPTIONS": "--max-old-space-size=512",
-                "NEXT_TELEMETRY_DISABLED": "1"
-            }
-        }
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "bun install && bun run build"
+  },
+  "deploy": {
+    "startCommand": "bun run start",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  },
+  "environments": {
+    "production": {
+      "variables": {
+        "NODE_ENV": "production",
+        "NODE_OPTIONS": "--max-old-space-size=512",
+        "NEXT_TELEMETRY_DISABLED": "1"
+      }
     }
+  }
 }
 ```
 
@@ -208,13 +208,13 @@ The app is configured for deployment on Railway:
 
 ### Commit Message Format
 
--   `feat:` for new features
--   `fix:` for bug fixes
--   `docs:` for documentation changes
--   `style:` for formatting changes
--   `refactor:` for code refactoring
--   `test:` for adding tests
--   `chore:` for maintenance tasks
+- `feat:` for new features
+- `fix:` for bug fixes
+- `docs:` for documentation changes
+- `style:` for formatting changes
+- `refactor:` for code refactoring
+- `test:` for adding tests
+- `chore:` for maintenance tasks
 
 ## 📄 License
 
@@ -224,8 +224,8 @@ This project is private and proprietary. All rights reserved.
 
 For support and questions:
 
--   Create an issue in this repository
--   Contact the development team
+- Create an issue in this repository
+- Contact the development team
 
 ---
 

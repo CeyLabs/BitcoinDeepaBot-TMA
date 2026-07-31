@@ -15,7 +15,7 @@ export function KycRequiredNotice() {
         <p className="text-[16px] font-bold text-[#1b2027] dark:text-white">
           Verification Required
         </p>
-        <p className="text-sm font-normal text-[#64748b] dark:text-muted-foreground">
+        <p className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">
           Complete identity verification to view and manage plans.
         </p>
       </div>
@@ -23,7 +23,7 @@ export function KycRequiredNotice() {
       <Button
         mode="filled"
         size="m"
-        className="rounded-full! bg-[#fa7119]! mt-1"
+        className="mt-1 rounded-full! bg-[#fa7119]!"
         onClick={() => router.push("/verification")}
       >
         Complete Verification

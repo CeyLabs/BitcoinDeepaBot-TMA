@@ -32,11 +32,15 @@ function NewsFeaturedCard({ article }: { article: NewsArticle }) {
 
       {article.thumbnailUrl && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={article.thumbnailUrl} alt="" className="h-40 w-full rounded-[14px] object-cover" />
+        <img
+          src={article.thumbnailUrl}
+          alt=""
+          className="h-40 w-full rounded-[14px] object-cover"
+        />
       )}
 
       <div className="flex flex-col gap-1.5">
-        <h2 className="text-[18px] font-bold leading-6 text-white">{article.title}</h2>
+        <h2 className="text-[18px] leading-6 font-bold text-white">{article.title}</h2>
         <p className="line-clamp-2 text-[13px] leading-4 text-white/85">{article.description}</p>
         <div className="mt-1 flex items-center gap-1.5 text-[12px] text-white/85">
           <Clock size={13} />

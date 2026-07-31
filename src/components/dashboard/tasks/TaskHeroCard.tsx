@@ -39,21 +39,21 @@ export function TaskHeroCard({ stats, visible }: TaskHeroCardProps) {
 
       <div className="relative flex flex-col gap-4 p-4">
         <div className="flex flex-col gap-1">
-          <p className="text-[18px] font-bold leading-5 text-white">Your Tasks Earnings</p>
+          <p className="text-[18px] leading-5 font-bold text-white">Your Tasks Earnings</p>
           <p className="text-[13px] leading-4 text-white/70">Complete Daily Tasks to earn more</p>
         </div>
 
         <div className="flex items-stretch">
           <div className="flex flex-1 flex-col gap-1">
             <p className="text-[12px] leading-4 text-white/70">Task Completed</p>
-            <p className="text-[16px] font-semibold leading-5 text-white">
+            <p className="text-[16px] leading-5 font-semibold text-white">
               {mask(`${stats.completedTotal}`)}
             </p>
           </div>
           <div className="w-px self-stretch bg-white/25" />
           <div className="flex flex-1 flex-col items-end gap-1">
             <p className="text-[12px] leading-4 text-white/70">Today&apos;s Tasks</p>
-            <p className="text-[16px] font-semibold leading-5 text-white">
+            <p className="text-[16px] leading-5 font-semibold text-white">
               {mask(`${stats.todayCompleted}/${stats.todayTotal}`)} completed
             </p>
           </div>
@@ -62,7 +62,7 @@ export function TaskHeroCard({ stats, visible }: TaskHeroCardProps) {
         <div className="flex rounded-[12px] bg-white/15 p-3">
           <div className="flex flex-1 flex-col gap-1">
             <p className="text-[12px] leading-4 text-white/70">Total Earned</p>
-            <p className="text-[16px] font-bold leading-4 text-white">
+            <p className="text-[16px] leading-4 font-bold text-white">
               {mask(`${fmtSatsCompact(stats.totalEarnedSats)} sats`)}
             </p>
             <p className="text-[12px] leading-4 text-white/70">
@@ -72,7 +72,7 @@ export function TaskHeroCard({ stats, visible }: TaskHeroCardProps) {
           <div className="w-px self-stretch bg-white/25" />
           <div className="flex flex-1 flex-col items-end gap-1">
             <p className="text-[12px] leading-4 text-white/70">Todays Earnings</p>
-            <p className="text-[16px] font-bold leading-4 text-white">
+            <p className="text-[16px] leading-4 font-bold text-white">
               {mask(`${fmtSatsCompact(stats.todayEarningsSats)} sats`)}
             </p>
             <p className="text-[12px] leading-4 text-white/70">

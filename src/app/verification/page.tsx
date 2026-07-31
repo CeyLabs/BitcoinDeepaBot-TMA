@@ -130,7 +130,9 @@ export default function VerificationIntroPage() {
 
     if (verificationUrl) {
       const telegramWebApp = (
-        window as unknown as { Telegram?: { WebApp?: { openLink?: (url: string) => void } } }
+        window as unknown as {
+          Telegram?: { WebApp?: { openLink?: (url: string) => void } };
+        }
       ).Telegram?.WebApp;
 
       if (telegramWebApp?.openLink) {
@@ -146,9 +148,9 @@ export default function VerificationIntroPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0b0f14]">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pb-6 pt-8">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-8 pb-6">
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-[24px] font-bold leading-7 text-white">
+          <h1 className="text-[24px] leading-7 font-bold text-white">
             {content?.title ?? "Verify Your Identity"}
           </h1>
           <p className="text-[14px] leading-4.5 text-[#94a3b8]">
@@ -170,13 +172,11 @@ export default function VerificationIntroPage() {
           <div className="flex flex-col gap-3">
             {STEPS.map((step, index) => (
               <div key={step.title} className="rounded-2xl bg-[#12161d] px-4 py-4">
-                <p className="text-[13px] font-semibold leading-4 text-[#fa7119]">
+                <p className="text-[13px] leading-4 font-semibold text-[#fa7119]">
                   Step {String(index + 1).padStart(2, "0")}
                 </p>
-                <p className="mt-1 text-[16px] font-bold leading-5 text-white">{step.title}</p>
-                <p className="mt-0.5 text-[13px] leading-4.25 text-[#94a3b8]">
-                  {step.description}
-                </p>
+                <p className="mt-1 text-[16px] leading-5 font-bold text-white">{step.title}</p>
+                <p className="mt-0.5 text-[13px] leading-4.25 text-[#94a3b8]">{step.description}</p>
               </div>
             ))}
           </div>
@@ -184,7 +184,7 @@ export default function VerificationIntroPage() {
 
         {status === "KYC_EXPIRED" && (
           <div className="rounded-2xl bg-[#fa7119]/10 px-4 py-4">
-            <p className="text-[13px] font-semibold leading-4 text-[#fa7119]">KYC Expired</p>
+            <p className="text-[13px] leading-4 font-semibold text-[#fa7119]">KYC Expired</p>
             <p className="mt-1 text-[13px] leading-4.5 text-[#94a3b8]">
               Your previous verification has expired, please verify again.
             </p>
@@ -193,10 +193,10 @@ export default function VerificationIntroPage() {
 
         {status === "IN_REVIEW" && (
           <div className="flex flex-col items-center gap-2 rounded-2xl bg-[#12161d] px-4 py-5 text-center">
-            <p className="text-[15px] font-bold leading-5 text-[#fa7119]">
+            <p className="text-[15px] leading-5 font-bold text-[#fa7119]">
               We&apos;re reviewing your documents.
             </p>
-            <p className="text-[16px] font-bold leading-5 text-white">
+            <p className="text-[16px] leading-5 font-bold text-white">
               This usually takes up to 24 hours.
             </p>
             <p className="text-[13px] leading-4.5 text-[#94a3b8]">
@@ -288,7 +288,7 @@ export default function VerificationIntroPage() {
           </Modal.Header>
         }
       >
-        <div className="flex flex-col gap-5 px-5 pb-6 pt-2">
+        <div className="flex flex-col gap-5 px-5 pt-2 pb-6">
           <VisuallyHidden asChild>
             <Drawer.Title>Use Mobile Device</Drawer.Title>
           </VisuallyHidden>
@@ -302,14 +302,14 @@ export default function VerificationIntroPage() {
                 unoptimized
               />
             </div>
-            <h2 className="text-[16px] font-bold leading-5 text-white">Use Mobile Device</h2>
+            <h2 className="text-[16px] leading-5 font-bold text-white">Use Mobile Device</h2>
             <p className="text-[14px] leading-4.5 text-[#94a3b8]">
               Identity verification works best on mobile devices for security and camera access.
             </p>
           </div>
 
           <div className="flex flex-col gap-3 rounded-2xl bg-[#12161d] px-4 py-4">
-            <p className="text-[13px] font-semibold leading-4 text-white">
+            <p className="text-[13px] leading-4 font-semibold text-white">
               How to verify on mobile:
             </p>
             {MOBILE_STEPS.map((step, index) => (

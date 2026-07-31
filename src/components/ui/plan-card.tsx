@@ -8,13 +8,13 @@ const RadioDefault = () => (
 );
 
 const RadioSelected = () => (
-  <div className="size-5 rounded-full border-2 border-[#fa7119] bg-white dark:bg-transparent flex items-center justify-center">
+  <div className="flex size-5 items-center justify-center rounded-full border-2 border-[#fa7119] bg-white dark:bg-transparent">
     <div className="size-2.5 rounded-full bg-[#fa7119]" />
   </div>
 );
 
 const CheckSelected = () => (
-  <div className="size-5 rounded-full border-2 border-[#16a34a] bg-white dark:bg-transparent flex items-center justify-center">
+  <div className="flex size-5 items-center justify-center rounded-full border-2 border-[#16a34a] bg-white dark:bg-transparent">
     <Check className="size-3 text-[#16a34a]" strokeWidth={3} />
   </div>
 );
@@ -56,7 +56,7 @@ export function PlanCard({
       type={active ? undefined : "button"}
       onClick={active ? undefined : onSelect}
       className={cn(
-        "w-full text-left rounded-[12px] relative",
+        "relative w-full rounded-[12px] text-left",
         "flex flex-col items-end pt-0",
         "shadow-[-0.1px_-0.1px_10px_0px_rgba(203,213,225,0.3),3px_3px_7px_0px_rgba(203,213,225,0.3)] dark:shadow-none",
         "transition-all duration-150",
@@ -64,33 +64,36 @@ export function PlanCard({
           ? "border border-[#16a34a] bg-white dark:bg-[#0b0f14]"
           : isHighlighted
             ? "border border-[#fa7119] bg-[#eeeff3] dark:bg-[#1b2027]"
-            : "border border-transparent bg-white dark:bg-[#0b0f14] dark:border-[#1b2027]",
-        !active && "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#fa7119]/50",
+            : "border border-transparent bg-white dark:border-[#1b2027] dark:bg-[#0b0f14]",
+        !active &&
+          "focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-hidden",
         className
       )}
     >
       {active && (
         <div className="absolute top-3 right-4">
-          <div className="bg-[#16a34a] flex h-5 items-center justify-center px-2.5 rounded-full">
-            <p className="text-[12px] leading-[16px] text-white whitespace-nowrap">Current Plan</p>
+          <div className="flex h-5 items-center justify-center rounded-full bg-[#16a34a] px-2.5">
+            <p className="text-[12px] leading-[16px] whitespace-nowrap text-white">Current Plan</p>
           </div>
         </div>
       )}
       {mostPopular && !active && (
-        <div className="flex flex-col items-start mb-[-10px] pt-[6px] px-[10px] relative shrink-0 self-end">
-          <div className="bg-[#fa7119] flex h-4 items-center justify-center px-2.5 rounded-full">
-            <p className="text-[12px] leading-[16px] text-[#eeeff3] whitespace-nowrap">Most Popular</p>
+        <div className="relative mb-[-10px] flex shrink-0 flex-col items-start self-end px-[10px] pt-[6px]">
+          <div className="flex h-4 items-center justify-center rounded-full bg-[#fa7119] px-2.5">
+            <p className="text-[12px] leading-[16px] whitespace-nowrap text-[#eeeff3]">
+              Most Popular
+            </p>
           </div>
         </div>
       )}
-      <div className={cn("flex flex-col items-start w-full px-4 py-5 gap-0", active && "pt-6")}>
+      <div className={cn("flex w-full flex-col items-start gap-0 px-4 py-5", active && "pt-6")}>
         {/* Top row: radio + emoji + name + price */}
-        <div className="flex items-center gap-2 w-full h-10">
-          <div className="flex items-center gap-2 shrink-0">
+        <div className="flex h-10 w-full items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             {active ? <CheckSelected /> : isHighlighted ? <RadioSelected /> : <RadioDefault />}
-            <div className="size-10 flex items-center justify-center">{emoji}</div>
+            <div className="flex size-10 items-center justify-center">{emoji}</div>
           </div>
-          <div className="flex flex-1 items-center justify-between min-w-0 leading-[16px] tracking-normal whitespace-nowrap">
+          <div className="flex min-w-0 flex-1 items-center justify-between leading-[16px] tracking-normal whitespace-nowrap">
             <p className="text-[16px] font-semibold text-[#1b2027] dark:text-white">{name}</p>
             <div className="flex items-end gap-0.5 text-center">
               <p
@@ -101,26 +104,28 @@ export function PlanCard({
               >
                 {price}
               </p>
-              <p className="text-[12px] font-normal text-[#e2e8f0] dark:text-[#475569] pb-0.5">{period}</p>
+              <p className="pb-0.5 text-[12px] font-normal text-[#e2e8f0] dark:text-[#475569]">
+                {period}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Bottom: description + pricing */}
-        <div className="flex flex-col items-start pl-[31px] w-full mt-1 gap-0.5">
-          <p className="text-[14px] font-normal leading-[16px] text-[#475569] dark:text-[#94a3b8] w-full">
+        <div className="mt-1 flex w-full flex-col items-start gap-0.5 pl-[31px]">
+          <p className="w-full text-[14px] leading-[16px] font-normal text-[#475569] dark:text-[#94a3b8]">
             {description}
           </p>
-          <div className="flex items-center gap-2 w-full">
+          <div className="flex w-full items-center gap-2">
             {perMonth && (
               <>
-                <p className="text-[12px] font-normal leading-[16px] text-[#64748b] dark:text-[#64748b] whitespace-nowrap">
+                <p className="text-[12px] leading-[16px] font-normal whitespace-nowrap text-[#64748b] dark:text-[#64748b]">
                   {perMonth}
                 </p>
-                <div className="w-px h-3 bg-[#e2e8f0] dark:bg-[#334155]" />
+                <div className="h-3 w-px bg-[#e2e8f0] dark:bg-[#334155]" />
               </>
             )}
-            <p className="text-[12px] font-normal leading-[16px] text-[#64748b] dark:text-[#64748b] whitespace-nowrap">
+            <p className="text-[12px] leading-[16px] font-normal whitespace-nowrap text-[#64748b] dark:text-[#64748b]">
               {perYear}
             </p>
           </div>
