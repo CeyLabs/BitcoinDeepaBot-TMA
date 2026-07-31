@@ -45,15 +45,16 @@ export default function LoadingPage({
       {/* Logo inside spinning arc */}
       <div className="relative flex items-center justify-center">
         {/* Outer spinner ring */}
-        <div className="size-44 animate-spin rounded-full border-3 border-transparent border-t-[#fa7119] border-r-[#fa7119]" />
+        <div className="size-40 animate-spin rounded-full border-3 border-transparent border-t-[#fa7119] border-r-[#fa7119]" />
         {/* Logo centered */}
         <div className="absolute inset-0 flex items-center justify-center">
           <Image
             src={logoSrc}
             alt="Bitcoin Deepa"
-            width={100}
-            height={100}
+            width={80}
+            height={80}
             className="object-contain"
+            style={{ width: 80, height: 80 }}
           />
         </div>
       </div>
@@ -75,7 +76,14 @@ export default function LoadingPage({
       <div className="relative flex items-center justify-center">
         <div className="h-12 w-12 animate-spin rounded-full border-2 border-transparent border-t-[#fa7119] border-r-[#fa7119]" />
         <div className="absolute inset-0 flex items-center justify-center">
-          <Image src={logoSrc} alt="Bitcoin Deepa" width={24} height={24} className="object-contain" />
+          <Image
+            src={logoSrc}
+            alt="Bitcoin Deepa"
+            width={24}
+            height={24}
+            className="object-contain"
+            style={{ width: 24, height: 24 }}
+          />
         </div>
       </div>
       <p className="text-sm text-[#64748b]">{message}</p>
