@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { initMiniApp, postEvent } from "@telegram-apps/sdk-react";
-import { useRegisterV2User } from "@/hooks/useRegisterV2User";
+import { useRegisterUser } from "@/hooks/useRegisterUser";
 
 export default function TMASetupProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -15,7 +15,7 @@ export default function TMASetupProvider({ children }: { children: React.ReactNo
     }
   }, []);
 
-  useRegisterV2User();
+  useRegisterUser();
 
   return <>{children}</>;
 }

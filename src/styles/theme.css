@@ -32,10 +32,10 @@
 
   --color-surface-gift: var(--surface-gift);
 
-  /* v2 dashboard page background — light default, overridden for .dark below */
+  /* dashboard page background — light default, overridden for .dark below */
   --color-surface-main: #eeeff3;
 
-  /* v2 telegram-ui card surface — light default, overridden for .dark below */
+  /* telegram-ui card surface — light default, overridden for .dark below */
   --color-surface-primary: #ffffff;
 
   /* Success green — opacity applied at the call site via color-mix() */
