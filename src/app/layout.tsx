@@ -8,39 +8,34 @@ import { cn } from "@/lib/cn";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export default function RootLayout({
-    children,
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-    return (
-        <html lang="en" className={cn("font-sans", inter.variable)} suppressHydrationWarning>
-            <head>
-                {/* Telegram iOS WebView sometimes ignores the Cache-Control response header (see next.config.mjs) but respects this meta tag instead. */}
-                <meta httpEquiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
-                <meta httpEquiv="Pragma" content="no-cache" />
-                <meta httpEquiv="Expires" content="0" />
-                <Script
-                    src="https://telegram.org/js/telegram-web-app.js"
-                    strategy="beforeInteractive"
-                />
-                <Script
-                    src="https://www.googletagmanager.com/gtag/js?id=G-ZJK26JTL2R"
-                    strategy="afterInteractive"
-                />
-                <Script id="google-analytics" strategy="afterInteractive">
-                    {`
+  return (
+    <html lang="en" className={cn("font-sans", inter.variable)} suppressHydrationWarning>
+      <head>
+        {/* Telegram iOS WebView sometimes ignores the Cache-Control response header (see next.config.mjs) but respects this meta tag instead. */}
+        <meta httpEquiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
+        <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-ZJK26JTL2R"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
                         window.dataLayer = window.dataLayer || [];
                         function gtag(){dataLayer.push(arguments);}
                         gtag('js', new Date());
                         gtag('config', 'G-ZJK26JTL2R');
                     `}
-                </Script>
-            </head>
-            <body className={`${inter.className} min-h-screen leading-tight`}>
-                <Providers>
-                    {children}
-                </Providers>
-            </body>
-        </html>
-    );
+        </Script>
+      </head>
+      <body className={`${inter.className} min-h-screen leading-tight`}>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
 }

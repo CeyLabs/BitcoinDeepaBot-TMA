@@ -20,7 +20,7 @@ export function CopyButton({ onCopy, copied = false, className }: CopyButtonProp
       aria-label={copied ? "Copied" : "Copy to clipboard"}
       onClick={onCopy}
       className={cn(
-        "size-9! shrink-0! flex! items-center! justify-center! bg-white! dark:bg-[#1b2027]! rounded-lg!",
+        "flex! size-9! shrink-0! items-center! justify-center! rounded-lg! bg-white! dark:bg-[#1b2027]!",
         className
       )}
     >
@@ -29,7 +29,7 @@ export function CopyButton({ onCopy, copied = false, className }: CopyButtonProp
           size={16}
           strokeWidth={2}
           className={cn(
-            "absolute inset-0 text-success transition-all duration-150",
+            "text-success absolute inset-0 transition-all duration-150",
             copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
           )}
         />
@@ -37,7 +37,7 @@ export function CopyButton({ onCopy, copied = false, className }: CopyButtonProp
           size={16}
           strokeWidth={2}
           className={cn(
-            "absolute inset-0 text-[#1b2027] dark:text-[#f1f5f9] transition-all duration-150",
+            "absolute inset-0 text-[#1b2027] transition-all duration-150 dark:text-[#f1f5f9]",
             copied ? "scale-0 opacity-0" : "scale-100 opacity-100"
           )}
         />
@@ -73,10 +73,8 @@ export function CopyField({ value, className, onCopy }: CopyFieldProps) {
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <div className="flex-1 flex items-center h-9 px-3 py-2 rounded-[10px] bg-white dark:bg-[#1b2027] border border-[#e2e8f0] dark:border-[#334155] overflow-hidden">
-        <p className="text-[14px] leading-4 text-[#1b2027] dark:text-[#f1f5f9] truncate">
-          {value}
-        </p>
+      <div className="flex h-9 flex-1 items-center overflow-hidden rounded-[10px] border border-[#e2e8f0] bg-white px-3 py-2 dark:border-[#334155] dark:bg-[#1b2027]">
+        <p className="truncate text-[14px] leading-4 text-[#1b2027] dark:text-[#f1f5f9]">{value}</p>
       </div>
       <CopyButton onCopy={handleCopy} copied={copied} />
     </div>

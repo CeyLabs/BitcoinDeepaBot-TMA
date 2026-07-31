@@ -13,10 +13,7 @@ interface TogglePlanProps {
 export function TogglePlan({ value, onChange, className }: TogglePlanProps) {
   return (
     <div
-      className={cn(
-        "flex items-start p-1 rounded-full bg-[#f1f5f9] dark:bg-[#242b35]",
-        className
-      )}
+      className={cn("flex items-start rounded-full bg-[#f1f5f9] p-1 dark:bg-[#242b35]", className)}
     >
       {(["weekly", "monthly"] as PlanDuration[]).map((option) => {
         const isActive = value === option;
@@ -25,8 +22,8 @@ export function TogglePlan({ value, onChange, className }: TogglePlanProps) {
             key={option}
             onClick={() => onChange(option)}
             className={cn(
-              "flex items-center justify-center px-6 py-1 rounded-full w-[175px]",
-              "text-[14px] font-semibold leading-[28px] text-center transition-colors",
+              "flex w-[175px] items-center justify-center rounded-full px-6 py-1",
+              "text-center text-[14px] leading-[28px] font-semibold transition-colors",
               isActive
                 ? "bg-white text-[#fa7119] dark:bg-[#0b0f14]"
                 : "bg-transparent text-[#64748b] dark:text-[#94a3b8]"
