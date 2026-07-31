@@ -30,7 +30,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
   return (
     <Accordion expanded={expanded} onChange={setExpanded}>
       <Accordion.Summary
-        className="mx-1! my-0.5! gap-2! rounded-xl! px-3! transition-colors duration-150 hover:bg-[#f1f5f9]! dark:hover:bg-[#1B2027]!"
+        className="mx-1! my-0.5! gap-2! rounded-xl! pl-3! pr-1.5! transition-colors duration-150 hover:bg-[#f1f5f9]! dark:hover:bg-[#1B2027]!"
         before={
           <div className="flex size-10 shrink-0 items-center justify-center">
             <Image
@@ -55,7 +55,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
           </span>
         }
         after={
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-0.5">
             <div className="flex flex-col items-end gap-0.5">
               <p
                 className={`text-right text-[14px] leading-4 ${
@@ -69,7 +69,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
               </p>
             </div>
             <ChevronDown
-              size={18}
+              size={16}
               strokeWidth={2}
               className={`shrink-0 text-[#64748b] transition-transform duration-150 ${
                 expanded ? "rotate-180" : ""
@@ -78,11 +78,11 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
           </div>
         }
       >
-        <span className="flex items-center gap-1.5 text-base font-semibold leading-5 text-[#1b2027] dark:text-white">
+        <span className="flex items-center gap-1.5 whitespace-nowrap text-base font-semibold leading-5 text-[#1b2027] dark:text-white">
           {ACTIVITY_TITLE[item.type]}
           {item.statusDot && (
             <span
-              className={`size-2 rounded-full ${
+              className={`inline-block size-2 shrink-0 rounded-full ${
                 item.statusDot === "green" ? "bg-[#25A761]" : "bg-[#FA7119]"
               }`}
             />
@@ -101,7 +101,8 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
                 className="flex! min-w-0! leading-3! items-center! justify-center! m-0! whitespace-nowrap! rounded-[8px]! px-2! py-1! text-sm!"
                 style={
                   {
-                    "--tgui--button_color": "#25A761",
+                    "--tgui--button_color":
+                      item.statusDot === "orange" ? "#FA7119" : "#25A761",
                     "--tgui--button_text_color": "#fff",
                   } as React.CSSProperties
                 }
