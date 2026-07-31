@@ -98,7 +98,7 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
 
         <Link href="/v2/dashboard/plans" className="block">
           <Cell
-            before={<Image src="/emoji/bitcoin.svg" alt="Bitcoin" width={40} height={40}/>}
+            before={<Image src="/emoji/bitcoin.webp" alt="Bitcoin" width={40} height={40}/>}
             after={<Navigation />}
             style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
             className="gap-2! px-4! rounded-[12px] border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
@@ -112,7 +112,7 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
 
         {/* Gifting isn't launched yet (see GiftPlansComingSoon) — disabled, not linked. */}
         <Cell
-          before={<Image src="/emoji/gift.svg" alt="Gift" width={40} height={40} />}
+          before={<Image src="/emoji/gift.webp" alt="Gift" width={40} height={40} />}
           readOnly
           aria-disabled="true"
           tabIndex={-1}

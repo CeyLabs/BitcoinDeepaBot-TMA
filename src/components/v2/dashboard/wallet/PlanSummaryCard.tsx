@@ -11,11 +11,11 @@ const CARD_SURFACE_STYLE = {
 } as React.CSSProperties;
 
 export const PLAN_ICONS: Record<string, string> = {
-  shrimp: "/emoji/shrimp.svg",
-  crab: "/emoji/crab.svg",
-  shark: "/emoji/shark.svg",
-  whale: "/emoji/whale.svg",
-  "blue whale": "/emoji/bluewhale.svg",
+  shrimp: "/emoji/shrimp.webp",
+  crab: "/emoji/crab.webp",
+  shark: "/emoji/shark.webp",
+  whale: "/emoji/whale.webp",
+  "blue whale": "/emoji/bluewhale.webp",
 };
 
 function stripFrequencySuffix(name: string): string {
@@ -24,7 +24,7 @@ function stripFrequencySuffix(name: string): string {
 
 export function getPlanIconSrc(name: string): string {
   const key = stripFrequencySuffix(name).toLowerCase();
-  return PLAN_ICONS[key] ?? "/emoji/bitcoin.svg";
+  return PLAN_ICONS[key] ?? "/emoji/bitcoin.webp";
 }
 
 function RewardCard({
@@ -86,7 +86,7 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
                   className="size-9"
                 />
               ) : (
-                <Image src="/emoji/notepad.svg" alt="" width={36} height={36} className="size-9" />
+                <Image src="/emoji/notepad.webp" alt="" width={36} height={36} className="size-9" />
               )
             }
             after={
@@ -139,12 +139,12 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
             <RewardCard
               label="Subscribed Since"
               dateStr={subscription.startDate}
-              iconSrc="/emoji/calendar1.svg"
+              iconSrc="/emoji/calendar1.webp"
             />
             <RewardCard
               label="Next Reward"
               dateStr={subscription.endDate}
-              iconSrc="/emoji/calendar2.svg"
+              iconSrc="/emoji/calendar2.webp"
             />
           </div>
         )}

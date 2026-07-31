@@ -16,7 +16,7 @@ export function GiftPlansComingSoon() {
       </p>
 
       <div className="flex flex-col items-center gap-3 rounded-xl bg-white px-6 py-8 text-center shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)]">
-        <Image src="/emoji/gift.svg" alt="Gift" width={56} height={56} />
+        <Image src="/emoji/gift.webp" alt="Gift" width={56} height={56} />
 
         <div className="flex flex-col gap-1">
           <p className="text-[16px] font-bold text-[#1b2027] dark:text-white">
@@ -49,7 +49,7 @@ export function GiftPlanActions() {
 
       <div className="flex flex-col gap-2">
         <Cell
-          before={<Image src="/emoji/gift.svg" alt="Gift" width={40} height={40} />}
+          before={<Image src="/emoji/gift.webp" alt="Gift" width={40} height={40} />}
           after={<Navigation />}
           style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
           className={CELL_CLASSNAME}
@@ -63,7 +63,7 @@ export function GiftPlanActions() {
         </Cell>
 
         <Cell
-          before={<Image src="/emoji/gift_standing_order.svg" alt="Recurring Gift" width={40} height={40} />}
+          before={<Image src="/emoji/gift_standing_order.webp" alt="Recurring Gift" width={40} height={40} />}
           after={<Navigation />}
           style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
           className={CELL_CLASSNAME}

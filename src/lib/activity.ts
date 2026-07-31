@@ -3,16 +3,16 @@ import type { DcaTransaction } from "@/hooks/query/useTransactionHistory";
 import { fmtActivityTime } from "@/lib/formatters";
 
 export const ACTIVITY_ICON: Record<ActivityType, string> = {
-    sent: "/emoji/sent.svg",
-    received: "/emoji/receive.svg",
-    tipjar_sent: "/emoji/tipjar_sent.svg",
-    tipjar_received: "/emoji/tipjar_Receive.svg",
-    faucet_sent: "/emoji/faucet_sent.svg",
-    faucet_received: "/emoji/faucet_received.svg",
-    gift_sent: "/emoji/gift_sent.svg",
-    gift_received: "/emoji/gift_receive.svg",
-    tasks_reward: "/emoji/tasks_reward.svg",
-    membership_reward: "/emoji/membership_reward.svg",
+    sent: "/emoji/sent.webp",
+    received: "/emoji/receive.webp",
+    tipjar_sent: "/emoji/tipjar_sent.webp",
+    tipjar_received: "/emoji/tipjar_Receive.webp",
+    faucet_sent: "/emoji/faucet_sent.webp",
+    faucet_received: "/emoji/faucet_received.webp",
+    gift_sent: "/emoji/gift_sent.webp",
+    gift_received: "/emoji/gift_receive.webp",
+    tasks_reward: "/emoji/tasks_reward.webp",
+    membership_reward: "/emoji/membership_reward.webp",
 };
 
 export const ACTIVITY_TITLE: Record<ActivityType, string> = {

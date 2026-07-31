@@ -50,7 +50,7 @@ export function PerformanceGrid({
           className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
           style={CARD_SURFACE_STYLE}
         >
-          <Image src="/emoji/wallet.svg" alt="" width={36} height={36} className="size-9" />
+          <Image src="/emoji/wallet.webp" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
             You Invested
           </p>
@@ -73,7 +73,7 @@ export function PerformanceGrid({
           className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
           style={CARD_SUCCESS_STYLE}
         >
-          <Image src="/emoji/coins.svg" alt="" width={36} height={36} className="size-9" />
+          <Image src="/emoji/coins.webp" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
             Current Value
           </p>
@@ -107,7 +107,7 @@ export function PerformanceGrid({
           className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
           style={CARD_SURFACE_STYLE}
         >
-          <Image src="/emoji/calculator.svg" alt="" width={36} height={36} className="size-9" />
+          <Image src="/emoji/calculator.webp" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
             Avg Price
           </p>
@@ -132,7 +132,7 @@ export function PerformanceGrid({
           className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
           style={CARD_SUCCESS_STYLE}
         >
-          <Image src="/emoji/graph.svg" alt="" width={36} height={36} className="size-9" />
+          <Image src="/emoji/graph.webp" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] capitalize leading-4 text-[#1b2027] dark:text-[#f1f5f9]">
             Current Price
           </p>
