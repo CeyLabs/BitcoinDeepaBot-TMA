@@ -20,6 +20,7 @@ import { LuArrowDownRight, LuArrowUpRight } from "react-icons/lu";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { RewardsChart } from "@/components/RewardsChart";
+import BtcPriceTicker from "@/components/BtcPriceTicker";
 
 interface DCSummary {
     dca: {
@@ -279,6 +280,11 @@ export default function WalletPage() {
                             </div>
                         )}
                     </div>
+                </div>
+
+                {/* BTC Price Ticker */}
+                <div className="mb-4">
+                    <BtcPriceTicker />
                 </div>
 
                 {/* Balance Card */}
