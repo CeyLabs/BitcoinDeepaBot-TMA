@@ -32,7 +32,7 @@ export function TaskHeroCard({ stats, visible }: TaskHeroCardProps) {
   return (
     <Card
       type="plain"
-      className="relative overflow-hidden rounded-[20px]! p-0! shadow-none!"
+      className="relative overflow-hidden rounded-[20px]! p-0! shadow-none! hidden"
       style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
     >
       <Image src="/bg/note.webp" alt="" fill priority className="object-cover" />

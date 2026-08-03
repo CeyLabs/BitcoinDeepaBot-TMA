@@ -37,7 +37,7 @@ export function TotalValueCard({
       <div className="relative flex flex-col gap-2 p-4">
         <div className="flex items-end justify-between">
           <p className="text-[14px] leading-3 text-white capitalize">Total Value</p>
-          <div className="flex items-center gap-1 rounded-[12px] border border-white py-1 pr-1 pl-2">
+          <div className="items-center gap-1 rounded-[12px] border border-white py-1 pr-1 pl-2 hidden">
             <p className="text-[12px] leading-4 text-white">LKR</p>
             <ChevronDown size={14} strokeWidth={2} className="text-white" />
           </div>
