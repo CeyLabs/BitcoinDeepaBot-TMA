@@ -119,25 +119,27 @@ export function PlanCard({
           </div>
         </div>
 
-        {/* Bottom: description + pricing */}
-        <div className="mt-1 flex w-full flex-col items-start gap-0.5 pl-[31px]">
-          <p className="w-full text-[14px] leading-[16px] font-normal text-[#475569] dark:text-[#94a3b8]">
-            {description}
-          </p>
-          <div className="flex w-full items-center gap-2">
-            {perMonth && (
-              <>
-                <p className="text-[12px] leading-[16px] font-normal whitespace-nowrap text-[#64748b] dark:text-[#64748b]">
-                  {perMonth}
-                </p>
-                <div className="h-3 w-px bg-[#e2e8f0] dark:bg-[#334155]" />
-              </>
-            )}
-            <p className="text-[12px] leading-[16px] font-normal whitespace-nowrap text-[#64748b] dark:text-[#64748b]">
-              {perYear}
+        {/* Bottom: description + pricing, revealed only once the plan is selected */}
+        {isHighlighted && (
+          <div className="mt-1 flex w-full flex-col items-start gap-0.5 pl-[31px]">
+            <p className="w-full text-[14px] leading-[16px] font-normal text-[#475569] dark:text-[#94a3b8]">
+              {description}
             </p>
+            <div className="flex w-full items-center gap-2">
+              {perMonth && (
+                <>
+                  <p className="text-[12px] leading-[16px] font-normal whitespace-nowrap text-[#64748b] dark:text-[#64748b]">
+                    {perMonth}
+                  </p>
+                  <div className="h-3 w-px bg-[#e2e8f0] dark:bg-[#334155]" />
+                </>
+              )}
+              <p className="text-[12px] leading-[16px] font-normal whitespace-nowrap text-[#64748b] dark:text-[#64748b]">
+                {perYear}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </Component>
   );

@@ -69,9 +69,8 @@ export default function ChoosePlanPage() {
     [packages, duration, currentPlan]
   );
 
-  // Derived rather than effect-driven: falls back to the first plan of the
-  // active duration until the user makes an explicit selection.
-  const selectedPlanId = selectedId ?? filteredPlans[0]?.id;
+  // Only set once the user explicitly taps a plan — details stay hidden until then.
+  const selectedPlanId = selectedId;
 
   const handleDurationChange = (d: PlanDuration) => {
     haptic.select();
