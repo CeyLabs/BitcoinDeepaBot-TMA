@@ -15,7 +15,7 @@ export default function WalletPage() {
   const { subscription, subscriptionLoading } = useUser();
 
   const { data: summary, isLoading: isSummaryLoading } = useWalletSummary();
-  const { data: transactions } = useTransactionHistory();
+  const { transactions } = useTransactionHistory();
 
   const totalLkr = summary
     ? Number(
