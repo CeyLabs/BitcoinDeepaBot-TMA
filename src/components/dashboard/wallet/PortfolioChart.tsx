@@ -85,7 +85,14 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
     () => buildPoints(transactions, currentBtcPrice),
     [transactions, currentBtcPrice]
   );
-  const points = useMemo(() => filterByPeriod(allPoints, chartPeriod), [allPoints, chartPeriod]);
+  // With fewer than 2 points every period falls back to the same full set (see
+  // filterByPeriod), so the switcher would just be dead buttons — hide it and
+  // render the one timeframe that's actually meaningful.
+  const showPeriodSwitcher = allPoints.length >= 2;
+  const points = useMemo(
+    () => (showPeriodSwitcher ? filterByPeriod(allPoints, chartPeriod) : allPoints),
+    [allPoints, chartPeriod, showPeriodSwitcher]
+  );
 
   const labels = points.map((p) =>
     new Date(p.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
@@ -207,31 +214,33 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
           } as React.CSSProperties
         }
       >
-        <div className="mb-3 flex items-center gap-2">
-          {PERIODS.map((p) => (
-            <Button
-              key={p}
-              mode="gray"
-              size="s"
-              stretched
-              onClick={() => handlePeriodClick(p)}
-              style={
-                {
-                  "--tgui--button--hovered-opacity": 0,
-                  backgroundColor:
-                    selectedPeriod === p ? "#1f2a36" : isDark ? "#1e293b" : "#eeeff3",
-                  color: selectedPeriod === p ? "#fff" : isDark ? "#94a3b8" : "#64748b",
-                } as React.CSSProperties
-              }
-              // tgui's Button renders a square `:after` hover overlay that isn't clipped to
-              // its own border-radius, so its corners poke out past the pill on mouse hover
-              // unless the button itself clips overflow.
-              className="overflow-hidden! rounded-[12px]!"
-            >
-              <span className="text-[12px]">{p}</span>
-            </Button>
-          ))}
-        </div>
+        {showPeriodSwitcher && (
+          <div className="mb-3 flex items-center gap-2">
+            {PERIODS.map((p) => (
+              <Button
+                key={p}
+                mode="gray"
+                size="s"
+                stretched
+                onClick={() => handlePeriodClick(p)}
+                style={
+                  {
+                    "--tgui--button--hovered-opacity": 0,
+                    backgroundColor:
+                      selectedPeriod === p ? "#1f2a36" : isDark ? "#1e293b" : "#eeeff3",
+                    color: selectedPeriod === p ? "#fff" : isDark ? "#94a3b8" : "#64748b",
+                  } as React.CSSProperties
+                }
+                // tgui's Button renders a square `:after` hover overlay that isn't clipped to
+                // its own border-radius, so its corners poke out past the pill on mouse hover
+                // unless the button itself clips overflow.
+                className="overflow-hidden! rounded-[12px]!"
+              >
+                <span className="text-[12px]">{p}</span>
+              </Button>
+            ))}
+          </div>
+        )}
 
         {points.length === 0 ? (
           <div className="flex h-48 items-center justify-center text-center">
