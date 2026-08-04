@@ -63,6 +63,15 @@
   html {
     @apply font-sans;
   }
+
+  /* Scroll stays functional everywhere, the scrollbar itself is just never drawn. */
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/legacy Edge */
+  }
+  *::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/WebView */
+  }
 }
 
 /* Default theme variables - backgrounds handled by BotFather settings */
