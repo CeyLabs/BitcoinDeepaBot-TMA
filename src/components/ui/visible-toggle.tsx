@@ -20,7 +20,7 @@ export function VisibleToggle({ visible, onToggle, dark = false, className }: Vi
       mode="gray"
       size="m"
       onClick={() => {
-        haptic.impact("light");
+        haptic.impact("medium");
         onToggle();
       }}
       className={cn(className)}

@@ -25,11 +25,11 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
   const handleTaskClick = (taskId: string) => {
     switch (taskId) {
       case "task-setup-wallet":
-        haptic.impact("light");
+        haptic.impact("medium");
         openTelegramLink("https://t.me/BitcoinDeepaBot");
         break;
       case "task-join-community":
-        haptic.impact("light");
+        haptic.impact("medium");
         openTelegramLink("https://t.me/+iiP-rX7ldYxjZWU1");
         break;
       case "task-share-story": {

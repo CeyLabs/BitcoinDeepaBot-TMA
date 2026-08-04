@@ -26,7 +26,7 @@ export function KycRequiredNotice() {
         size="m"
         className="mt-1 rounded-full! bg-[#fa7119]!"
         onClick={() => {
-          haptic.impact("light");
+          haptic.impact("medium");
           router.push("/verification");
         }}
       >

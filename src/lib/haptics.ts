@@ -13,7 +13,7 @@ function withHaptics(fn: (haptic: ReturnType<typeof initHapticFeedback>) => void
 }
 
 export const haptic = {
-  impact: (style: ImpactStyle = "light") => withHaptics((h) => h.impactOccurred(style)),
+  impact: (style: ImpactStyle = "medium") => withHaptics((h) => h.impactOccurred(style)),
   notify: (type: NotificationType) => withHaptics((h) => h.notificationOccurred(type)),
   select: () => withHaptics((h) => h.selectionChanged()),
 };

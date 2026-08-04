@@ -60,7 +60,7 @@ export default function VerificationDetailsPage() {
         : null;
 
   const onSubmit = (formData: CreateUserFormData) => {
-    haptic.impact("light");
+    haptic.impact("medium");
     updateProfile.mutate(
       {
         first_name: formData.first_name,

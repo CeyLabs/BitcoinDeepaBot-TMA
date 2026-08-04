@@ -116,7 +116,7 @@ export default function VerificationIntroPage() {
   }, [status, router]);
 
   const initiateVerification = () => {
-    haptic.impact("light");
+    haptic.impact("medium");
     if (!isMobile) {
       setShowMobileWarning(true);
       return;
@@ -126,7 +126,7 @@ export default function VerificationIntroPage() {
   };
 
   const continueVerification = () => {
-    haptic.impact("light");
+    haptic.impact("medium");
     if (!isMobile) {
       setShowMobileWarning(true);
       return;
@@ -227,7 +227,7 @@ export default function VerificationIntroPage() {
               stretched
               style={{ borderRadius: "12px" }}
               onClick={() => {
-                haptic.impact("light");
+                haptic.impact("medium");
                 router.push("/plans/choose");
               }}
             >
@@ -243,7 +243,7 @@ export default function VerificationIntroPage() {
                 verificationUrl
                   ? continueVerification
                   : () => {
-                      haptic.impact("light");
+                      haptic.impact("medium");
                       refetchKycStatus();
                     }
               }
@@ -264,7 +264,7 @@ export default function VerificationIntroPage() {
                 } as React.CSSProperties
               }
               onClick={() => {
-                haptic.impact("light");
+                haptic.impact("medium");
                 router.push("/dashboard");
               }}
             >
@@ -345,7 +345,7 @@ export default function VerificationIntroPage() {
             stretched
             style={{ borderRadius: "12px" }}
             onClick={() => {
-              haptic.impact("light");
+              haptic.impact("medium");
               setShowMobileWarning(false);
             }}
           >

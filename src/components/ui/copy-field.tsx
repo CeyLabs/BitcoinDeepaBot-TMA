@@ -65,7 +65,7 @@ export function CopyField({ value, className, onCopy }: CopyFieldProps) {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(value).then(() => {
-      haptic.impact("light");
+      haptic.impact("medium");
       setCopied(true);
       onCopy?.(value);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
