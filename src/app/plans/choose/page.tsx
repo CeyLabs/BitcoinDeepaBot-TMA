@@ -50,7 +50,11 @@ export default function ChoosePlanPage() {
   const { data: fetchedPackages, isLoading: packagesLoading } = usePackages();
   const packages = fetchedPackages ?? EMPTY_PLANS;
 
-  useTelegramBackButton(() => router.push("/dashboard/plans"));
+  // Without an active plan, /dashboard/plans immediately redirects back here —
+  // going back there would loop, so fall back to the wallet page instead.
+  useTelegramBackButton(() =>
+    router.push(subscription?.isActive ? "/dashboard/plans" : "/dashboard")
+  );
 
   const currentPlan = useMemo(
     () =>
