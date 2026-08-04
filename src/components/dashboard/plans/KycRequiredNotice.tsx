@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@telegram-apps/telegram-ui";
+import { haptic } from "@/lib/haptics";
 
 export function KycRequiredNotice() {
   const router = useRouter();
@@ -24,7 +25,10 @@ export function KycRequiredNotice() {
         mode="filled"
         size="m"
         className="mt-1 rounded-full! bg-[#fa7119]!"
-        onClick={() => router.push("/verification")}
+        onClick={() => {
+          haptic.impact("light");
+          router.push("/verification");
+        }}
       >
         Complete Verification
       </Button>

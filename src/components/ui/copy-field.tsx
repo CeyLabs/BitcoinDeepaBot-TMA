@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { IconButton } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
+import { haptic } from "@/lib/haptics";
 
 interface CopyButtonProps {
   onCopy?: () => void;
@@ -64,6 +65,7 @@ export function CopyField({ value, className, onCopy }: CopyFieldProps) {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(value).then(() => {
+      haptic.impact("light");
       setCopied(true);
       onCopy?.(value);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);

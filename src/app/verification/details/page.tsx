@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useKycInitiate, useUpdateProfile } from "@/hooks/query/useKyc";
 import { useTelegramBackButton } from "@/hooks/useTgBackButton";
+import { haptic } from "@/lib/haptics";
 import { createUserSchema, type CreateUserFormData } from "@/lib/validations";
 
 const FIELDS: Array<{
@@ -59,6 +60,7 @@ export default function VerificationDetailsPage() {
         : null;
 
   const onSubmit = (formData: CreateUserFormData) => {
+    haptic.impact("light");
     updateProfile.mutate(
       {
         first_name: formData.first_name,
@@ -83,9 +85,11 @@ export default function VerificationDetailsPage() {
                   window.location.href = result.url;
                 }
               },
+              onError: () => haptic.notify("error"),
             }
           );
         },
+        onError: () => haptic.notify("error"),
       }
     );
   };

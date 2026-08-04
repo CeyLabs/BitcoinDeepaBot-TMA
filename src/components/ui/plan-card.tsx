@@ -2,6 +2,7 @@
 
 import { Check } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { haptic } from "@/lib/haptics";
 
 const RadioDefault = () => (
   <div className="size-5 rounded-full border-2 border-[#e2e8f0] bg-white dark:border-[#334155] dark:bg-transparent" />
@@ -54,7 +55,14 @@ export function PlanCard({
   return (
     <Component
       type={active ? undefined : "button"}
-      onClick={active ? undefined : onSelect}
+      onClick={
+        active
+          ? undefined
+          : () => {
+              haptic.select();
+              onSelect?.();
+            }
+      }
       className={cn(
         "relative w-full rounded-[12px] text-left",
         "flex flex-col items-end pt-0",

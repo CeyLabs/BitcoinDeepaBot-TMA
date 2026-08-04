@@ -11,6 +11,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useTelegramPlatform } from "@/hooks/useTelegramPlatform";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { useTelegramBackButton } from "@/hooks/useTgBackButton";
+import { haptic } from "@/lib/haptics";
 import type { User } from "@/lib/types";
 
 type VerificationStatus = NonNullable<User["kycStatus"]> | null;
@@ -108,12 +109,14 @@ export default function VerificationIntroPage() {
 
   useEffect(() => {
     if (status === "APPROVED") {
+      haptic.notify("success");
       const timeout = setTimeout(() => router.push("/plans/choose"), 2000);
       return () => clearTimeout(timeout);
     }
   }, [status, router]);
 
   const initiateVerification = () => {
+    haptic.impact("light");
     if (!isMobile) {
       setShowMobileWarning(true);
       return;
@@ -123,6 +126,7 @@ export default function VerificationIntroPage() {
   };
 
   const continueVerification = () => {
+    haptic.impact("light");
     if (!isMobile) {
       setShowMobileWarning(true);
       return;
@@ -222,7 +226,10 @@ export default function VerificationIntroPage() {
               size="l"
               stretched
               style={{ borderRadius: "12px" }}
-              onClick={() => router.push("/plans/choose")}
+              onClick={() => {
+                haptic.impact("light");
+                router.push("/plans/choose");
+              }}
             >
               Continue to Plans
             </Button>
@@ -232,7 +239,14 @@ export default function VerificationIntroPage() {
               size="l"
               stretched
               style={{ borderRadius: "12px" }}
-              onClick={verificationUrl ? continueVerification : () => refetchKycStatus()}
+              onClick={
+                verificationUrl
+                  ? continueVerification
+                  : () => {
+                      haptic.impact("light");
+                      refetchKycStatus();
+                    }
+              }
             >
               {verificationUrl ? "Continue Verification" : "Check Verification Status"}
             </Button>
@@ -249,7 +263,10 @@ export default function VerificationIntroPage() {
                   "--tgui--plain_foreground": "#fa7119",
                 } as React.CSSProperties
               }
-              onClick={() => router.push("/dashboard")}
+              onClick={() => {
+                haptic.impact("light");
+                router.push("/dashboard");
+              }}
             >
               Back to Home
             </Button>
@@ -327,7 +344,10 @@ export default function VerificationIntroPage() {
             size="l"
             stretched
             style={{ borderRadius: "12px" }}
-            onClick={() => setShowMobileWarning(false)}
+            onClick={() => {
+              haptic.impact("light");
+              setShowMobileWarning(false);
+            }}
           >
             Got It
           </Button>

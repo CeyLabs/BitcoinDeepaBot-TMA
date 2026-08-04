@@ -8,6 +8,7 @@ import { Button, Snackbar } from "@telegram-apps/telegram-ui";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { getAuthTokenFromStorage } from "@/lib/auth";
 import { usePayHereRedirect } from "@/lib/hooks";
+import { haptic } from "@/lib/haptics";
 import { usePackages } from "@/hooks/query/usePackages";
 import { useCancelSubscription } from "@/hooks/query/useCancelSubscription";
 import { useUser } from "@/hooks/useUser";
@@ -72,6 +73,7 @@ export default function ChoosePlanPage() {
   const selectedPlanId = selectedId ?? filteredPlans[0]?.id;
 
   const handleDurationChange = (d: PlanDuration) => {
+    haptic.select();
     setDuration(d);
     setSelectedId(undefined);
   };
@@ -79,6 +81,8 @@ export default function ChoosePlanPage() {
   const handleSubscribe = async () => {
     const plan = packages.find((p) => p.id === selectedPlanId);
     if (!plan || !authToken) return;
+
+    haptic.impact("medium");
 
     try {
       setPayhereLinkLoading(true);
@@ -100,8 +104,12 @@ export default function ChoosePlanPage() {
         throw new Error(result.message || "Failed to generate payment link");
       }
 
-      if (result.link) redirectToPayHereViaPage(result.link);
+      if (result.link) {
+        haptic.notify("success");
+        redirectToPayHereViaPage(result.link);
+      }
     } catch (err) {
+      haptic.notify("error");
       console.error(err);
     } finally {
       setPayhereLinkLoading(false);
@@ -119,8 +127,11 @@ export default function ChoosePlanPage() {
     });
     if (buttonId !== "cancel") return;
 
+    haptic.impact("rigid");
+
     try {
       await cancelSubscription.mutateAsync();
+      haptic.notify("success");
       setSnackbar({
         tone: "success",
         title: "Plan Cancelled",
@@ -128,6 +139,7 @@ export default function ChoosePlanPage() {
       });
       setTimeout(() => router.push("/dashboard/plans"), 1500);
     } catch (err) {
+      haptic.notify("error");
       setSnackbar({
         tone: "error",
         title: "Cancellation Failed",
