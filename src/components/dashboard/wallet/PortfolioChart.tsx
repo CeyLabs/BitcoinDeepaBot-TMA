@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo } from "react";
+// import { useMemo, useState, useTransition } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -12,23 +13,26 @@ import {
   Filler,
   type TooltipItem,
 } from "chart.js";
-import { Card, Button } from "@telegram-apps/telegram-ui";
-import { cn } from "@/lib/cn";
+import { Card } from "@telegram-apps/telegram-ui";
+// import { Card, Button } from "@telegram-apps/telegram-ui";
+// import { cn } from "@/lib/cn";
 import { fmtLkrCurrency, fmtPriceCompact } from "@/lib/formatters";
 import { useTheme } from "@/app/context/theme";
 import type { DcaTransaction } from "@/hooks/query/useTransactionHistory";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
 
-const PERIODS = ["1M", "3M", "6M", "1Y", "All"] as const;
-type Period = (typeof PERIODS)[number];
+// Period switcher is disabled for now — chart always renders the full "All" range.
+// Kept here (commented) so it can be re-enabled without reconstructing the logic.
+// const PERIODS = ["1M", "3M", "6M", "1Y", "All"] as const;
+// type Period = (typeof PERIODS)[number];
 
-const PERIOD_MONTHS: Record<Exclude<Period, "All">, number> = {
-  "1M": 1,
-  "3M": 3,
-  "6M": 6,
-  "1Y": 12,
-};
+// const PERIOD_MONTHS: Record<Exclude<Period, "All">, number> = {
+//   "1M": 1,
+//   "3M": 3,
+//   "6M": 6,
+//   "1Y": 12,
+// };
 
 interface ChartPoint {
   date: string;
@@ -53,14 +57,14 @@ function buildPoints(transactions: DcaTransaction[], currentBtcPrice: number): C
   });
 }
 
-function filterByPeriod(points: ChartPoint[], period: Period): ChartPoint[] {
-  if (period === "All") return points;
-  const months = PERIOD_MONTHS[period];
-  const cutoff = new Date();
-  cutoff.setMonth(cutoff.getMonth() - months);
-  const windowed = points.filter((p) => new Date(p.date) >= cutoff);
-  return windowed.length >= 2 ? windowed : points;
-}
+// function filterByPeriod(points: ChartPoint[], period: Period): ChartPoint[] {
+//   if (period === "All") return points;
+//   const months = PERIOD_MONTHS[period];
+//   const cutoff = new Date();
+//   cutoff.setMonth(cutoff.getMonth() - months);
+//   const windowed = points.filter((p) => new Date(p.date) >= cutoff);
+//   return windowed.length >= 2 ? windowed : points;
+// }
 
 export interface PortfolioChartProps {
   transactions: DcaTransaction[];
@@ -72,27 +76,22 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
   // The pill highlight (`selectedPeriod`) updates immediately on click; the chart-driving
   // `chartPeriod` updates inside a transition so filtering/re-rendering the chart doesn't
   // delay the button's own paint.
-  const [selectedPeriod, setSelectedPeriod] = useState<Period>("3M");
-  const [chartPeriod, setChartPeriod] = useState<Period>("3M");
-  const [isPending, startTransition] = useTransition();
+  // const [selectedPeriod, setSelectedPeriod] = useState<Period>("3M");
+  // const [chartPeriod, setChartPeriod] = useState<Period>("3M");
+  // const [isPending, startTransition] = useTransition();
 
-  const handlePeriodClick = (p: Period) => {
-    setSelectedPeriod(p);
-    startTransition(() => setChartPeriod(p));
-  };
+  // const handlePeriodClick = (p: Period) => {
+  //   setSelectedPeriod(p);
+  //   startTransition(() => setChartPeriod(p));
+  // };
 
   const allPoints = useMemo(
     () => buildPoints(transactions, currentBtcPrice),
     [transactions, currentBtcPrice]
   );
-  // With fewer than 2 points every period falls back to the same full set (see
-  // filterByPeriod), so the switcher would just be dead buttons — hide it and
-  // render the one timeframe that's actually meaningful.
-  const showPeriodSwitcher = allPoints.length >= 2;
-  const points = useMemo(
-    () => (showPeriodSwitcher ? filterByPeriod(allPoints, chartPeriod) : allPoints),
-    [allPoints, chartPeriod, showPeriodSwitcher]
-  );
+  // Always render the full "All" range — see PERIODS comment above.
+  const points = allPoints;
+  // const points = useMemo(() => filterByPeriod(allPoints, chartPeriod), [allPoints, chartPeriod]);
 
   const labels = points.map((p) =>
     new Date(p.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
@@ -214,33 +213,33 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
           } as React.CSSProperties
         }
       >
-        {showPeriodSwitcher && (
-          <div className="mb-3 flex items-center gap-2">
-            {PERIODS.map((p) => (
-              <Button
-                key={p}
-                mode="gray"
-                size="s"
-                stretched
-                onClick={() => handlePeriodClick(p)}
-                style={
-                  {
-                    "--tgui--button--hovered-opacity": 0,
-                    backgroundColor:
-                      selectedPeriod === p ? "#1f2a36" : isDark ? "#1e293b" : "#eeeff3",
-                    color: selectedPeriod === p ? "#fff" : isDark ? "#94a3b8" : "#64748b",
-                  } as React.CSSProperties
-                }
-                // tgui's Button renders a square `:after` hover overlay that isn't clipped to
-                // its own border-radius, so its corners poke out past the pill on mouse hover
-                // unless the button itself clips overflow.
-                className="overflow-hidden! rounded-[12px]!"
-              >
-                <span className="text-[12px]">{p}</span>
-              </Button>
-            ))}
-          </div>
-        )}
+        {/* Period switcher — disabled, see PERIODS comment above.
+        <div className="mb-3 flex items-center gap-2">
+          {PERIODS.map((p) => (
+            <Button
+              key={p}
+              mode="gray"
+              size="s"
+              stretched
+              onClick={() => handlePeriodClick(p)}
+              style={
+                {
+                  "--tgui--button--hovered-opacity": 0,
+                  backgroundColor:
+                    selectedPeriod === p ? "#1f2a36" : isDark ? "#1e293b" : "#eeeff3",
+                  color: selectedPeriod === p ? "#fff" : isDark ? "#94a3b8" : "#64748b",
+                } as React.CSSProperties
+              }
+              // tgui's Button renders a square `:after` hover overlay that isn't clipped to
+              // its own border-radius, so its corners poke out past the pill on mouse hover
+              // unless the button itself clips overflow.
+              className="overflow-hidden! rounded-[12px]!"
+            >
+              <span className="text-[12px]">{p}</span>
+            </Button>
+          ))}
+        </div>
+        */}
 
         {points.length === 0 ? (
           <div className="flex h-48 items-center justify-center text-center">
@@ -251,9 +250,12 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
             </p>
           </div>
         ) : (
-          <div className={cn("h-56 transition-opacity duration-150", isPending && "opacity-50")}>
+          <div className="h-56">
             <Line data={data} options={options} />
           </div>
+          // <div className={cn("h-56 transition-opacity duration-150", isPending && "opacity-50")}>
+          //   <Line data={data} options={options} />
+          // </div>
         )}
 
         <div className="mt-3 flex items-center justify-center gap-3">
