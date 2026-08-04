@@ -43,7 +43,7 @@ function buildPoints(transactions: DcaTransaction[], currentBtcPrice: number): C
 
   return transactions.map((tx) => {
     cumulativeSats += tx.satoshis_purchased;
-    cumulativeInvested += tx.package_amount;
+    cumulativeInvested += tx.gross_amount;
     return {
       date: tx.created_at,
       invested: cumulativeInvested,

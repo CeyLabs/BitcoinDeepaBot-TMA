@@ -11,6 +11,7 @@ export interface DcaTransaction {
   satoshis_purchased: number;
   btc_price_at_purchase: number;
   package_amount: number;
+  gross_amount: number;
   package_name?: string;
   status: string;
   settled?: boolean;
@@ -22,6 +23,7 @@ interface RawTransaction {
   satoshis_purchased?: string | number | null;
   btc_price_at_purchase?: string | number | null;
   package_amount?: string | number | null;
+  gross_amount?: string | number | null;
   package_name?: string;
   status: string;
   settled?: boolean;
@@ -59,6 +61,7 @@ export function useTransactionHistory() {
           satoshis_purchased: toNumber(tx.satoshis_purchased),
           btc_price_at_purchase: toNumber(tx.btc_price_at_purchase),
           package_amount: toNumber(tx.package_amount),
+          gross_amount: toNumber(tx.gross_amount),
           package_name: tx.package_name,
           status: tx.status,
           settled: tx.settled,

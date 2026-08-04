@@ -57,7 +57,7 @@ export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityIte
     detailLabel: tx.package_name ? `${tx.package_name} Plan` : "Destributed",
     timestamp: tx.created_at,
     sats: tx.satoshis_purchased,
-    lkr: tx.package_amount,
+    lkr: tx.gross_amount,
     statusDot: tx.settled ? "green" : "orange",
     settlement: {
       status: tx.settled ? "Settled" : "Pending",
