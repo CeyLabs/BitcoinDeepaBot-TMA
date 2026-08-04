@@ -76,9 +76,8 @@ export function TotalValueCard({
               <TrendIcon size={14} strokeWidth={2} className="text-white" />
               <span>
                 {" "}
-                {mask(
-                  `LKR ${fmtLkr(Math.abs(changeLkr))}  (${isProfit ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%)`
-                )}
+                {mask(`LKR ${fmtLkr(Math.abs(changeLkr))}`)}
+                {`  (${isProfit ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%)`}
                 {"  Last 24h"}
               </span>
             </p>

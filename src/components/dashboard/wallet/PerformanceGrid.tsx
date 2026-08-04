@@ -113,14 +113,14 @@ export function PerformanceGrid({
           </p>
           <div className="flex items-center gap-1">
             <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-              LKR {fmtPriceCompact(avgBtcPrice)}
+              {mask(`LKR ${fmtPriceCompact(avgBtcPrice)}`)}
             </p>
             <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
           </div>
           {avgBtcPriceUsd !== undefined && (
             <div className="flex items-center gap-1">
               <p className="text-[14px] leading-4 font-semibold text-[#64748b]">
-                USD {fmtPriceCompact(avgBtcPriceUsd)}
+                {mask(`USD ${fmtPriceCompact(avgBtcPriceUsd)}`)}
               </p>
               <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
             </div>

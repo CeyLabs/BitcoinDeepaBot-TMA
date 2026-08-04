@@ -18,7 +18,7 @@ import { useStore } from "@/lib/store";
 export default function PlansPage() {
   const router = useRouter();
   const { data: kyc, isLoading: kycLoading } = useKycStatus();
-  const { balanceVisible } = useStore();
+  const { balanceVisible, toggleBalanceVisible } = useStore();
   const { data: subscription, isLoading: subscriptionLoading } = useSubscriptionCurrent();
   const { data: summary } = useWalletSummary();
 
@@ -51,6 +51,7 @@ export default function PlansPage() {
         investedSats={investedSats}
         currentValueLkr={currentValueLkr}
         visible={balanceVisible}
+        onToggleVisible={toggleBalanceVisible}
       />
 
       <GiftPlansComingSoon />

@@ -131,7 +131,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
               BTC Value {isOutgoing ? "Sent" : "Received"}
             </p>
             <p className="text-base leading-5 font-semibold">
-              {formatSatoshis(item.settlement.btcSats)} BTC
+              {mask(`${formatSatoshis(item.settlement.btcSats)} BTC`)}
             </p>
           </div>
 

@@ -81,6 +81,9 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
     new Date(p.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
   );
 
+  const avgBtcPrice =
+    points.length > 0 ? points.reduce((sum, p) => sum + p.bitcoin, 0) / points.length : 0;
+
   const data = {
     labels,
     datasets: [
@@ -116,6 +119,20 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
         tension: 0.35,
         pointRadius: 0,
         borderWidth: 2,
+      },
+      {
+        label: "Avg BTC Price",
+        data: points.map(() => avgBtcPrice),
+        yAxisID: "y1",
+        borderColor: "#94a3b8",
+        backgroundColor: "transparent",
+        fill: false,
+        tension: 0,
+        pointRadius: 0,
+        pointHoverRadius: 0,
+        borderWidth: 1.5,
+        borderDash: [6, 4],
+        spanGaps: true,
       },
     ],
   };
@@ -226,6 +243,13 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
           <div className="flex items-center gap-1">
             <div className="h-1 w-2.5 rounded-full bg-[#fa7119]" />
             <p className="text-[14px] leading-4 text-[#1b2027] dark:text-[#f1f5f9]">Invested</p>
+          </div>
+          <div className="flex items-center gap-1">
+            <div
+              className="h-0 w-2.5 border-t-2 border-dashed"
+              style={{ borderColor: "#94a3b8" }}
+            />
+            <p className="text-[14px] leading-4 text-[#1b2027] dark:text-[#f1f5f9]">Avg BTC</p>
           </div>
         </div>
       </Card>

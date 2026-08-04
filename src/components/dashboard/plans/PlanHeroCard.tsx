@@ -13,6 +13,7 @@ import {
   maskDigits,
 } from "@/lib/formatters";
 import { getPlanIconSrc } from "@/components/dashboard/wallet/PlanSummaryCard";
+import { VisibleToggle } from "@/components/ui/visible-toggle";
 import type { Subscription } from "@/lib/types";
 
 export interface PlanHeroCardProps {
@@ -21,6 +22,7 @@ export interface PlanHeroCardProps {
   investedSats: number;
   currentValueLkr: number;
   visible: boolean;
+  onToggleVisible: () => void;
 }
 
 export function PlanHeroCard({
@@ -29,6 +31,7 @@ export function PlanHeroCard({
   investedSats,
   currentValueLkr,
   visible,
+  onToggleVisible,
 }: PlanHeroCardProps) {
   const router = useRouter();
   const mask = (v: string) => maskDigits(v, visible);
@@ -43,6 +46,7 @@ export function PlanHeroCard({
           <p className="text-sm leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
             Manage My Plan
           </p>
+          <VisibleToggle visible={visible} onToggle={onToggleVisible} />
         </div>
 
         <Cell
@@ -71,6 +75,7 @@ export function PlanHeroCard({
         <p className="text-sm leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
           Manage My Plan
         </p>
+        <VisibleToggle visible={visible} onToggle={onToggleVisible} />
       </div>
 
       <Card
