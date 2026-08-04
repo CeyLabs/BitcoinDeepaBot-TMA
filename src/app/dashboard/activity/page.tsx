@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { ActivitySearchBar } from "@/components/dashboard/activity/ActivitySearchBar";
 import { ActivityTabs } from "@/components/dashboard/activity/ActivityTabs";
 import { ActivityGroup } from "@/components/dashboard/activity/ActivityGroup";
+import { ActivitySkeleton } from "@/components/dashboard/activity/ActivitySkeleton";
 import { useTransactionHistory } from "@/hooks/query/useTransactionHistory";
 import {
   ACTIVITY_TITLE,
@@ -23,7 +24,7 @@ export default function ActivityPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<ActivityCategory>("all");
 
-  const { data: transactions } = useTransactionHistory();
+  const { data: transactions, isLoading } = useTransactionHistory();
   const activity = useMemo(
     () => (transactions ?? []).map(mapDcaTransactionToActivityItem),
     [transactions]
@@ -72,7 +73,9 @@ export default function ActivityPage() {
 
       <ActivityTabs value={category} onChange={setCategory} />
 
-      {comingSoon ? (
+      {isLoading ? (
+        <ActivitySkeleton />
+      ) : comingSoon ? (
         <p className="py-8 text-center text-[14px] text-[#64748b]">Coming soon.</p>
       ) : groups.length === 0 ? (
         <p className="py-8 text-center text-[14px] text-[#64748b]">No activity found.</p>
