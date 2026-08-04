@@ -37,7 +37,7 @@ export function TotalValueCard({
       style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
     >
       <Image src="/bg/wallet.webp" alt="" fill priority className="object-cover" />
-      <div className="absolute inset-0 bg-black/25" />
+      <div className="absolute inset-0 bg-black/18" />
       <div className="relative flex flex-col gap-2 p-4">
         <div className="flex items-end justify-between">
           <p className="text-[14px] leading-3 text-white capitalize">Total Value</p>

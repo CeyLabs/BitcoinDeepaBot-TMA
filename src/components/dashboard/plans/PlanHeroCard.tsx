@@ -60,7 +60,7 @@ export function PlanHeroCard({
           style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
         >
           <Image src="/bg/star.webp" alt="" fill priority className="object-cover" />
-          <div className="absolute inset-0 bg-black/25" />
+          <div className="absolute inset-0 bg-black/18" />
 
           <div className="relative flex flex-col gap-4 p-4">
             <div className="flex items-center gap-2">
@@ -145,7 +145,7 @@ export function PlanHeroCard({
         style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
       >
         <Image src="/bg/star.webp" alt="" fill priority className="object-cover" />
-        <div className="absolute inset-0 bg-black/25" />
+        <div className="absolute inset-0 bg-black/18" />
 
         <div className="relative flex flex-col gap-4 p-4">
           <div className="flex items-start justify-between gap-2">
