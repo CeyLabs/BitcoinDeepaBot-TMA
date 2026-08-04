@@ -69,7 +69,7 @@ export function PerformanceGrid({
             </p>
             <div className="size-0.75 rounded-full bg-[#e2e8f0] dark:bg-[#334155]" />
             <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
-              {mask(`丰 ${fmtSatsCompact(dcaSats)}`)}
+              {mask(`≈ 丰 ${fmtSatsCompact(dcaSats)}`)}
             </p>
           </div>
         </Card>

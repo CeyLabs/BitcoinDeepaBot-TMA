@@ -180,7 +180,7 @@ export function PlanHeroCard({
               </p>
               <p className="text-[12px] leading-4 text-white/70">
                 {mask(
-                  `₿${(investedSats / 1e8).toFixed(5)} · ≈${fmtSatsCompact(investedSats)} sats`
+                  `₿${(investedSats / 1e8).toFixed(5)} ·  ≈ 丰 ${fmtSatsCompact(investedSats)}`
                 )}
               </p>
             </div>

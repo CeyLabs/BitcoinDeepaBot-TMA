@@ -51,7 +51,6 @@ export default function Error({
         <Button
           mode="filled"
           size="l"
-          stretched
           style={{ borderRadius: "12px" }}
           onClick={reset}
           className="mt-8 w-full max-w-xs"

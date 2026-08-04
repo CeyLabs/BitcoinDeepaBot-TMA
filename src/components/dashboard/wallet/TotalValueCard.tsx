@@ -57,7 +57,6 @@ export function TotalValueCard({
             <div className="size-1 rounded-full bg-white" />
             <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
               <span>{mask(`丰 ${fmtSatsCompact(totalSats)}`)}</span>
-              <span>SATS</span>
             </div>
           </div>
 
