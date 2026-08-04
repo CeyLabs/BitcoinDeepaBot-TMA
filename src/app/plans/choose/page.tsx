@@ -19,6 +19,7 @@ import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotic
 import { PageTitle } from "@/components/ui/page-title";
 import { TogglePlan, type PlanDuration } from "@/components/ui/toggle-plan";
 import { PlanCard } from "@/components/ui/plan-card";
+import { ValueSkeleton } from "@/components/ui/value-skeleton";
 import { getPlanIconSrc } from "@/components/dashboard/wallet/PlanSummaryCard";
 import { fmtLkrCurrency } from "@/lib/formatters";
 import type { SubscriptionPlan } from "@/lib/types";
@@ -201,7 +202,7 @@ export default function ChoosePlanPage() {
       {packagesLoading ? (
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-[90px] animate-pulse rounded-[12px] bg-[#e2e8f0]" />
+            <ValueSkeleton key={i} className="h-[90px] w-full rounded-[12px]" />
           ))}
         </div>
       ) : filteredPlans.length === 0 ? (

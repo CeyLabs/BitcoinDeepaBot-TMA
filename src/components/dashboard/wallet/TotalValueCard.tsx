@@ -48,17 +48,15 @@ export function TotalValueCard({
         </div>
 
         {isLoading ? (
-          <ValueSkeleton tone="dark" className="h-9 w-40" />
+          <ValueSkeleton tone="translucent" className="h-9 w-40" />
         ) : (
           <p className="text-[36px] leading-12 font-bold text-white">
             {mask(`≈ ${fmtLkrCurrency(totalLkr)}`)}
           </p>
         )}
 
-        <div className="flex flex-col items-start gap-2">
-          {isLoading ? (
-            <ValueSkeleton tone="dark" className="h-4 w-36" />
-          ) : (
+        {!isLoading && (
+          <div className="flex flex-col items-start gap-2">
             <div className="flex items-center gap-2">
               <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
                 <span>{mask(`₿ ${(totalSats / 1e8).toFixed(6)}`)}</span>
@@ -69,11 +67,7 @@ export function TotalValueCard({
                 <span>{mask(`丰 ${fmtSatsCompact(totalSats)}`)}</span>
               </div>
             </div>
-          )}
 
-          {isLoading ? (
-            <ValueSkeleton tone="dark" className="h-6 w-44 rounded-lg" />
-          ) : (
             <Badge
               type="number"
               mode={isProfit ? "primary" : "critical"}
@@ -96,8 +90,8 @@ export function TotalValueCard({
                 </span>
               </p>
             </Badge>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </Card>
   );

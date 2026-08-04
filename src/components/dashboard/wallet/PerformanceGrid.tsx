@@ -15,10 +15,6 @@ const CARD_SURFACE_STYLE = {
   "--tgui--tertiary_bg_color": "var(--color-surface-primary)",
 } as React.CSSProperties;
 
-const CARD_SUCCESS_STYLE = {
-  "--tgui--tertiary_bg_color": "color-mix(in srgb, var(--color-success) 10%, transparent)",
-} as React.CSSProperties;
-
 export interface PerformanceGridProps {
   dcaSpent: number;
   dcaSats: number;
@@ -88,7 +84,7 @@ export function PerformanceGrid({
         <Card
           type="plain"
           className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
-          style={CARD_SUCCESS_STYLE}
+          style={CARD_SURFACE_STYLE}
         >
           <Image src="/emoji/coins.webp" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
@@ -163,7 +159,7 @@ export function PerformanceGrid({
         <Card
           type="plain"
           className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
-          style={CARD_SUCCESS_STYLE}
+          style={CARD_SURFACE_STYLE}
         >
           <Image src="/emoji/graph.webp" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
