@@ -19,9 +19,9 @@ export function useTelegramPlatform() {
   try {
     // Cast around the same ambient-overload flakiness noted in
     // useIsTelegramEnv.ts — TS sometimes only resolves the 0-arg signature.
-    const retrieveCamelCased = retrieveLaunchParams as unknown as (
-      camelCase: true
-    ) => { platform?: string };
+    const retrieveCamelCased = retrieveLaunchParams as unknown as (camelCase: true) => {
+      platform?: string;
+    };
     platform = retrieveCamelCased(true).platform;
   } catch {
     platform = undefined;

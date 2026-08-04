@@ -5,8 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button, Title } from "@telegram-apps/telegram-ui";
 import { useTheme } from "@/app/context/theme";
-import { authenticateWithTelegramWidget, saveAuthToStorage } from "@/lib/auth";
-import type { TelegramWidgetUser } from "@/lib/auth";
+import { authenticateWithTelegramOidc, saveAuthToStorage } from "@/lib/auth";
+import type { TelegramOidcAuthData } from "@/lib/auth";
 import { TELEGRAM_BOT_URL } from "@/lib/constants";
 import TelegramLoginButton from "@/components/auth/TelegramLoginButton";
 
@@ -24,11 +24,17 @@ export default function BrowserLoginScreen({ onLoggedIn }: BrowserLoginScreenPro
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleAuth = async (widgetUser: TelegramWidgetUser) => {
+  const handleAuth = async (data: TelegramOidcAuthData) => {
     setError(null);
+
+    if (data.error || !data.id_token) {
+      setError("Couldn't sign you in with Telegram. Please try again.");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const result = await authenticateWithTelegramWidget(widgetUser);
+      const result = await authenticateWithTelegramOidc(data.id_token);
       if (!result.token) throw new Error("No token returned");
       saveAuthToStorage(result.token);
       onLoggedIn();

@@ -21,18 +21,22 @@ export interface PlanSelectionData {
 }
 
 /**
- * Payload Telegram's Login Widget (https://core.telegram.org/widgets/login)
+ * Payload Telegram's Login library (https://core.telegram.org/bots/telegram-login)
  * passes to the onauth callback — distinct from Mini App initData, this is
- * used for browser-based sign-in outside Telegram.
+ * used for browser-based sign-in outside Telegram. id_token is a signed JWT
+ * that must be verified server-side (JWKS) before the claims in `user` are trusted.
  */
-export interface TelegramWidgetUser {
-  id: number;
-  first_name: string;
-  last_name?: string;
-  username?: string;
-  photo_url?: string;
-  auth_date: number;
-  hash: string;
+export interface TelegramOidcAuthData {
+  id_token?: string;
+  user?: {
+    id: number;
+    name?: string;
+    given_name?: string;
+    family_name?: string;
+    preferred_username?: string;
+    picture?: string;
+  };
+  error?: string;
 }
 
 /**
@@ -76,18 +80,18 @@ export async function authenticateWithTelegram(initData: string): Promise<Telegr
 }
 
 /**
- * Authenticate a user via Telegram's Login Widget (browser flow, outside Telegram).
+ * Authenticate a user via Telegram's Login (OIDC) library (browser flow, outside Telegram).
+ * Sends the raw id_token — the backend verifies its signature against Telegram's
+ * JWKS before trusting any claims in it.
  */
-export async function authenticateWithTelegramWidget(
-  widgetUser: TelegramWidgetUser
-): Promise<TelegramAuthResponse> {
+export async function authenticateWithTelegramOidc(idToken: string): Promise<TelegramAuthResponse> {
   try {
-    const response = await fetch("/api/auth/telegram-widget", {
+    const response = await fetch("/api/auth/telegram-oidc", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(widgetUser),
+      body: JSON.stringify({ id_token: idToken }),
     });
 
     const result = await response.json();
@@ -102,7 +106,7 @@ export async function authenticateWithTelegramWidget(
       isRegistered: result.isRegistered ?? true,
     };
   } catch (error) {
-    console.error("Error during Telegram widget authentication:", error);
+    console.error("Error during Telegram OIDC authentication:", error);
     throw error;
   }
 }

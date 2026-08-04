@@ -25,9 +25,9 @@ function getIdentity() {
   try {
     // Cast around the same ambient-overload flakiness noted in
     // useIsTelegramEnv.ts — TS sometimes only resolves the 0-arg signature.
-    const retrieveCamelCased = retrieveLaunchParams as unknown as (
-      camelCase: true
-    ) => { initData?: { user?: CamelCasedTelegramUser } };
+    const retrieveCamelCased = retrieveLaunchParams as unknown as (camelCase: true) => {
+      initData?: { user?: CamelCasedTelegramUser };
+    };
     const telegramUser = retrieveCamelCased(true).initData?.user;
     if (telegramUser) {
       return {
