@@ -21,6 +21,21 @@ export interface PlanSelectionData {
 }
 
 /**
+ * Payload Telegram's Login Widget (https://core.telegram.org/widgets/login)
+ * passes to the onauth callback — distinct from Mini App initData, this is
+ * used for browser-based sign-in outside Telegram.
+ */
+export interface TelegramWidgetUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+}
+
+/**
  * Authenticate user with Telegram initData
  */
 export async function authenticateWithTelegram(initData: string): Promise<TelegramAuthResponse> {
@@ -56,6 +71,38 @@ export async function authenticateWithTelegram(initData: string): Promise<Telegr
     };
   } catch (error) {
     console.error("Error during Telegram authentication:", error);
+    throw error;
+  }
+}
+
+/**
+ * Authenticate a user via Telegram's Login Widget (browser flow, outside Telegram).
+ */
+export async function authenticateWithTelegramWidget(
+  widgetUser: TelegramWidgetUser
+): Promise<TelegramAuthResponse> {
+  try {
+    const response = await fetch("/api/auth/telegram-widget", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(widgetUser),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || result.message || "Telegram login failed");
+    }
+
+    return {
+      token: result.token,
+      user: result.user,
+      isRegistered: result.isRegistered ?? true,
+    };
+  } catch (error) {
+    console.error("Error during Telegram widget authentication:", error);
     throw error;
   }
 }
