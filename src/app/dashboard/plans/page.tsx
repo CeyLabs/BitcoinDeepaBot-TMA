@@ -31,7 +31,7 @@ export default function PlansPage() {
 
   if (kycLoading) return <LoadingPage />;
   if (!kycApproved) return <KycRequiredNotice />;
-  if (subscriptionLoading || noActivePlan) return <LoadingPage />;
+  if (noActivePlan) return <LoadingPage />;
 
   const currentValueLkr = summary
     ? Number(
@@ -52,7 +52,8 @@ export default function PlansPage() {
         currentValueLkr={currentValueLkr}
         visible={balanceVisible}
         onToggleVisible={toggleBalanceVisible}
-        isLoading={summaryLoading}
+        subscriptionLoading={subscriptionLoading}
+        summaryLoading={summaryLoading}
       />
 
       <GiftPlansComingSoon />
