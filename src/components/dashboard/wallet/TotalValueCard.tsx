@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
 import { ValueSkeleton } from "@/components/ui/value-skeleton";
+import { cn } from "@/lib/cn";
 import { fmtLkrCurrency, fmtSatsCompact, maskDigits } from "@/lib/formatters";
 
 // Card/Badge theme their background/color through --tgui-- CSS variables (same
@@ -55,43 +56,41 @@ export function TotalValueCard({
           </p>
         )}
 
-        {!isLoading && (
-          <div className="flex flex-col items-start gap-2">
-            <div className="flex items-center gap-2">
-              <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
-                <span>{mask(`₿ ${(totalSats / 1e8).toFixed(6)}`)}</span>
-                <span>BTC</span>
-              </div>
-              <div className="size-1 rounded-full bg-white" />
-              <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
-                <span>{mask(`丰 ${fmtSatsCompact(totalSats)}`)}</span>
-              </div>
+        <div className={cn("flex flex-col items-start gap-2", isLoading && "invisible")}>
+          <div className="flex items-center gap-2">
+            <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
+              <span>{mask(`₿ ${(totalSats / 1e8).toFixed(6)}`)}</span>
+              <span>BTC</span>
             </div>
-
-            <Badge
-              type="number"
-              mode={isProfit ? "primary" : "critical"}
-              className="m-0! h-auto! rounded-[8px]! px-2! py-1!"
-              style={
-                {
-                  "--tgui--button_color": "#158348",
-                  "--tgui--destructive_text_color": "rgba(241,49,49,0.62)",
-                  "--tgui--button_text_color": "#fff",
-                } as React.CSSProperties
-              }
-            >
-              <p className="flex items-center gap-1">
-                <TrendIcon size={14} strokeWidth={2} className="text-white" />
-                <span>
-                  {" "}
-                  {mask(fmtLkrCurrency(Math.abs(changeLkr)))}
-                  {`  (${isProfit ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%)`}
-                  {"  Last 24h"}
-                </span>
-              </p>
-            </Badge>
+            <div className="size-1 rounded-full bg-white" />
+            <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
+              <span>{mask(`丰 ${fmtSatsCompact(totalSats)}`)}</span>
+            </div>
           </div>
-        )}
+
+          <Badge
+            type="number"
+            mode={isProfit ? "primary" : "critical"}
+            className="m-0! h-auto! rounded-[8px]! px-2! py-1!"
+            style={
+              {
+                "--tgui--button_color": "#158348",
+                "--tgui--destructive_text_color": "rgba(241,49,49,0.62)",
+                "--tgui--button_text_color": "#fff",
+              } as React.CSSProperties
+            }
+          >
+            <p className="flex items-center gap-1">
+              <TrendIcon size={14} strokeWidth={2} className="text-white" />
+              <span>
+                {" "}
+                {mask(fmtLkrCurrency(Math.abs(changeLkr)))}
+                {`  (${isProfit ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%)`}
+                {"  Last 24h"}
+              </span>
+            </p>
+          </Badge>
+        </div>
       </div>
     </Card>
   );
