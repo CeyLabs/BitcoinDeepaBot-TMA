@@ -36,6 +36,10 @@ export default function WalletPage() {
       ? transactions[transactions.length - 1].btc_price_at_purchase
       : avgBtcPrice);
   const currentBtcPriceUsd = summary?.current_btc_price?.usd;
+  const avgBtcPriceUsd =
+    currentBtcPriceUsd && currentBtcPrice
+      ? avgBtcPrice * (currentBtcPriceUsd / currentBtcPrice)
+      : undefined;
 
   return (
     <div className="flex w-full flex-col gap-5">
@@ -56,6 +60,7 @@ export default function WalletPage() {
         dcaSats={dcaSats}
         totalLkr={totalLkr}
         avgBtcPrice={avgBtcPrice}
+        avgBtcPriceUsd={avgBtcPriceUsd}
         currentBtcPrice={currentBtcPrice}
         currentBtcPriceUsd={currentBtcPriceUsd}
         visible={balanceVisible}
