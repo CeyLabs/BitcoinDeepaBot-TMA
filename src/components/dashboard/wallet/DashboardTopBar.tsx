@@ -18,7 +18,7 @@ export function DashboardTopBar() {
           size={40}
           className="shrink-0! bg-[#ffb14c]! text-white!"
         />
-        <p className="text-muted-foreground truncate text-[14px] leading-5 capitalize">
+        <p className="truncate text-[14px] leading-5 font-semibold text-[#475569] capitalize dark:text-[#94a3b8]">
           {displayName}
         </p>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -69,13 +69,23 @@ export interface PortfolioChartProps {
 
 export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChartProps) {
   const { isDark } = useTheme();
-  const [period, setPeriod] = useState<Period>("3M");
+  // The pill highlight (`selectedPeriod`) updates immediately on click; the chart-driving
+  // `chartPeriod` updates inside a transition so filtering/re-rendering the chart doesn't
+  // delay the button's own paint.
+  const [selectedPeriod, setSelectedPeriod] = useState<Period>("3M");
+  const [chartPeriod, setChartPeriod] = useState<Period>("3M");
+  const [isPending, startTransition] = useTransition();
+
+  const handlePeriodClick = (p: Period) => {
+    setSelectedPeriod(p);
+    startTransition(() => setChartPeriod(p));
+  };
 
   const allPoints = useMemo(
     () => buildPoints(transactions, currentBtcPrice),
     [transactions, currentBtcPrice]
   );
-  const points = useMemo(() => filterByPeriod(allPoints, period), [allPoints, period]);
+  const points = useMemo(() => filterByPeriod(allPoints, chartPeriod), [allPoints, chartPeriod]);
 
   const labels = points.map((p) =>
     new Date(p.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
@@ -204,13 +214,19 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
               mode="gray"
               size="s"
               stretched
-              onClick={() => setPeriod(p)}
-              className={cn(
-                "rounded-[12px]!"
-                // period === p
-                //   ? "bg-[#e2e8f0]! text-[#1b2027]! dark:bg-[#334155]! dark:text-[#f1f5f9]!"
-                //   : "bg-[#eeeff3]! text-[#64748b]! dark:bg-transparent! dark:text-[#94a3b8]!"
-              )}
+              onClick={() => handlePeriodClick(p)}
+              style={
+                {
+                  "--tgui--button--hovered-opacity": 0,
+                  backgroundColor:
+                    selectedPeriod === p ? "#1f2a36" : isDark ? "#1e293b" : "#eeeff3",
+                  color: selectedPeriod === p ? "#fff" : isDark ? "#94a3b8" : "#64748b",
+                } as React.CSSProperties
+              }
+              // tgui's Button renders a square `:after` hover overlay that isn't clipped to
+              // its own border-radius, so its corners poke out past the pill on mouse hover
+              // unless the button itself clips overflow.
+              className="overflow-hidden! rounded-[12px]!"
             >
               <span className="text-[12px]">{p}</span>
             </Button>
@@ -226,7 +242,7 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
             </p>
           </div>
         ) : (
-          <div className="h-56">
+          <div className={cn("h-56 transition-opacity duration-150", isPending && "opacity-50")}>
             <Line data={data} options={options} />
           </div>
         )}

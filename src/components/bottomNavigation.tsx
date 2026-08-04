@@ -88,6 +88,13 @@ const navItems = [
   { href: "/dashboard/news", Icon: NewsIcon, label: "News" },
 ];
 
+// "/dashboard" is a prefix of every other item's href, so it only matches exactly;
+// nested routes (e.g. /dashboard/news/[id]) should still highlight their parent tab.
+function isNavItemActive(href: string, activeHref: string) {
+  if (href === "/dashboard") return activeHref === href;
+  return activeHref === href || activeHref.startsWith(`${href}/`);
+}
+
 // SegmentedControl is a plain (non-fixed) element, unlike Tabbar which ships its own
 // FixedLayout — so the fixed bottom-pill positioning lives on this wrapper instead.
 export default function BottomNavigation() {
@@ -130,7 +137,7 @@ export default function BottomNavigation() {
         }
       >
         {navItems.map((item) => {
-          const isActive = activeHref === item.href;
+          const isActive = isNavItemActive(item.href, activeHref);
 
           return (
             <SegmentedControl.Item
