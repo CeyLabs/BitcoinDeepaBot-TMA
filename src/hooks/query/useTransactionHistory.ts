@@ -38,7 +38,8 @@ function toNumber(value: string | number | undefined | null): number {
   return typeof value === "string" ? Number(value.replace(/,/g, "")) || 0 : value;
 }
 
-// Successful DCA purchases, sorted oldest-first, with numeric fields normalized.
+// All DCA purchase attempts (success, pending, cancelled, failed, chargeback),
+// sorted oldest-first, with numeric fields normalized.
 export function useTransactionHistory() {
   const authToken = getAuthTokenFromStorage();
 
@@ -54,7 +55,6 @@ export function useTransactionHistory() {
         : (data.transactions?.transactions ?? []);
 
       return raw
-        .filter((tx) => tx.status === "SUCCESS")
         .map((tx) => ({
           id: tx.payhere_pay_id,
           created_at: tx.created_at,

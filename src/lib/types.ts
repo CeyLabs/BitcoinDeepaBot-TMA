@@ -107,7 +107,7 @@ export interface ActivityItem {
   sats: number;
   /** Absolute approx LKR value shown as "≈ LKR x" */
   lkr: number;
-  statusDot?: "green" | "orange";
+  statusDot?: "green" | "orange" | "red" | "gray";
   settlement: {
     status: string;
     settledOn: string;

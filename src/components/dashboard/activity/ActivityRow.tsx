@@ -16,6 +16,13 @@ import {
 } from "@/lib/formatters";
 import type { ActivityItem } from "@/lib/types";
 
+const STATUS_COLOR: Record<NonNullable<ActivityItem["statusDot"]>, string> = {
+  green: "#25A761",
+  orange: "#FA7119",
+  red: "#F45A5A",
+  gray: "#94A3B8",
+};
+
 export interface ActivityRowProps {
   item: ActivityItem;
   visible: boolean;
@@ -82,9 +89,8 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
           {ACTIVITY_TITLE[item.type]}
           {item.statusDot && (
             <span
-              className={`inline-block size-2 shrink-0 rounded-full ${
-                item.statusDot === "green" ? "bg-[#25A761]" : "bg-[#FA7119]"
-              }`}
+              className="inline-block size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: STATUS_COLOR[item.statusDot] }}
             />
           )}
         </span>
@@ -101,7 +107,9 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
                 className="m-0! flex! min-w-0! items-center! justify-center! rounded-[8px]! px-2! py-1! text-sm! leading-3! whitespace-nowrap!"
                 style={
                   {
-                    "--tgui--button_color": item.statusDot === "orange" ? "#FA7119" : "#25A761",
+                    "--tgui--button_color": item.statusDot
+                      ? STATUS_COLOR[item.statusDot]
+                      : "#25A761",
                     "--tgui--button_text_color": "#fff",
                   } as React.CSSProperties
                 }
@@ -111,7 +119,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
             </div>
 
             <div className="flex flex-col items-end text-right">
-              <p className="text-xs leading-4 text-[#475569]">Settled on</p>
+              <p className="text-xs leading-4 text-[#475569]">Date</p>
               <p className="text-sm leading-5 font-semibold">
                 {fmtShortDate(item.settlement.settledOn)}
               </p>
