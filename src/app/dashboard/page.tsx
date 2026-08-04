@@ -40,6 +40,7 @@ export default function WalletPage() {
     currentBtcPriceUsd && currentBtcPrice
       ? avgBtcPrice * (currentBtcPriceUsd / currentBtcPrice)
       : undefined;
+  const currentValueLkr = (dcaSats / 1e8) * currentBtcPrice;
 
   return (
     <div className="flex w-full flex-col gap-5">
@@ -59,7 +60,7 @@ export default function WalletPage() {
       <PerformanceGrid
         dcaSpent={dcaSpent}
         dcaSats={dcaSats}
-        totalLkr={totalLkr}
+        totalLkr={currentValueLkr}
         avgBtcPrice={avgBtcPrice}
         avgBtcPriceUsd={avgBtcPriceUsd}
         currentBtcPrice={currentBtcPrice}
