@@ -8,6 +8,7 @@ import { Button, Snackbar } from "@telegram-apps/telegram-ui";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { getAuthTokenFromStorage } from "@/lib/auth";
 import { usePayHereRedirect } from "@/lib/hooks";
+import { haptic } from "@/lib/haptics";
 import { usePackages } from "@/hooks/query/usePackages";
 import { useCancelSubscription } from "@/hooks/query/useCancelSubscription";
 import { useUser } from "@/hooks/useUser";
@@ -18,13 +19,11 @@ import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotic
 import { PageTitle } from "@/components/ui/page-title";
 import { TogglePlan, type PlanDuration } from "@/components/ui/toggle-plan";
 import { PlanCard } from "@/components/ui/plan-card";
+import { ValueSkeleton } from "@/components/ui/value-skeleton";
 import { getPlanIconSrc } from "@/components/dashboard/wallet/PlanSummaryCard";
+import { fmtLkrCurrency } from "@/lib/formatters";
 import type { SubscriptionPlan } from "@/lib/types";
 import Link from "next/link";
-
-function fmtLkr(n: number) {
-  return `Rs ${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
-}
 
 function perMonthAmount(plan: SubscriptionPlan) {
   return plan.type === "weekly" ? plan.amount * 4 : plan.amount;
@@ -38,7 +37,6 @@ export default function ChoosePlanPage() {
   const redirectToPayHereViaPage = usePayHereRedirect();
   const authToken = getAuthTokenFromStorage();
   const { subscription } = useUser();
-  const popup = initPopup();
   const cancelSubscription = useCancelSubscription();
 
   const [duration, setDuration] = useState<PlanDuration>("weekly");
@@ -53,7 +51,11 @@ export default function ChoosePlanPage() {
   const { data: fetchedPackages, isLoading: packagesLoading } = usePackages();
   const packages = fetchedPackages ?? EMPTY_PLANS;
 
-  useTelegramBackButton(() => router.push("/dashboard/plans"));
+  // Without an active plan, /dashboard/plans immediately redirects back here —
+  // going back there would loop, so fall back to the wallet page instead.
+  useTelegramBackButton(() =>
+    router.push(subscription?.isActive ? "/dashboard/plans" : "/dashboard")
+  );
 
   const currentPlan = useMemo(
     () =>
@@ -66,11 +68,11 @@ export default function ChoosePlanPage() {
     [packages, duration, currentPlan]
   );
 
-  // Derived rather than effect-driven: falls back to the first plan of the
-  // active duration until the user makes an explicit selection.
-  const selectedPlanId = selectedId ?? filteredPlans[0]?.id;
+  // Only set once the user explicitly taps a plan — details stay hidden until then.
+  const selectedPlanId = selectedId;
 
   const handleDurationChange = (d: PlanDuration) => {
+    haptic.select();
     setDuration(d);
     setSelectedId(undefined);
   };
@@ -78,6 +80,8 @@ export default function ChoosePlanPage() {
   const handleSubscribe = async () => {
     const plan = packages.find((p) => p.id === selectedPlanId);
     if (!plan || !authToken) return;
+
+    haptic.impact("medium");
 
     try {
       setPayhereLinkLoading(true);
@@ -99,8 +103,12 @@ export default function ChoosePlanPage() {
         throw new Error(result.message || "Failed to generate payment link");
       }
 
-      if (result.link) redirectToPayHereViaPage(result.link);
+      if (result.link) {
+        haptic.notify("success");
+        redirectToPayHereViaPage(result.link);
+      }
     } catch (err) {
+      haptic.notify("error");
       console.error(err);
     } finally {
       setPayhereLinkLoading(false);
@@ -108,18 +116,31 @@ export default function ChoosePlanPage() {
   };
 
   const handleCancel = async () => {
-    const buttonId = await popup.open({
-      title: "Cancel Plan",
-      message: "Your membership rewards will stop accruing immediately. This can't be undone.",
-      buttons: [
-        { id: "cancel", type: "destructive", text: "Cancel Plan" },
-        { id: "keep", type: "cancel" },
-      ],
-    });
-    if (buttonId !== "cancel") return;
+    // initPopup() throws outside Telegram (no native popup API there) — fall
+    // back to the browser's own confirm dialog in that case.
+    let confirmed: boolean;
+    try {
+      const buttonId = await initPopup().open({
+        title: "Cancel Plan",
+        message: "Your membership rewards will stop accruing immediately. This can't be undone.",
+        buttons: [
+          { id: "cancel", type: "destructive", text: "Cancel Plan" },
+          { id: "keep", type: "cancel" },
+        ],
+      });
+      confirmed = buttonId === "cancel";
+    } catch {
+      confirmed = window.confirm(
+        "Cancel Plan? Your membership rewards will stop accruing immediately. This can't be undone."
+      );
+    }
+    if (!confirmed) return;
+
+    haptic.impact("rigid");
 
     try {
       await cancelSubscription.mutateAsync();
+      haptic.notify("success");
       setSnackbar({
         tone: "success",
         title: "Plan Cancelled",
@@ -127,6 +148,7 @@ export default function ChoosePlanPage() {
       });
       setTimeout(() => router.push("/dashboard/plans"), 1500);
     } catch (err) {
+      haptic.notify("error");
       setSnackbar({
         tone: "error",
         title: "Cancellation Failed",
@@ -168,10 +190,10 @@ export default function ChoosePlanPage() {
               />
             }
             name={currentPlan.name}
-            price={fmtLkr(currentPlan.amount)}
+            price={fmtLkrCurrency(currentPlan.amount)}
             period={`/${currentPlan.type === "weekly" ? "week" : "month"}`}
             description={currentPlan.features?.[0] ?? "Bitcoin membership rewards"}
-            perYear={`Per Year ${fmtLkr(perMonthAmount(currentPlan) * 12)}`}
+            perYear={`Per Year ${fmtLkrCurrency(perMonthAmount(currentPlan) * 12)}`}
             active
           />
         </div>
@@ -188,7 +210,7 @@ export default function ChoosePlanPage() {
       {packagesLoading ? (
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-[90px] animate-pulse rounded-[12px] bg-[#e2e8f0]" />
+            <ValueSkeleton key={i} className="h-[90px] w-full rounded-[12px]" />
           ))}
         </div>
       ) : filteredPlans.length === 0 ? (
@@ -213,11 +235,11 @@ export default function ChoosePlanPage() {
                   />
                 }
                 name={plan.name}
-                price={fmtLkr(plan.amount)}
+                price={fmtLkrCurrency(plan.amount)}
                 period={`/${plan.type === "weekly" ? "week" : "month"}`}
                 description={plan.features?.[0] ?? "Bitcoin membership rewards"}
-                perMonth={`Per Month ${fmtLkr(perMonth)}`}
-                perYear={`Per Year ${fmtLkr(perYear)}`}
+                perMonth={`Per Month ${fmtLkrCurrency(perMonth)}`}
+                perYear={`Per Year ${fmtLkrCurrency(perYear)}`}
                 selected={selectedPlanId === plan.id}
                 mostPopular={plan.popular}
                 onSelect={() => setSelectedId(plan.id)}

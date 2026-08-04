@@ -3,14 +3,17 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useInitData, useLaunchParams } from "@telegram-apps/sdk-react";
 import { Badge, Button, Cell, Navigation, Progress, Title } from "@telegram-apps/telegram-ui";
 import { useTheme } from "@/app/context/theme";
 import { useStore } from "@/lib/store";
-import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
+import { getAuthTokenFromStorage, getIsExistingUserFromStorage, isAuthenticated } from "@/lib/auth";
 import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
 import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
 import { useUserCount } from "@/hooks/query/useUserCount";
+import { useIsTelegramEnv } from "@/hooks/useIsTelegramEnv";
+import BrowserLoginScreen from "@/components/auth/BrowserLoginScreen";
 
 // ─── Shared progress bar ────────────────────────────────────────────────────
 
@@ -156,7 +159,9 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
   );
 }
 
-export default function Home() {
+// Uses Telegram SDK hooks that throw outside the Telegram WebView — only
+// mount this once we've confirmed we're running inside Telegram.
+function TelegramHome() {
   const initLaunchParams = useLaunchParams().initData;
   const launchParams = useLaunchParams();
   const initData = useInitData();
@@ -186,4 +191,33 @@ export default function Home() {
       <UserScreen isExisting={isExisting} />
     </PageShell>
   );
+}
+
+export default function Home() {
+  const router = useRouter();
+  const isTelegramEnv = useIsTelegramEnv();
+  const [isBrowserAuthed, setIsBrowserAuthed] = useState(() => isAuthenticated());
+
+  useEffect(() => {
+    if (isTelegramEnv === false && isBrowserAuthed) {
+      router.replace("/dashboard?tab=wallet");
+    }
+  }, [isTelegramEnv, isBrowserAuthed, router]);
+
+  // Still running the non-throwing isTMA() check — avoid flashing either UI.
+  if (isTelegramEnv === null) {
+    return <PageShell>{null}</PageShell>;
+  }
+
+  if (isTelegramEnv === false) {
+    // Already authenticated — redirecting into /dashboard above; render
+    // nothing in the meantime instead of flashing the login screen.
+    return isBrowserAuthed ? (
+      <PageShell>{null}</PageShell>
+    ) : (
+      <BrowserLoginScreen onLoggedIn={() => setIsBrowserAuthed(true)} />
+    );
+  }
+
+  return <TelegramHome />;
 }

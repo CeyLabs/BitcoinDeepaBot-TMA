@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { initHapticFeedback } from "@telegram-apps/sdk-react";
 import { TaskFilterTabs, type TaskFilter } from "@/components/dashboard/tasks/TaskFilterTabs";
 import { TaskListCard } from "@/components/dashboard/tasks/TaskListCard";
 import { useTMA } from "@/lib/hooks";
+import { haptic } from "@/lib/haptics";
 import { useStore } from "@/lib/store";
 import type { Task } from "@/lib/types";
 
@@ -25,14 +25,15 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
   const handleTaskClick = (taskId: string) => {
     switch (taskId) {
       case "task-setup-wallet":
+        haptic.impact("medium");
         openTelegramLink("https://t.me/BitcoinDeepaBot");
         break;
       case "task-join-community":
+        haptic.impact("medium");
         openTelegramLink("https://t.me/+iiP-rX7ldYxjZWU1");
         break;
       case "task-share-story": {
-        const haptic = initHapticFeedback();
-        haptic.impactOccurred("heavy");
+        haptic.impact("heavy");
         shareStory("https://ceyloncash.com/bitcoindeepa/tma/story.mp4", {
           text: `Proud OG Member of Bitcoin දීප. ${count} Citizens and Counting 🚀🔥\n\nhttps://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}\n\n#bitcoindeepa @bitcoindeepabot #viralstory`,
           widget_link: {

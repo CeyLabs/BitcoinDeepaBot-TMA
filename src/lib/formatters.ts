@@ -30,6 +30,19 @@ export function fmtLkr(value: number): string {
   return value.toLocaleString("en-US", { maximumFractionDigits: 0 });
 }
 
+// Sri Lankan Rupee symbol used in place of the "LKR" code throughout the UI
+export const LKR_SYMBOL = "රු.";
+
+// Full LKR amount with the රු. symbol (e.g. 45700 -> "රු. 45,700")
+export function fmtLkrCurrency(value: number): string {
+  return `${LKR_SYMBOL} ${fmtLkr(value)}`;
+}
+
+// Compact LKR amount with the රු. symbol (e.g. 29500000 -> "රු. 29.5M")
+export function fmtLkrCurrencyCompact(value: number): string {
+  return `${LKR_SYMBOL} ${fmtPriceCompact(value)}`;
+}
+
 // Compact satoshi count (e.g. 214000 -> "214K")
 export function fmtSatsCompact(sats: number): string {
   if (sats >= 1_000_000) return `${(sats / 1_000_000).toFixed(1)}M`;
@@ -81,7 +94,7 @@ export function fmtActivityDateTime(dateInput: string | Date): string {
 }
 
 // Blot out digits in a formatted string while keeping icons/currency codes/units
-// visible, e.g. "LKR 32,000" -> "LKR ****" when the user hides their balance.
+// visible, e.g. "රු. 32,000" -> "රු. ****" when the user hides their balance.
 export function maskDigits(value: string, visible: boolean): string {
-  return visible ? value : value.replace(/[\d,.]+/g, "****");
+  return visible ? value : value.replace(/[\d,.]+[KM]?/g, "****");
 }

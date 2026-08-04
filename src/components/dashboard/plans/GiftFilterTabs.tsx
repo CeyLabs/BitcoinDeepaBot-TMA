@@ -2,6 +2,7 @@
 
 import { Button } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
+import { haptic } from "@/lib/haptics";
 
 export type GiftFilter = "all" | "received" | "sent";
 
@@ -28,7 +29,10 @@ export function GiftFilterTabs({ value, onChange }: GiftFilterTabsProps) {
               key={tab.value}
               mode="gray"
               size="s"
-              onClick={() => onChange(tab.value)}
+              onClick={() => {
+                haptic.select();
+                onChange(tab.value);
+              }}
               style={{ "--tgui--button--hovered-opacity": 0 } as React.CSSProperties}
               className={cn(
                 "rounded-[12px]! whitespace-nowrap!",

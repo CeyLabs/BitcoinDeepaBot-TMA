@@ -3,6 +3,7 @@
 import { Eye, EyeOff } from "lucide-react";
 import { IconButton } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
+import { haptic } from "@/lib/haptics";
 
 interface VisibleToggleProps {
   visible: boolean;
@@ -15,7 +16,15 @@ export function VisibleToggle({ visible, onToggle, dark = false, className }: Vi
   const Icon = visible ? Eye : EyeOff;
 
   return (
-    <IconButton mode="gray" size="m" onClick={onToggle} className={cn(className)}>
+    <IconButton
+      mode="gray"
+      size="m"
+      onClick={() => {
+        haptic.impact("medium");
+        onToggle();
+      }}
+      className={cn(className)}
+    >
       <Icon
         size={18}
         strokeWidth={1.75}

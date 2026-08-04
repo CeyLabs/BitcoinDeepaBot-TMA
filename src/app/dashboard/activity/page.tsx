@@ -24,11 +24,9 @@ export default function ActivityPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<ActivityCategory>("all");
 
-  const { data: transactions, isLoading } = useTransactionHistory();
-  const activity = useMemo(
-    () => (transactions ?? []).map(mapDcaTransactionToActivityItem),
-    [transactions]
-  );
+  const { transactions, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useTransactionHistory();
+  const activity = useMemo(() => transactions.map(mapDcaTransactionToActivityItem), [transactions]);
 
   const comingSoon = COMING_SOON_CATEGORIES.includes(category);
 
@@ -80,14 +78,26 @@ export default function ActivityPage() {
       ) : groups.length === 0 ? (
         <p className="py-8 text-center text-[14px] text-[#64748b]">No activity found.</p>
       ) : (
-        groups.map(([dayKey, items]) => (
-          <ActivityGroup
-            key={dayKey}
-            date={items[0].timestamp}
-            items={items}
-            visible={balanceVisible}
-          />
-        ))
+        <>
+          {groups.map(([dayKey, items]) => (
+            <ActivityGroup
+              key={dayKey}
+              date={items[0].timestamp}
+              items={items}
+              visible={balanceVisible}
+            />
+          ))}
+
+          {hasNextPage && (
+            <button
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+              className="py-3 text-center text-[14px] font-semibold text-[#fa7119] disabled:opacity-50"
+            >
+              {isFetchingNextPage ? "Loading..." : "Load more"}
+            </button>
+          )}
+        </>
       )}
     </div>
   );

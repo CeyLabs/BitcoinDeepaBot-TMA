@@ -12,10 +12,10 @@ import { useStore } from "@/lib/store";
 
 export default function WalletPage() {
   const { balanceVisible } = useStore();
-  const { subscription } = useUser();
+  const { subscription, subscriptionLoading } = useUser();
 
-  const { data: summary } = useWalletSummary();
-  const { data: transactions } = useTransactionHistory();
+  const { data: summary, isLoading: isSummaryLoading } = useWalletSummary();
+  const { transactions } = useTransactionHistory();
 
   const totalLkr = summary
     ? Number(
@@ -36,6 +36,11 @@ export default function WalletPage() {
       ? transactions[transactions.length - 1].btc_price_at_purchase
       : avgBtcPrice);
   const currentBtcPriceUsd = summary?.current_btc_price?.usd;
+  const avgBtcPriceUsd =
+    currentBtcPriceUsd && currentBtcPrice
+      ? avgBtcPrice * (currentBtcPriceUsd / currentBtcPrice)
+      : undefined;
+  const currentValueLkr = (dcaSats / 1e8) * currentBtcPrice;
 
   return (
     <div className="flex w-full flex-col gap-5">
@@ -47,18 +52,21 @@ export default function WalletPage() {
         changePercent={change24h}
         changeLkr={changeLkr}
         visible={balanceVisible}
+        isLoading={isSummaryLoading}
       />
 
-      <PlanSummaryCard subscription={subscription} />
+      <PlanSummaryCard subscription={subscription} isLoading={subscriptionLoading} />
 
       <PerformanceGrid
         dcaSpent={dcaSpent}
         dcaSats={dcaSats}
-        totalLkr={totalLkr}
+        totalLkr={currentValueLkr}
         avgBtcPrice={avgBtcPrice}
+        avgBtcPriceUsd={avgBtcPriceUsd}
         currentBtcPrice={currentBtcPrice}
         currentBtcPriceUsd={currentBtcPriceUsd}
         visible={balanceVisible}
+        isLoading={isSummaryLoading}
       />
 
       <PortfolioChart transactions={transactions ?? []} currentBtcPrice={currentBtcPrice} />

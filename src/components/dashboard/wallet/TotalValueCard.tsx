@@ -3,7 +3,9 @@
 import Image from "next/image";
 import { ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
-import { fmtLkr, fmtSatsCompact, maskDigits } from "@/lib/formatters";
+import { ValueSkeleton } from "@/components/ui/value-skeleton";
+import { cn } from "@/lib/cn";
+import { fmtLkrCurrency, fmtSatsCompact, maskDigits } from "@/lib/formatters";
 
 // Card/Badge theme their background/color through --tgui-- CSS variables (same
 // convention as --tgui--cell--middle--padding on the homepage Cell) — override those
@@ -15,6 +17,7 @@ export interface TotalValueCardProps {
   changePercent: number;
   changeLkr: number;
   visible: boolean;
+  isLoading?: boolean;
 }
 
 export function TotalValueCard({
@@ -23,6 +26,7 @@ export function TotalValueCard({
   changePercent,
   changeLkr,
   visible,
+  isLoading = false,
 }: TotalValueCardProps) {
   const mask = (v: string) => maskDigits(v, visible);
   const isProfit = changePercent >= 0;
@@ -34,20 +38,25 @@ export function TotalValueCard({
       style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
     >
       <Image src="/bg/wallet.webp" alt="" fill priority className="object-cover" />
+      <div className="absolute inset-0 bg-black/18" />
       <div className="relative flex flex-col gap-2 p-4">
         <div className="flex items-end justify-between">
           <p className="text-[14px] leading-3 text-white capitalize">Total Value</p>
-          <div className="items-center gap-1 rounded-[12px] border border-white py-1 pr-1 pl-2 hidden">
-            <p className="text-[12px] leading-4 text-white">LKR</p>
+          <div className="hidden items-center gap-1 rounded-[12px] border border-white py-1 pr-1 pl-2">
+            <p className="text-[12px] leading-4 text-white">රු.</p>
             <ChevronDown size={14} strokeWidth={2} className="text-white" />
           </div>
         </div>
 
-        <p className="text-[36px] leading-12 font-bold text-white">
-          {mask(`≈ LKR ${fmtLkr(totalLkr)}`)}
-        </p>
+        {isLoading ? (
+          <ValueSkeleton tone="translucent" className="h-9 w-40" />
+        ) : (
+          <p className="text-[36px] leading-12 font-bold text-white">
+            {mask(`≈ ${fmtLkrCurrency(totalLkr)}`)}
+          </p>
+        )}
 
-        <div className="flex flex-col items-start gap-2">
+        <div className={cn("flex flex-col items-start gap-2", isLoading && "invisible")}>
           <div className="flex items-center gap-2">
             <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
               <span>{mask(`₿ ${(totalSats / 1e8).toFixed(6)}`)}</span>
@@ -56,7 +65,6 @@ export function TotalValueCard({
             <div className="size-1 rounded-full bg-white" />
             <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
               <span>{mask(`丰 ${fmtSatsCompact(totalSats)}`)}</span>
-              <span>SATS</span>
             </div>
           </div>
 
@@ -76,9 +84,8 @@ export function TotalValueCard({
               <TrendIcon size={14} strokeWidth={2} className="text-white" />
               <span>
                 {" "}
-                {mask(
-                  `LKR ${fmtLkr(Math.abs(changeLkr))}  (${isProfit ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%)`
-                )}
+                {mask(fmtLkrCurrency(Math.abs(changeLkr)))}
+                {`  (${isProfit ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%)`}
                 {"  Last 24h"}
               </span>
             </p>

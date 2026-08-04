@@ -3,14 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useLaunchParams } from "@telegram-apps/sdk-react";
 import { Button, Modal } from "@telegram-apps/telegram-ui";
 import { X } from "lucide-react";
 import { Drawer } from "@xelene/vaul-with-scroll-fix";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useTelegramPlatform } from "@/hooks/useTelegramPlatform";
+import { useUser } from "@/hooks/useUser";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { useTelegramBackButton } from "@/hooks/useTgBackButton";
+import { haptic } from "@/lib/haptics";
 import type { User } from "@/lib/types";
 
 type VerificationStatus = NonNullable<User["kycStatus"]> | null;
@@ -94,8 +95,7 @@ const SHOW_STEPS_FOR: VerificationStatus[] = [
 
 export default function VerificationIntroPage() {
   const router = useRouter();
-  const launchParams = useLaunchParams();
-  const userData = launchParams.initData?.user;
+  const { id: userId } = useUser();
   const { isMobile } = useTelegramPlatform();
   const [showMobileWarning, setShowMobileWarning] = useState(false);
 
@@ -108,12 +108,14 @@ export default function VerificationIntroPage() {
 
   useEffect(() => {
     if (status === "APPROVED") {
+      haptic.notify("success");
       const timeout = setTimeout(() => router.push("/plans/choose"), 2000);
       return () => clearTimeout(timeout);
     }
   }, [status, router]);
 
   const initiateVerification = () => {
+    haptic.impact("medium");
     if (!isMobile) {
       setShowMobileWarning(true);
       return;
@@ -123,6 +125,7 @@ export default function VerificationIntroPage() {
   };
 
   const continueVerification = () => {
+    haptic.impact("medium");
     if (!isMobile) {
       setShowMobileWarning(true);
       return;
@@ -222,7 +225,10 @@ export default function VerificationIntroPage() {
               size="l"
               stretched
               style={{ borderRadius: "12px" }}
-              onClick={() => router.push("/plans/choose")}
+              onClick={() => {
+                haptic.impact("medium");
+                router.push("/plans/choose");
+              }}
             >
               Continue to Plans
             </Button>
@@ -232,7 +238,14 @@ export default function VerificationIntroPage() {
               size="l"
               stretched
               style={{ borderRadius: "12px" }}
-              onClick={verificationUrl ? continueVerification : () => refetchKycStatus()}
+              onClick={
+                verificationUrl
+                  ? continueVerification
+                  : () => {
+                      haptic.impact("medium");
+                      refetchKycStatus();
+                    }
+              }
             >
               {verificationUrl ? "Continue Verification" : "Check Verification Status"}
             </Button>
@@ -249,7 +262,10 @@ export default function VerificationIntroPage() {
                   "--tgui--plain_foreground": "#fa7119",
                 } as React.CSSProperties
               }
-              onClick={() => router.push("/dashboard")}
+              onClick={() => {
+                haptic.impact("medium");
+                router.push("/dashboard");
+              }}
             >
               Back to Home
             </Button>
@@ -259,7 +275,7 @@ export default function VerificationIntroPage() {
               size="l"
               stretched
               style={{ borderRadius: "12px" }}
-              disabled={showSteps && !userData}
+              disabled={showSteps && !userId}
               onClick={initiateVerification}
             >
               {status === "DECLINED" ||
@@ -327,7 +343,10 @@ export default function VerificationIntroPage() {
             size="l"
             stretched
             style={{ borderRadius: "12px" }}
-            onClick={() => setShowMobileWarning(false)}
+            onClick={() => {
+              haptic.impact("medium");
+              setShowMobileWarning(false);
+            }}
           >
             Got It
           </Button>

@@ -21,6 +21,25 @@ export interface PlanSelectionData {
 }
 
 /**
+ * Payload Telegram's Login library (https://core.telegram.org/bots/telegram-login)
+ * passes to the onauth callback — distinct from Mini App initData, this is
+ * used for browser-based sign-in outside Telegram. id_token is a signed JWT
+ * that must be verified server-side (JWKS) before the claims in `user` are trusted.
+ */
+export interface TelegramOidcAuthData {
+  id_token?: string;
+  user?: {
+    id: number;
+    name?: string;
+    given_name?: string;
+    family_name?: string;
+    preferred_username?: string;
+    picture?: string;
+  };
+  error?: string;
+}
+
+/**
  * Authenticate user with Telegram initData
  */
 export async function authenticateWithTelegram(initData: string): Promise<TelegramAuthResponse> {
@@ -56,6 +75,38 @@ export async function authenticateWithTelegram(initData: string): Promise<Telegr
     };
   } catch (error) {
     console.error("Error during Telegram authentication:", error);
+    throw error;
+  }
+}
+
+/**
+ * Authenticate a user via Telegram's Login (OIDC) library (browser flow, outside Telegram).
+ * Sends the raw id_token — the backend verifies its signature against Telegram's
+ * JWKS before trusting any claims in it.
+ */
+export async function authenticateWithTelegramOidc(idToken: string): Promise<TelegramAuthResponse> {
+  try {
+    const response = await fetch("/api/auth/telegram-oidc", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id_token: idToken }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || result.message || "Telegram login failed");
+    }
+
+    return {
+      token: result.token,
+      user: result.user,
+      isRegistered: result.isRegistered ?? true,
+    };
+  } catch (error) {
+    console.error("Error during Telegram OIDC authentication:", error);
     throw error;
   }
 }
@@ -177,4 +228,34 @@ export const clearAuthFromStorage = () => {
 
 export const isAuthenticated = (): boolean => {
   return !!getAuthTokenFromStorage();
+};
+
+/**
+ * Decodes the stored JWT's payload for identity ({ id, username }) without
+ * verifying it — used as a fallback source of identity outside Telegram,
+ * where there's no initData to read from. Both auth flows (initData and
+ * the Login Widget) mint tokens with the same payload shape, so this works
+ * regardless of which one signed the user in.
+ */
+export const getUserFromToken = (): { id: string; username?: string } | null => {
+  const token = getAuthTokenFromStorage();
+  if (!token) return null;
+
+  try {
+    const payloadSegment = token.split(".")[1];
+    if (!payloadSegment) return null;
+
+    const base64 = payloadSegment.replace(/-/g, "+").replace(/_/g, "/");
+    const json = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0"))
+        .join("")
+    );
+    const payload = JSON.parse(json);
+
+    return typeof payload.id === "string" ? { id: payload.id, username: payload.username } : null;
+  } catch {
+    return null;
+  }
 };

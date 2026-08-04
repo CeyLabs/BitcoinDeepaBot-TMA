@@ -9,6 +9,7 @@ import { ACTIVITY_ICON, ACTIVITY_TITLE } from "@/lib/activity";
 import {
   fmtActivityTime,
   fmtLkr,
+  fmtLkrCurrency,
   fmtPriceCompact,
   fmtShortDate,
   formatSatoshis,
@@ -72,7 +73,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
                 {mask(`${isOutgoing ? "-" : "+"}${fmtLkr(Math.abs(item.sats))} sats`)}
               </p>
               <p className="text-right text-xs leading-4 text-[#475569] dark:text-[#94A3B8]">
-                {mask(`≈ LKR ${fmtLkr(item.lkr)}`)}
+                {mask(`≈ ${fmtLkrCurrency(item.lkr)}`)}
               </p>
             </div>
             <ChevronDown
@@ -131,7 +132,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
               BTC Value {isOutgoing ? "Sent" : "Received"}
             </p>
             <p className="text-base leading-5 font-semibold">
-              {formatSatoshis(item.settlement.btcSats)} BTC
+              {mask(`${formatSatoshis(item.settlement.btcSats)} BTC`)}
             </p>
           </div>
 
@@ -145,7 +146,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
                   <span className="text-[#64748b]"> / BTC · </span>
                 </>
               )}
-              <span className="font-bold text-[#0088FF]">LKR</span>{" "}
+              <span className="font-bold text-[#0088FF]">රු.</span>{" "}
               <span className="font-bold">{fmtPriceCompact(item.settlement.btcPriceLkr)}</span>
               <span className="text-[#64748b]"> / BTC</span>
             </p>

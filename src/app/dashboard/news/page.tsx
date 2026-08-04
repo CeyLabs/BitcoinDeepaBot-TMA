@@ -5,6 +5,8 @@ import { NewsListSection } from "@/components/dashboard/news/NewsListSection";
 import { getNewsArticles } from "@/lib/news";
 import type { NewsArticle } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 function NewsFeaturedCard({ article }: { article: NewsArticle }) {
   return (
     <Link

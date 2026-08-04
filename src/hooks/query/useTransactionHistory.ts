@@ -1,6 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { getAuthTokenFromStorage } from "@/lib/auth";
 import fetchy from "@/lib/fetchy";
@@ -29,46 +30,76 @@ interface RawTransaction {
   settled?: boolean;
 }
 
-interface TransactionListResponse {
-  transactions: RawTransaction[] | { transactions: RawTransaction[] };
+interface PaginatedTransactions {
+  transactions: RawTransaction[];
+  has_more?: boolean;
 }
+
+interface TransactionListResponse {
+  transactions: RawTransaction[] | PaginatedTransactions;
+}
+
+const PAGE_SIZE = 20;
 
 function toNumber(value: string | number | undefined | null): number {
   if (value === undefined || value === null) return 0;
   return typeof value === "string" ? Number(value.replace(/,/g, "")) || 0 : value;
 }
 
+function normalize(tx: RawTransaction): DcaTransaction {
+  return {
+    id: tx.payhere_pay_id,
+    created_at: tx.created_at,
+    satoshis_purchased: toNumber(tx.satoshis_purchased),
+    btc_price_at_purchase: toNumber(tx.btc_price_at_purchase),
+    package_amount: toNumber(tx.package_amount),
+    gross_amount: toNumber(tx.gross_amount),
+    package_name: tx.package_name,
+    status: tx.status,
+    settled: tx.settled,
+  };
+}
+
 // All DCA purchase attempts (success, pending, cancelled, failed, chargeback),
-// sorted oldest-first, with numeric fields normalized.
+// paginated oldest page first via `has_more`, sorted oldest-first within the
+// flattened result with numeric fields normalized.
 export function useTransactionHistory() {
   const authToken = getAuthTokenFromStorage();
 
-  return useQuery<DcaTransaction[]>({
+  const query = useInfiniteQuery({
     queryKey: queryKeys.transactions,
-    queryFn: async () => {
-      const data = await fetchy.get<TransactionListResponse>("/api/transaction/list?limit=100", {
-        headers: { Authorization: `Bearer ${authToken}` },
-        shouldCache: false,
-      });
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchy.get<TransactionListResponse>(
+        `/api/transaction/list?page=${pageParam}&limit=${PAGE_SIZE}`,
+        {
+          headers: { Authorization: `Bearer ${authToken}` },
+          shouldCache: false,
+        }
+      );
+
+      const nested = Array.isArray(data.transactions) ? null : data.transactions;
       const raw = Array.isArray(data.transactions)
         ? data.transactions
-        : (data.transactions?.transactions ?? []);
+        : (nested?.transactions ?? []);
 
-      return raw
-        .map((tx) => ({
-          id: tx.payhere_pay_id,
-          created_at: tx.created_at,
-          satoshis_purchased: toNumber(tx.satoshis_purchased),
-          btc_price_at_purchase: toNumber(tx.btc_price_at_purchase),
-          package_amount: toNumber(tx.package_amount),
-          gross_amount: toNumber(tx.gross_amount),
-          package_name: tx.package_name,
-          status: tx.status,
-          settled: tx.settled,
-        }))
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      return {
+        transactions: raw.map(normalize),
+        hasMore: nested?.has_more ?? raw.length === PAGE_SIZE,
+      };
     },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => (lastPage.hasMore ? allPages.length + 1 : undefined),
     enabled: !!authToken,
     staleTime: 1000 * 60 * 5,
   });
+
+  const transactions = useMemo(
+    () =>
+      (query.data?.pages ?? [])
+        .flatMap((page) => page.transactions)
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+    [query.data]
+  );
+
+  return { ...query, transactions };
 }

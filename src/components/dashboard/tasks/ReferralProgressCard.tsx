@@ -29,7 +29,7 @@ export function ReferralProgressCard({ joined, target, rewardSats }: ReferralPro
     <Card
       type="plain"
       onClick={handleShare}
-      className="relative w-full cursor-pointer overflow-hidden rounded-full! p-0! shadow-none! hidden"
+      className="relative hidden w-full cursor-pointer overflow-hidden rounded-full! p-0! shadow-none!"
       style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
     >
       <Image src="/bg/pill.webp" alt="" fill className="object-cover" />

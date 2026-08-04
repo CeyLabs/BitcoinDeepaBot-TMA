@@ -2,7 +2,7 @@
 
 import { Card } from "@telegram-apps/telegram-ui";
 import Image from "next/image";
-import { fmtLkr, fmtSatsCompact, maskDigits } from "@/lib/formatters";
+import { fmtLkrCurrency, fmtSatsCompact, maskDigits } from "@/lib/formatters";
 
 // Matches mock-wallet-data.ts's avg_btc_price so figures stay consistent across pages.
 const BTC_PRICE_LKR = 29_500_000;
@@ -23,7 +23,7 @@ export interface TaskHeroCardProps {
 function btcLkrLabel(sats: number): string {
   const btc = sats / 1e8;
   const lkr = btc * BTC_PRICE_LKR;
-  return `₿${btc.toFixed(5)} · LKR ${fmtLkr(lkr)}`;
+  return `₿${btc.toFixed(5)} · ${fmtLkrCurrency(lkr)}`;
 }
 
 export function TaskHeroCard({ stats, visible }: TaskHeroCardProps) {
@@ -32,7 +32,7 @@ export function TaskHeroCard({ stats, visible }: TaskHeroCardProps) {
   return (
     <Card
       type="plain"
-      className="relative overflow-hidden rounded-[20px]! p-0! shadow-none! hidden"
+      className="relative hidden overflow-hidden rounded-[20px]! p-0! shadow-none!"
       style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
     >
       <Image src="/bg/note.webp" alt="" fill priority className="object-cover" />

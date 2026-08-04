@@ -6,13 +6,15 @@ import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { Card, Badge, Button, Cell, Navigation } from "@telegram-apps/telegram-ui";
 import {
-  fmtLkr,
+  fmtLkrCurrency,
   fmtSatsCompact,
   fmtShortDate,
   fmtRelativeDays,
   maskDigits,
 } from "@/lib/formatters";
 import { getPlanIconSrc } from "@/components/dashboard/wallet/PlanSummaryCard";
+import { VisibleToggle } from "@/components/ui/visible-toggle";
+import { ValueSkeleton } from "@/components/ui/value-skeleton";
 import type { Subscription } from "@/lib/types";
 
 export interface PlanHeroCardProps {
@@ -21,6 +23,9 @@ export interface PlanHeroCardProps {
   investedSats: number;
   currentValueLkr: number;
   visible: boolean;
+  onToggleVisible: () => void;
+  subscriptionLoading?: boolean;
+  summaryLoading?: boolean;
 }
 
 export function PlanHeroCard({
@@ -29,12 +34,71 @@ export function PlanHeroCard({
   investedSats,
   currentValueLkr,
   visible,
+  onToggleVisible,
+  subscriptionLoading = false,
+  summaryLoading = false,
 }: PlanHeroCardProps) {
   const router = useRouter();
   const mask = (v: string) => maskDigits(v, visible);
   const profitLkr = currentValueLkr - investedLkr;
   const profitPct = investedLkr > 0 ? (profitLkr / investedLkr) * 100 : 0;
   const isProfit = profitLkr >= 0;
+
+  if (subscriptionLoading) {
+    return (
+      <div className="flex w-full flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
+            Manage My Plan
+          </p>
+          <VisibleToggle visible={visible} onToggle={onToggleVisible} />
+        </div>
+
+        <Card
+          type="plain"
+          className="relative overflow-hidden rounded-[20px]! p-0! shadow-none!"
+          style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
+        >
+          <Image src="/bg/star.webp" alt="" fill priority className="object-cover" />
+          <div className="absolute inset-0 bg-black/18" />
+
+          <div className="relative flex flex-col gap-4 p-4">
+            <div className="flex items-center gap-2">
+              <ValueSkeleton tone="dark" className="size-15 shrink-0 rounded-full" />
+              <div className="flex min-w-0 flex-col items-start gap-2">
+                <ValueSkeleton tone="dark" className="h-5 w-32" />
+                <ValueSkeleton tone="dark" className="h-3.5 w-20" />
+              </div>
+            </div>
+
+            <div className="flex items-stretch">
+              <div className="flex flex-1 flex-col gap-1">
+                <p className="text-[12px] leading-4 text-white/70">Subscribed Since</p>
+                <ValueSkeleton tone="dark" className="h-3.5 w-16" />
+              </div>
+              <div className="w-px self-stretch bg-white/25" />
+              <div className="flex flex-1 flex-col items-end gap-1">
+                <p className="text-[12px] leading-4 text-white/70">Next Reward</p>
+                <ValueSkeleton tone="dark" className="h-3.5 w-16" />
+              </div>
+            </div>
+
+            <div className="flex rounded-[12px] bg-white/15 p-3">
+              <div className="flex flex-1 flex-col gap-1">
+                <p className="text-[12px] leading-4 text-white/70">You Invested</p>
+                <ValueSkeleton tone="dark" className="h-4 w-20" />
+              </div>
+              <div className="w-px self-stretch bg-white/25" />
+              <div className="flex flex-1 flex-col items-end gap-1">
+                <p className="text-[12px] leading-4 text-white/70">Current Value</p>
+                <ValueSkeleton tone="dark" className="h-4 w-20" />
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   if (!subscription) {
     return (
@@ -43,6 +107,7 @@ export function PlanHeroCard({
           <p className="text-sm leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
             Manage My Plan
           </p>
+          <VisibleToggle visible={visible} onToggle={onToggleVisible} />
         </div>
 
         <Cell
@@ -71,6 +136,7 @@ export function PlanHeroCard({
         <p className="text-sm leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
           Manage My Plan
         </p>
+        <VisibleToggle visible={visible} onToggle={onToggleVisible} />
       </div>
 
       <Card
@@ -79,6 +145,7 @@ export function PlanHeroCard({
         style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
       >
         <Image src="/bg/star.webp" alt="" fill priority className="object-cover" />
+        <div className="absolute inset-0 bg-black/18" />
 
         <div className="relative flex flex-col gap-4 p-4">
           <div className="flex items-start justify-between gap-2">
@@ -96,7 +163,7 @@ export function PlanHeroCard({
                 </p>
                 <div className="flex items-end gap-0.5">
                   <p className="text-[14px] leading-4 font-bold text-white">
-                    Rs {fmtLkr(subscription.price)}
+                    {fmtLkrCurrency(subscription.price)}
                   </p>
                   <p className="text-[12px] leading-4 text-white/70">
                     /{subscription.planType === "weekly" ? "week" : "month"}
@@ -169,33 +236,49 @@ export function PlanHeroCard({
           <div className="flex rounded-[12px] bg-white/15 p-3">
             <div className="flex flex-1 flex-col gap-1">
               <p className="text-[12px] leading-4 text-white/70">You Invested</p>
-              <p className="text-[16px] leading-4 font-semibold text-white">
-                {mask(`LKR ${fmtLkr(investedLkr)}`)}
-              </p>
-              <p className="text-[12px] leading-4 text-white/70">
-                {mask(
-                  `₿${(investedSats / 1e8).toFixed(5)} · ≈${fmtSatsCompact(investedSats)} sats`
-                )}
-              </p>
+              {summaryLoading ? (
+                <ValueSkeleton tone="dark" className="h-4 w-20" />
+              ) : (
+                <p className="text-[16px] leading-4 font-semibold text-white">
+                  {mask(fmtLkrCurrency(investedLkr))}
+                </p>
+              )}
+              {summaryLoading ? (
+                <ValueSkeleton tone="dark" className="h-3 w-28" />
+              ) : (
+                <p className="text-[12px] leading-4 text-white/70">
+                  {mask(
+                    `₿${(investedSats / 1e8).toFixed(5)} ·  ≈ 丰 ${fmtSatsCompact(investedSats)}`
+                  )}
+                </p>
+              )}
             </div>
             <div className="w-px self-stretch bg-white/25" />
             <div className="flex flex-1 flex-col items-end gap-1">
               <p className="text-[12px] leading-4 text-white/70">Current Value</p>
-              <p className="text-[16px] leading-4 font-bold text-white">
-                {mask(`LKR ${fmtLkr(currentValueLkr)}`)}
-              </p>
-              {investedLkr > 0 && (
-                <span
-                  className={`rounded-lg px-2 py-0.5 text-[11px] font-medium text-white ${
-                    isProfit ? "bg-[#25A761]" : "bg-[#F13131]"
-                  }`}
-                >
-                  {mask(
-                    `${isProfit ? "+" : "-"}${Math.abs(profitPct).toFixed(0)}% · LKR ${fmtLkr(
-                      Math.abs(profitLkr)
-                    )}`
-                  )}
-                </span>
+              {summaryLoading ? (
+                <ValueSkeleton tone="dark" className="h-4 w-20" />
+              ) : (
+                <p className="text-[16px] leading-4 font-bold text-white">
+                  {mask(fmtLkrCurrency(currentValueLkr))}
+                </p>
+              )}
+              {summaryLoading ? (
+                <ValueSkeleton tone="dark" className="h-4.5 w-24 rounded-lg" />
+              ) : (
+                investedLkr > 0 && (
+                  <span
+                    className={`rounded-lg px-2 py-0.5 text-[11px] font-medium text-white ${
+                      isProfit ? "bg-[#25A761]" : "bg-[#F13131]"
+                    }`}
+                  >
+                    {mask(
+                      `${isProfit ? "+" : "-"}${Math.abs(profitPct).toFixed(0)}% · ${fmtLkrCurrency(
+                        Math.abs(profitLkr)
+                      )}`
+                    )}
+                  </span>
+                )
               )}
             </div>
           </div>
