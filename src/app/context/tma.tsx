@@ -3,8 +3,19 @@
 import { useEffect } from "react";
 import { initMiniApp, postEvent } from "@telegram-apps/sdk-react";
 import { useRegisterUser } from "@/hooks/useRegisterUser";
+import { useIsTelegramEnv } from "@/hooks/useIsTelegramEnv";
+
+// useRegisterUser calls the Telegram SDK's useLaunchParams(), which throws
+// outside Telegram — only mount it once we've confirmed we're in Telegram,
+// via a separate component so the hook is never called conditionally.
+function RegisterUserGate() {
+  useRegisterUser();
+  return null;
+}
 
 export default function TMASetupProvider({ children }: { children: React.ReactNode }) {
+  const isTelegramEnv = useIsTelegramEnv();
+
   useEffect(() => {
     try {
       const [miniApp] = initMiniApp();
@@ -15,7 +26,10 @@ export default function TMASetupProvider({ children }: { children: React.ReactNo
     }
   }, []);
 
-  useRegisterUser();
-
-  return <>{children}</>;
+  return (
+    <>
+      {isTelegramEnv && <RegisterUserGate />}
+      {children}
+    </>
+  );
 }

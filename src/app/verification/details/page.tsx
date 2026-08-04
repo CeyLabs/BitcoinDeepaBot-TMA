@@ -1,12 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useLaunchParams } from "@telegram-apps/sdk-react";
 import { Button, Input } from "@telegram-apps/telegram-ui";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useKycInitiate, useUpdateProfile } from "@/hooks/query/useKyc";
 import { useTelegramBackButton } from "@/hooks/useTgBackButton";
+import { useUser } from "@/hooks/useUser";
 import { haptic } from "@/lib/haptics";
 import { createUserSchema, type CreateUserFormData } from "@/lib/validations";
 
@@ -27,8 +27,7 @@ const FIELDS: Array<{
 
 export default function VerificationDetailsPage() {
   const router = useRouter();
-  const launchParams = useLaunchParams();
-  const userData = launchParams.initData?.user;
+  const { id: userId, username, firstName, lastName } = useUser();
   const kycInitiate = useKycInitiate();
   const updateProfile = useUpdateProfile();
 
@@ -40,8 +39,8 @@ export default function VerificationDetailsPage() {
     resolver: zodResolver(createUserSchema),
     mode: "onChange",
     defaultValues: {
-      first_name: userData?.firstName ?? "",
-      last_name: userData?.lastName ?? "",
+      first_name: firstName ?? "",
+      last_name: lastName ?? "",
       email: "",
       phone: "",
       address: "",
@@ -75,8 +74,8 @@ export default function VerificationDetailsPage() {
         onSuccess: () => {
           kycInitiate.mutate(
             {
-              user_id: userData?.id,
-              username: userData?.username,
+              user_id: userId ? Number(userId) : undefined,
+              username,
               ...formData,
             },
             {
