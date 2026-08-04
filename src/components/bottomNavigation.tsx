@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { SegmentedControl } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
@@ -94,6 +95,25 @@ export default function BottomNavigation() {
   const router = useRouter();
   const { isDark } = useTheme();
 
+  // Router navigation resolves the destination route segment before the pathname
+  // (and thus `isActive` below) updates, which made the pill lag behind the tap.
+  // Track the tapped href locally so the pill jumps immediately; it's cleared once
+  // `pathname` catches up to the real route. Reset during render (not an effect) per
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    setPendingHref(null);
+  }
+
+  useEffect(() => {
+    navItems.forEach((item) => router.prefetch(item.href));
+  }, [router]);
+
+  const activeHref = pendingHref ?? pathname;
+
   return (
     <div className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-100">
       <SegmentedControl
@@ -110,13 +130,17 @@ export default function BottomNavigation() {
         }
       >
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = activeHref === item.href;
 
           return (
             <SegmentedControl.Item
               key={item.href}
               selected={isActive}
-              onClick={() => router.push(item.href)}
+              onClick={() => {
+                if (item.href === pathname) return;
+                setPendingHref(item.href);
+                router.push(item.href);
+              }}
               className={cn(
                 "h-14! w-auto! rounded-[20px]! p-0! whitespace-normal!",
                 "transition-colors duration-200",

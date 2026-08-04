@@ -20,8 +20,7 @@ export default function PaymentSuccessPage() {
       </Title>
 
       <p className="text-muted-foreground mt-2 max-w-sm text-[15px] dark:text-[#64748b]">
-        Your subscription is now active. Head back to the dashboard to start tracking your
-        rewards.
+        Your subscription is now active. Head back to the dashboard to start tracking your rewards.
       </p>
 
       <Link href="/dashboard" className="mt-8 block w-full max-w-xs">
