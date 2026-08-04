@@ -14,7 +14,7 @@ export default function WalletPage() {
   const { balanceVisible } = useStore();
   const { subscription } = useUser();
 
-  const { data: summary } = useWalletSummary();
+  const { data: summary, isLoading: isSummaryLoading } = useWalletSummary();
   const { data: transactions } = useTransactionHistory();
 
   const totalLkr = summary
@@ -64,6 +64,7 @@ export default function WalletPage() {
         currentBtcPrice={currentBtcPrice}
         currentBtcPriceUsd={currentBtcPriceUsd}
         visible={balanceVisible}
+        isLoading={isSummaryLoading}
       />
 
       <PortfolioChart transactions={transactions ?? []} currentBtcPrice={currentBtcPrice} />

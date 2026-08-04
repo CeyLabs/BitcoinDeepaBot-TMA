@@ -27,6 +27,15 @@ export interface PerformanceGridProps {
   currentBtcPrice: number;
   currentBtcPriceUsd?: number;
   visible: boolean;
+  isLoading?: boolean;
+}
+
+function ValueSkeleton({ className = "" }: { className?: string }) {
+  return (
+    <span
+      className={`inline-block h-4 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#334155] ${className}`}
+    />
+  );
 }
 
 export function PerformanceGrid({
@@ -38,6 +47,7 @@ export function PerformanceGrid({
   currentBtcPrice,
   currentBtcPriceUsd,
   visible,
+  isLoading = false,
 }: PerformanceGridProps) {
   const mask = (v: string) => maskDigits(v, visible);
   const profitLkr = totalLkr - dcaSpent;
@@ -60,18 +70,26 @@ export function PerformanceGrid({
           <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
             You Invested
           </p>
-          <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-            {mask(fmtLkrCurrency(dcaSpent))}
-          </p>
-          <div className="flex items-center gap-2">
-            <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
-              {mask(`₿ ${(dcaSats / 1e8).toFixed(5)}`)}
+          {isLoading ? (
+            <ValueSkeleton className="w-24" />
+          ) : (
+            <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
+              {mask(fmtLkrCurrency(dcaSpent))}
             </p>
-            <div className="size-0.75 rounded-full bg-[#e2e8f0] dark:bg-[#334155]" />
-            <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
-              {mask(`≈ 丰 ${fmtSatsCompact(dcaSats)}`)}
-            </p>
-          </div>
+          )}
+          {isLoading ? (
+            <ValueSkeleton className="h-3 w-32" />
+          ) : (
+            <div className="flex items-center gap-2">
+              <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
+                {mask(`₿ ${(dcaSats / 1e8).toFixed(5)}`)}
+              </p>
+              <div className="size-0.75 rounded-full bg-[#e2e8f0] dark:bg-[#334155]" />
+              <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
+                {mask(`≈ 丰 ${fmtSatsCompact(dcaSats)}`)}
+              </p>
+            </div>
+          )}
         </Card>
 
         <Card
@@ -84,26 +102,34 @@ export function PerformanceGrid({
             Current Value
           </p>
           <div className="flex flex-col items-start gap-2">
-            <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-              {mask(fmtLkrCurrency(totalLkr))}
-            </p>
-            {dcaSpent > 0 && (
-              <Badge
-                type="number"
-                mode={isProfit ? "primary" : "critical"}
-                className="m-0! flex! h-auto! min-w-0! items-center! justify-center! rounded-lg! px-2.5! py-1! text-[12px]! leading-4! font-medium! whitespace-nowrap!"
-                style={
-                  {
-                    "--tgui--button_color": "#158348",
-                    "--tgui--destructive_text_color": "rgba(241,49,49,0.62)",
-                    "--tgui--button_text_color": "#fff",
-                  } as React.CSSProperties
-                }
-              >
-                {mask(
-                  `${fmtLkrCurrency(Math.abs(profitLkr))} (${isProfit ? "+" : "-"} ${Math.abs(profitPct).toFixed(0)}%)`
-                )}
-              </Badge>
+            {isLoading ? (
+              <ValueSkeleton className="w-24" />
+            ) : (
+              <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
+                {mask(fmtLkrCurrency(totalLkr))}
+              </p>
+            )}
+            {isLoading ? (
+              <ValueSkeleton className="h-6 w-28 rounded-lg" />
+            ) : (
+              dcaSpent > 0 && (
+                <Badge
+                  type="number"
+                  mode={isProfit ? "primary" : "critical"}
+                  className="m-0! flex! h-auto! min-w-0! items-center! justify-center! rounded-lg! px-2.5! py-1! text-[12px]! leading-4! font-medium! whitespace-nowrap!"
+                  style={
+                    {
+                      "--tgui--button_color": "#158348",
+                      "--tgui--destructive_text_color": "rgba(241,49,49,0.62)",
+                      "--tgui--button_text_color": "#fff",
+                    } as React.CSSProperties
+                  }
+                >
+                  {mask(
+                    `${fmtLkrCurrency(Math.abs(profitLkr))} (${isProfit ? "+" : "-"} ${Math.abs(profitPct).toFixed(0)}%)`
+                  )}
+                </Badge>
+              )
             )}
           </div>
         </Card>
@@ -117,19 +143,27 @@ export function PerformanceGrid({
           <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
             Avg Price
           </p>
-          <div className="flex items-center gap-1">
-            <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-              {mask(fmtLkrCurrencyCompact(avgBtcPrice))}
-            </p>
-            <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
-          </div>
-          {avgBtcPriceUsd !== undefined && (
+          {isLoading ? (
+            <ValueSkeleton className="w-20" />
+          ) : (
             <div className="flex items-center gap-1">
-              <p className="text-[14px] leading-4 font-semibold text-[#64748b]">
-                {mask(`USD ${fmtPriceCompact(avgBtcPriceUsd)}`)}
+              <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
+                {mask(fmtLkrCurrencyCompact(avgBtcPrice))}
               </p>
               <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
             </div>
+          )}
+          {isLoading ? (
+            <ValueSkeleton className="h-3.5 w-20" />
+          ) : (
+            avgBtcPriceUsd !== undefined && (
+              <div className="flex items-center gap-1">
+                <p className="text-[14px] leading-4 font-semibold text-[#64748b]">
+                  {mask(`USD ${fmtPriceCompact(avgBtcPriceUsd)}`)}
+                </p>
+                <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
+              </div>
+            )
           )}
         </Card>
 
@@ -142,19 +176,27 @@ export function PerformanceGrid({
           <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
             Current Price
           </p>
-          <div className="flex items-center gap-1">
-            <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-              {fmtLkrCurrencyCompact(currentBtcPrice)}
-            </p>
-            <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
-          </div>
-          {currentBtcPriceUsd !== undefined && (
+          {isLoading ? (
+            <ValueSkeleton className="w-20" />
+          ) : (
             <div className="flex items-center gap-1">
-              <p className="text-[14px] leading-4 font-semibold text-[#64748b]">
-                USD {fmtPriceCompact(currentBtcPriceUsd)}
+              <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
+                {fmtLkrCurrencyCompact(currentBtcPrice)}
               </p>
               <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
             </div>
+          )}
+          {isLoading ? (
+            <ValueSkeleton className="h-3.5 w-20" />
+          ) : (
+            currentBtcPriceUsd !== undefined && (
+              <div className="flex items-center gap-1">
+                <p className="text-[14px] leading-4 font-semibold text-[#64748b]">
+                  USD {fmtPriceCompact(currentBtcPriceUsd)}
+                </p>
+                <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
+              </div>
+            )
           )}
         </Card>
       </div>
