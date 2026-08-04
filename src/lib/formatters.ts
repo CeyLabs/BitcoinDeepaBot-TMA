@@ -26,6 +26,7 @@ export function formatLargeNumber(amount: number): string {
 
 // Format a whole-number LKR amount with thousands separators (e.g. 45700 -> "45,700")
 export function fmtLkr(value: number): string {
+  if (!Number.isFinite(value)) return "0";
   return value.toLocaleString("en-US", { maximumFractionDigits: 0 });
 }
 

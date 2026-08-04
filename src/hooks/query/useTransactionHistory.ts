@@ -19,9 +19,9 @@ export interface DcaTransaction {
 interface RawTransaction {
   payhere_pay_id: string;
   created_at: string;
-  satoshis_purchased?: string | number;
-  btc_price_at_purchase?: string | number;
-  package_amount?: string | number;
+  satoshis_purchased?: string | number | null;
+  btc_price_at_purchase?: string | number | null;
+  package_amount?: string | number | null;
   package_name?: string;
   status: string;
   settled?: boolean;
@@ -31,8 +31,8 @@ interface TransactionListResponse {
   transactions: RawTransaction[] | { transactions: RawTransaction[] };
 }
 
-function toNumber(value: string | number | undefined): number {
-  if (value === undefined) return 0;
+function toNumber(value: string | number | undefined | null): number {
+  if (value === undefined || value === null) return 0;
   return typeof value === "string" ? Number(value.replace(/,/g, "")) || 0 : value;
 }
 
