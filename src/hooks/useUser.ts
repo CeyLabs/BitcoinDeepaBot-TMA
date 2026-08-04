@@ -69,6 +69,8 @@ export function useUser() {
   return {
     id,
     username,
+    firstName,
+    lastName,
     displayName: (firstName && lastName ? `${firstName} ${lastName}` : firstName) ?? displayName,
     initials,
     photoUrl,

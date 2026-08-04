@@ -37,7 +37,6 @@ export default function ChoosePlanPage() {
   const redirectToPayHereViaPage = usePayHereRedirect();
   const authToken = getAuthTokenFromStorage();
   const { subscription } = useUser();
-  const popup = initPopup();
   const cancelSubscription = useCancelSubscription();
 
   const [duration, setDuration] = useState<PlanDuration>("weekly");
@@ -118,15 +117,25 @@ export default function ChoosePlanPage() {
   };
 
   const handleCancel = async () => {
-    const buttonId = await popup.open({
-      title: "Cancel Plan",
-      message: "Your membership rewards will stop accruing immediately. This can't be undone.",
-      buttons: [
-        { id: "cancel", type: "destructive", text: "Cancel Plan" },
-        { id: "keep", type: "cancel" },
-      ],
-    });
-    if (buttonId !== "cancel") return;
+    // initPopup() throws outside Telegram (no native popup API there) — fall
+    // back to the browser's own confirm dialog in that case.
+    let confirmed: boolean;
+    try {
+      const buttonId = await initPopup().open({
+        title: "Cancel Plan",
+        message: "Your membership rewards will stop accruing immediately. This can't be undone.",
+        buttons: [
+          { id: "cancel", type: "destructive", text: "Cancel Plan" },
+          { id: "keep", type: "cancel" },
+        ],
+      });
+      confirmed = buttonId === "cancel";
+    } catch {
+      confirmed = window.confirm(
+        "Cancel Plan? Your membership rewards will stop accruing immediately. This can't be undone."
+      );
+    }
+    if (!confirmed) return;
 
     haptic.impact("rigid");
 
