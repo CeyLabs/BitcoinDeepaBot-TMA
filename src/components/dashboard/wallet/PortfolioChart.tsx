@@ -14,7 +14,7 @@ import {
 } from "chart.js";
 import { Card, Button } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
-import { fmtLkr, fmtPriceCompact } from "@/lib/formatters";
+import { fmtLkrCurrency, fmtPriceCompact } from "@/lib/formatters";
 import { useTheme } from "@/app/context/theme";
 import type { DcaTransaction } from "@/hooks/query/useTransactionHistory";
 
@@ -161,7 +161,7 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
         cornerRadius: 8,
         callbacks: {
           label: (context: TooltipItem<"line">) =>
-            `${context.dataset.label}: LKR ${fmtLkr(Math.round(context.parsed.y ?? 0))}`,
+            `${context.dataset.label}: ${fmtLkrCurrency(Math.round(context.parsed.y ?? 0))}`,
         },
       },
     },

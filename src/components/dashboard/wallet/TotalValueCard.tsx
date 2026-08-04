@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
-import { fmtLkr, fmtSatsCompact, maskDigits } from "@/lib/formatters";
+import { fmtLkrCurrency, fmtSatsCompact, maskDigits } from "@/lib/formatters";
 
 // Card/Badge theme their background/color through --tgui-- CSS variables (same
 // convention as --tgui--cell--middle--padding on the homepage Cell) — override those
@@ -39,13 +39,13 @@ export function TotalValueCard({
         <div className="flex items-end justify-between">
           <p className="text-[14px] leading-3 text-white capitalize">Total Value</p>
           <div className="hidden items-center gap-1 rounded-[12px] border border-white py-1 pr-1 pl-2">
-            <p className="text-[12px] leading-4 text-white">LKR</p>
+            <p className="text-[12px] leading-4 text-white">රු.</p>
             <ChevronDown size={14} strokeWidth={2} className="text-white" />
           </div>
         </div>
 
         <p className="text-[36px] leading-12 font-bold text-white">
-          {mask(`≈ LKR ${fmtLkr(totalLkr)}`)}
+          {mask(`≈ ${fmtLkrCurrency(totalLkr)}`)}
         </p>
 
         <div className="flex flex-col items-start gap-2">
@@ -77,7 +77,7 @@ export function TotalValueCard({
               <TrendIcon size={14} strokeWidth={2} className="text-white" />
               <span>
                 {" "}
-                {mask(`LKR ${fmtLkr(Math.abs(changeLkr))}`)}
+                {mask(fmtLkrCurrency(Math.abs(changeLkr)))}
                 {`  (${isProfit ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%)`}
                 {"  Last 24h"}
               </span>

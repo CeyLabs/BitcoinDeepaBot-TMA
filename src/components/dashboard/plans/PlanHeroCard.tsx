@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { Card, Badge, Button, Cell, Navigation } from "@telegram-apps/telegram-ui";
 import {
-  fmtLkr,
+  fmtLkrCurrency,
   fmtSatsCompact,
   fmtShortDate,
   fmtRelativeDays,
@@ -102,7 +102,7 @@ export function PlanHeroCard({
                 </p>
                 <div className="flex items-end gap-0.5">
                   <p className="text-[14px] leading-4 font-bold text-white">
-                    Rs {fmtLkr(subscription.price)}
+                    {fmtLkrCurrency(subscription.price)}
                   </p>
                   <p className="text-[12px] leading-4 text-white/70">
                     /{subscription.planType === "weekly" ? "week" : "month"}
@@ -176,7 +176,7 @@ export function PlanHeroCard({
             <div className="flex flex-1 flex-col gap-1">
               <p className="text-[12px] leading-4 text-white/70">You Invested</p>
               <p className="text-[16px] leading-4 font-semibold text-white">
-                {mask(`LKR ${fmtLkr(investedLkr)}`)}
+                {mask(fmtLkrCurrency(investedLkr))}
               </p>
               <p className="text-[12px] leading-4 text-white/70">
                 {mask(
@@ -188,7 +188,7 @@ export function PlanHeroCard({
             <div className="flex flex-1 flex-col items-end gap-1">
               <p className="text-[12px] leading-4 text-white/70">Current Value</p>
               <p className="text-[16px] leading-4 font-bold text-white">
-                {mask(`LKR ${fmtLkr(currentValueLkr)}`)}
+                {mask(fmtLkrCurrency(currentValueLkr))}
               </p>
               {investedLkr > 0 && (
                 <span
@@ -197,7 +197,7 @@ export function PlanHeroCard({
                   }`}
                 >
                   {mask(
-                    `${isProfit ? "+" : "-"}${Math.abs(profitPct).toFixed(0)}% · LKR ${fmtLkr(
+                    `${isProfit ? "+" : "-"}${Math.abs(profitPct).toFixed(0)}% · ${fmtLkrCurrency(
                       Math.abs(profitLkr)
                     )}`
                   )}

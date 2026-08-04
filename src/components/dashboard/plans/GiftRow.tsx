@@ -4,7 +4,7 @@ import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { Cell } from "@telegram-apps/telegram-ui";
 import { ACTIVITY_ICON } from "@/lib/activity";
-import { fmtActivityDateTime, fmtLkr, maskDigits } from "@/lib/formatters";
+import { fmtActivityDateTime, fmtLkr, fmtLkrCurrency, maskDigits } from "@/lib/formatters";
 import type { ActivityItem } from "@/lib/types";
 
 export interface GiftRowProps {
@@ -41,7 +41,7 @@ export function GiftRow({ item, visible }: GiftRowProps) {
               {mask(`${isOutgoing ? "-" : "+"}${fmtLkr(Math.abs(item.sats))} sats`)}
             </p>
             <p className="text-xs leading-4 text-[#475569] dark:text-[#94A3B8]">
-              {mask(`≈ LKR ${fmtLkr(item.lkr)}`)}
+              {mask(`≈ ${fmtLkrCurrency(item.lkr)}`)}
             </p>
           </div>
           <ChevronRight size={18} strokeWidth={2} className="shrink-0 text-[#64748b]" />

@@ -2,7 +2,13 @@
 
 import Image from "next/image";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
-import { fmtLkr, fmtPriceCompact, fmtSatsCompact, maskDigits } from "@/lib/formatters";
+import {
+  fmtLkrCurrency,
+  fmtLkrCurrencyCompact,
+  fmtPriceCompact,
+  fmtSatsCompact,
+  maskDigits,
+} from "@/lib/formatters";
 
 const CARD_SURFACE_STYLE = {
   "--tgui--tertiary_bg_color": "var(--color-surface-primary)",
@@ -55,7 +61,7 @@ export function PerformanceGrid({
             You Invested
           </p>
           <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-            {mask(`LKR ${fmtLkr(dcaSpent)}`)}
+            {mask(fmtLkrCurrency(dcaSpent))}
           </p>
           <div className="flex items-center gap-2">
             <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
@@ -79,7 +85,7 @@ export function PerformanceGrid({
           </p>
           <div className="flex flex-col items-start gap-2">
             <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-              {mask(`LKR ${fmtLkr(totalLkr)}`)}
+              {mask(fmtLkrCurrency(totalLkr))}
             </p>
             {dcaSpent > 0 && (
               <Badge
@@ -95,7 +101,7 @@ export function PerformanceGrid({
                 }
               >
                 {mask(
-                  `LKR ${fmtLkr(Math.abs(profitLkr))} (${isProfit ? "+" : "-"} ${Math.abs(profitPct).toFixed(0)}%)`
+                  `${fmtLkrCurrency(Math.abs(profitLkr))} (${isProfit ? "+" : "-"} ${Math.abs(profitPct).toFixed(0)}%)`
                 )}
               </Badge>
             )}
@@ -113,7 +119,7 @@ export function PerformanceGrid({
           </p>
           <div className="flex items-center gap-1">
             <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-              {mask(`LKR ${fmtPriceCompact(avgBtcPrice)}`)}
+              {mask(fmtLkrCurrencyCompact(avgBtcPrice))}
             </p>
             <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
           </div>
@@ -138,7 +144,7 @@ export function PerformanceGrid({
           </p>
           <div className="flex items-center gap-1">
             <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-              LKR {fmtPriceCompact(currentBtcPrice)}
+              {fmtLkrCurrencyCompact(currentBtcPrice)}
             </p>
             <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
           </div>

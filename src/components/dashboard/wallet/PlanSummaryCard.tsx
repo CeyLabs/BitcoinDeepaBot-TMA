@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Card, Badge, Cell, Navigation } from "@telegram-apps/telegram-ui";
-import { fmtLkr, fmtShortDate, fmtRelativeDays } from "@/lib/formatters";
+import { fmtLkrCurrency, fmtShortDate, fmtRelativeDays } from "@/lib/formatters";
 import type { Subscription } from "@/lib/types";
 
 const CARD_SURFACE_STYLE = {
@@ -119,7 +119,7 @@ export function PlanSummaryCard({ subscription }: PlanSummaryCardProps) {
               {subscription ? (
                 <div className="flex items-end gap-0.5">
                   <p className="text-[14px] leading-4 font-bold text-[#fa7119]">
-                    Rs {fmtLkr(subscription.price)}
+                    {fmtLkrCurrency(subscription.price)}
                   </p>
                   <p className="text-[12px] leading-4 text-[#64748b]">
                     /{subscription.planType === "weekly" ? "week" : "month"}

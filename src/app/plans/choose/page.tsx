@@ -19,12 +19,9 @@ import { PageTitle } from "@/components/ui/page-title";
 import { TogglePlan, type PlanDuration } from "@/components/ui/toggle-plan";
 import { PlanCard } from "@/components/ui/plan-card";
 import { getPlanIconSrc } from "@/components/dashboard/wallet/PlanSummaryCard";
+import { fmtLkrCurrency } from "@/lib/formatters";
 import type { SubscriptionPlan } from "@/lib/types";
 import Link from "next/link";
-
-function fmtLkr(n: number) {
-  return `Rs ${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
-}
 
 function perMonthAmount(plan: SubscriptionPlan) {
   return plan.type === "weekly" ? plan.amount * 4 : plan.amount;
@@ -168,10 +165,10 @@ export default function ChoosePlanPage() {
               />
             }
             name={currentPlan.name}
-            price={fmtLkr(currentPlan.amount)}
+            price={fmtLkrCurrency(currentPlan.amount)}
             period={`/${currentPlan.type === "weekly" ? "week" : "month"}`}
             description={currentPlan.features?.[0] ?? "Bitcoin membership rewards"}
-            perYear={`Per Year ${fmtLkr(perMonthAmount(currentPlan) * 12)}`}
+            perYear={`Per Year ${fmtLkrCurrency(perMonthAmount(currentPlan) * 12)}`}
             active
           />
         </div>
@@ -213,11 +210,11 @@ export default function ChoosePlanPage() {
                   />
                 }
                 name={plan.name}
-                price={fmtLkr(plan.amount)}
+                price={fmtLkrCurrency(plan.amount)}
                 period={`/${plan.type === "weekly" ? "week" : "month"}`}
                 description={plan.features?.[0] ?? "Bitcoin membership rewards"}
-                perMonth={`Per Month ${fmtLkr(perMonth)}`}
-                perYear={`Per Year ${fmtLkr(perYear)}`}
+                perMonth={`Per Month ${fmtLkrCurrency(perMonth)}`}
+                perYear={`Per Year ${fmtLkrCurrency(perYear)}`}
                 selected={selectedPlanId === plan.id}
                 mostPopular={plan.popular}
                 onSelect={() => setSelectedId(plan.id)}
