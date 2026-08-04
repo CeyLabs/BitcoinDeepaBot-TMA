@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
+import { ValueSkeleton } from "@/components/ui/value-skeleton";
 import { fmtLkrCurrency, fmtSatsCompact, maskDigits } from "@/lib/formatters";
 
 // Card/Badge theme their background/color through --tgui-- CSS variables (same
@@ -15,6 +16,7 @@ export interface TotalValueCardProps {
   changePercent: number;
   changeLkr: number;
   visible: boolean;
+  isLoading?: boolean;
 }
 
 export function TotalValueCard({
@@ -23,6 +25,7 @@ export function TotalValueCard({
   changePercent,
   changeLkr,
   visible,
+  isLoading = false,
 }: TotalValueCardProps) {
   const mask = (v: string) => maskDigits(v, visible);
   const isProfit = changePercent >= 0;
@@ -44,44 +47,56 @@ export function TotalValueCard({
           </div>
         </div>
 
-        <p className="text-[36px] leading-12 font-bold text-white">
-          {mask(`≈ ${fmtLkrCurrency(totalLkr)}`)}
-        </p>
+        {isLoading ? (
+          <ValueSkeleton tone="dark" className="h-9 w-40" />
+        ) : (
+          <p className="text-[36px] leading-12 font-bold text-white">
+            {mask(`≈ ${fmtLkrCurrency(totalLkr)}`)}
+          </p>
+        )}
 
         <div className="flex flex-col items-start gap-2">
-          <div className="flex items-center gap-2">
-            <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
-              <span>{mask(`₿ ${(totalSats / 1e8).toFixed(6)}`)}</span>
-              <span>BTC</span>
+          {isLoading ? (
+            <ValueSkeleton tone="dark" className="h-4 w-36" />
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
+                <span>{mask(`₿ ${(totalSats / 1e8).toFixed(6)}`)}</span>
+                <span>BTC</span>
+              </div>
+              <div className="size-1 rounded-full bg-white" />
+              <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
+                <span>{mask(`丰 ${fmtSatsCompact(totalSats)}`)}</span>
+              </div>
             </div>
-            <div className="size-1 rounded-full bg-white" />
-            <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
-              <span>{mask(`丰 ${fmtSatsCompact(totalSats)}`)}</span>
-            </div>
-          </div>
+          )}
 
-          <Badge
-            type="number"
-            mode={isProfit ? "primary" : "critical"}
-            className="m-0! h-auto! rounded-[8px]! px-2! py-1!"
-            style={
-              {
-                "--tgui--button_color": "#158348",
-                "--tgui--destructive_text_color": "rgba(241,49,49,0.62)",
-                "--tgui--button_text_color": "#fff",
-              } as React.CSSProperties
-            }
-          >
-            <p className="flex items-center gap-1">
-              <TrendIcon size={14} strokeWidth={2} className="text-white" />
-              <span>
-                {" "}
-                {mask(fmtLkrCurrency(Math.abs(changeLkr)))}
-                {`  (${isProfit ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%)`}
-                {"  Last 24h"}
-              </span>
-            </p>
-          </Badge>
+          {isLoading ? (
+            <ValueSkeleton tone="dark" className="h-6 w-44 rounded-lg" />
+          ) : (
+            <Badge
+              type="number"
+              mode={isProfit ? "primary" : "critical"}
+              className="m-0! h-auto! rounded-[8px]! px-2! py-1!"
+              style={
+                {
+                  "--tgui--button_color": "#158348",
+                  "--tgui--destructive_text_color": "rgba(241,49,49,0.62)",
+                  "--tgui--button_text_color": "#fff",
+                } as React.CSSProperties
+              }
+            >
+              <p className="flex items-center gap-1">
+                <TrendIcon size={14} strokeWidth={2} className="text-white" />
+                <span>
+                  {" "}
+                  {mask(fmtLkrCurrency(Math.abs(changeLkr)))}
+                  {`  (${isProfit ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%)`}
+                  {"  Last 24h"}
+                </span>
+              </p>
+            </Badge>
+          )}
         </div>
       </div>
     </Card>

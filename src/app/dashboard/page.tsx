@@ -12,7 +12,7 @@ import { useStore } from "@/lib/store";
 
 export default function WalletPage() {
   const { balanceVisible } = useStore();
-  const { subscription } = useUser();
+  const { subscription, subscriptionLoading } = useUser();
 
   const { data: summary, isLoading: isSummaryLoading } = useWalletSummary();
   const { data: transactions } = useTransactionHistory();
@@ -51,9 +51,10 @@ export default function WalletPage() {
         changePercent={change24h}
         changeLkr={changeLkr}
         visible={balanceVisible}
+        isLoading={isSummaryLoading}
       />
 
-      <PlanSummaryCard subscription={subscription} />
+      <PlanSummaryCard subscription={subscription} isLoading={subscriptionLoading} />
 
       <PerformanceGrid
         dcaSpent={dcaSpent}

@@ -14,6 +14,7 @@ import {
 } from "@/lib/formatters";
 import { getPlanIconSrc } from "@/components/dashboard/wallet/PlanSummaryCard";
 import { VisibleToggle } from "@/components/ui/visible-toggle";
+import { ValueSkeleton } from "@/components/ui/value-skeleton";
 import type { Subscription } from "@/lib/types";
 
 export interface PlanHeroCardProps {
@@ -23,6 +24,7 @@ export interface PlanHeroCardProps {
   currentValueLkr: number;
   visible: boolean;
   onToggleVisible: () => void;
+  isLoading?: boolean;
 }
 
 export function PlanHeroCard({
@@ -32,6 +34,7 @@ export function PlanHeroCard({
   currentValueLkr,
   visible,
   onToggleVisible,
+  isLoading = false,
 }: PlanHeroCardProps) {
   const router = useRouter();
   const mask = (v: string) => maskDigits(v, visible);
@@ -175,33 +178,49 @@ export function PlanHeroCard({
           <div className="flex rounded-[12px] bg-white/15 p-3">
             <div className="flex flex-1 flex-col gap-1">
               <p className="text-[12px] leading-4 text-white/70">You Invested</p>
-              <p className="text-[16px] leading-4 font-semibold text-white">
-                {mask(fmtLkrCurrency(investedLkr))}
-              </p>
-              <p className="text-[12px] leading-4 text-white/70">
-                {mask(
-                  `₿${(investedSats / 1e8).toFixed(5)} ·  ≈ 丰 ${fmtSatsCompact(investedSats)}`
-                )}
-              </p>
+              {isLoading ? (
+                <ValueSkeleton tone="dark" className="h-4 w-20" />
+              ) : (
+                <p className="text-[16px] leading-4 font-semibold text-white">
+                  {mask(fmtLkrCurrency(investedLkr))}
+                </p>
+              )}
+              {isLoading ? (
+                <ValueSkeleton tone="dark" className="h-3 w-28" />
+              ) : (
+                <p className="text-[12px] leading-4 text-white/70">
+                  {mask(
+                    `₿${(investedSats / 1e8).toFixed(5)} ·  ≈ 丰 ${fmtSatsCompact(investedSats)}`
+                  )}
+                </p>
+              )}
             </div>
             <div className="w-px self-stretch bg-white/25" />
             <div className="flex flex-1 flex-col items-end gap-1">
               <p className="text-[12px] leading-4 text-white/70">Current Value</p>
-              <p className="text-[16px] leading-4 font-bold text-white">
-                {mask(fmtLkrCurrency(currentValueLkr))}
-              </p>
-              {investedLkr > 0 && (
-                <span
-                  className={`rounded-lg px-2 py-0.5 text-[11px] font-medium text-white ${
-                    isProfit ? "bg-[#25A761]" : "bg-[#F13131]"
-                  }`}
-                >
-                  {mask(
-                    `${isProfit ? "+" : "-"}${Math.abs(profitPct).toFixed(0)}% · ${fmtLkrCurrency(
-                      Math.abs(profitLkr)
-                    )}`
-                  )}
-                </span>
+              {isLoading ? (
+                <ValueSkeleton tone="dark" className="h-4 w-20" />
+              ) : (
+                <p className="text-[16px] leading-4 font-bold text-white">
+                  {mask(fmtLkrCurrency(currentValueLkr))}
+                </p>
+              )}
+              {isLoading ? (
+                <ValueSkeleton tone="dark" className="h-4.5 w-24 rounded-lg" />
+              ) : (
+                investedLkr > 0 && (
+                  <span
+                    className={`rounded-lg px-2 py-0.5 text-[11px] font-medium text-white ${
+                      isProfit ? "bg-[#25A761]" : "bg-[#F13131]"
+                    }`}
+                  >
+                    {mask(
+                      `${isProfit ? "+" : "-"}${Math.abs(profitPct).toFixed(0)}% · ${fmtLkrCurrency(
+                        Math.abs(profitLkr)
+                      )}`
+                    )}
+                  </span>
+                )
               )}
             </div>
           </div>

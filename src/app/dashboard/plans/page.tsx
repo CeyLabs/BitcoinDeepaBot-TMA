@@ -20,7 +20,7 @@ export default function PlansPage() {
   const { data: kyc, isLoading: kycLoading } = useKycStatus();
   const { balanceVisible, toggleBalanceVisible } = useStore();
   const { data: subscription, isLoading: subscriptionLoading } = useSubscriptionCurrent();
-  const { data: summary } = useWalletSummary();
+  const { data: summary, isLoading: summaryLoading } = useWalletSummary();
 
   const kycApproved = kyc?.status === "APPROVED";
   const noActivePlan = kycApproved && !subscriptionLoading && !subscription;
@@ -52,6 +52,7 @@ export default function PlansPage() {
         currentValueLkr={currentValueLkr}
         visible={balanceVisible}
         onToggleVisible={toggleBalanceVisible}
+        isLoading={summaryLoading}
       />
 
       <GiftPlansComingSoon />

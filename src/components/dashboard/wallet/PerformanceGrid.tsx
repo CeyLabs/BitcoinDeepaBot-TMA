@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
+import { ValueSkeleton } from "@/components/ui/value-skeleton";
 import {
   fmtLkrCurrency,
   fmtLkrCurrencyCompact,
@@ -28,14 +29,6 @@ export interface PerformanceGridProps {
   currentBtcPriceUsd?: number;
   visible: boolean;
   isLoading?: boolean;
-}
-
-function ValueSkeleton({ className = "" }: { className?: string }) {
-  return (
-    <span
-      className={`inline-block h-4 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#334155] ${className}`}
-    />
-  );
 }
 
 export function PerformanceGrid({
@@ -71,7 +64,7 @@ export function PerformanceGrid({
             You Invested
           </p>
           {isLoading ? (
-            <ValueSkeleton className="w-24" />
+            <ValueSkeleton className="h-4 w-24" />
           ) : (
             <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
               {mask(fmtLkrCurrency(dcaSpent))}
@@ -103,7 +96,7 @@ export function PerformanceGrid({
           </p>
           <div className="flex flex-col items-start gap-2">
             {isLoading ? (
-              <ValueSkeleton className="w-24" />
+              <ValueSkeleton className="h-4 w-24" />
             ) : (
               <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
                 {mask(fmtLkrCurrency(totalLkr))}
@@ -144,7 +137,7 @@ export function PerformanceGrid({
             Avg Price
           </p>
           {isLoading ? (
-            <ValueSkeleton className="w-20" />
+            <ValueSkeleton className="h-4 w-20" />
           ) : (
             <div className="flex items-center gap-1">
               <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
@@ -177,7 +170,7 @@ export function PerformanceGrid({
             Current Price
           </p>
           {isLoading ? (
-            <ValueSkeleton className="w-20" />
+            <ValueSkeleton className="h-4 w-20" />
           ) : (
             <div className="flex items-center gap-1">
               <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">

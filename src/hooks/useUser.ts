@@ -14,7 +14,7 @@ export function useUser() {
   const launchParams = useLaunchParams();
   const telegramUser = launchParams.initData?.user;
   const { isExistingUser } = useStore();
-  const { data: subscription } = useSubscriptionCurrent();
+  const { data: subscription, isLoading: subscriptionLoading } = useSubscriptionCurrent();
   const { data: kycData } = useKycStatus();
 
   const username = telegramUser?.username;
@@ -32,6 +32,7 @@ export function useUser() {
     photoUrl: telegramUser?.photoUrl,
     isExistingUser,
     subscription: subscription ?? null,
+    subscriptionLoading,
     kycStatus: kycData?.status,
   };
 }
