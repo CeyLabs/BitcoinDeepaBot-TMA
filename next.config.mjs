@@ -1,6 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   allowedDevOrigins: ["*.sats.day", "*.ngrok-free.app"],
+  experimental: {
+    // Since Next 15, page segments aren't reused across Link/router.push
+    // navigation by default (only layouts + true back/forward are). This
+    // lets the news list <-> article navigation reuse the client RSC cache
+    // instead of re-requesting the server on every tap.
+    staleTimes: {
+      dynamic: 60,
+      static: 900,
+    },
+  },
   async headers() {
     return [
       {
