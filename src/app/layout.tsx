@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/theme.css";
 import "@telegram-apps/telegram-ui/dist/styles.css";
 import Providers from "./context/providers";
+import { RegisterServiceWorker } from "./register-sw";
 import Script from "next/script";
 import { cn } from "@/lib/cn";
 
@@ -14,7 +15,17 @@ export const metadata: Metadata = {
     "Bitcoin membership reward accrual with subscription management for Sri Lankan users.",
   icons: {
     icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Bitcoin Deepa",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#fa7119",
 };
 
 export default function RootLayout({
@@ -44,6 +55,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={`${inter.className} min-h-screen leading-tight`}>
+        <RegisterServiceWorker />
         <Providers>{children}</Providers>
       </body>
     </html>
