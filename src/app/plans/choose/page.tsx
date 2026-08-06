@@ -160,14 +160,14 @@ export default function ChoosePlanPage() {
   if (kycLoading) return <LoadingPage />;
   if (kyc?.status !== "APPROVED") {
     return (
-      <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
+      <div className="bg-surface-main mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
         <KycRequiredNotice />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
+    <div className="bg-surface-main mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
       {currentPlan ? (
         <PageTitle title="Manage your Plan" subtitle="View or switch to another plan" />
       ) : (
@@ -208,9 +208,9 @@ export default function ChoosePlanPage() {
       </div>
 
       {packagesLoading ? (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {[0, 1, 2].map((i) => (
-            <ValueSkeleton key={i} className="h-[90px] w-full rounded-[12px]" />
+            <ValueSkeleton key={i} className="h-[62px] w-full rounded-[12px]" />
           ))}
         </div>
       ) : filteredPlans.length === 0 ? (
@@ -218,7 +218,7 @@ export default function ChoosePlanPage() {
           <p className="text-[14px] text-[#64748b]">No {duration} plans available</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {filteredPlans.map((plan) => {
             const perMonth = perMonthAmount(plan);
             const perYear = perMonth * 12;
@@ -229,9 +229,9 @@ export default function ChoosePlanPage() {
                   <Image
                     src={getPlanIconSrc(plan.name)}
                     alt=""
-                    width={28}
-                    height={28}
-                    className="size-7"
+                    width={22}
+                    height={22}
+                    className="size-[22px]"
                   />
                 }
                 name={plan.name}

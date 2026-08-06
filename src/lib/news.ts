@@ -1,5 +1,6 @@
 import Parser from "rss-parser";
 import sanitizeHtml from "sanitize-html";
+import { unstable_cache } from "next/cache";
 import type { NewsArticle } from "@/lib/types";
 
 const FEED_URL = "https://bitcoinmagazine.com/feed";
@@ -105,7 +106,7 @@ function toArticle(item: FeedItem, index: number): NewsArticle | null {
   };
 }
 
-export async function getNewsArticles(): Promise<NewsArticle[]> {
+async function fetchNewsArticles(): Promise<NewsArticle[]> {
   const response = await fetch(FEED_URL, { next: { revalidate: 900 } });
   if (!response.ok) return [];
 
@@ -122,3 +123,9 @@ export async function getNewsArticles(): Promise<NewsArticle[]> {
     .map((item, index) => toArticle(item, index))
     .filter((article): article is NewsArticle => article !== null);
 }
+
+// Caches the parsed+sanitized article list (not just the raw feed fetch), so the
+// list and detail pages share one parse pass instead of redoing it per request.
+export const getNewsArticles = unstable_cache(fetchNewsArticles, ["news-articles"], {
+  revalidate: 900,
+});

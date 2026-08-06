@@ -3,9 +3,10 @@
 import Image from "next/image";
 import { ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
+import { NumberTicker } from "@/components/motion/number-ticker";
 import { ValueSkeleton } from "@/components/ui/value-skeleton";
 import { cn } from "@/lib/cn";
-import { fmtLkrCurrency, fmtSatsCompact, maskDigits } from "@/lib/formatters";
+import { fmtLkr, fmtLkrCurrency, fmtSatsCompact, maskDigits, LKR_SYMBOL } from "@/lib/formatters";
 
 // Card/Badge theme their background/color through --tgui-- CSS variables (same
 // convention as --tgui--cell--middle--padding on the homepage Cell) — override those
@@ -50,6 +51,10 @@ export function TotalValueCard({
 
         {isLoading ? (
           <ValueSkeleton tone="translucent" className="h-9 w-40" />
+        ) : visible ? (
+          <p className="text-[36px] leading-12 font-bold text-white">
+            <NumberTicker value={totalLkr} prefix={`≈ ${LKR_SYMBOL} `} format={fmtLkr} />
+          </p>
         ) : (
           <p className="text-[36px] leading-12 font-bold text-white">
             {mask(`≈ ${fmtLkrCurrency(totalLkr)}`)}
