@@ -12,7 +12,6 @@ import { getAuthTokenFromStorage, getIsExistingUserFromStorage, isAuthenticated 
 import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
 import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
 import { useUserCount } from "@/hooks/query/useUserCount";
-import { useKycStatus } from "@/hooks/query/useKyc";
 import { useIsTelegramEnv } from "@/hooks/useIsTelegramEnv";
 import BrowserLoginScreen from "@/components/auth/BrowserLoginScreen";
 
@@ -167,14 +166,14 @@ function TelegramHome() {
   const initLaunchParams = useLaunchParams().initData;
   const launchParams = useLaunchParams();
   const initData = useInitData();
-  const { setUserID, isExistingUser, authReady } = useStore();
+  const { setUserID, isExistingUser } = useStore();
   const [isExisting, setIsExisting] = useState(false);
 
   const authData = useMemo(() => {
     return initLaunchParams || initData;
   }, [initLaunchParams, initData]);
 
-  useRegisterTelegramUser(authData, launchParams);
+  const registerUser = useRegisterTelegramUser(authData, launchParams);
 
   useEffect(() => {
     setUserID(authData?.user?.id?.toString() || "");
@@ -188,16 +187,23 @@ function TelegramHome() {
     }
   }, [isExistingUser]);
 
-  // Returning users (already started or finished KYC before) skip the
-  // welcome screen entirely and land straight in the dashboard.
-  const { data: kycData, isError: kycError } = useKycStatus();
-  const isReturningUser = kycData?.is_new_user === false;
-  // useRegisterUser re-authenticates via Telegram initData on every launch
-  // and only writes the token to storage once that settles — so a token
-  // can be genuinely absent yet on first render even for an old user. Wait
-  // for that to finish, then for KYC status, before showing anything.
-  const hasToken = authReady && !!getAuthTokenFromStorage();
-  const kycPending = !authReady || (hasToken && kycData === undefined && !kycError);
+  // Cached from a previous launch's 409 response (see
+  // useRegisterTelegramUser) — lets a known returning user skip straight to
+  // the dashboard without waiting on the network at all.
+  const [cachedReturningUser] = useState(() => getIsExistingUserFromStorage());
+
+  // /api/user (Mongo-backed) already fires on every launch — read its
+  // result instead of ignoring it. status 409 means this Telegram id was
+  // already registered, i.e. a returning user, who skips straight to the
+  // dashboard. It only fires when the profile has a username; without one,
+  // treat the visitor as new rather than waiting on a call that never runs.
+  const canCheckExisting = !!(authData?.user?.id && authData?.user?.username);
+  const isReturningUser = cachedReturningUser || registerUser.data?.status === 409;
+  const checkPending =
+    !cachedReturningUser &&
+    canCheckExisting &&
+    registerUser.data === undefined &&
+    !registerUser.isError;
 
   useEffect(() => {
     if (isReturningUser) {
@@ -205,7 +211,7 @@ function TelegramHome() {
     }
   }, [isReturningUser, router]);
 
-  if (kycPending || isReturningUser) {
+  if (checkPending || isReturningUser) {
     return <PageShell>{null}</PageShell>;
   }
 
