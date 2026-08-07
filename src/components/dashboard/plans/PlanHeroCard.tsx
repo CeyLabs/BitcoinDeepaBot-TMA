@@ -273,9 +273,9 @@ export function PlanHeroCard({
                     }`}
                   >
                     {mask(
-                      `${isProfit ? "+" : "-"}${Math.abs(profitPct).toFixed(0)}% · ${fmtLkrCurrency(
-                        Math.abs(profitLkr)
-                      )}`
+                      `${fmtLkrCurrency(Math.abs(profitLkr))} (${isProfit ? "+" : "-"}${Math.abs(
+                        profitPct
+                      ).toFixed(0)}%)`
                     )}
                   </span>
                 )

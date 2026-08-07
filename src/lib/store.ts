@@ -10,6 +10,9 @@ export type Store = {
   setUser: (user: User | null) => void;
   isExistingUser: boolean;
   setIsExistingUser: (isExisting: boolean) => void;
+  /** True once the per-launch Telegram re-auth (useRegisterUser) has settled, success or fail */
+  authReady: boolean;
+  setAuthReady: (ready: boolean) => void;
   subscription: Subscription | null;
   setSubscription: (subscription: Subscription | null) => void;
   rewards: UserRewards;
@@ -41,6 +44,8 @@ export const useStore = create<Store>((set, get) => ({
   setUser: (user: User | null) => set({ user }),
   isExistingUser: false,
   setIsExistingUser: (isExisting: boolean) => set({ isExistingUser: isExisting }),
+  authReady: false,
+  setAuthReady: (ready: boolean) => set({ authReady: ready }),
   subscription: null,
   setSubscription: (subscription: Subscription | null) => set({ subscription }),
   rewards: initialRewards,

@@ -1,5 +1,6 @@
 import type { ActivityItem, ActivityType } from "@/lib/types";
 import type { DcaTransaction } from "@/hooks/query/useTransactionHistory";
+import type { BotTransaction } from "@/hooks/query/useBotTransactionHistory";
 import { fmtActivityTime } from "@/lib/formatters";
 
 type StatusDot = NonNullable<ActivityItem["statusDot"]>;
@@ -82,6 +83,36 @@ export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityIte
       btcSats: tx.satoshis_purchased,
       btcPriceLkr: tx.btc_price_at_purchase,
       transactionId: tx.id,
+    },
+  };
+}
+
+// A bot-relayed sats transfer to/from another Telegram user maps onto the
+// "sent"/"received" activity type based on `direction`.
+function parseLkr(value: string): number {
+  return Number(value.replace(/,/g, "")) || 0;
+}
+
+export function mapBotTransactionToActivityItem(tx: BotTransaction): ActivityItem {
+  const isOutgoing = tx.direction === "outgoing";
+  const counterpartyRaw = isOutgoing ? tx.to_user : tx.from_user;
+  const counterparty = counterpartyRaw?.replace(/^@/, "") ?? String(isOutgoing ? tx.to_id : tx.from_id);
+  const lkr = parseLkr(tx.amount_lkr);
+
+  return {
+    id: String(tx.id),
+    type: isOutgoing ? "sent" : "received",
+    counterparty,
+    timestamp: tx.time,
+    sats: isOutgoing ? -tx.amount : tx.amount,
+    lkr,
+    statusDot: tx.success ? "green" : "red",
+    settlement: {
+      status: tx.success ? "Completed" : "Failed",
+      settledOn: tx.time,
+      btcSats: tx.amount,
+      memo: tx.memo,
+      transactionId: String(tx.id),
     },
   };
 }

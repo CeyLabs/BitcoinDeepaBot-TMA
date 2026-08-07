@@ -12,6 +12,7 @@ import { getAuthTokenFromStorage, getIsExistingUserFromStorage, isAuthenticated 
 import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
 import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
 import { useUserCount } from "@/hooks/query/useUserCount";
+import { useKycStatus } from "@/hooks/query/useKyc";
 import { useIsTelegramEnv } from "@/hooks/useIsTelegramEnv";
 import BrowserLoginScreen from "@/components/auth/BrowserLoginScreen";
 
@@ -162,10 +163,11 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
 // Uses Telegram SDK hooks that throw outside the Telegram WebView — only
 // mount this once we've confirmed we're running inside Telegram.
 function TelegramHome() {
+  const router = useRouter();
   const initLaunchParams = useLaunchParams().initData;
   const launchParams = useLaunchParams();
   const initData = useInitData();
-  const { setUserID, isExistingUser } = useStore();
+  const { setUserID, isExistingUser, authReady } = useStore();
   const [isExisting, setIsExisting] = useState(false);
 
   const authData = useMemo(() => {
@@ -185,6 +187,27 @@ function TelegramHome() {
       setIsExisting(true);
     }
   }, [isExistingUser]);
+
+  // Returning users (already started or finished KYC before) skip the
+  // welcome screen entirely and land straight in the dashboard.
+  const { data: kycData, isError: kycError } = useKycStatus();
+  const isReturningUser = kycData?.is_new_user === false;
+  // useRegisterUser re-authenticates via Telegram initData on every launch
+  // and only writes the token to storage once that settles — so a token
+  // can be genuinely absent yet on first render even for an old user. Wait
+  // for that to finish, then for KYC status, before showing anything.
+  const hasToken = authReady && !!getAuthTokenFromStorage();
+  const kycPending = !authReady || (hasToken && kycData === undefined && !kycError);
+
+  useEffect(() => {
+    if (isReturningUser) {
+      router.replace("/dashboard?tab=wallet");
+    }
+  }, [isReturningUser, router]);
+
+  if (kycPending || isReturningUser) {
+    return <PageShell>{null}</PageShell>;
+  }
 
   return (
     <PageShell>

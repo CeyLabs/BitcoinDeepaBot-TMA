@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useLaunchParams } from "@telegram-apps/sdk-react";
 import { authenticateWithTelegram, saveAuthToStorage } from "@/lib/auth";
+import { useStore } from "@/lib/store";
 
 /**
  * Registers/refreshes the user the moment the TMA opens, regardless of which
@@ -11,6 +12,7 @@ import { authenticateWithTelegram, saveAuthToStorage } from "@/lib/auth";
  */
 export function useRegisterUser() {
   const initDataRaw = useLaunchParams()?.initDataRaw;
+  const setAuthReady = useStore((state) => state.setAuthReady);
 
   useEffect(() => {
     if (!initDataRaw) return;
@@ -23,6 +25,9 @@ export function useRegisterUser() {
       })
       .catch((error) => {
         console.error("Error registering user:", error);
+      })
+      .finally(() => {
+        setAuthReady(true);
       });
-  }, [initDataRaw]);
+  }, [initDataRaw, setAuthReady]);
 }

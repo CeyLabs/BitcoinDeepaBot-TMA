@@ -8,6 +8,7 @@ import type { User } from "@/lib/types";
 export interface KycStatusResponse {
   status: NonNullable<User["kycStatus"]>;
   url?: string;
+  is_new_user?: boolean;
 }
 
 export function useKycStatus() {
