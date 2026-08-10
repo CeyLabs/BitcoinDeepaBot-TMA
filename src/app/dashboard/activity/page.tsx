@@ -114,7 +114,7 @@ export default function ActivityPage() {
             <button
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
-              className="py-3 text-center text-[14px] font-semibold text-[#fa7119] disabled:opacity-50 cursor-pointer"
+              className="py-3 text-center text-[14px] font-semibold text-[#fa7119] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isFetchingNextPage ? "Loading..." : "Load more"}
             </button>
