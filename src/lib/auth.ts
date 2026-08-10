@@ -214,6 +214,27 @@ export const getIsExistingUserFromStorage = (): boolean => {
   return localStorage.getItem("bitcoin-deepa-is-existing-user") === "true";
 };
 
+/**
+ * Persists the "returning user" flag on its own, independent of an auth
+ * token — used by the /api/user existing-check (409 response), which never
+ * hands back a token. Cached so future launches can skip the network round
+ * trip entirely and redirect straight to the dashboard.
+ */
+export const markIsExistingUserInStorage = () => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("bitcoin-deepa-is-existing-user", "true");
+};
+
+/**
+ * Clears the returning-user flag — used when the server tells us the id we
+ * thought was registered actually wasn't (a stale cache from a deleted
+ * account or DB reset), so the next launch stops trusting it.
+ */
+export const clearIsExistingUserInStorage = () => {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("bitcoin-deepa-is-existing-user");
+};
+
 export const saveAuthToStorage = (token: string) => {
   if (typeof window === "undefined") return;
   localStorage.setItem("bitcoin-deepa-auth-token", token);

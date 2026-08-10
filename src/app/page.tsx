@@ -162,6 +162,7 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
 // Uses Telegram SDK hooks that throw outside the Telegram WebView — only
 // mount this once we've confirmed we're running inside Telegram.
 function TelegramHome() {
+  const router = useRouter();
   const initLaunchParams = useLaunchParams().initData;
   const launchParams = useLaunchParams();
   const initData = useInitData();
@@ -172,7 +173,7 @@ function TelegramHome() {
     return initLaunchParams || initData;
   }, [initLaunchParams, initData]);
 
-  useRegisterTelegramUser(authData, launchParams);
+  const registerUser = useRegisterTelegramUser(authData, launchParams);
 
   useEffect(() => {
     setUserID(authData?.user?.id?.toString() || "");
@@ -185,6 +186,34 @@ function TelegramHome() {
       setIsExisting(true);
     }
   }, [isExistingUser]);
+
+  // Cached from a previous launch's 409 response (see
+  // useRegisterTelegramUser) — lets a known returning user skip straight to
+  // the dashboard without waiting on the network at all.
+  const [cachedReturningUser] = useState(() => getIsExistingUserFromStorage());
+
+  // /api/user (Mongo-backed) already fires on every launch — read its
+  // result instead of ignoring it. status 409 means this Telegram id was
+  // already registered, i.e. a returning user, who skips straight to the
+  // dashboard. It only fires when the profile has a username; without one,
+  // treat the visitor as new rather than waiting on a call that never runs.
+  const canCheckExisting = !!(authData?.user?.id && authData?.user?.username);
+  const isReturningUser = cachedReturningUser || registerUser.data?.status === 409;
+  const checkPending =
+    !cachedReturningUser &&
+    canCheckExisting &&
+    registerUser.data === undefined &&
+    !registerUser.isError;
+
+  useEffect(() => {
+    if (isReturningUser) {
+      router.replace("/dashboard?tab=wallet");
+    }
+  }, [isReturningUser, router]);
+
+  if (checkPending || isReturningUser) {
+    return <PageShell>{null}</PageShell>;
+  }
 
   return (
     <PageShell>
