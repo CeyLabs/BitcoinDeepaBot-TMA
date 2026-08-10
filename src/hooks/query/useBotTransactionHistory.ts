@@ -49,11 +49,12 @@ export function useBotTransactionHistory() {
       );
 
       const transactions = data.success ? data.transactions : [];
+      const hasMore = data.success && data.offset + transactions.length < data.count;
 
       return {
         transactions,
-        nextOffset: pageParam + PAGE_SIZE,
-        hasMore: transactions.length === PAGE_SIZE,
+        nextOffset: data.offset + PAGE_SIZE,
+        hasMore,
       };
     },
     initialPageParam: 0,
