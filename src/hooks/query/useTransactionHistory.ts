@@ -30,13 +30,29 @@ interface RawTransaction {
   settled?: boolean;
 }
 
-interface PaginatedTransactions {
-  transactions: RawTransaction[];
-  has_more?: boolean;
+export interface BotTransaction {
+  id: number;
+  time: string;
+  direction: "incoming" | "outgoing";
+  from_id: number;
+  to_id: number;
+  from_user?: string;
+  to_user?: string;
+  type: string;
+  amount: number;
+  amount_lkr: string;
+  memo?: string;
+  success: boolean;
 }
 
-interface TransactionListResponse {
-  transactions: RawTransaction[] | PaginatedTransactions;
+interface PlanHistoryResponse {
+  transactions: { plan?: RawTransaction }[];
+  has_more: boolean;
+}
+
+interface BotHistoryResponse {
+  transactions: { bot?: BotTransaction }[];
+  has_more: boolean;
 }
 
 const PAGE_SIZE = 20;
@@ -69,22 +85,21 @@ export function useTransactionHistory() {
   const query = useInfiniteQuery({
     queryKey: queryKeys.transactions,
     queryFn: async ({ pageParam }) => {
-      const data = await fetchy.get<TransactionListResponse>(
-        `/api/transaction/list?page=${pageParam}&limit=${PAGE_SIZE}`,
+      const data = await fetchy.get<PlanHistoryResponse>(
+        `/api/transaction/history?type=plan&page=${pageParam}&limit=${PAGE_SIZE}`,
         {
           headers: { Authorization: `Bearer ${authToken}` },
           shouldCache: false,
         }
       );
 
-      const nested = Array.isArray(data.transactions) ? null : data.transactions;
-      const raw = Array.isArray(data.transactions)
-        ? data.transactions
-        : (nested?.transactions ?? []);
+      const raw = data.transactions
+        .map((item) => item.plan)
+        .filter((tx): tx is RawTransaction => Boolean(tx));
 
       return {
         transactions: raw.map(normalize),
-        hasMore: nested?.has_more ?? raw.length === PAGE_SIZE,
+        hasMore: data.has_more,
       };
     },
     initialPageParam: 1,
@@ -98,6 +113,48 @@ export function useTransactionHistory() {
       (query.data?.pages ?? [])
         .flatMap((page) => page.transactions)
         .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+    [query.data]
+  );
+
+  return { ...query, transactions };
+}
+
+// Sats sent/received to other Telegram users via the bot, paginated
+// oldest page first via `has_more`, sorted oldest-first once flattened.
+export function useBotTransactionHistory() {
+  const authToken = getAuthTokenFromStorage();
+
+  const query = useInfiniteQuery({
+    queryKey: queryKeys.botTransactions,
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchy.get<BotHistoryResponse>(
+        `/api/transaction/history?type=bot&page=${pageParam}&limit=${PAGE_SIZE}`,
+        {
+          headers: { Authorization: `Bearer ${authToken}` },
+          shouldCache: false,
+        }
+      );
+
+      const transactions = data.transactions
+        .map((item) => item.bot)
+        .filter((tx): tx is BotTransaction => Boolean(tx));
+
+      return {
+        transactions,
+        hasMore: data.has_more,
+      };
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => (lastPage.hasMore ? allPages.length + 1 : undefined),
+    enabled: !!authToken,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const transactions = useMemo(
+    () =>
+      (query.data?.pages ?? [])
+        .flatMap((page) => page.transactions)
+        .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()),
     [query.data]
   );
 

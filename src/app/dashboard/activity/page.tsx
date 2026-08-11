@@ -6,8 +6,7 @@ import { ActivitySearchBar } from "@/components/dashboard/activity/ActivitySearc
 import { ActivityTabs } from "@/components/dashboard/activity/ActivityTabs";
 import { ActivityGroup } from "@/components/dashboard/activity/ActivityGroup";
 import { ActivitySkeleton } from "@/components/dashboard/activity/ActivitySkeleton";
-import { useTransactionHistory } from "@/hooks/query/useTransactionHistory";
-import { useBotTransactionHistory } from "@/hooks/query/useBotTransactionHistory";
+import { useTransactionHistory, useBotTransactionHistory } from "@/hooks/query/useTransactionHistory";
 import {
   ACTIVITY_TITLE,
   getActivityCategory,
@@ -16,9 +15,6 @@ import {
   type ActivityCategory,
 } from "@/lib/activity";
 import { useStore } from "@/lib/store";
-
-// Tipjar/faucet/gift and tasks have no backend endpoint yet.
-const COMING_SOON_CATEGORIES: ActivityCategory[] = ["tasks"];
 
 export default function ActivityPage() {
   const { balanceVisible, toggleBalanceVisible } = useStore();
@@ -36,8 +32,8 @@ export default function ActivityPage() {
     [dca.transactions, botHistory.transactions]
   );
 
-  const showDca = category !== "transactions";
-  const showBotHistory = category === "transactions";
+  const showDca = category === "all" || category === "plans";
+  const showBotHistory = category === "all" || category === "transactions";
   const isLoading =
     (showDca && dca.isLoading) || (showBotHistory && botHistory.isLoading);
   const hasNextPage = (showDca && dca.hasNextPage) || (showBotHistory && botHistory.hasNextPage);
@@ -47,14 +43,10 @@ export default function ActivityPage() {
     if (showBotHistory && botHistory.hasNextPage) botHistory.fetchNextPage();
   };
 
-  const comingSoon = COMING_SOON_CATEGORIES.includes(category);
-
   const groups = useMemo(() => {
-    if (comingSoon) return [];
-
     const filtered = activity.filter((item) => {
       const itemCategory = getActivityCategory(item.type);
-      if (category === "all" ? itemCategory === "transactions" : itemCategory !== category) {
+      if (category !== "all" && itemCategory !== category) {
         return false;
       }
       if (!search.trim()) return true;
@@ -80,7 +72,7 @@ export default function ActivityPage() {
     }
 
     return Array.from(byDay.entries());
-  }, [activity, comingSoon, search, category]);
+  }, [activity, search, category]);
 
   return (
     <div className="flex w-full flex-col gap-5">
@@ -89,14 +81,13 @@ export default function ActivityPage() {
         onChange={setSearch}
         visible={balanceVisible}
         onToggleVisible={toggleBalanceVisible}
+        disabled
       />
 
       <ActivityTabs value={category} onChange={setCategory} />
 
       {isLoading ? (
         <ActivitySkeleton />
-      ) : comingSoon ? (
-        <p className="py-8 text-center text-[14px] text-[#64748b]">Coming soon.</p>
       ) : groups.length === 0 ? (
         <p className="py-8 text-center text-[14px] text-[#64748b]">No activity found.</p>
       ) : (

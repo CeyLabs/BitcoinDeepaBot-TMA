@@ -1,6 +1,5 @@
 import type { ActivityItem, ActivityType } from "@/lib/types";
-import type { DcaTransaction } from "@/hooks/query/useTransactionHistory";
-import type { BotTransaction } from "@/hooks/query/useBotTransactionHistory";
+import type { DcaTransaction, BotTransaction } from "@/hooks/query/useTransactionHistory";
 import { fmtActivityTime } from "@/lib/formatters";
 
 type StatusDot = NonNullable<ActivityItem["statusDot"]>;
@@ -40,7 +39,7 @@ export const ACTIVITY_TITLE: Record<ActivityType, string> = {
   membership_reward: "Membership Reward",
 };
 
-export type ActivityCategory = "all" | "transactions" | "tasks" | "plans";
+export type ActivityCategory = "all" | "transactions" | "plans";
 
 const TRANSACTION_TYPES: ActivityType[] = [
   "sent",
@@ -54,7 +53,6 @@ const TRANSACTION_TYPES: ActivityType[] = [
 ];
 
 export function getActivityCategory(type: ActivityType): ActivityCategory {
-  if (type === "tasks_reward") return "tasks";
   if (type === "membership_reward") return "plans";
   if (TRANSACTION_TYPES.includes(type)) return "transactions";
   return "all";
