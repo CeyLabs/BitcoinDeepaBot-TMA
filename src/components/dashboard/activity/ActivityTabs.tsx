@@ -7,9 +7,8 @@ import type { ActivityCategory } from "@/lib/activity";
 
 const TABS: { value: ActivityCategory; label: string }[] = [
   { value: "all", label: "All Activities" },
-  { value: "transactions", label: "Transactions" },
-  { value: "tasks", label: "Tasks" },
   { value: "plans", label: "Plans" },
+  { value: "transactions", label: "Transactions" },
 ];
 
 export interface ActivityTabsProps {

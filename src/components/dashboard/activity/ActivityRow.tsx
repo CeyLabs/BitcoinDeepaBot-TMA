@@ -63,7 +63,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
           </span>
         }
         after={
-          <div className="flex items-center gap-0.5">
+          <div className="flex shrink-0 items-center gap-0.5">
             <div className="flex flex-col items-end gap-0.5">
               <p
                 className={`text-right text-[14px] leading-4 ${
