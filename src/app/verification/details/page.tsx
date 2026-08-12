@@ -104,7 +104,10 @@ export default function VerificationDetailsPage() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col gap-3">
-          <div className="flex flex-col gap-3">
+          <div
+            className="flex flex-col gap-3 [&_.tgui-8ca550c2fc85eff5]:px-0!"
+            style={{ "--tgui--bg_color": "var(--color-surface-main)" } as React.CSSProperties}
+          >
             {FIELDS.map((field) => (
               <div key={field.name} className="w-full">
                 <Input
@@ -121,9 +124,7 @@ export default function VerificationDetailsPage() {
                   {...register(field.name)}
                 />
                 {errors[field.name] && (
-                  <p className="pt-1 pl-6 text-[12px] text-[#f13131]">
-                    {errors[field.name]?.message}
-                  </p>
+                  <p className="pt-1 text-[12px] text-[#f13131]">{errors[field.name]?.message}</p>
                 )}
               </div>
             ))}
