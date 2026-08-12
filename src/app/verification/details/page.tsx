@@ -105,7 +105,7 @@ export default function VerificationDetailsPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col gap-3">
           <div
-            className="flex flex-col gap-3 [&_.tgui-8ca550c2fc85eff5]:px-0!"
+            className="flex flex-col gap-3"
             style={{ "--tgui--bg_color": "var(--color-surface-primary)" } as React.CSSProperties}
           >
             {FIELDS.map((field) => (
