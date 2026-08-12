@@ -94,7 +94,7 @@ export default function VerificationDetailsPage() {
   };
 
   return (
-    <div className="bg-surface-main flex min-h-screen w-full flex-col">
+    <div className="bg-surface-primary flex min-h-screen w-full flex-col">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-8 pb-6">
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-tma-text-primary text-[24px] leading-7 font-bold">Your Details</h1>
@@ -106,7 +106,7 @@ export default function VerificationDetailsPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col gap-3">
           <div
             className="flex flex-col gap-3 [&_.tgui-8ca550c2fc85eff5]:px-0!"
-            style={{ "--tgui--bg_color": "var(--color-surface-main)" } as React.CSSProperties}
+            style={{ "--tgui--bg_color": "var(--color-surface-primary)" } as React.CSSProperties}
           >
             {FIELDS.map((field) => (
               <div key={field.name} className="w-full">
