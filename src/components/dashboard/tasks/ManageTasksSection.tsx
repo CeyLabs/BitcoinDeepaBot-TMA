@@ -1,11 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Snackbar } from "@telegram-apps/telegram-ui";
+import { AlertCircle } from "lucide-react";
 import { TaskFilterTabs, type TaskFilter } from "@/components/dashboard/tasks/TaskFilterTabs";
 import { TaskListCard } from "@/components/dashboard/tasks/TaskListCard";
 import { useTMA } from "@/lib/hooks";
 import { haptic } from "@/lib/haptics";
 import { useStore } from "@/lib/store";
+import { useIsTelegramEnv } from "@/hooks/useIsTelegramEnv";
 import type { Task } from "@/lib/types";
 
 export interface ManageTasksSectionProps {
@@ -14,8 +17,10 @@ export interface ManageTasksSectionProps {
 
 export function ManageTasksSection({ items }: ManageTasksSectionProps) {
   const [filter, setFilter] = useState<TaskFilter>("all");
+  const [snackbarError, setSnackbarError] = useState<string | null>(null);
   const { openTelegramLink, shareStory } = useTMA();
   const { userID, count } = useStore();
+  const isTelegramEnv = useIsTelegramEnv();
 
   const filtered = useMemo(() => {
     if (filter === "all") return items;
@@ -33,6 +38,10 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
         openTelegramLink("https://t.me/+iiP-rX7ldYxjZWU1");
         break;
       case "task-share-story": {
+        if (!isTelegramEnv) {
+          setSnackbarError("Open this app inside Telegram to share a story.");
+          return;
+        }
         haptic.impact("heavy");
         shareStory("https://ceyloncash.com/bitcoindeepa/tma/story.mp4", {
           text: `Proud OG Member of Bitcoin දීප. ${count} Citizens and Counting 🚀🔥\n\nhttps://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}\n\n#bitcoindeepa @bitcoindeepabot #viralstory`,
@@ -55,6 +64,17 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
       <TaskFilterTabs value={filter} onChange={setFilter} />
 
       <TaskListCard items={filtered} onTaskClick={handleTaskClick} />
+
+      {snackbarError && (
+        <Snackbar
+          onClose={() => setSnackbarError(null)}
+          description={snackbarError}
+          className="bottom-24! z-100!"
+          before={<AlertCircle size={20} className="text-[#F45A5A]" />}
+        >
+          Not Available
+        </Snackbar>
+      )}
     </div>
   );
 }

@@ -121,7 +121,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
 
             <div className="flex flex-col items-end text-right">
               <p className="text-xs leading-4 text-[#475569]">Date</p>
-              <p className="text-sm leading-5 font-semibold">
+              <p className="text-sm leading-5 font-semibold text-[#1b2027] dark:text-white">
                 {fmtShortDate(item.settlement.settledOn)}
               </p>
             </div>
@@ -131,26 +131,41 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
             <p className="text-xs leading-4 text-[#475569]">
               BTC Value {isOutgoing ? "Sent" : "Received"}
             </p>
-            <p className="text-base leading-5 font-semibold">
+            <p className="text-base leading-5 font-semibold text-[#1b2027] dark:text-white">
               {mask(`${formatSatoshis(item.settlement.btcSats)} BTC`)}
             </p>
           </div>
 
-          <div className="flex flex-col items-center gap-1 rounded-[12px] bg-[#e8edfc] px-3 py-1 dark:bg-white/5">
-            <p className="text-xs leading-4 text-[#475569]">BTC price at transaction time</p>
-            <p className="text-sm leading-5">
-              {item.settlement.btcPriceUsd !== undefined && (
-                <>
-                  <span className="font-bold text-[#0088FF]">USD</span>{" "}
-                  <span className="font-bold">{item.settlement.btcPriceUsd.toFixed(2)}</span>
-                  <span className="text-[#64748b]"> / BTC · </span>
-                </>
-              )}
-              <span className="font-bold text-[#0088FF]">රු.</span>{" "}
-              <span className="font-bold">{fmtPriceCompact(item.settlement.btcPriceLkr)}</span>
-              <span className="text-[#64748b]"> / BTC</span>
-            </p>
-          </div>
+          {item.settlement.btcPriceLkr !== undefined ? (
+            <div className="flex flex-col items-center gap-1 rounded-[12px] bg-[#e8edfc] px-3 py-1 dark:bg-white/5">
+              <p className="text-xs leading-4 text-[#475569]">BTC price at transaction time</p>
+              <p className="text-sm leading-5">
+                {item.settlement.btcPriceUsd !== undefined && (
+                  <>
+                    <span className="font-bold text-[#0088FF]">USD</span>{" "}
+                    <span className="font-bold text-[#1b2027] dark:text-white">
+                      {item.settlement.btcPriceUsd.toFixed(2)}
+                    </span>
+                    <span className="text-[#64748b]"> / BTC · </span>
+                  </>
+                )}
+                <span className="font-bold text-[#0088FF]">රු.</span>{" "}
+                <span className="font-bold text-[#1b2027] dark:text-white">
+                  {fmtPriceCompact(item.settlement.btcPriceLkr)}
+                </span>
+                <span className="text-[#64748b]"> / BTC</span>
+              </p>
+            </div>
+          ) : (
+            item.settlement.memo && (
+              <div className="flex flex-col items-center gap-1 rounded-[12px] bg-[#e8edfc] px-3 py-1 text-center dark:bg-white/5">
+                <p className="text-xs leading-4 text-[#475569]">Memo</p>
+                <p className="text-sm leading-5 font-semibold text-[#1b2027] dark:text-white">
+                  {item.settlement.memo}
+                </p>
+              </div>
+            )
+          )}
 
           <div className="flex flex-col gap-1">
             <p className="text-xs leading-4 text-[#475569]">Transaction ID</p>

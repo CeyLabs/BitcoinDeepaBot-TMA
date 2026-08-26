@@ -78,13 +78,6 @@ export function PlanCard({
         className
       )}
     >
-      {active && (
-        <div className="absolute top-3 right-4">
-          <div className="flex h-5 items-center justify-center rounded-full bg-[#16a34a] px-2.5">
-            <p className="text-[12px] leading-[16px] whitespace-nowrap text-white">Current Plan</p>
-          </div>
-        </div>
-      )}
       {mostPopular && !active && (
         <div className="relative mb-[-10px] flex shrink-0 flex-col items-start self-end px-[10px] pt-[6px]">
           <div className="flex h-4 items-center justify-center rounded-full bg-[#fa7119] px-2.5">
@@ -94,34 +87,43 @@ export function PlanCard({
           </div>
         </div>
       )}
-      <div className={cn("flex w-full flex-col items-start gap-0 px-4 py-5", active && "pt-6")}>
+      <div className="flex w-full flex-col items-start gap-0 px-4 py-3">
         {/* Top row: radio + emoji + name + price */}
-        <div className="flex h-10 w-full items-center gap-2">
+        <div className="flex w-full items-center gap-2">
           <div className="flex shrink-0 items-center gap-2">
             {active ? <CheckSelected /> : isHighlighted ? <RadioSelected /> : <RadioDefault />}
-            <div className="flex size-10 items-center justify-center">{emoji}</div>
+            <div className="flex size-8 items-center justify-center">{emoji}</div>
           </div>
           <div className="flex min-w-0 flex-1 items-center justify-between leading-[16px] tracking-normal whitespace-nowrap">
             <p className="text-[16px] font-semibold text-[#1b2027] dark:text-white">{name}</p>
-            <div className="flex items-end gap-0.5 text-center">
-              <p
-                className={cn(
-                  "text-[18px] font-bold",
-                  active ? "text-[#16a34a]" : "text-[#fa7119]"
-                )}
-              >
-                {price}
-              </p>
-              <p className="pb-0.5 text-[12px] font-normal text-[#e2e8f0] dark:text-[#475569]">
-                {period}
-              </p>
+            <div className="flex flex-col items-end gap-1">
+              {active && (
+                <div className="flex h-5 items-center justify-center rounded-full bg-[#16a34a] px-2.5">
+                  <p className="text-[12px] leading-[16px] whitespace-nowrap text-white">
+                    Current Plan
+                  </p>
+                </div>
+              )}
+              <div className="flex items-end gap-0.5 text-center">
+                <p
+                  className={cn(
+                    "text-[18px] font-bold",
+                    active ? "text-[#16a34a]" : "text-[#fa7119]"
+                  )}
+                >
+                  {price}
+                </p>
+                <p className="pb-0.5 text-[12px] font-normal text-[#94a3b8] dark:text-[#64748b]">
+                  {period}
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Bottom: description + pricing, revealed only once the plan is selected */}
         {isHighlighted && (
-          <div className="mt-1 flex w-full flex-col items-start gap-0.5 pl-[31px]">
+          <div className="mt-0.5 flex w-full flex-col items-start gap-0.5 pl-[31px]">
             <p className="w-full text-[14px] leading-[16px] font-normal text-[#475569] dark:text-[#94a3b8]">
               {description}
             </p>

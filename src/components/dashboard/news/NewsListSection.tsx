@@ -33,14 +33,14 @@ export function NewsArticleCard({ article }: { article: NewsArticle }) {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <h3 className="text-[16px] leading-5 font-bold text-[#1b2027] dark:text-white">
+        <h3 className="text-[16px] leading-5 font-bold text-[#1b2027] dark:text-white line-clamp-3">
           {article.title}
         </h3>
-        <div className="flex items-center gap-1.5 text-[12px] text-[#64748b] dark:text-[#94a3b8]">
-          <Clock size={12} />
-          <span>{article.readTimeMinutes} min read</span>
-          <span>·</span>
-          <span>{article.category}</span>
+        <div className="flex min-w-0 items-center gap-1.5 text-[12px] text-[#64748b] dark:text-[#94a3b8]">
+          <Clock size={12} className="shrink-0" />
+          <span className="shrink-0">{article.readTimeMinutes} min read</span>
+          <span className="shrink-0">·</span>
+          <span className="truncate">{article.category}</span>
         </div>
       </div>
     </Link>

@@ -7,26 +7,45 @@ import { ActivityTabs } from "@/components/dashboard/activity/ActivityTabs";
 import { ActivityGroup } from "@/components/dashboard/activity/ActivityGroup";
 import { ActivitySkeleton } from "@/components/dashboard/activity/ActivitySkeleton";
 import { useTransactionHistory } from "@/hooks/query/useTransactionHistory";
+import { useBotTransactionHistory } from "@/hooks/query/useBotTransactionHistory";
 import {
   ACTIVITY_TITLE,
   getActivityCategory,
+  mapBotTransactionToActivityItem,
   mapDcaTransactionToActivityItem,
   type ActivityCategory,
 } from "@/lib/activity";
 import { useStore } from "@/lib/store";
 
-// Only membership rewards (DCA purchases) are backed by real data today —
-// sent/received/tipjar/faucet/gift and tasks have no backend endpoint yet.
-const COMING_SOON_CATEGORIES: ActivityCategory[] = ["transactions", "tasks"];
+// Tipjar/faucet/gift and tasks have no backend endpoint yet.
+const COMING_SOON_CATEGORIES: ActivityCategory[] = ["tasks"];
 
 export default function ActivityPage() {
   const { balanceVisible, toggleBalanceVisible } = useStore();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<ActivityCategory>("all");
 
-  const { transactions, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    useTransactionHistory();
-  const activity = useMemo(() => transactions.map(mapDcaTransactionToActivityItem), [transactions]);
+  const dca = useTransactionHistory();
+  const botHistory = useBotTransactionHistory();
+
+  const activity = useMemo(
+    () => [
+      ...dca.transactions.map(mapDcaTransactionToActivityItem),
+      ...botHistory.transactions.map(mapBotTransactionToActivityItem),
+    ],
+    [dca.transactions, botHistory.transactions]
+  );
+
+  const showDca = category !== "transactions";
+  const showBotHistory = category === "transactions";
+  const isLoading =
+    (showDca && dca.isLoading) || (showBotHistory && botHistory.isLoading);
+  const hasNextPage = (showDca && dca.hasNextPage) || (showBotHistory && botHistory.hasNextPage);
+  const isFetchingNextPage = dca.isFetchingNextPage || botHistory.isFetchingNextPage;
+  const fetchNextPage = () => {
+    if (showDca && dca.hasNextPage) dca.fetchNextPage();
+    if (showBotHistory && botHistory.hasNextPage) botHistory.fetchNextPage();
+  };
 
   const comingSoon = COMING_SOON_CATEGORIES.includes(category);
 
@@ -34,7 +53,10 @@ export default function ActivityPage() {
     if (comingSoon) return [];
 
     const filtered = activity.filter((item) => {
-      if (category !== "all" && getActivityCategory(item.type) !== category) return false;
+      const itemCategory = getActivityCategory(item.type);
+      if (category === "all" ? itemCategory === "transactions" : itemCategory !== category) {
+        return false;
+      }
       if (!search.trim()) return true;
 
       const query = search.trim().toLowerCase();
@@ -92,7 +114,7 @@ export default function ActivityPage() {
             <button
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
-              className="py-3 text-center text-[14px] font-semibold text-[#fa7119] disabled:opacity-50"
+              className="py-3 text-center text-[14px] font-semibold text-[#fa7119] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isFetchingNextPage ? "Loading..." : "Load more"}
             </button>

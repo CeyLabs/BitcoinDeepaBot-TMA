@@ -113,7 +113,10 @@ export interface ActivityItem {
     settledOn: string;
     btcSats: number;
     btcPriceUsd?: number;
-    btcPriceLkr: number;
+    /** Omit when there's no real price for this transaction (e.g. bot transfers) — show `memo` instead */
+    btcPriceLkr?: number;
+    /** Transfer note from the sender, shown in place of the price panel when there's no real price */
+    memo?: string;
     transactionId: string;
   };
 }

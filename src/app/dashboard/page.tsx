@@ -5,8 +5,7 @@ import { TotalValueCard } from "@/components/dashboard/wallet/TotalValueCard";
 import { PlanSummaryCard } from "@/components/dashboard/wallet/PlanSummaryCard";
 import { PerformanceGrid } from "@/components/dashboard/wallet/PerformanceGrid";
 import { PortfolioChart } from "@/components/dashboard/wallet/PortfolioChart";
-import { useWalletSummary } from "@/hooks/query/useWalletSummary";
-import { useTransactionHistory } from "@/hooks/query/useTransactionHistory";
+import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
 import { useUser } from "@/hooks/useUser";
 import { useStore } from "@/lib/store";
 
@@ -14,33 +13,21 @@ export default function WalletPage() {
   const { balanceVisible } = useStore();
   const { subscription, subscriptionLoading } = useUser();
 
-  const { data: summary, isLoading: isSummaryLoading } = useWalletSummary();
-  const { transactions } = useTransactionHistory();
-
-  const totalLkr = summary
-    ? Number(
-        typeof summary.total_lkr === "string"
-          ? summary.total_lkr.replace(/,/g, "")
-          : summary.total_lkr
-      )
-    : 0;
-  const totalSats = summary?.total_balance ?? 0;
-  const dcaSpent = summary?.dca.spent ?? 0;
-  const dcaSats = summary?.dca.balance ?? 0;
-  const avgBtcPrice = summary?.dca.avg_btc_price ?? 0;
-  const change24h = summary?.["24_hr_change"] ?? 0;
-  const changeLkr = (change24h / 100) * totalLkr;
-  const currentBtcPrice =
-    summary?.current_btc_price?.lkr ??
-    (transactions?.length
-      ? transactions[transactions.length - 1].btc_price_at_purchase
-      : avgBtcPrice);
-  const currentBtcPriceUsd = summary?.current_btc_price?.usd;
-  const avgBtcPriceUsd =
-    currentBtcPriceUsd && currentBtcPrice
-      ? avgBtcPrice * (currentBtcPriceUsd / currentBtcPrice)
-      : undefined;
-  const currentValueLkr = (dcaSats / 1e8) * currentBtcPrice;
+  const {
+    transactions,
+    isLoading: isSummaryLoading,
+    totalLkr,
+    totalSats,
+    dcaSpent,
+    dcaSats,
+    avgBtcPrice,
+    avgBtcPriceUsd,
+    changePercent: change24h,
+    changeLkr,
+    currentBtcPrice,
+    currentBtcPriceUsd,
+    currentValueLkr,
+  } = useWalletMetrics();
 
   return (
     <div className="flex w-full flex-col gap-5">
