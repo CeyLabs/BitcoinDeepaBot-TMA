@@ -3,23 +3,9 @@
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
-import { getAuthTokenFromStorage } from "@/lib/auth";
+import { getAuthTokenFromStorage, getUserFromToken } from "@/lib/auth";
+import type { BotTransaction } from "@/lib/types";
 import fetchy from "@/lib/fetchy";
-
-export interface BotTransaction {
-  id: number;
-  time: string;
-  direction: "incoming" | "outgoing";
-  from_id: number;
-  to_id: number;
-  from_user?: string;
-  to_user?: string;
-  type: string;
-  amount: number;
-  amount_lkr: string | number | null;
-  memo?: string;
-  success: boolean;
-}
 
 interface BotTransactionsResponse {
   success: boolean;
@@ -36,9 +22,10 @@ const PAGE_SIZE = 50;
 // newest page first via offset/limit, sorted oldest-first once flattened.
 export function useBotTransactionHistory({ enabled = true }: { enabled?: boolean } = {}) {
   const authToken = getAuthTokenFromStorage();
+  const userId = getUserFromToken()?.id ?? "";
 
   const query = useInfiniteQuery({
-    queryKey: queryKeys.botTransactions,
+    queryKey: queryKeys.botTransactions(userId),
     queryFn: async ({ pageParam }) => {
       const data = await fetchy.get<BotTransactionsResponse>(
         `/api/transaction/bot-history?limit=${PAGE_SIZE}&offset=${pageParam}`,

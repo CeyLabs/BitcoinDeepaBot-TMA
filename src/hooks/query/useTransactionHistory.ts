@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
-import { getAuthTokenFromStorage } from "@/lib/auth";
+import { getAuthTokenFromStorage, getUserFromToken } from "@/lib/auth";
 import fetchy from "@/lib/fetchy";
 
 export interface DcaTransaction {
@@ -65,9 +65,10 @@ function normalize(tx: RawTransaction): DcaTransaction {
 // flattened result with numeric fields normalized.
 export function useTransactionHistory({ enabled = true }: { enabled?: boolean } = {}) {
   const authToken = getAuthTokenFromStorage();
+  const userId = getUserFromToken()?.id ?? "";
 
   const query = useInfiniteQuery({
-    queryKey: queryKeys.transactions,
+    queryKey: queryKeys.transactions(userId),
     queryFn: async ({ pageParam }) => {
       const data = await fetchy.get<TransactionListResponse>(
         `/api/transaction/list?page=${pageParam}&limit=${PAGE_SIZE}`,

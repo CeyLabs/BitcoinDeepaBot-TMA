@@ -41,7 +41,13 @@ export default function ActivityPage() {
   );
 
   const isLoading = (showDca && dca.isLoading) || (showBotHistory && botHistory.isLoading);
-  const isError = (showDca && dca.isError) || (showBotHistory && botHistory.isError);
+  const dcaFailed = showDca && dca.isError;
+  const botFailed = showBotHistory && botHistory.isError;
+  const isError = dcaFailed || botFailed;
+  // Names the source(s) that failed, for the notice shown above whatever
+  // activity did load.
+  const failedLabel =
+    dcaFailed && botFailed ? "activity" : dcaFailed ? "plan history" : "transfers";
   const refetch = () => {
     if (showDca && dca.isError) dca.refetch();
     if (showBotHistory && botHistory.isError) botHistory.refetch();
@@ -118,6 +124,20 @@ export default function ActivityPage() {
         <p className="py-8 text-center text-[14px] text-[#64748b]">No activity found.</p>
       ) : (
         <>
+          {isError && (
+            <div className="flex items-center justify-between gap-3 rounded-[12px] bg-[#fef2f2] px-4 py-3 dark:bg-[#2a1515]">
+              <p className="text-[13px] text-[#b91c1c] dark:text-[#fca5a5]">
+                Couldn&apos;t load {failedLabel}. Showing what loaded.
+              </p>
+              <button
+                onClick={refetch}
+                className="shrink-0 cursor-pointer text-[13px] font-semibold text-[#fa7119]"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
           {groups.map(([dayKey, items]) => (
             <ActivityGroup
               key={dayKey}

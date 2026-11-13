@@ -45,14 +45,20 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
           setSnackbarError("Open this app inside Telegram to share a story.");
           return;
         }
-        haptic.impact("heavy");
-        shareStory("https://ceyloncash.com/bitcoindeepa/tma/story.mp4", {
-          text: `Proud OG Member of Bitcoin දීප. ${count} Citizens and Counting 🚀🔥\n\nhttps://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}\n\n#bitcoindeepa @bitcoindeepabot #viralstory`,
-          widget_link: {
-            url: `https://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}`,
-            name: "Inner Circle Entry",
-          },
-        });
+        // useTMA can throw while its WebApp handle isn't ready yet.
+        try {
+          haptic.impact("heavy");
+          shareStory("https://ceyloncash.com/bitcoindeepa/tma/story.mp4", {
+            text: `Proud OG Member of Bitcoin දීප. ${count} Citizens and Counting 🚀🔥\n\nhttps://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}\n\n#bitcoindeepa @bitcoindeepabot #viralstory`,
+            widget_link: {
+              url: `https://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}`,
+              name: "Inner Circle Entry",
+            },
+          });
+        } catch (error) {
+          console.error("Failed to share story:", error);
+          setSnackbarError("Couldn't open story sharing. Please try again.");
+        }
         break;
       }
       default:

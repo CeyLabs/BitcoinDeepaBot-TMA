@@ -183,3 +183,19 @@ export interface DCSummary {
     lkr: number;
   };
 }
+
+// Sats sent/received to other Telegram users via the bot (BitcoinDeepa API).
+export interface BotTransaction {
+  id: number;
+  time: string;
+  direction: "incoming" | "outgoing";
+  from_id: number;
+  to_id: number;
+  from_user?: string;
+  to_user?: string;
+  type: string;
+  amount: number;
+  amount_lkr: string | number | null;
+  memo?: string;
+  success: boolean;
+}
