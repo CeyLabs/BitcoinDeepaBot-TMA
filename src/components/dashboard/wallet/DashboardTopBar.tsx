@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, IconButton } from "@telegram-apps/telegram-ui";
 import { LogOut } from "lucide-react";
 import { VisibleToggle } from "@/components/ui/visible-toggle";
@@ -12,6 +13,7 @@ import { haptic } from "@/lib/haptics";
 
 export function DashboardTopBar() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { initials, displayName, photoUrl } = useUser();
   const { balanceVisible, toggleBalanceVisible } = useStore();
   const isTelegramEnv = useIsTelegramEnv();
@@ -38,6 +40,8 @@ export function DashboardTopBar() {
             onClick={() => {
               haptic.impact("medium");
               clearAuthFromStorage();
+              // Drop every cached query so the next account starts clean.
+              queryClient.clear();
               router.replace("/");
             }}
           >

@@ -1,6 +1,5 @@
-import type { ActivityItem, ActivityType } from "@/lib/types";
+import type { ActivityItem, ActivityType, BotTransaction } from "@/lib/types";
 import type { DcaTransaction } from "@/hooks/query/useTransactionHistory";
-import type { BotTransaction } from "@/hooks/query/useBotTransactionHistory";
 import { fmtActivityTime } from "@/lib/formatters";
 
 type StatusDot = NonNullable<ActivityItem["statusDot"]>;

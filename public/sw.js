@@ -65,8 +65,14 @@ async function handleStaticAsset(request) {
 
   const response = await fetch(request);
   if (response.ok) {
-    await cache.put(request, response.clone());
-    trimCache(cache, MAX_ASSET_ENTRIES).catch(() => {});
+    // Caching is best-effort — a failed write (e.g. QuotaExceededError) must
+    // not fail a request the network already answered.
+    try {
+      await cache.put(request, response.clone());
+      trimCache(cache, MAX_ASSET_ENTRIES).catch(() => {});
+    } catch {
+      // ignore
+    }
   }
   return response;
 }
