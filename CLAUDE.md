@@ -26,7 +26,7 @@ There is no test suite configured. Always run `bun run format` and `bun run buil
 ### API layer
 
 - All client-side HTTP calls MUST go through the `fetchy` wrapper (`src/lib/fetchy.ts`), not raw `fetch`. It sets JSON headers, parses JSON responses, and throws on non-OK responses.
-- The browser calls the BitcoinDeepa-DCA-BE backend directly (CORS is enabled there). `fetchy` prefixes non-`/api/` paths with `NEXT_PUBLIC_API_BASE_URL`, and throws `FetchyError` (with `.status`) on non-OK responses.
+- The browser calls the BitcoinDeepa-DCA-BE backend directly (CORS is enabled there). `fetchy` prefixes non-`/api/` paths with `NEXT_PUBLIC_API_BASE_URL`, attaches the stored auth token as a Bearer header on those requests (don't pass it manually), bypasses the browser HTTP cache (TanStack Query owns caching), and throws `FetchyError` (with `.status`) on non-OK responses.
 - The only Next.js API route left is `src/app/api/user/route.ts` (Mongo-backed user count/registration).
 - MongoDB connection via `src/db/connect.ts`; the only schema is a loosely-typed `User` model (`src/db/schema.ts`) with an `id`, `username`, and a free-form `data` object — most "shape" lives in TypeScript types (`src/lib/types.ts`), not the Mongoose schema.
 

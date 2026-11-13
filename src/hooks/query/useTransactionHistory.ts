@@ -69,11 +69,7 @@ export function useTransactionHistory({ enabled = true }: { enabled?: boolean } 
       let data: RawTransaction[] | PaginatedTransactions;
       try {
         data = await fetchy.get<RawTransaction[] | PaginatedTransactions>(
-          `/transaction/list?page=${pageParam}&limit=${PAGE_SIZE}`,
-          {
-            headers: { Authorization: `Bearer ${authToken}` },
-            shouldCache: false,
-          }
+          `/transaction/list?page=${pageParam}&limit=${PAGE_SIZE}`
         );
       } catch (error) {
         if (error instanceof FetchyError && error.status === 404) {

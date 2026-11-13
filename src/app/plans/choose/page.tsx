@@ -88,8 +88,7 @@ export default function ChoosePlanPage() {
       setPayhereLinkLoading(true);
       const result = await fetchy.post<{ link?: string }, { package_id: string }>(
         "/subscription/payhere-link",
-        { package_id: plan.id },
-        { headers: { Authorization: `Bearer ${authToken}` } }
+        { package_id: plan.id }
       );
 
       if (result.link) {
