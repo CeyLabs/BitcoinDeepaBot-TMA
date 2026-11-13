@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getAuthTokenFromStorage } from "@/lib/auth";
-import fetchy from "@/lib/fetchy";
+import fetchy, { FetchyError } from "@/lib/fetchy";
 import { queryKeys } from "@/lib/query-keys";
 import type { Subscription } from "@/lib/types";
 
@@ -22,24 +22,20 @@ interface RawSubscription {
   user_id?: string;
 }
 
-interface SubscriptionCurrentResponse {
-  subscription: RawSubscription | null;
-  message?: string;
-}
-
 export function useSubscriptionCurrent() {
   const authToken = getAuthTokenFromStorage();
 
   return useQuery<Subscription | null>({
     queryKey: queryKeys.subscriptionCurrent,
     queryFn: async () => {
-      const data = await fetchy.get<SubscriptionCurrentResponse>("/api/subscription/current", {
-        headers: { Authorization: `Bearer ${authToken}` },
-        shouldCache: false,
-      });
-
-      const sub = data.subscription;
-      if (!sub) return null;
+      let sub: RawSubscription;
+      try {
+        sub = await fetchy.get<RawSubscription>("/subscription/current");
+      } catch (error) {
+        // Backend 404s when the user has no subscription.
+        if (error instanceof FetchyError && error.status === 404) return null;
+        throw error;
+      }
 
       return {
         id: sub.payhere_sub_id ?? "",

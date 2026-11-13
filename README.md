@@ -51,7 +51,7 @@ A Telegram Mini App built with Next.js 16 that supports Bitcoin membership rewar
 
    ```env
    MONGODB_URI=your_mongodb_connection_string
-   API_BASE_URL=http://localhost:3347
+   NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 
    ```
 

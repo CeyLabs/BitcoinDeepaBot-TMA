@@ -1,96 +1,92 @@
 /**
- * fetchy is a utility class for making HTTP requests with built-in error handling.
- * It provides methods for common HTTP methods: GET, POST, PUT, and DELETE.
+ * Thin fetch wrapper for client-side requests (used as TanStack Query's queryFn/mutationFn).
  *
- * Features:
- * - Automatically sets 'Content-Type' to 'application/json'.
- * - Automatically parses JSON response.
- * - Supports optional cache control using the `shouldCache` option.
- * - Handles HTTP errors by throwing exceptions with error messages.
- * - Returns a Promise, allowing use of .then(), .catch(), and .finally().
- * - Supports TypeScript generics for type-safe responses and request bodies.
- *
- * Usage:
- * - `fetchy.get<T>(url, options)`: Sends a GET request.
- * - `fetchy.post<T, B>(url, body, options)`: Sends a POST request with a JSON body.
- * - `fetchy.put<T, B>(url, body, options)`: Sends a PUT request with a JSON body.
- * - `fetchy.delete<T>(url, options)`: Sends a DELETE request.
- *
- * Options:
- * - You can pass additional fetch options (headers, etc.) through the `options` parameter.
- * - Use `shouldCache: false` in `options` to disable caching.
- *
- * Example:
- * fetchy.get<UserData>('https://api.example.com/user')
- *   .then(data => console.log(data))
- *   .catch(error => console.error(error))
- *   .finally(() => console.log('Request completed'));
- *
- * Note:
- * - The type parameter T is optional. If not provided, the return type defaults to Promise<any>.
- * - You can use these methods without specifying types: fetchy.get(url)
+ * - Paths not starting with "/api/" go to the backend (NEXT_PUBLIC_API_BASE_URL),
+ *   e.g. fetchy.get("/package"). "/api/*" stays on this Next.js app.
+ * - Backend requests automatically carry the stored auth token as a Bearer header.
+ * - Sends/parses JSON; empty responses (e.g. 204) resolve to undefined.
+ * - Throws FetchyError (message + HTTP status) on non-OK responses, so TanStack
+ *   Query sees them as errors.
+ * - Bypasses the browser HTTP cache — TanStack Query owns caching.
  */
 
-interface FetchOptions extends RequestInit {
-  shouldCache?: boolean;
+import { API_BASE_URL } from "@/lib/constants";
+import { getAuthTokenFromStorage } from "@/lib/auth";
+
+type FetchOptions = Omit<RequestInit, "headers" | "body"> & {
   headers?: Record<string, string>;
-}
-
-interface ErrorResponse {
-  message: string;
-}
-
-class Fetchy {
-  private async request<T>(url: string, options: FetchOptions = {}): Promise<T> {
-    const { shouldCache = true, ...fetchOptions } = options;
-
-    const response = await fetch(url, {
-      headers: {
-        "Content-Type": "application/json",
-        ...fetchOptions.headers,
-      },
-      ...(shouldCache ? {} : { cache: "no-cache" }),
-      ...fetchOptions,
-    });
-
-    if (!response.ok) {
-      const error = (await response.json()) as ErrorResponse;
-      throw new Error(error.message || "An error occurred while fetching the data.");
-    }
-
-    return response.json() as Promise<T>;
-  }
-
-  get<T>(url: string, options: FetchOptions = {}): Promise<T> {
-    return this.request<T>(url, { ...options, method: "GET" });
-  }
-
-  post<T, B = unknown>(url: string, body: B, options: FetchOptions = {}): Promise<T> {
-    return this.request<T>(url, {
-      ...options,
-      method: "POST",
-      body: JSON.stringify(body),
-    });
-  }
-
-  put<T, B = unknown>(url: string, body: B, options: FetchOptions = {}): Promise<T> {
-    return this.request<T>(url, {
-      ...options,
-      method: "PUT",
-      body: JSON.stringify(body),
-    });
-  }
-
-  delete<T>(url: string, options: FetchOptions = {}): Promise<T> {
-    return this.request<T>(url, { ...options, method: "DELETE" });
-  }
-}
-
-const fetchy = new Fetchy();
-
-export default fetchy as {
-  get<T>(url: string, options?: FetchOptions): Promise<T>;
-  post<T, B = unknown>(url: string, body: B, options?: FetchOptions): Promise<T>;
-  put<T, B = unknown>(url: string, body: B, options?: FetchOptions): Promise<T>;
-  delete<T>(url: string, options?: FetchOptions): Promise<T>;
 };
+
+export class FetchyError extends Error {
+  constructor(
+    message: string,
+    public status: number
+  ) {
+    super(message);
+    this.name = "FetchyError";
+  }
+}
+
+// Backend paths: a single leading "/" (not "//", which is protocol-relative
+// and would hit another host), excluding this app's own "/api/" routes.
+const isBackendPath = (url: string) => /^\/(?!\/)/.test(url) && !url.startsWith("/api/");
+const isAllowedUrl = (url: string) => url.startsWith("/api/") || /^https?:\/\//.test(url);
+
+async function request<T>(
+  method: string,
+  url: string,
+  body?: unknown,
+  options: FetchOptions = {}
+): Promise<T> {
+  const { headers, ...rest } = options;
+  const backend = isBackendPath(url);
+  if (!backend && !isAllowedUrl(url)) {
+    throw new Error(`fetchy: unsupported URL "${url}"`);
+  }
+  if (backend && !API_BASE_URL) {
+    throw new Error("fetchy: NEXT_PUBLIC_API_BASE_URL is not set");
+  }
+  const token = backend ? getAuthTokenFromStorage() : null;
+
+  const response = await fetch(backend ? `${API_BASE_URL}${url}` : url, {
+    cache: "no-store",
+    ...rest,
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...headers,
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+
+  const text = await response.text();
+  let data: unknown;
+  try {
+    data = text ? JSON.parse(text) : undefined;
+  } catch {
+    data = text;
+  }
+
+  if (!response.ok) {
+    const raw = (data as { message?: string | string[] } | undefined)?.message;
+    const message = Array.isArray(raw) ? raw.join(", ") : raw;
+    throw new FetchyError(
+      message || `Request failed with status ${response.status}`,
+      response.status
+    );
+  }
+
+  return data as T;
+}
+
+const fetchy = {
+  get: <T>(url: string, options?: FetchOptions) => request<T>("GET", url, undefined, options),
+  post: <T, B = unknown>(url: string, body?: B, options?: FetchOptions) =>
+    request<T>("POST", url, body, options),
+  put: <T, B = unknown>(url: string, body?: B, options?: FetchOptions) =>
+    request<T>("PUT", url, body, options),
+  delete: <T>(url: string, options?: FetchOptions) => request<T>("DELETE", url, undefined, options),
+};
+
+export default fetchy;

@@ -9,7 +9,7 @@ import { GiftPlansComingSoon } from "@/components/dashboard/plans/GiftPlanAction
 import { ManageGiftsSection } from "@/components/dashboard/plans/ManageGiftsSection";
 import { MOCK_GIFTS } from "@/components/dashboard/plans/mock-data";
 import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotice";
-import { useWalletSummary } from "@/hooks/query/useWalletSummary";
+import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { useSubscriptionCurrent } from "@/hooks/query/useSubscriptionCurrent";
 import LoadingPage from "@/components/LoadingPage";
@@ -20,7 +20,12 @@ export default function PlansPage() {
   const { data: kyc, isLoading: kycLoading } = useKycStatus();
   const { balanceVisible, toggleBalanceVisible } = useStore();
   const { data: subscription, isLoading: subscriptionLoading } = useSubscriptionCurrent();
-  const { data: summary, isLoading: summaryLoading } = useWalletSummary();
+  const {
+    isLoading: summaryLoading,
+    dcaSpent: investedLkr,
+    dcaSats: investedSats,
+    currentValueLkr,
+  } = useWalletMetrics();
 
   const kycApproved = kyc?.status === "APPROVED";
   const noActivePlan = kycApproved && !subscriptionLoading && !subscription;
@@ -32,16 +37,6 @@ export default function PlansPage() {
   if (kycLoading) return <LoadingPage />;
   if (!kycApproved) return <KycRequiredNotice />;
   if (noActivePlan) return <LoadingPage />;
-
-  const currentValueLkr = summary
-    ? Number(
-        typeof summary.total_lkr === "string"
-          ? summary.total_lkr.replace(/,/g, "")
-          : summary.total_lkr
-      )
-    : 0;
-  const investedLkr = summary?.dca.spent ?? 0;
-  const investedSats = summary?.dca.balance ?? 0;
 
   return (
     <div className="flex w-full flex-col gap-5">

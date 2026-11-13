@@ -15,11 +15,7 @@ export function useKycStatus() {
 
   return useQuery<KycStatusResponse>({
     queryKey: ["kyc-status"],
-    queryFn: () =>
-      fetchy.get<KycStatusResponse>("/api/user/kyc/status", {
-        headers: { Authorization: `Bearer ${authToken}` },
-        shouldCache: false,
-      }),
+    queryFn: () => fetchy.get<KycStatusResponse>("/user/kyc/status"),
     enabled: !!authToken,
   });
 }
@@ -42,13 +38,9 @@ interface KycInitiateResponse {
 }
 
 export function useKycInitiate() {
-  const authToken = getAuthTokenFromStorage();
-
   return useMutation({
     mutationFn: (payload: KycInitiatePayload) =>
-      fetchy.post<KycInitiateResponse, KycInitiatePayload>("/api/user/kyc/initiate", payload, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      }),
+      fetchy.post<KycInitiateResponse, KycInitiatePayload>("/user/kyc/initiate", payload),
   });
 }
 
@@ -63,12 +55,8 @@ interface UpdateProfilePayload {
 }
 
 export function useUpdateProfile() {
-  const authToken = getAuthTokenFromStorage();
-
   return useMutation({
     mutationFn: (payload: UpdateProfilePayload) =>
-      fetchy.post<{ success: boolean }, UpdateProfilePayload>("/api/user/profile", payload, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      }),
+      fetchy.post<{ success: boolean }, UpdateProfilePayload>("/user", payload),
   });
 }

@@ -1,11 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Snackbar } from "@telegram-apps/telegram-ui";
+import { AlertCircle } from "lucide-react";
 import { TaskFilterTabs, type TaskFilter } from "@/components/dashboard/tasks/TaskFilterTabs";
 import { TaskListCard } from "@/components/dashboard/tasks/TaskListCard";
 import { useTMA } from "@/lib/hooks";
 import { haptic } from "@/lib/haptics";
 import { useStore } from "@/lib/store";
+import { useIsTelegramEnv } from "@/hooks/useIsTelegramEnv";
 import type { Task } from "@/lib/types";
 
 export interface ManageTasksSectionProps {
@@ -14,8 +17,10 @@ export interface ManageTasksSectionProps {
 
 export function ManageTasksSection({ items }: ManageTasksSectionProps) {
   const [filter, setFilter] = useState<TaskFilter>("all");
+  const [snackbarError, setSnackbarError] = useState<string | null>(null);
   const { openTelegramLink, shareStory } = useTMA();
   const { userID, count } = useStore();
+  const isTelegramEnv = useIsTelegramEnv();
 
   const filtered = useMemo(() => {
     if (filter === "all") return items;
@@ -33,14 +38,27 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
         openTelegramLink("https://t.me/+iiP-rX7ldYxjZWU1");
         break;
       case "task-share-story": {
-        haptic.impact("heavy");
-        shareStory("https://ceyloncash.com/bitcoindeepa/tma/story.mp4", {
-          text: `Proud OG Member of Bitcoin දීප. ${count} Citizens and Counting 🚀🔥\n\nhttps://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}\n\n#bitcoindeepa @bitcoindeepabot #viralstory`,
-          widget_link: {
-            url: `https://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}`,
-            name: "Inner Circle Entry",
-          },
-        });
+        // null = the async isTMA check hasn't resolved yet; ignore the tap
+        // rather than wrongly telling a Telegram user to open Telegram.
+        if (isTelegramEnv === null) return;
+        if (!isTelegramEnv) {
+          setSnackbarError("Open this app inside Telegram to share a story.");
+          return;
+        }
+        // useTMA can throw while its WebApp handle isn't ready yet.
+        try {
+          haptic.impact("heavy");
+          shareStory("https://ceyloncash.com/bitcoindeepa/tma/story.mp4", {
+            text: `Proud OG Member of Bitcoin දීප. ${count} Citizens and Counting 🚀🔥\n\nhttps://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}\n\n#bitcoindeepa @bitcoindeepabot #viralstory`,
+            widget_link: {
+              url: `https://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}`,
+              name: "Inner Circle Entry",
+            },
+          });
+        } catch (error) {
+          console.error("Failed to share story:", error);
+          setSnackbarError("Couldn't open story sharing. Please try again.");
+        }
         break;
       }
       default:
@@ -55,6 +73,17 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
       <TaskFilterTabs value={filter} onChange={setFilter} />
 
       <TaskListCard items={filtered} onTaskClick={handleTaskClick} />
+
+      {snackbarError && (
+        <Snackbar
+          onClose={() => setSnackbarError(null)}
+          description={snackbarError}
+          className="bottom-24! z-100!"
+          before={<AlertCircle size={20} className="text-[#F45A5A]" />}
+        >
+          Not Available
+        </Snackbar>
+      )}
     </div>
   );
 }

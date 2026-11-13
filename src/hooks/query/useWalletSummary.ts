@@ -11,11 +11,7 @@ export function useWalletSummary() {
 
   return useQuery<DCSummary>({
     queryKey: queryKeys.walletSummary,
-    queryFn: () =>
-      fetchy.get<DCSummary>("/api/transaction/dca-summary", {
-        headers: { Authorization: `Bearer ${authToken}` },
-        shouldCache: false,
-      }),
+    queryFn: () => fetchy.get<DCSummary>("/transaction/dca-summary"),
     enabled: !!authToken,
     staleTime: 1000 * 60 * 5,
   });

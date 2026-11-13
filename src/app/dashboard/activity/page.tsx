@@ -7,26 +7,58 @@ import { ActivityTabs } from "@/components/dashboard/activity/ActivityTabs";
 import { ActivityGroup } from "@/components/dashboard/activity/ActivityGroup";
 import { ActivitySkeleton } from "@/components/dashboard/activity/ActivitySkeleton";
 import { useTransactionHistory } from "@/hooks/query/useTransactionHistory";
+import { useBotTransactionHistory } from "@/hooks/query/useBotTransactionHistory";
 import {
   ACTIVITY_TITLE,
   getActivityCategory,
+  mapBotTransactionToActivityItem,
   mapDcaTransactionToActivityItem,
   type ActivityCategory,
 } from "@/lib/activity";
 import { useStore } from "@/lib/store";
 
-// Only membership rewards (DCA purchases) are backed by real data today —
-// sent/received/tipjar/faucet/gift and tasks have no backend endpoint yet.
-const COMING_SOON_CATEGORIES: ActivityCategory[] = ["transactions", "tasks"];
+// Tipjar/faucet/gift and tasks have no backend endpoint yet.
+const COMING_SOON_CATEGORIES: ActivityCategory[] = ["tasks"];
 
 export default function ActivityPage() {
   const { balanceVisible, toggleBalanceVisible } = useStore();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<ActivityCategory>("all");
 
-  const { transactions, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    useTransactionHistory();
-  const activity = useMemo(() => transactions.map(mapDcaTransactionToActivityItem), [transactions]);
+  const showDca = category === "all" || category === "plans";
+  const showBotHistory = category === "all" || category === "transactions";
+
+  // Only fetch the sources the current tab actually shows.
+  const dca = useTransactionHistory({ enabled: showDca });
+  const botHistory = useBotTransactionHistory({ enabled: showBotHistory });
+
+  const activity = useMemo(
+    () => [
+      ...dca.transactions.map(mapDcaTransactionToActivityItem),
+      ...botHistory.transactions.map(mapBotTransactionToActivityItem),
+    ],
+    [dca.transactions, botHistory.transactions]
+  );
+
+  const isLoading = (showDca && dca.isLoading) || (showBotHistory && botHistory.isLoading);
+  const dcaFailed = showDca && dca.isError;
+  const botFailed = showBotHistory && botHistory.isError;
+  const isError = dcaFailed || botFailed;
+  // Names the source(s) that failed, for the notice shown above whatever
+  // activity did load.
+  const failedLabel =
+    dcaFailed && botFailed ? "activity" : dcaFailed ? "plan history" : "transfers";
+  const refetch = () => {
+    if (showDca && dca.isError) dca.refetch();
+    if (showBotHistory && botHistory.isError) botHistory.refetch();
+  };
+  const hasNextPage = (showDca && dca.hasNextPage) || (showBotHistory && botHistory.hasNextPage);
+  const isFetchingNextPage =
+    (showDca && dca.isFetchingNextPage) || (showBotHistory && botHistory.isFetchingNextPage);
+  const fetchNextPage = () => {
+    if (showDca && dca.hasNextPage) dca.fetchNextPage();
+    if (showBotHistory && botHistory.hasNextPage) botHistory.fetchNextPage();
+  };
 
   const comingSoon = COMING_SOON_CATEGORIES.includes(category);
 
@@ -34,7 +66,10 @@ export default function ActivityPage() {
     if (comingSoon) return [];
 
     const filtered = activity.filter((item) => {
-      if (category !== "all" && getActivityCategory(item.type) !== category) return false;
+      const itemCategory = getActivityCategory(item.type);
+      if (category !== "all" && itemCategory !== category) {
+        return false;
+      }
       if (!search.trim()) return true;
 
       const query = search.trim().toLowerCase();
@@ -75,10 +110,34 @@ export default function ActivityPage() {
         <ActivitySkeleton />
       ) : comingSoon ? (
         <p className="py-8 text-center text-[14px] text-[#64748b]">Coming soon.</p>
+      ) : isError && groups.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 py-8">
+          <p className="text-center text-[14px] text-[#64748b]">Couldn&apos;t load activity.</p>
+          <button
+            onClick={refetch}
+            className="cursor-pointer text-[14px] font-semibold text-[#fa7119]"
+          >
+            Try again
+          </button>
+        </div>
       ) : groups.length === 0 ? (
         <p className="py-8 text-center text-[14px] text-[#64748b]">No activity found.</p>
       ) : (
         <>
+          {isError && (
+            <div className="flex items-center justify-between gap-3 rounded-[12px] bg-[#fef2f2] px-4 py-3 dark:bg-[#2a1515]">
+              <p className="text-[13px] text-[#b91c1c] dark:text-[#fca5a5]">
+                Couldn&apos;t load {failedLabel}. Showing what loaded.
+              </p>
+              <button
+                onClick={refetch}
+                className="shrink-0 cursor-pointer text-[13px] font-semibold text-[#fa7119]"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
           {groups.map(([dayKey, items]) => (
             <ActivityGroup
               key={dayKey}
@@ -92,7 +151,7 @@ export default function ActivityPage() {
             <button
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
-              className="py-3 text-center text-[14px] font-semibold text-[#fa7119] disabled:opacity-50"
+              className="py-3 text-center text-[14px] font-semibold text-[#fa7119] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isFetchingNextPage ? "Loading..." : "Load more"}
             </button>

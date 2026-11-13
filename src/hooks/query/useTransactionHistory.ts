@@ -3,8 +3,8 @@
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
-import { getAuthTokenFromStorage } from "@/lib/auth";
-import fetchy from "@/lib/fetchy";
+import { getAuthTokenFromStorage, getUserFromToken } from "@/lib/auth";
+import fetchy, { FetchyError } from "@/lib/fetchy";
 
 export interface DcaTransaction {
   id: string;
@@ -35,10 +35,6 @@ interface PaginatedTransactions {
   has_more?: boolean;
 }
 
-interface TransactionListResponse {
-  transactions: RawTransaction[] | PaginatedTransactions;
-}
-
 const PAGE_SIZE = 20;
 
 function toNumber(value: string | number | undefined | null): number {
@@ -61,26 +57,29 @@ function normalize(tx: RawTransaction): DcaTransaction {
 }
 
 // All DCA purchase attempts (success, pending, cancelled, failed, chargeback),
-// paginated oldest page first via `has_more`, sorted oldest-first within the
+// paginated newest page first via `has_more`, sorted oldest-first within the
 // flattened result with numeric fields normalized.
-export function useTransactionHistory() {
+export function useTransactionHistory({ enabled = true }: { enabled?: boolean } = {}) {
   const authToken = getAuthTokenFromStorage();
+  const userId = getUserFromToken()?.id ?? "";
 
   const query = useInfiniteQuery({
-    queryKey: queryKeys.transactions,
+    queryKey: queryKeys.transactions(userId),
     queryFn: async ({ pageParam }) => {
-      const data = await fetchy.get<TransactionListResponse>(
-        `/api/transaction/list?page=${pageParam}&limit=${PAGE_SIZE}`,
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-          shouldCache: false,
+      let data: RawTransaction[] | PaginatedTransactions;
+      try {
+        data = await fetchy.get<RawTransaction[] | PaginatedTransactions>(
+          `/transaction/list?page=${pageParam}&limit=${PAGE_SIZE}`
+        );
+      } catch (error) {
+        if (error instanceof FetchyError && error.status === 404) {
+          return { transactions: [], hasMore: false };
         }
-      );
+        throw error;
+      }
 
-      const nested = Array.isArray(data.transactions) ? null : data.transactions;
-      const raw = Array.isArray(data.transactions)
-        ? data.transactions
-        : (nested?.transactions ?? []);
+      const nested = Array.isArray(data) ? null : data;
+      const raw = Array.isArray(data) ? data : (nested?.transactions ?? []);
 
       return {
         transactions: raw.map(normalize),
@@ -89,7 +88,7 @@ export function useTransactionHistory() {
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => (lastPage.hasMore ? allPages.length + 1 : undefined),
-    enabled: !!authToken,
+    enabled: enabled && !!authToken,
     staleTime: 1000 * 60 * 5,
   });
 

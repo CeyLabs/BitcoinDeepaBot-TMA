@@ -4,7 +4,7 @@ import { NewsDetailBackButton, NewsArticleCard } from "@/components/dashboard/ne
 import { fmtShortDate } from "@/lib/formatters";
 import { getNewsArticles } from "@/lib/news";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 export default async function NewsArticleDetailPage({
   params,

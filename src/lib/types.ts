@@ -113,7 +113,10 @@ export interface ActivityItem {
     settledOn: string;
     btcSats: number;
     btcPriceUsd?: number;
-    btcPriceLkr: number;
+    /** Omit when there's no real price for this transaction (e.g. bot transfers) — show `memo` instead */
+    btcPriceLkr?: number;
+    /** Transfer note from the sender, shown in place of the price panel when there's no real price */
+    memo?: string;
     transactionId: string;
   };
 }
@@ -179,4 +182,20 @@ export interface DCSummary {
     usd: number;
     lkr: number;
   };
+}
+
+// Sats sent/received to other Telegram users via the bot (BitcoinDeepa API).
+export interface BotTransaction {
+  id: number;
+  time: string;
+  direction: "incoming" | "outgoing";
+  from_id: number;
+  to_id: number;
+  from_user?: string;
+  to_user?: string;
+  type: string;
+  amount: number;
+  amount_lkr: string | number | null;
+  memo?: string;
+  success: boolean;
 }

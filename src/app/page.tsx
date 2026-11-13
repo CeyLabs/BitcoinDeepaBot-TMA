@@ -13,6 +13,7 @@ import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
 import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
 import { useUserCount } from "@/hooks/query/useUserCount";
 import { useIsTelegramEnv } from "@/hooks/useIsTelegramEnv";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import BrowserLoginScreen from "@/components/auth/BrowserLoginScreen";
 
 // ─── Shared progress bar ────────────────────────────────────────────────────
@@ -27,10 +28,23 @@ function getCurrentTierMax(n: number): number {
 }
 
 function UserProgress() {
-  const { count } = useUserCount();
+  const { count, isLoading } = useUserCount();
 
   const currentTierMax = getCurrentTierMax(count);
   const progressPct = Math.min((count / currentTierMax) * 100, 100);
+
+  // Avoid flashing "0 Joined" / "/100" before the count has loaded.
+  if (isLoading) {
+    return (
+      <div className="w-full space-y-2">
+        <Progress value={0} style={{ height: "8px" }} />
+        <div className="flex w-full items-baseline justify-between">
+          <div className="h-7 w-28 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
+          <div className="h-4 w-12 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full space-y-2">
@@ -162,6 +176,7 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
 // Uses Telegram SDK hooks that throw outside the Telegram WebView — only
 // mount this once we've confirmed we're running inside Telegram.
 function TelegramHome() {
+  const router = useRouter();
   const initLaunchParams = useLaunchParams().initData;
   const launchParams = useLaunchParams();
   const initData = useInitData();
@@ -172,7 +187,7 @@ function TelegramHome() {
     return initLaunchParams || initData;
   }, [initLaunchParams, initData]);
 
-  useRegisterTelegramUser(authData, launchParams);
+  const registerUser = useRegisterTelegramUser(authData, launchParams);
 
   useEffect(() => {
     setUserID(authData?.user?.id?.toString() || "");
@@ -186,9 +201,45 @@ function TelegramHome() {
     }
   }, [isExistingUser]);
 
+  // Cached from a previous launch's 409 response (see
+  // useRegisterTelegramUser) — lets a known returning user skip straight to
+  // the dashboard without waiting on the network at all.
+  const [cachedReturningUser] = useState(() => getIsExistingUserFromStorage());
+
+  // /api/user (Mongo-backed) already fires on every launch — read its
+  // result instead of ignoring it. status 409 means this Telegram id was
+  // already registered, i.e. a returning user, who skips straight to the
+  // dashboard. It only fires when the profile has a username; without one,
+  // treat the visitor as new rather than waiting on a call that never runs.
+  const canCheckExisting = !!(authData?.user?.id && authData?.user?.username);
+  const isReturningUser = cachedReturningUser || registerUser.data?.status === 409;
+  const checkPending =
+    !cachedReturningUser &&
+    canCheckExisting &&
+    registerUser.data === undefined &&
+    !registerUser.isError;
+
+  // /dashboard's useAuthGuard bounces back to / without a token, so only
+  // redirect once one exists — otherwise a returning user with no token
+  // (auth still in flight, auth failed, or just logged out) loops between
+  // / and /dashboard. useRegisterUser mints the token asynchronously; the
+  // redirect fires as soon as it lands.
+  const authToken = useAuthToken();
+  const shouldRedirect = isReturningUser && !!authToken;
+
+  useEffect(() => {
+    if (shouldRedirect) {
+      router.replace("/dashboard?tab=wallet");
+    }
+  }, [shouldRedirect, router]);
+
+  if (checkPending || shouldRedirect) {
+    return <PageShell>{null}</PageShell>;
+  }
+
   return (
     <PageShell>
-      <UserScreen isExisting={isExisting} />
+      <UserScreen isExisting={isExisting || isReturningUser} />
     </PageShell>
   );
 }
