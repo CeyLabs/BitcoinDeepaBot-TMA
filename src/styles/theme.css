@@ -170,6 +170,18 @@ html[data-theme="light"] body {
   background-color: #ffffff;
 }
 
+/*
+  The installed PWA draws edge to edge (viewport-fit=cover + iOS
+  black-translucent status bar), so keep content out from under the status
+  bar. Browsers and Telegram report a 0 top inset, so this only matters
+  standalone. The bottom inset is handled by the fixed bottom navigation.
+*/
+@media (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
 #tg-ui-root {
   color: var(--text-primary);
 }

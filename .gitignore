@@ -16,6 +16,9 @@
 # production
 /build
 
+# generated service worker (from src/sw.template.js, see scripts/stamp-sw.mjs)
+/public/sw.js
+
 # misc
 .DS_Store
 *.pem

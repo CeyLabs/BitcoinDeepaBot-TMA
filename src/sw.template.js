@@ -1,8 +1,13 @@
-const CACHE_VERSION = "v2";
-const STATIC_CACHE = `bd-static-${CACHE_VERSION}`;
-// Hashed build chunks live in their own cache, capped so old deploys' chunks
-// (never requested again) don't pile up forever.
-const ASSET_CACHE = `bd-assets-${CACHE_VERSION}`;
+// Service worker TEMPLATE. scripts/stamp-sw.mjs replaces "__BUILD__" with the
+// commit sha and writes public/sw.js on every build — don't edit public/sw.js
+// (it's gitignored). Every deploy changes these bytes, which is what makes
+// browsers pick up a new worker.
+const BUILD = "__BUILD__";
+const PREFIX = "bd-";
+const STATIC_CACHE = `${PREFIX}static-${BUILD}`;
+// Hashed build chunks live in their own cache, capped so a long-lived
+// install doesn't pile up chunks it will never request again.
+const ASSET_CACHE = `${PREFIX}assets-${BUILD}`;
 const MAX_ASSET_ENTRIES = 200;
 const OFFLINE_URL = "/offline.html";
 
@@ -17,6 +22,9 @@ self.addEventListener("install", (event) => {
   );
 });
 
+// Cache Storage is shared across the origin — only delete our own (bd-*)
+// caches from previous builds. Safe to skipWaiting/claim: we never cache
+// HTML or API data, only hashed assets and icons, wiped per build.
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
@@ -24,7 +32,7 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((key) => key !== STATIC_CACHE && key !== ASSET_CACHE)
+            .filter((key) => key.startsWith(PREFIX) && key !== STATIC_CACHE && key !== ASSET_CACHE)
             .map((key) => caches.delete(key))
         )
       )
@@ -57,7 +65,7 @@ async function trimCache(cache, max) {
 }
 
 // Hashed Next.js build assets and local images are immutable — safe to
-// cache-first. Old deploys' chunks are evicted by trimCache.
+// cache-first. The cache is per build, so old deploys' assets go with it.
 async function handleStaticAsset(request) {
   const cache = await caches.open(ASSET_CACHE);
   const cached = await cache.match(request);

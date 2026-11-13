@@ -8,6 +8,7 @@ import { authenticateWithTelegramOidc, saveAuthToStorage } from "@/lib/auth";
 import type { TelegramOidcAuthData } from "@/lib/auth";
 import { TELEGRAM_BOT_URL } from "@/lib/constants";
 import TelegramLoginButton from "@/components/auth/TelegramLoginButton";
+import { InstallButton } from "@/pwa";
 
 /**
  * Shown when the app is opened outside Telegram (a plain browser tab).
@@ -59,8 +60,7 @@ export default function BrowserLoginScreen() {
       </Title>
 
       <p className="text-muted-foreground mt-2 max-w-sm text-[15px] dark:text-[#64748b]">
-        Bitcoin Deepa runs best inside Telegram. Sign in with your Telegram account to continue in
-        the browser.
+        Sign in with your Telegram account to continue.
       </p>
 
       <div className="mt-8">
@@ -74,11 +74,13 @@ export default function BrowserLoginScreen() {
       )}
       {error && <p className="mt-4 text-[13px] text-red-500">{error}</p>}
 
+      <InstallButton className="mt-8 max-w-xs" />
+
       <a
         href={TELEGRAM_BOT_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-8 block w-full max-w-xs"
+        className="mt-3 block w-full max-w-xs"
       >
         <Button mode="outline" size="l" stretched style={{ borderRadius: "12px" }}>
           Open in Telegram Instead

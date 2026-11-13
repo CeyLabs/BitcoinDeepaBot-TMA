@@ -7,10 +7,9 @@ import { createWebPlatform } from "./web";
 import type { Platform } from "./types";
 
 /**
- * Root layout loads telegram-web-app.js unconditionally, which stubs
- * window.Telegram.WebApp even in a plain browser — so its mere presence is a
- * false positive. The async "complete" isTMA() round-trips a real Mini Apps
- * method call and only resolves true if Telegram actually answers.
+ * The async "complete" isTMA() round-trips a real Mini Apps method call and
+ * only resolves true if Telegram actually answers — launch params alone can
+ * be copied into a normal browser.
  */
 async function detectTelegram(): Promise<boolean> {
   // Cast around the ambient overload set — depending on which of

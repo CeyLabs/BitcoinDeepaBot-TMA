@@ -123,7 +123,7 @@ export default function BottomNavigation() {
   const activeHref = pendingHref ?? pathname;
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-100">
+    <div className="fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-50 mx-auto max-w-100">
       <SegmentedControl
         className={cn(
           "flex! h-auto! w-full! rounded-full! p-1!",

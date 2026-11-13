@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "@/styles/theme.css";
 import "@telegram-apps/telegram-ui/dist/styles.css";
 import Providers from "./context/providers";
-import { RegisterServiceWorker } from "./register-sw";
+import { PwaSetup } from "@/pwa";
 import Script from "next/script";
 import { cn } from "@/lib/cn";
 
@@ -25,7 +25,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fa7119",
+  // Draw edge to edge; safe-area padding is applied in styles/theme.css.
+  viewportFit: "cover",
+  // Status bar / browser chrome matches the page background.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#1b2027" },
+  ],
 };
 
 export default function RootLayout({
@@ -40,7 +46,6 @@ export default function RootLayout({
         <meta httpEquiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
         <meta httpEquiv="Pragma" content="no-cache" />
         <meta httpEquiv="Expires" content="0" />
-        <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-ZJK26JTL2R"
           strategy="afterInteractive"
@@ -55,7 +60,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={`${inter.className} min-h-screen leading-tight`}>
-        <RegisterServiceWorker />
+        <PwaSetup />
         <Providers>{children}</Providers>
       </body>
     </html>

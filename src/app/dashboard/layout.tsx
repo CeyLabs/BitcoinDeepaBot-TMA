@@ -16,7 +16,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useSubscriptionCurrent();
 
   return (
-    <div className="bg-surface-main mx-auto flex min-h-screen max-w-md flex-col gap-5 px-5 pt-5 pb-22">
+    // Phone-width column. On wider screens (desktop web) it's framed as a
+    // card so it doesn't look like a stray strip.
+    <div className="bg-surface-main mx-auto flex min-h-screen max-w-md flex-col gap-5 px-5 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:my-6 md:min-h-[calc(100vh-3rem)] md:rounded-[24px] md:shadow-[0px_4px_24px_0px_rgba(0,0,0,0.08)] md:ring-1 md:ring-black/5 dark:md:ring-white/5">
       {children}
       <BottomNavigation />
     </div>

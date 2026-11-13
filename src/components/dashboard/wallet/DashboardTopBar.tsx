@@ -6,6 +6,7 @@ import { VisibleToggle } from "@/components/ui/visible-toggle";
 import { useUser } from "@/hooks/useUser";
 import { useStore } from "@/lib/store";
 import { useSession } from "@/hooks/useSession";
+import { InstallButton } from "@/pwa";
 import { haptic, usePlatform } from "@/platform";
 
 export function DashboardTopBar() {
@@ -28,6 +29,7 @@ export function DashboardTopBar() {
         </p>
       </div>
       <div className="flex items-center gap-2">
+        <InstallButton variant="icon" />
         {kind === "web" && (
           <IconButton
             mode="gray"
