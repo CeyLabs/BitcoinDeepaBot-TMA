@@ -41,6 +41,20 @@ export async function GET(request: Request) {
     });
 
     if (!response.ok) {
+      if (response.status === 404) {
+        // No bot transactions for this user — same shape as a real empty page.
+        return NextResponse.json(
+          {
+            success: true,
+            count: 0,
+            limit: Number(limit),
+            offset: Number(offset),
+            transactions: [],
+          },
+          { status: 200 }
+        );
+      }
+
       const errorData = await response.text();
       return NextResponse.json(
         {

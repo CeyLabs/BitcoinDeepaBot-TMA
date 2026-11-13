@@ -38,6 +38,9 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
         openTelegramLink("https://t.me/+iiP-rX7ldYxjZWU1");
         break;
       case "task-share-story": {
+        // null = the async isTMA check hasn't resolved yet; ignore the tap
+        // rather than wrongly telling a Telegram user to open Telegram.
+        if (isTelegramEnv === null) return;
         if (!isTelegramEnv) {
           setSnackbarError("Open this app inside Telegram to share a story.");
           return;

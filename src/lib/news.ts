@@ -108,7 +108,9 @@ function toArticle(item: FeedItem, index: number): NewsArticle | null {
 
 async function fetchNewsArticles(): Promise<NewsArticle[]> {
   const response = await fetch(FEED_URL, { next: { revalidate: 900 } });
-  if (!response.ok) return [];
+  // Throw rather than return [] — unstable_cache doesn't store thrown errors,
+  // so one failed feed fetch won't blank news for the whole revalidate window.
+  if (!response.ok) throw new Error(`News feed fetch failed: HTTP ${response.status}`);
 
   const xml = await response.text();
   const feed = await parser.parseString(xml);
@@ -126,6 +128,15 @@ async function fetchNewsArticles(): Promise<NewsArticle[]> {
 
 // Caches the parsed+sanitized article list (not just the raw feed fetch), so the
 // list and detail pages share one parse pass instead of redoing it per request.
-export const getNewsArticles = unstable_cache(fetchNewsArticles, ["news-articles"], {
+const getCachedNewsArticles = unstable_cache(fetchNewsArticles, ["news-articles"], {
   revalidate: 900,
 });
+
+export async function getNewsArticles(): Promise<NewsArticle[]> {
+  try {
+    return await getCachedNewsArticles();
+  } catch (error) {
+    console.error("Error loading news articles:", error);
+    return [];
+  }
+}

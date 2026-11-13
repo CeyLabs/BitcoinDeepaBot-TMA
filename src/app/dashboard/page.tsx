@@ -27,7 +27,7 @@ export default function WalletPage() {
     currentBtcPrice,
     currentBtcPriceUsd,
     currentValueLkr,
-  } = useWalletMetrics();
+  } = useWalletMetrics({ withTransactions: true });
 
   return (
     <div className="flex w-full flex-col gap-5">
