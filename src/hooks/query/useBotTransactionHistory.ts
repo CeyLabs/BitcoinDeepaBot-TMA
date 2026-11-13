@@ -30,11 +30,7 @@ export function useBotTransactionHistory({ enabled = true }: { enabled?: boolean
       let data: BotTransactionsResponse;
       try {
         data = await fetchy.get<BotTransactionsResponse>(
-          `/transaction/bot-history?limit=${PAGE_SIZE}&offset=${pageParam}`,
-          {
-            headers: { Authorization: `Bearer ${authToken}` },
-            shouldCache: false,
-          }
+          `/transaction/bot-history?limit=${PAGE_SIZE}&offset=${pageParam}`
         );
       } catch (error) {
         // No bot transactions for this user.

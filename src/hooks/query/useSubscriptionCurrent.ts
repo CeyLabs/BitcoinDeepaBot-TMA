@@ -30,10 +30,7 @@ export function useSubscriptionCurrent() {
     queryFn: async () => {
       let sub: RawSubscription;
       try {
-        sub = await fetchy.get<RawSubscription>("/subscription/current", {
-          headers: { Authorization: `Bearer ${authToken}` },
-          shouldCache: false,
-        });
+        sub = await fetchy.get<RawSubscription>("/subscription/current");
       } catch (error) {
         // Backend 404s when the user has no subscription.
         if (error instanceof FetchyError && error.status === 404) return null;
