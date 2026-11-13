@@ -5,14 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Clock } from "lucide-react";
 import { Button } from "@telegram-apps/telegram-ui";
-import { useBackButton } from "@/platform";
+import { BackButton } from "@/components/ui/back-button";
 import { cn } from "@/lib/cn";
 import type { NewsArticle } from "@/lib/types";
 
 export function NewsDetailBackButton() {
   const router = useRouter();
-  useBackButton(() => router.push("/dashboard/news"));
-  return null;
+  return <BackButton onBack={() => router.push("/dashboard/news")} />;
 }
 
 export function NewsArticleCard({ article }: { article: NewsArticle }) {

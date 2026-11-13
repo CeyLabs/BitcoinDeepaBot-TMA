@@ -91,6 +91,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
 // ─── User screen (new + existing share everything but copy/icons) ─────────────
 
 function UserScreen({ isExisting }: { isExisting: boolean }) {
+  const { openTelegramLink } = usePlatform();
   return (
     <div className="flex w-full flex-col">
       <Title level="2" weight="2" className="max-w-sm self-center text-center leading-snug">
@@ -158,14 +159,13 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
       </div>
 
       <div className="mt-5 flex flex-col items-center gap-2">
-        <Link
-          href={TELEGRAM_BOT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={() => openTelegramLink(TELEGRAM_BOT_URL)}
           className="text-primary text-[15px] font-semibold"
         >
           {isExisting ? "Open Telegram Community" : "Join Our Community"}
-        </Link>
+        </button>
         <p className="text-muted-foreground text-[13px]">@{TELEGRAM_BOT_USERNAME}</p>
       </div>
     </div>

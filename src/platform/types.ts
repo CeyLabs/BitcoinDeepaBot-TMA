@@ -27,6 +27,14 @@ export interface StoryParams {
   widget_link: { url: string; name: string };
 }
 
+export interface ShareInput {
+  url: string;
+  text?: string;
+}
+
+/** "copied" = no share sheet available, the link was copied instead. */
+export type ShareResult = "shared" | "copied" | "dismissed";
+
 export interface ConfirmOptions {
   title: string;
   message: string;
@@ -53,6 +61,8 @@ export interface Platform {
   /** t.me links — stays inside the Telegram client when possible. */
   openTelegramLink(url: string): void;
   shareStory(mediaUrl: string, params: StoryParams): void;
+  /** Share a link: Telegram's share sheet, the native share sheet, or copy. */
+  share(input: ShareInput): Promise<ShareResult>;
   confirm(options: ConfirmOptions): Promise<boolean>;
   /**
    * Host light/dark mode (Telegram only — colors always come from our own

@@ -7,6 +7,8 @@ import { TaskFilterTabs, type TaskFilter } from "@/components/dashboard/tasks/Ta
 import { TaskListCard } from "@/components/dashboard/tasks/TaskListCard";
 import { haptic, usePlatform } from "@/platform";
 import { useStore } from "@/lib/store";
+import { useUser } from "@/hooks/useUser";
+import { getInviteUrl, TELEGRAM_BOT_URL } from "@/lib/constants";
 import type { Task } from "@/lib/types";
 
 export interface ManageTasksSectionProps {
@@ -17,38 +19,37 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
   const [filter, setFilter] = useState<TaskFilter>("all");
   const [snackbarError, setSnackbarError] = useState<string | null>(null);
   const platform = usePlatform();
-  const { userID, count } = useStore();
+  const { count } = useStore();
+  const { id: userId } = useUser();
 
   const filtered = useMemo(() => {
-    if (filter === "all") return items;
-    return items.filter((item) => item.frequency === filter);
-  }, [items, filter]);
+    // Story sharing only exists inside Telegram — hide the task elsewhere.
+    const available = platform.capabilities.stories
+      ? items
+      : items.filter((item) => item.id !== "task-share-story");
+    if (filter === "all") return available;
+    return available.filter((item) => item.frequency === filter);
+  }, [items, filter, platform.capabilities.stories]);
 
   const handleTaskClick = (taskId: string) => {
     switch (taskId) {
       case "task-setup-wallet":
         haptic.impact("medium");
-        platform.openTelegramLink("https://t.me/BitcoinDeepaBot");
+        platform.openTelegramLink(TELEGRAM_BOT_URL);
         break;
       case "task-join-community":
         haptic.impact("medium");
         platform.openTelegramLink("https://t.me/+iiP-rX7ldYxjZWU1");
         break;
       case "task-share-story": {
-        // null = platform detection hasn't finished; ignore the tap rather
-        // than wrongly telling a Telegram user to open Telegram.
-        if (platform.kind === null) return;
-        if (!platform.capabilities.stories) {
-          setSnackbarError("Open this app inside Telegram to share a story.");
-          return;
-        }
+        if (!platform.capabilities.stories) return;
         // The WebApp API can throw on clients without story support.
         try {
           haptic.impact("heavy");
           platform.shareStory("https://ceyloncash.com/bitcoindeepa/tma/story.mp4", {
-            text: `Proud OG Member of Bitcoin දීප. ${count} Citizens and Counting 🚀🔥\n\nhttps://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}\n\n#bitcoindeepa @bitcoindeepabot #viralstory`,
+            text: `Proud OG Member of Bitcoin දීප. ${count} Citizens and Counting 🚀🔥\n\n${getInviteUrl(userId)}\n\n#bitcoindeepa @bitcoindeepabot #viralstory`,
             widget_link: {
-              url: `https://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}`,
+              url: getInviteUrl(userId),
               name: "Inner Circle Entry",
             },
           });

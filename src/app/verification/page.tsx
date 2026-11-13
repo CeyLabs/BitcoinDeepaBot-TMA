@@ -9,7 +9,8 @@ import { Drawer } from "@xelene/vaul-with-scroll-fix";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useUser } from "@/hooks/useUser";
 import { useKycStatus } from "@/hooks/query/useKyc";
-import { haptic, useBackButton, usePlatform } from "@/platform";
+import { haptic, usePlatform } from "@/platform";
+import { BackButton } from "@/components/ui/back-button";
 import type { User } from "@/lib/types";
 
 type VerificationStatus = NonNullable<User["kycStatus"]> | null;
@@ -104,8 +105,6 @@ export default function VerificationIntroPage() {
   const status: VerificationStatus = kycData?.status ?? null;
   const verificationUrl = kycData?.url;
 
-  useBackButton(() => router.push("/dashboard"));
-
   useEffect(() => {
     if (status === "APPROVED") {
       haptic.notify("success");
@@ -142,6 +141,10 @@ export default function VerificationIntroPage() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0b0f14]">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-8 pb-6">
+        <BackButton
+          onBack={() => router.push("/dashboard")}
+          className="bg-white/10 text-white dark:text-white"
+        />
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-[24px] leading-7 font-bold text-white">
             {content?.title ?? "Verify Your Identity"}

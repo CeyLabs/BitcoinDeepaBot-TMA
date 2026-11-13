@@ -12,7 +12,8 @@ import { useCancelSubscription } from "@/hooks/query/useCancelSubscription";
 import { useUser } from "@/hooks/useUser";
 import { useSession } from "@/hooks/useSession";
 import { useKycStatus } from "@/hooks/query/useKyc";
-import { haptic, useBackButton, usePlatform } from "@/platform";
+import { haptic, usePlatform } from "@/platform";
+import { BackButton } from "@/components/ui/back-button";
 import LoadingPage from "@/components/LoadingPage";
 import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotice";
 import { PageTitle } from "@/components/ui/page-title";
@@ -53,7 +54,7 @@ export default function ChoosePlanPage() {
 
   // Without an active plan, /dashboard/plans immediately redirects back here —
   // going back there would loop, so fall back to the wallet page instead.
-  useBackButton(() => router.push(subscription?.isActive ? "/dashboard/plans" : "/dashboard"));
+  const goBack = () => router.push(subscription?.isActive ? "/dashboard/plans" : "/dashboard");
 
   const currentPlan = useMemo(
     () =>
@@ -139,6 +140,7 @@ export default function ChoosePlanPage() {
   if (kyc?.status !== "APPROVED") {
     return (
       <div className="bg-surface-main mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
+        <BackButton onBack={goBack} />
         <KycRequiredNotice />
       </div>
     );
@@ -146,6 +148,7 @@ export default function ChoosePlanPage() {
 
   return (
     <div className="bg-surface-main mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
+      <BackButton onBack={goBack} />
       {currentPlan ? (
         <PageTitle title="Manage your Plan" subtitle="View or switch to another plan" />
       ) : (

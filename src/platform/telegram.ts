@@ -63,6 +63,12 @@ export function createTelegramPlatform(launch: TelegramLaunch | null = readLaunc
     openLink: (url) => getWebApp().openLink(url),
     openTelegramLink: (url) => getWebApp().openTelegramLink(url),
     shareStory: (mediaUrl, params) => getWebApp().shareToStory(mediaUrl, params),
+    share: async ({ url, text }) => {
+      const params = new URLSearchParams({ url });
+      if (text) params.set("text", text);
+      getWebApp().openTelegramLink(`https://t.me/share/url?${params}`);
+      return "shared";
+    },
     confirm: async ({ title, message, confirmText, destructive }) => {
       try {
         const buttonId = await initPopup().open({

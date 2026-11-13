@@ -1,4 +1,4 @@
-import type { Platform } from "./types";
+import type { Platform, ShareInput, ShareResult } from "./types";
 
 function isMobileBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
@@ -15,6 +15,20 @@ function openInNewTab(url: string) {
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
+async function shareOrCopy({ url, text }: ShareInput): Promise<ShareResult> {
+  if (typeof navigator.share === "function") {
+    try {
+      await navigator.share({ url, text });
+      return "shared";
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return "dismissed";
+      // Other failures (e.g. not allowed here) — fall back to copying.
+    }
+  }
+  await navigator.clipboard.writeText(text ? `${text}\n${url}` : url);
+  return "copied";
+}
+
 /** Plain browser / installed PWA. Also used as the fallback while detection runs. */
 export function createWebPlatform(kind: Platform["kind"] = "web"): Platform {
   return {
@@ -27,6 +41,7 @@ export function createWebPlatform(kind: Platform["kind"] = "web"): Platform {
     shareStory: () => {
       throw new Error("Story sharing is only available inside Telegram");
     },
+    share: shareOrCopy,
     confirm: async ({ title, message }) => window.confirm(`${title}\n\n${message}`),
     getColorScheme: () => null,
     onColorSchemeChange: () => null,

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { Button, Title } from "@telegram-apps/telegram-ui";
 import { useTheme } from "@/app/context/theme";
 import { authenticateWithTelegramOidc, saveAuthToStorage } from "@/lib/auth";
@@ -75,11 +74,16 @@ export default function BrowserLoginScreen() {
       )}
       {error && <p className="mt-4 text-[13px] text-red-500">{error}</p>}
 
-      <Link href={TELEGRAM_BOT_URL} className="mt-8 block w-full max-w-xs">
+      <a
+        href={TELEGRAM_BOT_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-8 block w-full max-w-xs"
+      >
         <Button mode="outline" size="l" stretched style={{ borderRadius: "12px" }}>
           Open in Telegram Instead
         </Button>
-      </Link>
+      </a>
     </main>
   );
 }
