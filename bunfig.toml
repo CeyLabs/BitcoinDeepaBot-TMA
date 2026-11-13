@@ -1,3 +1,0 @@
-[install]
-# Save new dependencies with exact versions (no ^ or ~). See issue #63.
-exact = true
