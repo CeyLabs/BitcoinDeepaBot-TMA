@@ -7,6 +7,9 @@ import { PwaSetup } from "@/pwa";
 import Script from "next/script";
 import { cn } from "@/lib/cn";
 
+// Google Analytics is opt-in per deployment, so forks don't report to ours.
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
@@ -46,18 +49,22 @@ export default function RootLayout({
         <meta httpEquiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
         <meta httpEquiv="Pragma" content="no-cache" />
         <meta httpEquiv="Expires" content="0" />
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-ZJK26JTL2R"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-                        window.dataLayer = window.dataLayer || [];
-                        function gtag(){dataLayer.push(arguments);}
-                        gtag('js', new Date());
-                        gtag('config', 'G-ZJK26JTL2R');
-                    `}
-        </Script>
+        {GA_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', ${JSON.stringify(GA_ID)});
+              `}
+            </Script>
+          </>
+        )}
       </head>
       <body className={`${inter.className} min-h-screen leading-tight`}>
         <PwaSetup />

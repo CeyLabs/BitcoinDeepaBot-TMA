@@ -2,7 +2,7 @@ import { API_BASE_URL } from "@/lib/constants";
 
 export interface TelegramAuthResponse {
   token?: string;
-  user?: any;
+  user?: unknown;
   isRegistered?: boolean;
   message?: string;
 }
