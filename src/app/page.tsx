@@ -1,19 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useInitData, useLaunchParams } from "@telegram-apps/sdk-react";
 import { Badge, Button, Cell, Navigation, Progress, Title } from "@telegram-apps/telegram-ui";
 import { useTheme } from "@/app/context/theme";
 import { useStore } from "@/lib/store";
-import { getAuthTokenFromStorage, getIsExistingUserFromStorage, isAuthenticated } from "@/lib/auth";
+import { getIsExistingUserFromStorage } from "@/lib/auth";
 import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
 import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
 import { useUserCount } from "@/hooks/query/useUserCount";
-import { useIsTelegramEnv } from "@/hooks/useIsTelegramEnv";
-import { useAuthToken } from "@/hooks/useAuthToken";
+import { usePlatform } from "@/platform";
+import { useSession } from "@/hooks/useSession";
 import BrowserLoginScreen from "@/components/auth/BrowserLoginScreen";
 
 // ─── Shared progress bar ────────────────────────────────────────────────────
@@ -92,6 +91,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
 // ─── User screen (new + existing share everything but copy/icons) ─────────────
 
 function UserScreen({ isExisting }: { isExisting: boolean }) {
+  const { openTelegramLink } = usePlatform();
   return (
     <div className="flex w-full flex-col">
       <Title level="2" weight="2" className="max-w-sm self-center text-center leading-snug">
@@ -159,47 +159,32 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
       </div>
 
       <div className="mt-5 flex flex-col items-center gap-2">
-        <Link
-          href={TELEGRAM_BOT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={() => openTelegramLink(TELEGRAM_BOT_URL)}
           className="text-primary text-[15px] font-semibold"
         >
           {isExisting ? "Open Telegram Community" : "Join Our Community"}
-        </Link>
+        </button>
         <p className="text-muted-foreground text-[13px]">@{TELEGRAM_BOT_USERNAME}</p>
       </div>
     </div>
   );
 }
 
-// Uses Telegram SDK hooks that throw outside the Telegram WebView — only
-// mount this once we've confirmed we're running inside Telegram.
+// Only mounted once the platform is known to be Telegram.
 function TelegramHome() {
   const router = useRouter();
-  const initLaunchParams = useLaunchParams().initData;
-  const launchParams = useLaunchParams();
-  const initData = useInitData();
+  const launch = usePlatform().launch;
   const { setUserID, isExistingUser } = useStore();
-  const [isExisting, setIsExisting] = useState(false);
 
-  const authData = useMemo(() => {
-    return initLaunchParams || initData;
-  }, [initLaunchParams, initData]);
+  const authData = launch?.initData;
 
-  const registerUser = useRegisterTelegramUser(authData, launchParams);
+  const registerUser = useRegisterTelegramUser(authData, launch?.raw);
 
   useEffect(() => {
     setUserID(authData?.user?.id?.toString() || "");
   }, [authData, setUserID]);
-
-  useEffect(() => {
-    const token = getAuthTokenFromStorage();
-    const existing = isExistingUser || getIsExistingUserFromStorage();
-    if (token || existing) {
-      setIsExisting(true);
-    }
-  }, [isExistingUser]);
 
   // Cached from a previous launch's 409 response (see
   // useRegisterTelegramUser) — lets a known returning user skip straight to
@@ -224,8 +209,9 @@ function TelegramHome() {
   // (auth still in flight, auth failed, or just logged out) loops between
   // / and /dashboard. useRegisterUser mints the token asynchronously; the
   // redirect fires as soon as it lands.
-  const authToken = useAuthToken();
+  const { token: authToken } = useSession();
   const shouldRedirect = isReturningUser && !!authToken;
+  const isExisting = !!authToken || isExistingUser || cachedReturningUser;
 
   useEffect(() => {
     if (shouldRedirect) {
@@ -246,28 +232,25 @@ function TelegramHome() {
 
 export default function Home() {
   const router = useRouter();
-  const isTelegramEnv = useIsTelegramEnv();
-  const [isBrowserAuthed, setIsBrowserAuthed] = useState(() => isAuthenticated());
+  const { kind } = usePlatform();
+  const { status } = useSession();
+  const isBrowserAuthed = status === "authenticated";
 
   useEffect(() => {
-    if (isTelegramEnv === false && isBrowserAuthed) {
+    if (kind === "web" && isBrowserAuthed) {
       router.replace("/dashboard?tab=wallet");
     }
-  }, [isTelegramEnv, isBrowserAuthed, router]);
+  }, [kind, isBrowserAuthed, router]);
 
-  // Still running the non-throwing isTMA() check — avoid flashing either UI.
-  if (isTelegramEnv === null) {
+  // Platform detection still running — avoid flashing either UI.
+  if (kind === null) {
     return <PageShell>{null}</PageShell>;
   }
 
-  if (isTelegramEnv === false) {
+  if (kind === "web") {
     // Already authenticated — redirecting into /dashboard above; render
     // nothing in the meantime instead of flashing the login screen.
-    return isBrowserAuthed ? (
-      <PageShell>{null}</PageShell>
-    ) : (
-      <BrowserLoginScreen onLoggedIn={() => setIsBrowserAuthed(true)} />
-    );
+    return isBrowserAuthed ? <PageShell>{null}</PageShell> : <BrowserLoginScreen />;
   }
 
   return <TelegramHome />;

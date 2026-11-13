@@ -7,11 +7,10 @@ import { Button, Modal } from "@telegram-apps/telegram-ui";
 import { X } from "lucide-react";
 import { Drawer } from "@xelene/vaul-with-scroll-fix";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { useTelegramPlatform } from "@/hooks/useTelegramPlatform";
 import { useUser } from "@/hooks/useUser";
 import { useKycStatus } from "@/hooks/query/useKyc";
-import { useTelegramBackButton } from "@/hooks/useTgBackButton";
-import { haptic } from "@/lib/haptics";
+import { haptic, usePlatform } from "@/platform";
+import { BackButton } from "@/components/ui/back-button";
 import type { User } from "@/lib/types";
 
 type VerificationStatus = NonNullable<User["kycStatus"]> | null;
@@ -36,8 +35,8 @@ const STEPS = [
 ];
 
 const MOBILE_STEPS = [
-  "Open Telegram on your mobile phone",
-  "Navigate to our bot and access the mini app",
+  "Open Bitcoin Deepa on your phone, in Telegram or your mobile browser",
+  "Sign in with the same Telegram account",
   "Start the verification process from there",
 ];
 
@@ -96,15 +95,15 @@ const SHOW_STEPS_FOR: VerificationStatus[] = [
 export default function VerificationIntroPage() {
   const router = useRouter();
   const { id: userId } = useUser();
-  const { isMobile } = useTelegramPlatform();
+  const platform = usePlatform();
+  // Camera-based KYC needs a phone: the Telegram iOS/Android app or a mobile browser.
+  const isMobile = platform.isMobileDevice;
   const [showMobileWarning, setShowMobileWarning] = useState(false);
 
   const { data: kycData, refetch: refetchKycStatus } = useKycStatus();
 
   const status: VerificationStatus = kycData?.status ?? null;
   const verificationUrl = kycData?.url;
-
-  useTelegramBackButton(() => router.push("/dashboard"));
 
   useEffect(() => {
     if (status === "APPROVED") {
@@ -132,17 +131,7 @@ export default function VerificationIntroPage() {
     }
 
     if (verificationUrl) {
-      const telegramWebApp = (
-        window as unknown as {
-          Telegram?: { WebApp?: { openLink?: (url: string) => void } };
-        }
-      ).Telegram?.WebApp;
-
-      if (telegramWebApp?.openLink) {
-        telegramWebApp.openLink(verificationUrl);
-      } else {
-        window.open(verificationUrl);
-      }
+      platform.openLink(verificationUrl);
     }
   };
 
@@ -152,6 +141,10 @@ export default function VerificationIntroPage() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0b0f14]">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-8 pb-6">
+        <BackButton
+          onBack={() => router.push("/dashboard")}
+          className="bg-white/10 text-white dark:text-white"
+        />
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-[24px] leading-7 font-bold text-white">
             {content?.title ?? "Verify Your Identity"}

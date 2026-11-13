@@ -74,35 +74,20 @@
   }
 }
 
-/* Default theme variables - backgrounds handled by BotFather settings */
+/* App-wide variables (dark values by default; .light overrides below). */
 :root {
-  --tg-theme-link-color: #62bcf9;
-  --tg-theme-section-bg-color: #18222d;
-  --tg-theme-button-color: #fa7119;
-  --tg-color-scheme: dark;
-  --tg-theme-destructive-text-color: #ef5b5b;
-  --tg-theme-hint-color: #b1c3d5;
-  --tg-theme-subtitle-text-color: #b1c3d5;
-  --tg-theme-section-header-text-color: #b1c3d5;
-  --tg-theme-secondary-bg-color: #131415;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-text-color: #ffffff;
-  --tg-theme-accent-text-color: #2ea6ff;
-  --tg-viewport-height: 100vh;
-  --tg-viewport-stable-height: 100vh;
-
   /* Brand accent — always Bitcoin Deepa orange, never overridden by Telegram */
   --brand-accent: #ff9900;
 
   /* Dark slate surface used for selected/active pill states (e.g. Activity tab filters) */
   --surface-gift: #1f2a36;
 
-  /* Custom theme-aware colors - only text and components */
-  --text-primary: var(--tg-theme-text-color, #ffffff);
-  --text-secondary: var(--tg-theme-hint-color, #b1c3d5);
-  --bg-secondary: var(--tg-theme-secondary-bg-color, #131415);
-  --accent: var(--tg-theme-button-color, #fa7119);
-  --link: var(--tg-theme-link-color, #fa7119);
+  /* Theme-aware text and component colors */
+  --text-primary: #ffffff;
+  --text-secondary: #b1c3d5;
+  --bg-secondary: #131415;
+  --accent: #fa7119;
+  --link: #fa7119;
 
   /* Theme-aware card and border styles */
   --card-bg: rgba(100, 100, 100, 0.2);
@@ -116,12 +101,11 @@
   --text-muted: var(--muted-foreground);
 }
 
-/* Light theme overrides - only text colors, not backgrounds */
+/* Light theme overrides */
 .light {
-  --tg-color-scheme: light;
-  --text-primary: var(--tg-theme-text-color, #000000);
-  --text-secondary: var(--tg-theme-hint-color, #666666);
-  --bg-secondary: var(--tg-theme-secondary-bg-color, #f5f5f5);
+  --text-primary: #000000;
+  --text-secondary: #666666;
+  --bg-secondary: #f5f5f5;
 
   /* Light theme card styles */
   --card-bg: rgba(0, 0, 0, 0.05);
@@ -139,13 +123,65 @@
   --color-surface-glass: #00000099;
 }
 
+/*
+  telegram-ui components read Telegram's --tg-theme-* variables. We pin them
+  to the Bitcoin Deepa palette instead of the user's Telegram colors, so the
+  app looks the same in Telegram, the browser and the installed PWA. Only
+  light/dark comes from Telegram (see app/context/theme.tsx).
+*/
+.dark {
+  --tg-theme-bg-color: #212121;
+  --tg-theme-header-bg-color: #212121;
+  --tg-theme-secondary-bg-color: #131415;
+  --tg-theme-section-bg-color: #18222d;
+  --tg-theme-text-color: #ffffff;
+  --tg-theme-hint-color: #b1c3d5;
+  --tg-theme-subtitle-text-color: #b1c3d5;
+  --tg-theme-section-header-text-color: #b1c3d5;
+  --tg-theme-link-color: #fa7119;
+  --tg-theme-button-color: #fa7119;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-accent-text-color: #2ea6ff;
+  --tg-theme-destructive-text-color: #ef5b5b;
+}
+
+.light {
+  --tg-theme-bg-color: #ffffff;
+  --tg-theme-header-bg-color: #ffffff;
+  --tg-theme-secondary-bg-color: #efeff4;
+  --tg-theme-section-bg-color: #ffffff;
+  --tg-theme-text-color: #000000;
+  --tg-theme-hint-color: #707579;
+  --tg-theme-subtitle-text-color: #707579;
+  --tg-theme-section-header-text-color: #707579;
+  --tg-theme-link-color: #fa7119;
+  --tg-theme-button-color: #fa7119;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-accent-text-color: #2ea6ff;
+  --tg-theme-destructive-text-color: #e53935;
+}
+
+/* <html data-theme> is set by ThemeProvider; body sits outside the themed wrapper. */
 body {
-  background-color: var(--tg-theme-bg-color, #212121);
+  background-color: #212121;
+}
+
+html[data-theme="light"] body {
+  background-color: #ffffff;
+}
+
+/*
+  The installed PWA draws edge to edge (viewport-fit=cover + iOS
+  black-translucent status bar), so keep content out from under the status
+  bar. Browsers and Telegram report a 0 top inset, so this only matters
+  standalone. The bottom inset is handled by the fixed bottom navigation.
+*/
+@media (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+  }
 }
 
 #tg-ui-root {
-  /* Only set text color, background handled by BotFather */
   color: var(--text-primary);
-  --tg-theme-button-color: #fa7119;
-  --tg-theme-link-color: #fa7119;
 }

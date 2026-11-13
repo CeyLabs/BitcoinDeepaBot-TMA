@@ -3,25 +3,26 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
+import { getIsExistingUserFromStorage } from "@/lib/auth";
+import { useSession } from "@/hooks/useSession";
 
 /**
- * Redirects to / when there's no auth token, otherwise syncs
+ * Redirects to / whenever there's no valid session — on mount, and also later
+ * if the token expires or the backend rejects it (401). Otherwise syncs
  * isExistingUser from storage into the store.
  */
 export function useAuthGuard() {
   const router = useRouter();
+  const { status } = useSession();
   const { isExistingUser, setIsExistingUser } = useStore();
 
   useEffect(() => {
-    const token = getAuthTokenFromStorage();
-
-    if (token) {
+    if (status === "authenticated") {
       setIsExistingUser(getIsExistingUserFromStorage());
-    } else {
-      router.push("/");
+    } else if (status === "unauthenticated") {
+      router.replace("/");
     }
-  }, [router, setIsExistingUser]);
+  }, [status, router, setIsExistingUser]);
 
   return { isExistingUser };
 }

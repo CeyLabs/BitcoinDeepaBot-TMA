@@ -2,7 +2,7 @@
 
 import { Button } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
-import { haptic } from "@/lib/haptics";
+import { haptic } from "@/platform";
 
 export type GiftFilter = "all" | "received" | "sent";
 

@@ -5,14 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Clock } from "lucide-react";
 import { Button } from "@telegram-apps/telegram-ui";
-import { useTelegramBackButton } from "@/hooks/useTgBackButton";
+import { BackButton } from "@/components/ui/back-button";
 import { cn } from "@/lib/cn";
 import type { NewsArticle } from "@/lib/types";
 
 export function NewsDetailBackButton() {
   const router = useRouter();
-  useTelegramBackButton(() => router.push("/dashboard/news"));
-  return null;
+  return <BackButton onBack={() => router.push("/dashboard/news")} />;
 }
 
 export function NewsArticleCard({ article }: { article: NewsArticle }) {
@@ -33,7 +32,7 @@ export function NewsArticleCard({ article }: { article: NewsArticle }) {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <h3 className="text-[16px] leading-5 font-bold text-[#1b2027] dark:text-white line-clamp-3">
+        <h3 className="line-clamp-3 text-[16px] leading-5 font-bold text-[#1b2027] dark:text-white">
           {article.title}
         </h3>
         <div className="flex min-w-0 items-center gap-1.5 text-[12px] text-[#64748b] dark:text-[#94a3b8]">

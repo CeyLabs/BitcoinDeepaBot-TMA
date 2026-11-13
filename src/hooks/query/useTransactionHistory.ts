@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
-import { getAuthTokenFromStorage, getUserFromToken } from "@/lib/auth";
+import { useSession } from "@/hooks/useSession";
 import fetchy, { FetchyError } from "@/lib/fetchy";
 
 export interface DcaTransaction {
@@ -60,8 +60,9 @@ function normalize(tx: RawTransaction): DcaTransaction {
 // paginated newest page first via `has_more`, sorted oldest-first within the
 // flattened result with numeric fields normalized.
 export function useTransactionHistory({ enabled = true }: { enabled?: boolean } = {}) {
-  const authToken = getAuthTokenFromStorage();
-  const userId = getUserFromToken()?.id ?? "";
+  const session = useSession();
+  const isAuthed = session.status === "authenticated";
+  const userId = session.user?.id ?? "";
 
   const query = useInfiniteQuery({
     queryKey: queryKeys.transactions(userId),
@@ -88,7 +89,7 @@ export function useTransactionHistory({ enabled = true }: { enabled?: boolean } 
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => (lastPage.hasMore ? allPages.length + 1 : undefined),
-    enabled: enabled && !!authToken,
+    enabled: enabled && isAuthed,
     staleTime: 1000 * 60 * 5,
   });
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { SegmentedControl } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
-import { haptic } from "@/lib/haptics";
+import { haptic } from "@/platform";
 import { useTheme } from "@/app/context/theme";
 
 // Icons are inlined (not next/image) so `fill="currentColor"` can pick up the
@@ -123,7 +123,7 @@ export default function BottomNavigation() {
   const activeHref = pendingHref ?? pathname;
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-100">
+    <div className="fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-50 mx-auto max-w-100">
       <SegmentedControl
         className={cn(
           "flex! h-auto! w-full! rounded-full! p-1!",

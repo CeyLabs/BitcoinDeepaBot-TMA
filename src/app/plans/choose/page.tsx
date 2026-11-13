@@ -3,18 +3,17 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { initPopup } from "@telegram-apps/sdk-react";
 import { Button, Snackbar } from "@telegram-apps/telegram-ui";
 import { CheckCircle2, AlertCircle } from "lucide-react";
-import { getAuthTokenFromStorage } from "@/lib/auth";
 import fetchy, { FetchyError } from "@/lib/fetchy";
 import { usePayHereRedirect } from "@/lib/hooks";
-import { haptic } from "@/lib/haptics";
 import { usePackages } from "@/hooks/query/usePackages";
 import { useCancelSubscription } from "@/hooks/query/useCancelSubscription";
 import { useUser } from "@/hooks/useUser";
+import { useSession } from "@/hooks/useSession";
 import { useKycStatus } from "@/hooks/query/useKyc";
-import { useTelegramBackButton } from "@/hooks/useTgBackButton";
+import { haptic, usePlatform } from "@/platform";
+import { BackButton } from "@/components/ui/back-button";
 import LoadingPage from "@/components/LoadingPage";
 import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotice";
 import { PageTitle } from "@/components/ui/page-title";
@@ -36,7 +35,8 @@ export default function ChoosePlanPage() {
   const { data: kyc, isLoading: kycLoading } = useKycStatus();
   const router = useRouter();
   const redirectToPayHereViaPage = usePayHereRedirect();
-  const authToken = getAuthTokenFromStorage();
+  const platform = usePlatform();
+  const { status: sessionStatus } = useSession();
   const { subscription } = useUser();
   const cancelSubscription = useCancelSubscription();
 
@@ -54,9 +54,7 @@ export default function ChoosePlanPage() {
 
   // Without an active plan, /dashboard/plans immediately redirects back here —
   // going back there would loop, so fall back to the wallet page instead.
-  useTelegramBackButton(() =>
-    router.push(subscription?.isActive ? "/dashboard/plans" : "/dashboard")
-  );
+  const goBack = () => router.push(subscription?.isActive ? "/dashboard/plans" : "/dashboard");
 
   const currentPlan = useMemo(
     () =>
@@ -80,7 +78,7 @@ export default function ChoosePlanPage() {
 
   const handleSubscribe = async () => {
     const plan = packages.find((p) => p.id === selectedPlanId);
-    if (!plan || !authToken) return;
+    if (!plan || sessionStatus !== "authenticated") return;
 
     haptic.impact("medium");
 
@@ -109,24 +107,12 @@ export default function ChoosePlanPage() {
   };
 
   const handleCancel = async () => {
-    // initPopup() throws outside Telegram (no native popup API there) — fall
-    // back to the browser's own confirm dialog in that case.
-    let confirmed: boolean;
-    try {
-      const buttonId = await initPopup().open({
-        title: "Cancel Plan",
-        message: "Your membership rewards will stop accruing immediately. This can't be undone.",
-        buttons: [
-          { id: "cancel", type: "destructive", text: "Cancel Plan" },
-          { id: "keep", type: "cancel" },
-        ],
-      });
-      confirmed = buttonId === "cancel";
-    } catch {
-      confirmed = window.confirm(
-        "Cancel Plan? Your membership rewards will stop accruing immediately. This can't be undone."
-      );
-    }
+    const confirmed = await platform.confirm({
+      title: "Cancel Plan",
+      message: "Your membership rewards will stop accruing immediately. This can't be undone.",
+      confirmText: "Cancel Plan",
+      destructive: true,
+    });
     if (!confirmed) return;
 
     haptic.impact("rigid");
@@ -154,6 +140,7 @@ export default function ChoosePlanPage() {
   if (kyc?.status !== "APPROVED") {
     return (
       <div className="bg-surface-main mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
+        <BackButton onBack={goBack} />
         <KycRequiredNotice />
       </div>
     );
@@ -161,6 +148,7 @@ export default function ChoosePlanPage() {
 
   return (
     <div className="bg-surface-main mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
+      <BackButton onBack={goBack} />
       {currentPlan ? (
         <PageTitle title="Manage your Plan" subtitle="View or switch to another plan" />
       ) : (

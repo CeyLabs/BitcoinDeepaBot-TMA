@@ -5,9 +5,9 @@ import { Button, Input } from "@telegram-apps/telegram-ui";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useKycInitiate, useUpdateProfile } from "@/hooks/query/useKyc";
-import { useTelegramBackButton } from "@/hooks/useTgBackButton";
+import { haptic } from "@/platform";
+import { BackButton } from "@/components/ui/back-button";
 import { useUser } from "@/hooks/useUser";
-import { haptic } from "@/lib/haptics";
 import { createUserSchema, type CreateUserFormData } from "@/lib/validations";
 
 const FIELDS: Array<{
@@ -48,8 +48,6 @@ export default function VerificationDetailsPage() {
       country: "Sri Lanka",
     },
   });
-
-  useTelegramBackButton(() => router.push("/verification"));
 
   const error =
     updateProfile.error instanceof Error
@@ -96,6 +94,10 @@ export default function VerificationDetailsPage() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0b0f14]">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-8 pb-6">
+        <BackButton
+          onBack={() => router.push("/verification")}
+          className="bg-white/10 text-white dark:text-white"
+        />
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-[24px] leading-7 font-bold text-white">Your Details</h1>
           <p className="text-[14px] leading-4.5 text-[#94a3b8]">
