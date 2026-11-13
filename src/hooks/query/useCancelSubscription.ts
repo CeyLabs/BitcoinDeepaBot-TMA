@@ -12,7 +12,7 @@ export function useCancelSubscription() {
   return useMutation({
     mutationFn: () =>
       fetchy.post<{ message?: string }, Record<string, never>>(
-        "/api/subscription/cancel",
+        "/subscription/cancel",
         {},
         { headers: { Authorization: `Bearer ${authToken}` } }
       ),

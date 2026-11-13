@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { getAuthTokenFromStorage, getUserFromToken } from "@/lib/auth";
-import fetchy from "@/lib/fetchy";
+import fetchy, { FetchyError } from "@/lib/fetchy";
 
 export interface DcaTransaction {
   id: string;
@@ -33,10 +33,6 @@ interface RawTransaction {
 interface PaginatedTransactions {
   transactions: RawTransaction[];
   has_more?: boolean;
-}
-
-interface TransactionListResponse {
-  transactions: RawTransaction[] | PaginatedTransactions;
 }
 
 const PAGE_SIZE = 20;
@@ -70,18 +66,24 @@ export function useTransactionHistory({ enabled = true }: { enabled?: boolean } 
   const query = useInfiniteQuery({
     queryKey: queryKeys.transactions(userId),
     queryFn: async ({ pageParam }) => {
-      const data = await fetchy.get<TransactionListResponse>(
-        `/api/transaction/list?page=${pageParam}&limit=${PAGE_SIZE}`,
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-          shouldCache: false,
+      let data: RawTransaction[] | PaginatedTransactions;
+      try {
+        data = await fetchy.get<RawTransaction[] | PaginatedTransactions>(
+          `/transaction/list?page=${pageParam}&limit=${PAGE_SIZE}`,
+          {
+            headers: { Authorization: `Bearer ${authToken}` },
+            shouldCache: false,
+          }
+        );
+      } catch (error) {
+        if (error instanceof FetchyError && error.status === 404) {
+          return { transactions: [], hasMore: false };
         }
-      );
+        throw error;
+      }
 
-      const nested = Array.isArray(data.transactions) ? null : data.transactions;
-      const raw = Array.isArray(data.transactions)
-        ? data.transactions
-        : (nested?.transactions ?? []);
+      const nested = Array.isArray(data) ? null : data;
+      const raw = Array.isArray(data) ? data : (nested?.transactions ?? []);
 
       return {
         transactions: raw.map(normalize),

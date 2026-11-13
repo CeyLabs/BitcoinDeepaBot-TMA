@@ -5,7 +5,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { getAuthTokenFromStorage, getUserFromToken } from "@/lib/auth";
 import type { BotTransaction } from "@/lib/types";
-import fetchy from "@/lib/fetchy";
+import fetchy, { FetchyError } from "@/lib/fetchy";
 
 interface BotTransactionsResponse {
   success: boolean;
@@ -27,13 +27,22 @@ export function useBotTransactionHistory({ enabled = true }: { enabled?: boolean
   const query = useInfiniteQuery({
     queryKey: queryKeys.botTransactions(userId),
     queryFn: async ({ pageParam }) => {
-      const data = await fetchy.get<BotTransactionsResponse>(
-        `/api/transaction/bot-history?limit=${PAGE_SIZE}&offset=${pageParam}`,
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-          shouldCache: false,
+      let data: BotTransactionsResponse;
+      try {
+        data = await fetchy.get<BotTransactionsResponse>(
+          `/transaction/bot-history?limit=${PAGE_SIZE}&offset=${pageParam}`,
+          {
+            headers: { Authorization: `Bearer ${authToken}` },
+            shouldCache: false,
+          }
+        );
+      } catch (error) {
+        // No bot transactions for this user.
+        if (error instanceof FetchyError && error.status === 404) {
+          return { transactions: [], nextOffset: pageParam, hasMore: false };
         }
-      );
+        throw error;
+      }
 
       // The backend reports bot-API failures as { success: false } rather
       // than an HTTP error — surface it as a query error instead of
