@@ -28,10 +28,23 @@ function getCurrentTierMax(n: number): number {
 }
 
 function UserProgress() {
-  const { count } = useUserCount();
+  const { count, isLoading } = useUserCount();
 
   const currentTierMax = getCurrentTierMax(count);
   const progressPct = Math.min((count / currentTierMax) * 100, 100);
+
+  // Avoid flashing "0 Joined" / "/100" before the count has loaded.
+  if (isLoading) {
+    return (
+      <div className="w-full space-y-2">
+        <Progress value={0} style={{ height: "8px" }} />
+        <div className="flex w-full items-baseline justify-between">
+          <div className="h-7 w-28 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
+          <div className="h-4 w-12 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full space-y-2">
