@@ -26,12 +26,13 @@ There is no test suite configured. Always run `bun run format` and `bun run buil
 ### API layer
 
 - All client-side HTTP calls MUST go through the `fetchy` wrapper (`src/lib/fetchy.ts`), not raw `fetch`. It sets JSON headers, parses JSON responses, and throws on non-OK responses.
-- API routes live in `src/app/api/**/route.ts` (auth, packages, subscription, transaction, user/kyc).
+- The browser calls the BitcoinDeepa-DCA-BE backend directly (CORS is enabled there). `fetchy` prefixes non-`/api/` paths with `NEXT_PUBLIC_API_BASE_URL`, and throws `FetchyError` (with `.status`) on non-OK responses.
+- The only Next.js API route left is `src/app/api/user/route.ts` (Mongo-backed user count/registration).
 - MongoDB connection via `src/db/connect.ts`; the only schema is a loosely-typed `User` model (`src/db/schema.ts`) with an `id`, `username`, and a free-form `data` object — most "shape" lives in TypeScript types (`src/lib/types.ts`), not the Mongoose schema.
 
 ### Auth flow
 
-- Telegram-based auth: `initData` from the Telegram WebView is exchanged for a token via `POST /api/auth/telegram`, handled by helpers in `src/lib/auth.ts` (`authenticateWithTelegram`, `registerUser`, `completeAuthFlow`).
+- Telegram-based auth: `initData` from the Telegram WebView is exchanged for a token via the backend's `POST /auth/telegram`, handled by `authenticateWithTelegram` in `src/lib/auth.ts` (browser login uses `authenticateWithTelegramOidc`).
 - Token and registration flag are persisted in `localStorage` under `bitcoin-deepa-auth-token` / `bitcoin-deepa-is-existing-user` (see the `*FromStorage` helpers in `src/lib/auth.ts`).
 - `src/hooks/useAuthGuard.ts` is invoked from `src/app/dashboard/layout.tsx` to gate the whole dashboard section — protected pages must live under `src/app/dashboard/`.
 

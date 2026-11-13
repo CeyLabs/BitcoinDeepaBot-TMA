@@ -7,6 +7,7 @@ import { initPopup } from "@telegram-apps/sdk-react";
 import { Button, Snackbar } from "@telegram-apps/telegram-ui";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { getAuthTokenFromStorage } from "@/lib/auth";
+import fetchy, { FetchyError } from "@/lib/fetchy";
 import { usePayHereRedirect } from "@/lib/hooks";
 import { haptic } from "@/lib/haptics";
 import { usePackages } from "@/hooks/query/usePackages";
@@ -85,29 +86,22 @@ export default function ChoosePlanPage() {
 
     try {
       setPayhereLinkLoading(true);
-      const res = await fetch("/api/subscription/payhere-link", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ package_id: plan.id }),
-      });
-      const result = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 403 && result.redirectTo) {
-          router.push(result.redirectTo);
-          return;
-        }
-        throw new Error(result.message || "Failed to generate payment link");
-      }
+      const result = await fetchy.post<{ link?: string }, { package_id: string }>(
+        "/subscription/payhere-link",
+        { package_id: plan.id },
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
 
       if (result.link) {
         haptic.notify("success");
         redirectToPayHereViaPage(result.link);
       }
     } catch (err) {
+      // Backend's KycVerifiedGuard rejects with 403 until KYC is approved.
+      if (err instanceof FetchyError && err.status === 403) {
+        router.push("/verification");
+        return;
+      }
       haptic.notify("error");
       console.error(err);
     } finally {

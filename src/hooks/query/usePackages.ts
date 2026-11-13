@@ -33,7 +33,7 @@ export function usePackages() {
   return useQuery<SubscriptionPlan[]>({
     queryKey: queryKeys.packages,
     queryFn: async () => {
-      const data = await fetchy.get<PackagesResponse>("/api/packages", {
+      const data = await fetchy.get<PackagesResponse>("/package", {
         shouldCache: false,
       });
       const raw = Array.isArray(data) ? data : (data.packages ?? []);
