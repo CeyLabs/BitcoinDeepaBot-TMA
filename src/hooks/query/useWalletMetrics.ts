@@ -7,9 +7,19 @@ import { useTransactionHistory } from "@/hooks/query/useTransactionHistory";
 // transaction history. Both the dashboard and Manage My Plan read this so
 // "Current Value" stays identical across the app instead of drifting when
 // one screen's calculation is tweaked and the other isn't.
-export function useWalletMetrics() {
+//
+// `withTransactions` loads the DCA transaction list (the dashboard's portfolio
+// chart needs it). Screens that only need the numbers leave it off and only
+// fetch the list if the summary is missing the current BTC price fallback.
+export function useWalletMetrics({
+  withTransactions = false,
+}: { withTransactions?: boolean } = {}) {
   const { data: summary, isLoading: isSummaryLoading } = useWalletSummary();
-  const { transactions, isLoading: isTransactionsLoading } = useTransactionHistory();
+  const needsPriceFallback = !!summary && summary.current_btc_price?.lkr == null;
+  const loadTransactions = withTransactions || needsPriceFallback;
+  const { transactions, isLoading: isTransactionsLoading } = useTransactionHistory({
+    enabled: loadTransactions,
+  });
 
   const totalLkr = summary
     ? Number(
@@ -39,7 +49,7 @@ export function useWalletMetrics() {
   return {
     summary,
     transactions,
-    isLoading: isSummaryLoading || isTransactionsLoading,
+    isLoading: isSummaryLoading || (loadTransactions && isTransactionsLoading),
     totalLkr,
     totalSats,
     dcaSpent,

@@ -235,16 +235,23 @@ export const clearIsExistingUserInStorage = () => {
   localStorage.removeItem("bitcoin-deepa-is-existing-user");
 };
 
+// Fired on the window whenever the stored auth token is set or cleared, so
+// components can react to a token that arrives after they've mounted (the
+// TMA mints it asynchronously in useRegisterUser).
+export const AUTH_CHANGE_EVENT = "bitcoin-deepa-auth-change";
+
 export const saveAuthToStorage = (token: string) => {
   if (typeof window === "undefined") return;
   localStorage.setItem("bitcoin-deepa-auth-token", token);
   localStorage.setItem("bitcoin-deepa-is-existing-user", "true");
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
 };
 
 export const clearAuthFromStorage = () => {
   if (typeof window === "undefined") return;
   localStorage.removeItem("bitcoin-deepa-auth-token");
   localStorage.removeItem("bitcoin-deepa-is-existing-user");
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
 };
 
 export const isAuthenticated = (): boolean => {

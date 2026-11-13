@@ -16,7 +16,7 @@ export interface BotTransaction {
   to_user?: string;
   type: string;
   amount: number;
-  amount_lkr: string;
+  amount_lkr: string | number | null;
   memo?: string;
   success: boolean;
 }
@@ -33,8 +33,8 @@ interface BotTransactionsResponse {
 const PAGE_SIZE = 50;
 
 // Sats sent/received to other Telegram users via the bot, paginated
-// oldest page first via offset/limit, sorted oldest-first once flattened.
-export function useBotTransactionHistory() {
+// newest page first via offset/limit, sorted oldest-first once flattened.
+export function useBotTransactionHistory({ enabled = true }: { enabled?: boolean } = {}) {
   const authToken = getAuthTokenFromStorage();
 
   const query = useInfiniteQuery({
@@ -48,18 +48,24 @@ export function useBotTransactionHistory() {
         }
       );
 
-      const transactions = data.success ? data.transactions : [];
-      const hasMore = data.success && data.offset + transactions.length < data.count;
+      // The backend reports bot-API failures as { success: false } rather
+      // than an HTTP error — surface it as a query error instead of
+      // silently rendering "no transactions".
+      if (!data.success) {
+        throw new Error(data.message || "Failed to load bot transactions");
+      }
 
-      return {
-        transactions,
-        nextOffset: data.offset + PAGE_SIZE,
-        hasMore,
-      };
+      const { transactions } = data;
+      // Advance by what was actually returned (the backend may cap `limit`),
+      // and stop on an empty page even if `count` disagrees.
+      const nextOffset = data.offset + transactions.length;
+      const hasMore = transactions.length > 0 && nextOffset < data.count;
+
+      return { transactions, nextOffset, hasMore };
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextOffset : undefined),
-    enabled: !!authToken,
+    enabled: enabled && !!authToken,
     staleTime: 1000 * 60 * 5,
   });
 

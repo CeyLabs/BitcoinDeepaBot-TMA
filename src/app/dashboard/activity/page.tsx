@@ -25,8 +25,12 @@ export default function ActivityPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<ActivityCategory>("all");
 
-  const dca = useTransactionHistory();
-  const botHistory = useBotTransactionHistory();
+  const showDca = category === "all" || category === "plans";
+  const showBotHistory = category === "all" || category === "transactions";
+
+  // Only fetch the sources the current tab actually shows.
+  const dca = useTransactionHistory({ enabled: showDca });
+  const botHistory = useBotTransactionHistory({ enabled: showBotHistory });
 
   const activity = useMemo(
     () => [
@@ -36,12 +40,15 @@ export default function ActivityPage() {
     [dca.transactions, botHistory.transactions]
   );
 
-  const showDca = category !== "transactions";
-  const showBotHistory = category === "transactions";
-  const isLoading =
-    (showDca && dca.isLoading) || (showBotHistory && botHistory.isLoading);
+  const isLoading = (showDca && dca.isLoading) || (showBotHistory && botHistory.isLoading);
+  const isError = (showDca && dca.isError) || (showBotHistory && botHistory.isError);
+  const refetch = () => {
+    if (showDca && dca.isError) dca.refetch();
+    if (showBotHistory && botHistory.isError) botHistory.refetch();
+  };
   const hasNextPage = (showDca && dca.hasNextPage) || (showBotHistory && botHistory.hasNextPage);
-  const isFetchingNextPage = dca.isFetchingNextPage || botHistory.isFetchingNextPage;
+  const isFetchingNextPage =
+    (showDca && dca.isFetchingNextPage) || (showBotHistory && botHistory.isFetchingNextPage);
   const fetchNextPage = () => {
     if (showDca && dca.hasNextPage) dca.fetchNextPage();
     if (showBotHistory && botHistory.hasNextPage) botHistory.fetchNextPage();
@@ -54,7 +61,7 @@ export default function ActivityPage() {
 
     const filtered = activity.filter((item) => {
       const itemCategory = getActivityCategory(item.type);
-      if (category === "all" ? itemCategory === "transactions" : itemCategory !== category) {
+      if (category !== "all" && itemCategory !== category) {
         return false;
       }
       if (!search.trim()) return true;
@@ -97,6 +104,16 @@ export default function ActivityPage() {
         <ActivitySkeleton />
       ) : comingSoon ? (
         <p className="py-8 text-center text-[14px] text-[#64748b]">Coming soon.</p>
+      ) : isError && groups.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 py-8">
+          <p className="text-center text-[14px] text-[#64748b]">Couldn&apos;t load activity.</p>
+          <button
+            onClick={refetch}
+            className="cursor-pointer text-[14px] font-semibold text-[#fa7119]"
+          >
+            Try again
+          </button>
+        </div>
       ) : groups.length === 0 ? (
         <p className="py-8 text-center text-[14px] text-[#64748b]">No activity found.</p>
       ) : (

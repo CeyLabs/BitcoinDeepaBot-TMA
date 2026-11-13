@@ -89,14 +89,19 @@ export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityIte
 
 // A bot-relayed sats transfer to/from another Telegram user maps onto the
 // "sent"/"received" activity type based on `direction`.
-function parseLkr(value: string): number {
+// The bot API's amount_lkr is typed as a formatted string ("1,234.50") but
+// may arrive as a number or null — handle all three instead of throwing.
+function parseLkr(value: string | number | null | undefined): number {
+  if (value === null || value === undefined) return 0;
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
   return Number(value.replace(/,/g, "")) || 0;
 }
 
 export function mapBotTransactionToActivityItem(tx: BotTransaction): ActivityItem {
   const isOutgoing = tx.direction === "outgoing";
   const counterpartyRaw = isOutgoing ? tx.to_user : tx.from_user;
-  const counterparty = counterpartyRaw?.replace(/^@/, "") ?? String(isOutgoing ? tx.to_id : tx.from_id);
+  const counterparty =
+    counterpartyRaw?.replace(/^@/, "") ?? String(isOutgoing ? tx.to_id : tx.from_id);
   const lkr = parseLkr(tx.amount_lkr);
 
   return {

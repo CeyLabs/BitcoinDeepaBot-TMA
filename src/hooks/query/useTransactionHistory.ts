@@ -61,9 +61,9 @@ function normalize(tx: RawTransaction): DcaTransaction {
 }
 
 // All DCA purchase attempts (success, pending, cancelled, failed, chargeback),
-// paginated oldest page first via `has_more`, sorted oldest-first within the
+// paginated newest page first via `has_more`, sorted oldest-first within the
 // flattened result with numeric fields normalized.
-export function useTransactionHistory() {
+export function useTransactionHistory({ enabled = true }: { enabled?: boolean } = {}) {
   const authToken = getAuthTokenFromStorage();
 
   const query = useInfiniteQuery({
@@ -89,7 +89,7 @@ export function useTransactionHistory() {
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => (lastPage.hasMore ? allPages.length + 1 : undefined),
-    enabled: !!authToken,
+    enabled: enabled && !!authToken,
     staleTime: 1000 * 60 * 5,
   });
 

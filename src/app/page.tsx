@@ -13,6 +13,7 @@ import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
 import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
 import { useUserCount } from "@/hooks/query/useUserCount";
 import { useIsTelegramEnv } from "@/hooks/useIsTelegramEnv";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import BrowserLoginScreen from "@/components/auth/BrowserLoginScreen";
 
 // ─── Shared progress bar ────────────────────────────────────────────────────
@@ -205,19 +206,27 @@ function TelegramHome() {
     registerUser.data === undefined &&
     !registerUser.isError;
 
+  // /dashboard's useAuthGuard bounces back to / without a token, so only
+  // redirect once one exists — otherwise a returning user with no token
+  // (auth still in flight, auth failed, or just logged out) loops between
+  // / and /dashboard. useRegisterUser mints the token asynchronously; the
+  // redirect fires as soon as it lands.
+  const authToken = useAuthToken();
+  const shouldRedirect = isReturningUser && !!authToken;
+
   useEffect(() => {
-    if (isReturningUser) {
+    if (shouldRedirect) {
       router.replace("/dashboard?tab=wallet");
     }
-  }, [isReturningUser, router]);
+  }, [shouldRedirect, router]);
 
-  if (checkPending || isReturningUser) {
+  if (checkPending || shouldRedirect) {
     return <PageShell>{null}</PageShell>;
   }
 
   return (
     <PageShell>
-      <UserScreen isExisting={isExisting} />
+      <UserScreen isExisting={isExisting || isReturningUser} />
     </PageShell>
   );
 }
