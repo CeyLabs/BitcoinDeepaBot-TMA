@@ -3,18 +3,16 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { initPopup } from "@telegram-apps/sdk-react";
 import { Button, Snackbar } from "@telegram-apps/telegram-ui";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { getAuthTokenFromStorage } from "@/lib/auth";
 import fetchy, { FetchyError } from "@/lib/fetchy";
 import { usePayHereRedirect } from "@/lib/hooks";
-import { haptic } from "@/lib/haptics";
 import { usePackages } from "@/hooks/query/usePackages";
 import { useCancelSubscription } from "@/hooks/query/useCancelSubscription";
 import { useUser } from "@/hooks/useUser";
 import { useKycStatus } from "@/hooks/query/useKyc";
-import { useTelegramBackButton } from "@/hooks/useTgBackButton";
+import { haptic, useBackButton, usePlatform } from "@/platform";
 import LoadingPage from "@/components/LoadingPage";
 import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotice";
 import { PageTitle } from "@/components/ui/page-title";
@@ -36,6 +34,7 @@ export default function ChoosePlanPage() {
   const { data: kyc, isLoading: kycLoading } = useKycStatus();
   const router = useRouter();
   const redirectToPayHereViaPage = usePayHereRedirect();
+  const platform = usePlatform();
   const authToken = getAuthTokenFromStorage();
   const { subscription } = useUser();
   const cancelSubscription = useCancelSubscription();
@@ -54,9 +53,7 @@ export default function ChoosePlanPage() {
 
   // Without an active plan, /dashboard/plans immediately redirects back here —
   // going back there would loop, so fall back to the wallet page instead.
-  useTelegramBackButton(() =>
-    router.push(subscription?.isActive ? "/dashboard/plans" : "/dashboard")
-  );
+  useBackButton(() => router.push(subscription?.isActive ? "/dashboard/plans" : "/dashboard"));
 
   const currentPlan = useMemo(
     () =>
@@ -109,24 +106,12 @@ export default function ChoosePlanPage() {
   };
 
   const handleCancel = async () => {
-    // initPopup() throws outside Telegram (no native popup API there) — fall
-    // back to the browser's own confirm dialog in that case.
-    let confirmed: boolean;
-    try {
-      const buttonId = await initPopup().open({
-        title: "Cancel Plan",
-        message: "Your membership rewards will stop accruing immediately. This can't be undone.",
-        buttons: [
-          { id: "cancel", type: "destructive", text: "Cancel Plan" },
-          { id: "keep", type: "cancel" },
-        ],
-      });
-      confirmed = buttonId === "cancel";
-    } catch {
-      confirmed = window.confirm(
-        "Cancel Plan? Your membership rewards will stop accruing immediately. This can't be undone."
-      );
-    }
+    const confirmed = await platform.confirm({
+      title: "Cancel Plan",
+      message: "Your membership rewards will stop accruing immediately. This can't be undone.",
+      confirmText: "Cancel Plan",
+      destructive: true,
+    });
     if (!confirmed) return;
 
     haptic.impact("rigid");

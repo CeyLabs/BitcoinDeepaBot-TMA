@@ -8,8 +8,10 @@ import { useBackButtonRaw } from "@telegram-apps/sdk-react";
  * page's lifetime. Uses the "raw" (non-throwing) resource hook — the plain
  * useBackButton() throws outside Telegram, where there's no such control to
  * show; here we just no-op instead.
+ *
+ * Must be rendered inside PlatformProvider (which mounts the SDKProvider).
  */
-export function useTelegramBackButton(onBack: () => void) {
+export function useBackButton(onBack: () => void) {
   const backButton = useBackButtonRaw(true)?.result;
 
   // Callers typically pass an inline arrow function, which is a new reference

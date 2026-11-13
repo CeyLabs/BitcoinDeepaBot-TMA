@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useInitData, useLaunchParams } from "@telegram-apps/sdk-react";
 import { Badge, Button, Cell, Navigation, Progress, Title } from "@telegram-apps/telegram-ui";
 import { useTheme } from "@/app/context/theme";
 import { useStore } from "@/lib/store";
@@ -12,7 +11,7 @@ import { getAuthTokenFromStorage, getIsExistingUserFromStorage, isAuthenticated 
 import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
 import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
 import { useUserCount } from "@/hooks/query/useUserCount";
-import { useIsTelegramEnv } from "@/hooks/useIsTelegramEnv";
+import { usePlatform } from "@/platform";
 import { useAuthToken } from "@/hooks/useAuthToken";
 import BrowserLoginScreen from "@/components/auth/BrowserLoginScreen";
 
@@ -173,21 +172,16 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
   );
 }
 
-// Uses Telegram SDK hooks that throw outside the Telegram WebView — only
-// mount this once we've confirmed we're running inside Telegram.
+// Only mounted once the platform is known to be Telegram.
 function TelegramHome() {
   const router = useRouter();
-  const initLaunchParams = useLaunchParams().initData;
-  const launchParams = useLaunchParams();
-  const initData = useInitData();
+  const launch = usePlatform().launch;
   const { setUserID, isExistingUser } = useStore();
   const [isExisting, setIsExisting] = useState(false);
 
-  const authData = useMemo(() => {
-    return initLaunchParams || initData;
-  }, [initLaunchParams, initData]);
+  const authData = launch?.initData;
 
-  const registerUser = useRegisterTelegramUser(authData, launchParams);
+  const registerUser = useRegisterTelegramUser(authData, launch?.raw);
 
   useEffect(() => {
     setUserID(authData?.user?.id?.toString() || "");
@@ -246,21 +240,21 @@ function TelegramHome() {
 
 export default function Home() {
   const router = useRouter();
-  const isTelegramEnv = useIsTelegramEnv();
+  const { kind } = usePlatform();
   const [isBrowserAuthed, setIsBrowserAuthed] = useState(() => isAuthenticated());
 
   useEffect(() => {
-    if (isTelegramEnv === false && isBrowserAuthed) {
+    if (kind === "web" && isBrowserAuthed) {
       router.replace("/dashboard?tab=wallet");
     }
-  }, [isTelegramEnv, isBrowserAuthed, router]);
+  }, [kind, isBrowserAuthed, router]);
 
-  // Still running the non-throwing isTMA() check — avoid flashing either UI.
-  if (isTelegramEnv === null) {
+  // Platform detection still running — avoid flashing either UI.
+  if (kind === null) {
     return <PageShell>{null}</PageShell>;
   }
 
-  if (isTelegramEnv === false) {
+  if (kind === "web") {
     // Already authenticated — redirecting into /dashboard above; render
     // nothing in the meantime instead of flashing the login screen.
     return isBrowserAuthed ? (

@@ -7,16 +7,15 @@ import { LogOut } from "lucide-react";
 import { VisibleToggle } from "@/components/ui/visible-toggle";
 import { useUser } from "@/hooks/useUser";
 import { useStore } from "@/lib/store";
-import { useIsTelegramEnv } from "@/hooks/useIsTelegramEnv";
 import { clearAuthFromStorage } from "@/lib/auth";
-import { haptic } from "@/lib/haptics";
+import { haptic, usePlatform } from "@/platform";
 
 export function DashboardTopBar() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { initials, displayName, photoUrl } = useUser();
   const { balanceVisible, toggleBalanceVisible } = useStore();
-  const isTelegramEnv = useIsTelegramEnv();
+  const { kind } = usePlatform();
 
   return (
     <div className="flex w-full items-center justify-between">
@@ -32,7 +31,7 @@ export function DashboardTopBar() {
         </p>
       </div>
       <div className="flex items-center gap-2">
-        {isTelegramEnv === false && (
+        {kind === "web" && (
           <IconButton
             mode="gray"
             size="m"

@@ -5,9 +5,8 @@ import { Button, Input } from "@telegram-apps/telegram-ui";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useKycInitiate, useUpdateProfile } from "@/hooks/query/useKyc";
-import { useTelegramBackButton } from "@/hooks/useTgBackButton";
+import { haptic, useBackButton } from "@/platform";
 import { useUser } from "@/hooks/useUser";
-import { haptic } from "@/lib/haptics";
 import { createUserSchema, type CreateUserFormData } from "@/lib/validations";
 
 const FIELDS: Array<{
@@ -49,7 +48,7 @@ export default function VerificationDetailsPage() {
     },
   });
 
-  useTelegramBackButton(() => router.push("/verification"));
+  useBackButton(() => router.push("/verification"));
 
   const error =
     updateProfile.error instanceof Error

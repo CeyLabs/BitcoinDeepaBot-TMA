@@ -2,7 +2,7 @@
 
 import { Card, Avatar, AvatarStack } from "@telegram-apps/telegram-ui";
 import Image from "next/image";
-import { useTMA } from "@/lib/hooks";
+import { usePlatform } from "@/platform";
 import { useStore } from "@/lib/store";
 
 export interface ReferralProgressCardProps {
@@ -13,7 +13,7 @@ export interface ReferralProgressCardProps {
 
 export function ReferralProgressCard({ joined, target, rewardSats }: ReferralProgressCardProps) {
   const progress = target > 0 ? Math.min(joined / target, 1) : 0;
-  const { openTelegramLink } = useTMA();
+  const { openTelegramLink } = usePlatform();
   const { userID } = useStore();
 
   const handleShare = () => {

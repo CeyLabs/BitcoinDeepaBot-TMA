@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { SegmentedControl } from "@telegram-apps/telegram-ui";
 import { cn } from "@/lib/cn";
-import { haptic } from "@/lib/haptics";
+import { haptic } from "@/platform";
 import { useTheme } from "@/app/context/theme";
 
 // Icons are inlined (not next/image) so `fill="currentColor"` can pick up the

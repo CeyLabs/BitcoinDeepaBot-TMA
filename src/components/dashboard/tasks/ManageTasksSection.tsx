@@ -5,10 +5,8 @@ import { Snackbar } from "@telegram-apps/telegram-ui";
 import { AlertCircle } from "lucide-react";
 import { TaskFilterTabs, type TaskFilter } from "@/components/dashboard/tasks/TaskFilterTabs";
 import { TaskListCard } from "@/components/dashboard/tasks/TaskListCard";
-import { useTMA } from "@/lib/hooks";
-import { haptic } from "@/lib/haptics";
+import { haptic, usePlatform } from "@/platform";
 import { useStore } from "@/lib/store";
-import { useIsTelegramEnv } from "@/hooks/useIsTelegramEnv";
 import type { Task } from "@/lib/types";
 
 export interface ManageTasksSectionProps {
@@ -18,9 +16,8 @@ export interface ManageTasksSectionProps {
 export function ManageTasksSection({ items }: ManageTasksSectionProps) {
   const [filter, setFilter] = useState<TaskFilter>("all");
   const [snackbarError, setSnackbarError] = useState<string | null>(null);
-  const { openTelegramLink, shareStory } = useTMA();
+  const platform = usePlatform();
   const { userID, count } = useStore();
-  const isTelegramEnv = useIsTelegramEnv();
 
   const filtered = useMemo(() => {
     if (filter === "all") return items;
@@ -31,24 +28,24 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
     switch (taskId) {
       case "task-setup-wallet":
         haptic.impact("medium");
-        openTelegramLink("https://t.me/BitcoinDeepaBot");
+        platform.openTelegramLink("https://t.me/BitcoinDeepaBot");
         break;
       case "task-join-community":
         haptic.impact("medium");
-        openTelegramLink("https://t.me/+iiP-rX7ldYxjZWU1");
+        platform.openTelegramLink("https://t.me/+iiP-rX7ldYxjZWU1");
         break;
       case "task-share-story": {
-        // null = the async isTMA check hasn't resolved yet; ignore the tap
-        // rather than wrongly telling a Telegram user to open Telegram.
-        if (isTelegramEnv === null) return;
-        if (!isTelegramEnv) {
+        // null = platform detection hasn't finished; ignore the tap rather
+        // than wrongly telling a Telegram user to open Telegram.
+        if (platform.kind === null) return;
+        if (!platform.capabilities.stories) {
           setSnackbarError("Open this app inside Telegram to share a story.");
           return;
         }
-        // useTMA can throw while its WebApp handle isn't ready yet.
+        // The WebApp API can throw on clients without story support.
         try {
           haptic.impact("heavy");
-          shareStory("https://ceyloncash.com/bitcoindeepa/tma/story.mp4", {
+          platform.shareStory("https://ceyloncash.com/bitcoindeepa/tma/story.mp4", {
             text: `Proud OG Member of Bitcoin දීප. ${count} Citizens and Counting 🚀🔥\n\nhttps://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}\n\n#bitcoindeepa @bitcoindeepabot #viralstory`,
             widget_link: {
               url: `https://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}`,

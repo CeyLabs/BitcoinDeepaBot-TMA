@@ -7,11 +7,9 @@ import { Button, Modal } from "@telegram-apps/telegram-ui";
 import { X } from "lucide-react";
 import { Drawer } from "@xelene/vaul-with-scroll-fix";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { useTelegramPlatform } from "@/hooks/useTelegramPlatform";
 import { useUser } from "@/hooks/useUser";
 import { useKycStatus } from "@/hooks/query/useKyc";
-import { useTelegramBackButton } from "@/hooks/useTgBackButton";
-import { haptic } from "@/lib/haptics";
+import { haptic, useBackButton, usePlatform } from "@/platform";
 import type { User } from "@/lib/types";
 
 type VerificationStatus = NonNullable<User["kycStatus"]> | null;
@@ -36,8 +34,8 @@ const STEPS = [
 ];
 
 const MOBILE_STEPS = [
-  "Open Telegram on your mobile phone",
-  "Navigate to our bot and access the mini app",
+  "Open Bitcoin Deepa on your phone, in Telegram or your mobile browser",
+  "Sign in with the same Telegram account",
   "Start the verification process from there",
 ];
 
@@ -96,7 +94,9 @@ const SHOW_STEPS_FOR: VerificationStatus[] = [
 export default function VerificationIntroPage() {
   const router = useRouter();
   const { id: userId } = useUser();
-  const { isMobile } = useTelegramPlatform();
+  const platform = usePlatform();
+  // Camera-based KYC needs a phone: the Telegram iOS/Android app or a mobile browser.
+  const isMobile = platform.isMobileDevice;
   const [showMobileWarning, setShowMobileWarning] = useState(false);
 
   const { data: kycData, refetch: refetchKycStatus } = useKycStatus();
@@ -104,7 +104,7 @@ export default function VerificationIntroPage() {
   const status: VerificationStatus = kycData?.status ?? null;
   const verificationUrl = kycData?.url;
 
-  useTelegramBackButton(() => router.push("/dashboard"));
+  useBackButton(() => router.push("/dashboard"));
 
   useEffect(() => {
     if (status === "APPROVED") {
@@ -132,17 +132,7 @@ export default function VerificationIntroPage() {
     }
 
     if (verificationUrl) {
-      const telegramWebApp = (
-        window as unknown as {
-          Telegram?: { WebApp?: { openLink?: (url: string) => void } };
-        }
-      ).Telegram?.WebApp;
-
-      if (telegramWebApp?.openLink) {
-        telegramWebApp.openLink(verificationUrl);
-      } else {
-        window.open(verificationUrl);
-      }
+      platform.openLink(verificationUrl);
     }
   };
 
