@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getAuthTokenFromStorage } from "@/lib/auth";
+import { useSession } from "@/hooks/useSession";
 import fetchy, { FetchyError } from "@/lib/fetchy";
 import { queryKeys } from "@/lib/query-keys";
 import type { Subscription } from "@/lib/types";
@@ -23,7 +23,7 @@ interface RawSubscription {
 }
 
 export function useSubscriptionCurrent() {
-  const authToken = getAuthTokenFromStorage();
+  const isAuthed = useSession().status === "authenticated";
 
   return useQuery<Subscription | null>({
     queryKey: queryKeys.subscriptionCurrent,
@@ -51,6 +51,6 @@ export function useSubscriptionCurrent() {
         payhereSubId: sub.payhere_sub_id,
       };
     },
-    enabled: !!authToken,
+    enabled: isAuthed,
   });
 }

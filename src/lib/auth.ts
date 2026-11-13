@@ -102,9 +102,54 @@ export async function authenticateWithTelegramOidc(idToken: string): Promise<Tel
  * Utility functions for authentication using localStorage
  */
 
+const AUTH_TOKEN_KEY = "bitcoin-deepa-auth-token";
+
+// Treat a token as expired slightly early, so a request doesn't leave with a
+// token that dies in flight (and to absorb small client clock skew).
+const EXPIRY_SKEW_MS = 30_000;
+
+/** Decodes a JWT's payload without verifying it (the backend verifies). */
+function decodeTokenPayload(token: string): Record<string, unknown> | null {
+  try {
+    const payloadSegment = token.split(".")[1];
+    if (!payloadSegment) return null;
+
+    const base64 = payloadSegment.replace(/-/g, "+").replace(/_/g, "/");
+    const json = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0"))
+        .join("")
+    );
+    const payload = JSON.parse(json);
+    return payload && typeof payload === "object" ? payload : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * True when the token is malformed or past its `exp` (backend tokens last 7
+ * days). A token without `exp` counts as valid — the backend is the judge,
+ * and a 401 from it still signs the user out (see fetchy).
+ */
+export const isTokenExpired = (token: string): boolean => {
+  const payload = decodeTokenPayload(token);
+  if (!payload) return true;
+  const exp = payload.exp;
+  if (typeof exp !== "number") return false;
+  return exp * 1000 - EXPIRY_SKEW_MS <= Date.now();
+};
+
+/**
+ * The stored auth token, or null when there is none or it has expired. An
+ * expired token is treated exactly like no token, so guards send the user to
+ * sign in instead of letting every request fail with 401.
+ */
 export const getAuthTokenFromStorage = (): string | null => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("bitcoin-deepa-auth-token");
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  return token && !isTokenExpired(token) ? token : null;
 };
 
 export const getIsExistingUserFromStorage = (): boolean => {
@@ -140,20 +185,16 @@ export const AUTH_CHANGE_EVENT = "bitcoin-deepa-auth-change";
 
 export const saveAuthToStorage = (token: string) => {
   if (typeof window === "undefined") return;
-  localStorage.setItem("bitcoin-deepa-auth-token", token);
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
   localStorage.setItem("bitcoin-deepa-is-existing-user", "true");
   window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
 };
 
 export const clearAuthFromStorage = () => {
   if (typeof window === "undefined") return;
-  localStorage.removeItem("bitcoin-deepa-auth-token");
+  localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem("bitcoin-deepa-is-existing-user");
   window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
-};
-
-export const isAuthenticated = (): boolean => {
-  return !!getAuthTokenFromStorage();
 };
 
 /**
@@ -167,21 +208,8 @@ export const getUserFromToken = (): { id: string; username?: string } | null => 
   const token = getAuthTokenFromStorage();
   if (!token) return null;
 
-  try {
-    const payloadSegment = token.split(".")[1];
-    if (!payloadSegment) return null;
-
-    const base64 = payloadSegment.replace(/-/g, "+").replace(/_/g, "/");
-    const json = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0"))
-        .join("")
-    );
-    const payload = JSON.parse(json);
-
-    return typeof payload.id === "string" ? { id: payload.id, username: payload.username } : null;
-  } catch {
-    return null;
-  }
+  const payload = decodeTokenPayload(token);
+  return typeof payload?.id === "string"
+    ? { id: payload.id, username: payload.username as string | undefined }
+    : null;
 };

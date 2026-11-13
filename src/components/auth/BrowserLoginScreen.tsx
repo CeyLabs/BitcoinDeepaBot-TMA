@@ -10,16 +10,13 @@ import type { TelegramOidcAuthData } from "@/lib/auth";
 import { TELEGRAM_BOT_URL } from "@/lib/constants";
 import TelegramLoginButton from "@/components/auth/TelegramLoginButton";
 
-interface BrowserLoginScreenProps {
-  onLoggedIn: () => void;
-}
-
 /**
  * Shown when the app is opened outside Telegram (a plain browser tab).
  * Signs the user in via Telegram's Login Widget rather than Mini App
  * initData, since initData only exists inside the Telegram WebView.
+ * Saving the token updates useSession, which moves the user on.
  */
-export default function BrowserLoginScreen({ onLoggedIn }: BrowserLoginScreenProps) {
+export default function BrowserLoginScreen() {
   const { isDark } = useTheme();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +34,6 @@ export default function BrowserLoginScreen({ onLoggedIn }: BrowserLoginScreenPro
       const result = await authenticateWithTelegramOidc(data.id_token);
       if (!result.token) throw new Error("No token returned");
       saveAuthToStorage(result.token);
-      onLoggedIn();
     } catch (err) {
       console.error(err);
       setError("Couldn't sign you in with Telegram. Please try again.");

@@ -1,18 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, IconButton } from "@telegram-apps/telegram-ui";
 import { LogOut } from "lucide-react";
 import { VisibleToggle } from "@/components/ui/visible-toggle";
 import { useUser } from "@/hooks/useUser";
 import { useStore } from "@/lib/store";
-import { clearAuthFromStorage } from "@/lib/auth";
+import { useSession } from "@/hooks/useSession";
 import { haptic, usePlatform } from "@/platform";
 
 export function DashboardTopBar() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
+  const { logout } = useSession();
   const { initials, displayName, photoUrl } = useUser();
   const { balanceVisible, toggleBalanceVisible } = useStore();
   const { kind } = usePlatform();
@@ -38,10 +35,7 @@ export function DashboardTopBar() {
             className="bg-surface-primary!"
             onClick={() => {
               haptic.impact("medium");
-              clearAuthFromStorage();
-              // Drop every cached query so the next account starts clean.
-              queryClient.clear();
-              router.replace("/");
+              logout();
             }}
           >
             <LogOut size={18} strokeWidth={1.75} className="text-[#111821] dark:text-[#f1f5f9]" />

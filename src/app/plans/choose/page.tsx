@@ -5,12 +5,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button, Snackbar } from "@telegram-apps/telegram-ui";
 import { CheckCircle2, AlertCircle } from "lucide-react";
-import { getAuthTokenFromStorage } from "@/lib/auth";
 import fetchy, { FetchyError } from "@/lib/fetchy";
 import { usePayHereRedirect } from "@/lib/hooks";
 import { usePackages } from "@/hooks/query/usePackages";
 import { useCancelSubscription } from "@/hooks/query/useCancelSubscription";
 import { useUser } from "@/hooks/useUser";
+import { useSession } from "@/hooks/useSession";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { haptic, useBackButton, usePlatform } from "@/platform";
 import LoadingPage from "@/components/LoadingPage";
@@ -35,7 +35,7 @@ export default function ChoosePlanPage() {
   const router = useRouter();
   const redirectToPayHereViaPage = usePayHereRedirect();
   const platform = usePlatform();
-  const authToken = getAuthTokenFromStorage();
+  const { status: sessionStatus } = useSession();
   const { subscription } = useUser();
   const cancelSubscription = useCancelSubscription();
 
@@ -77,7 +77,7 @@ export default function ChoosePlanPage() {
 
   const handleSubscribe = async () => {
     const plan = packages.find((p) => p.id === selectedPlanId);
-    if (!plan || !authToken) return;
+    if (!plan || sessionStatus !== "authenticated") return;
 
     haptic.impact("medium");
 

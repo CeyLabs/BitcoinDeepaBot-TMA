@@ -21,7 +21,8 @@ function ThemedAppRoot({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Registers/refreshes the Telegram user on launch, whichever route it lands on.
+// Registers/refreshes the Telegram user on launch (and after the session
+// ends), whichever route it lands on.
 function RegisterUserOnLaunch() {
   useRegisterUser();
   return null;
@@ -31,9 +32,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
   return (
     <PlatformProvider>
-      <RegisterUserOnLaunch />
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
+          {/* Needs the query client (useSession). */}
+          <RegisterUserOnLaunch />
           <ThemedAppRoot>{children}</ThemedAppRoot>
         </QueryClientProvider>
       </ThemeProvider>
