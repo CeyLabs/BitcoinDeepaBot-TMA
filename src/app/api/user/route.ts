@@ -2,7 +2,10 @@ import connect from "@/db/connect";
 import User from "@/db/schema";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+// Live Mongo data — never prerender or cache.
+export const dynamic = "force-dynamic";
+
+export async function GET() {
   try {
     await connect();
 
@@ -12,7 +15,7 @@ export async function GET(request: Request) {
       status: 200,
       count,
     });
-  } catch (e) {
+  } catch {
     return NextResponse.json({
       status: 500,
       message: "Error processing request.",
@@ -49,7 +52,7 @@ export async function POST(req: Request) {
       message: "User created successfully.",
       user: newUser,
     });
-  } catch (e) {
+  } catch {
     return NextResponse.json({
       status: 500,
       message: "Error processing request.",

@@ -1,5 +1,7 @@
 # Pre-`main` test checklist
 
+Ticked items were verified on 2026-11-13 with the #97 build against the dev backend (Chrome + Telegram Web + Telegram Android). See `TODO.md` for the details.
+
 Changes in `dev` not yet on `main`:
 
 - #94: browser calls the backend directly; the Next.js proxy routes are removed.
@@ -16,16 +18,16 @@ Test these on a staging/preview build pointed at the real backend, inside the Te
 
 ## 1. Network sanity (DevTools → Network)
 
-- [ ] App requests go to `NEXT_PUBLIC_API_BASE_URL/...`, not to `/api/...`. The exception is `/api/user`, which is still served by Next.js.
-- [ ] No CORS errors in the console. Preflight `OPTIONS` requests return 2xx.
-- [ ] Authenticated requests carry `Authorization: Bearer <token>`.
+- [x] App requests go to `NEXT_PUBLIC_API_BASE_URL/...`, not to `/api/...`. The exception is `/api/user`, which is still served by Next.js.
+- [x] No CORS errors in the console. Preflight `OPTIONS` requests return 2xx.
+- [x] Authenticated requests carry `Authorization: Bearer <token>`.
 - [ ] `/package` and `/api/user` work while logged out.
 
 ## 2. Auth
 
-- [ ] **Telegram Mini App:** open from the bot. A token is saved (`bitcoin-deepa-auth-token` in localStorage) and the dashboard loads.
+- [x] **Telegram Mini App:** open from the bot. A token is saved (`bitcoin-deepa-auth-token` in localStorage) and the dashboard loads.
 - [ ] **Browser (OIDC):** "Log in with Telegram" works and lands on the dashboard.
-- [ ] **Bad/expired token:** edit the token in localStorage. API calls return 401 and show an error rather than a blank screen or fake data.
+- [x] **Bad/expired token:** edit the token in localStorage. An expired token goes straight to login; a rejected one gets 401, the token is cleared, and the user goes to login (browser) or is silently signed in again (Telegram). Changed in #97.
 - [ ] **Backend unreachable:** login fails cleanly. There is no "development mode" fake token any more.
 
 ## 3. Dashboard data
@@ -42,8 +44,8 @@ Test these on a staging/preview build pointed at the real backend, inside the Te
 ## 4. Subscription
 
 - [ ] **Current plan** (`/subscription/current`):
-  - [ ] An active subscriber sees their plan.
-  - [ ] A user with **no subscription** sees the "no plan" state. The backend returns 404 here, which should be handled.
+  - [x] An active subscriber sees their plan.
+  - [x] A user with **no subscription** sees the "no plan" state (tested with a mocked 404). The backend returns 404 here, which should be handled.
 - [ ] **Plans list** (`/package`) shows weekly and monthly plans.
 - [ ] **Subscribe, KYC approved:** redirects to PayHere checkout (`/subscription/payhere-link`).
 - [ ] **Subscribe, KYC not approved:** redirects to `/verification`. The backend's `KycVerifiedGuard` returns 403 here.
@@ -67,9 +69,9 @@ Test these on a staging/preview build pointed at the real backend, inside the Te
 ## 7. Platforms
 
 - [ ] Telegram iOS
-- [ ] Telegram Android
+- [x] Telegram Android
 - [ ] Telegram Desktop
-- [ ] Telegram Web (web.telegram.org)
+- [x] Telegram Web (web.telegram.org)
 - [ ] Mobile browser (OIDC login)
 - [ ] Desktop browser (OIDC login)
 

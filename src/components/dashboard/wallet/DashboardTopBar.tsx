@@ -1,22 +1,19 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, IconButton } from "@telegram-apps/telegram-ui";
 import { LogOut } from "lucide-react";
 import { VisibleToggle } from "@/components/ui/visible-toggle";
 import { useUser } from "@/hooks/useUser";
 import { useStore } from "@/lib/store";
-import { useIsTelegramEnv } from "@/hooks/useIsTelegramEnv";
-import { clearAuthFromStorage } from "@/lib/auth";
-import { haptic } from "@/lib/haptics";
+import { useSession } from "@/hooks/useSession";
+import { InstallButton } from "@/pwa";
+import { haptic, usePlatform } from "@/platform";
 
 export function DashboardTopBar() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
+  const { logout } = useSession();
   const { initials, displayName, photoUrl } = useUser();
   const { balanceVisible, toggleBalanceVisible } = useStore();
-  const isTelegramEnv = useIsTelegramEnv();
+  const { kind } = usePlatform();
 
   return (
     <div className="flex w-full items-center justify-between">
@@ -32,17 +29,15 @@ export function DashboardTopBar() {
         </p>
       </div>
       <div className="flex items-center gap-2">
-        {isTelegramEnv === false && (
+        <InstallButton variant="icon" />
+        {kind === "web" && (
           <IconButton
             mode="gray"
             size="m"
             className="bg-surface-primary!"
             onClick={() => {
               haptic.impact("medium");
-              clearAuthFromStorage();
-              // Drop every cached query so the next account starts clean.
-              queryClient.clear();
-              router.replace("/");
+              logout();
             }}
           >
             <LogOut size={18} strokeWidth={1.75} className="text-[#111821] dark:text-[#f1f5f9]" />

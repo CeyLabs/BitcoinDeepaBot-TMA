@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
-import { getAuthTokenFromStorage, getUserFromToken } from "@/lib/auth";
+import { useSession } from "@/hooks/useSession";
 import type { BotTransaction } from "@/lib/types";
 import fetchy, { FetchyError } from "@/lib/fetchy";
 
@@ -21,8 +21,9 @@ const PAGE_SIZE = 50;
 // Sats sent/received to other Telegram users via the bot, paginated
 // newest page first via offset/limit, sorted oldest-first once flattened.
 export function useBotTransactionHistory({ enabled = true }: { enabled?: boolean } = {}) {
-  const authToken = getAuthTokenFromStorage();
-  const userId = getUserFromToken()?.id ?? "";
+  const session = useSession();
+  const isAuthed = session.status === "authenticated";
+  const userId = session.user?.id ?? "";
 
   const query = useInfiniteQuery({
     queryKey: queryKeys.botTransactions(userId),
@@ -57,7 +58,7 @@ export function useBotTransactionHistory({ enabled = true }: { enabled?: boolean
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextOffset : undefined),
-    enabled: enabled && !!authToken,
+    enabled: enabled && isAuthed,
     staleTime: 1000 * 60 * 5,
   });
 

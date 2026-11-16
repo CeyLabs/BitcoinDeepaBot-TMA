@@ -2,8 +2,9 @@
 
 import { Card, Avatar, AvatarStack } from "@telegram-apps/telegram-ui";
 import Image from "next/image";
-import { useTMA } from "@/lib/hooks";
-import { useStore } from "@/lib/store";
+import { usePlatform } from "@/platform";
+import { useUser } from "@/hooks/useUser";
+import { getInviteUrl } from "@/lib/constants";
 
 export interface ReferralProgressCardProps {
   joined: number;
@@ -13,16 +14,16 @@ export interface ReferralProgressCardProps {
 
 export function ReferralProgressCard({ joined, target, rewardSats }: ReferralProgressCardProps) {
   const progress = target > 0 ? Math.min(joined / target, 1) : 0;
-  const { openTelegramLink } = useTMA();
-  const { userID } = useStore();
+  const platform = usePlatform();
+  const { id: userId } = useUser();
 
   const handleShare = () => {
-    const shareText = encodeURIComponent(
-      "­­­­­­­­­­­\n🚀 Here's a link to get some Free Satoshis, the bitcoin wallet I was telling you about!"
-    );
-    openTelegramLink(
-      `https://t.me/share/url?url=https://t.me/bitcoindeepabot/private_invite%3Fstartapp%3D${userID}&text=${shareText}`
-    );
+    platform
+      .share({
+        url: getInviteUrl(userId),
+        text: "🚀 Here's a link to get some Free Satoshis, the bitcoin wallet I was telling you about!",
+      })
+      .catch((error) => console.error("Failed to share invite:", error));
   };
 
   return (

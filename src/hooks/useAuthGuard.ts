@@ -3,25 +3,35 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
+import { getIsExistingUserFromStorage } from "@/lib/auth";
+import { useSession } from "@/hooks/useSession";
+import { usePlatform } from "@/platform";
 
 /**
- * Redirects to / when there's no auth token, otherwise syncs
- * isExistingUser from storage into the store.
+ * Keeps signed-out users out of the dashboard.
+ *
+ * - Web: redirects to / (sign-in) whenever there's no valid session — on
+ *   mount, and later if the token expires or the backend rejects it (401).
+ * - Telegram: stays on the page while useRegisterUser signs in again from
+ *   initData, so the user keeps their place. If that fails, `sessionExpired`
+ *   tells the layout to ask the user to reopen the app.
  */
 export function useAuthGuard() {
   const router = useRouter();
-  const { isExistingUser, setIsExistingUser } = useStore();
+  const { status } = useSession();
+  const canReauth = !!usePlatform().launch?.initDataRaw;
+  const { isExistingUser, setIsExistingUser, telegramReauth } = useStore();
 
   useEffect(() => {
-    const token = getAuthTokenFromStorage();
-
-    if (token) {
+    if (status === "authenticated") {
       setIsExistingUser(getIsExistingUserFromStorage());
-    } else {
-      router.push("/");
+    } else if (status === "unauthenticated" && !canReauth) {
+      router.replace("/");
     }
-  }, [router, setIsExistingUser]);
+  }, [status, canReauth, router, setIsExistingUser]);
 
-  return { isExistingUser };
+  return {
+    isExistingUser,
+    sessionExpired: status === "unauthenticated" && canReauth && telegramReauth === "failed",
+  };
 }

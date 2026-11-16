@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getAuthTokenFromStorage } from "@/lib/auth";
+import { useSession } from "@/hooks/useSession";
 import fetchy from "@/lib/fetchy";
 import type { User } from "@/lib/types";
 
@@ -11,12 +11,12 @@ export interface KycStatusResponse {
 }
 
 export function useKycStatus() {
-  const authToken = getAuthTokenFromStorage();
+  const isAuthed = useSession().status === "authenticated";
 
   return useQuery<KycStatusResponse>({
     queryKey: ["kyc-status"],
     queryFn: () => fetchy.get<KycStatusResponse>("/user/kyc/status"),
-    enabled: !!authToken,
+    enabled: isAuthed,
   });
 }
 

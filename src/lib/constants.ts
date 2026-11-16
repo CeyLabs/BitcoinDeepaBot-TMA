@@ -3,6 +3,10 @@ export const TELEGRAM_BOT_USERNAME =
 
 export const TELEGRAM_BOT_URL = `https://t.me/${TELEGRAM_BOT_USERNAME}`;
 
+/** Personal invite link: opens the Mini App with the inviter's id as start param. */
+export const getInviteUrl = (userId: string) =>
+  `${TELEGRAM_BOT_URL}/private_invite?startapp=${encodeURIComponent(userId)}`;
+
 // Client ID for Telegram Login (OIDC), from @BotFather -> bot -> Login Widget.
 // Public identifier, not a secret — see https://core.telegram.org/bots/telegram-login
 export const TELEGRAM_CLIENT_ID = process.env.NEXT_PUBLIC_TELEGRAM_CLIENT_ID || "";

@@ -14,6 +14,20 @@ const nextConfig = {
   async headers() {
     return [
       {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Only Telegram Web (web.telegram.org) may embed the app in an
+          // iframe — mobile/desktop clients use a webview, not a frame.
+          // Don't use X-Frame-Options: DENY, it would break Telegram Web.
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'self' https://*.telegram.org",
+          },
+        ],
+      },
+      {
         // Telegram Desktop's webview caches the HTML document itself,
         // so it keeps serving stale pages even after a restart. Force
         // revalidation on every route except the hashed build assets.

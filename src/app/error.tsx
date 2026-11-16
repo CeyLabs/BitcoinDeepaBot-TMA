@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { Button, Title } from "@telegram-apps/telegram-ui";
 import { TELEGRAM_BOT_URL } from "@/lib/constants";
 
@@ -42,11 +41,16 @@ export default function Error({
       </p>
 
       {isLaunchParamsError ? (
-        <Link href={TELEGRAM_BOT_URL} className="mt-8 block w-full max-w-xs">
+        <a
+          href={TELEGRAM_BOT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-8 block w-full max-w-xs"
+        >
           <Button mode="filled" size="l" stretched style={{ borderRadius: "12px" }}>
             Open in Telegram
           </Button>
-        </Link>
+        </a>
       ) : (
         <Button
           mode="filled"

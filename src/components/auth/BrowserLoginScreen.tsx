@@ -2,24 +2,21 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { Button, Title } from "@telegram-apps/telegram-ui";
 import { useTheme } from "@/app/context/theme";
 import { authenticateWithTelegramOidc, saveAuthToStorage } from "@/lib/auth";
 import type { TelegramOidcAuthData } from "@/lib/auth";
 import { TELEGRAM_BOT_URL } from "@/lib/constants";
 import TelegramLoginButton from "@/components/auth/TelegramLoginButton";
-
-interface BrowserLoginScreenProps {
-  onLoggedIn: () => void;
-}
+import { InstallButton } from "@/pwa";
 
 /**
  * Shown when the app is opened outside Telegram (a plain browser tab).
  * Signs the user in via Telegram's Login Widget rather than Mini App
  * initData, since initData only exists inside the Telegram WebView.
+ * Saving the token updates useSession, which moves the user on.
  */
-export default function BrowserLoginScreen({ onLoggedIn }: BrowserLoginScreenProps) {
+export default function BrowserLoginScreen() {
   const { isDark } = useTheme();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +34,6 @@ export default function BrowserLoginScreen({ onLoggedIn }: BrowserLoginScreenPro
       const result = await authenticateWithTelegramOidc(data.id_token);
       if (!result.token) throw new Error("No token returned");
       saveAuthToStorage(result.token);
-      onLoggedIn();
     } catch (err) {
       console.error(err);
       setError("Couldn't sign you in with Telegram. Please try again.");
@@ -64,8 +60,7 @@ export default function BrowserLoginScreen({ onLoggedIn }: BrowserLoginScreenPro
       </Title>
 
       <p className="text-muted-foreground mt-2 max-w-sm text-[15px] dark:text-[#64748b]">
-        Bitcoin Deepa runs best inside Telegram. Sign in with your Telegram account to continue in
-        the browser.
+        Sign in with your Telegram account to continue.
       </p>
 
       <div className="mt-8">
@@ -79,11 +74,18 @@ export default function BrowserLoginScreen({ onLoggedIn }: BrowserLoginScreenPro
       )}
       {error && <p className="mt-4 text-[13px] text-red-500">{error}</p>}
 
-      <Link href={TELEGRAM_BOT_URL} className="mt-8 block w-full max-w-xs">
+      <InstallButton className="mt-8 max-w-xs" />
+
+      <a
+        href={TELEGRAM_BOT_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 block w-full max-w-xs"
+      >
         <Button mode="outline" size="l" stretched style={{ borderRadius: "12px" }}>
           Open in Telegram Instead
         </Button>
-      </Link>
+      </a>
     </main>
   );
 }

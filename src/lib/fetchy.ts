@@ -4,6 +4,8 @@
  * - Paths not starting with "/api/" go to the backend (NEXT_PUBLIC_API_BASE_URL),
  *   e.g. fetchy.get("/package"). "/api/*" stays on this Next.js app.
  * - Backend requests automatically carry the stored auth token as a Bearer header.
+ * - A 401 from the backend clears that token, which ends the session (useSession):
+ *   web users go back to sign-in, Telegram re-authenticates from initData.
  * - Sends/parses JSON; empty responses (e.g. 204) resolve to undefined.
  * - Throws FetchyError (message + HTTP status) on non-OK responses, so TanStack
  *   Query sees them as errors.
@@ -11,7 +13,7 @@
  */
 
 import { API_BASE_URL } from "@/lib/constants";
-import { getAuthTokenFromStorage } from "@/lib/auth";
+import { clearAuthFromStorage, getAuthTokenFromStorage } from "@/lib/auth";
 
 type FetchOptions = Omit<RequestInit, "headers" | "body"> & {
   headers?: Record<string, string>;
@@ -66,6 +68,12 @@ async function request<T>(
     data = text ? JSON.parse(text) : undefined;
   } catch {
     data = text;
+  }
+
+  // Only clear the token this request actually sent — a fresh one may have
+  // been saved while it was in flight.
+  if (response.status === 401 && token && getAuthTokenFromStorage() === token) {
+    clearAuthFromStorage();
   }
 
   if (!response.ok) {

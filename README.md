@@ -1,6 +1,8 @@
 # Bitcoin Deepa - Telegram Mini App
 
-A Telegram Mini App built with Next.js 16 that supports Bitcoin membership reward accrual with subscription management for Sri Lankan users.
+Bitcoin membership reward accrual with subscription management for Sri Lankan users. Runs as a **Telegram Mini App** and as a normal **website / installable PWA**, built with Next.js 16.
+
+The API lives in [BitcoinDeepa-DCA-BE](https://github.com/CeyLabs/BitcoinDeepa-DCA-BE).
 
 ![Bitcoin Deepa Logo](./public/BDLogo_White.svg)
 
@@ -31,40 +33,15 @@ A Telegram Mini App built with Next.js 16 that supports Bitcoin membership rewar
 
 ## 📦 Installation
 
-1. **Clone the repository**
+```bash
+git clone https://github.com/CeyLabs/BitcoinDeepaBot-TMA.git
+cd BitcoinDeepaBot-TMA
+bun install
+cp .env.example .env.local   # fill in the values (see comments in the file)
+bun dev                      # http://localhost:3347
+```
 
-   ```bash
-   git clone https://github.com/your-repo/BitcoinDeepa-TMA-Bot.git
-   cd BitcoinDeepa-TMA-Bot
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   bun install
-   # or
-   npm install
-   ```
-
-3. **Environment Setup**
-   Create a `.env.local` file with your environment variables:
-
-   ```env
-   MONGODB_URI=your_mongodb_connection_string
-   NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
-
-   ```
-
-4. **Run the development server**
-
-   ```bash
-   bun dev
-   # or
-   npm run dev
-   ```
-
-5. **Open in browser**
-   Navigate to `http://localhost:3347`
+See [CONTRIBUTING.md](CONTRIBUTING.md) for running the backend and signing in with a test bot.
 
 ## 🚀 Development Commands
 
@@ -82,69 +59,52 @@ bun run format      # Prettier code formatting
 bun run init-git-hooks    # Initialize git hooks from .githooks/
 ```
 
-> **Important**: Always run `bun run format` and `bun run build` before committing changes.
+> **Important**: Run `bun run lint`, `bun run format` and `bun run build` before committing. CI checks all of them.
 
 ## 📁 Project Structure
 
 ```
 src/
-├── app/                     # Next.js App Router pages
-│   ├── api/                # API routes
-│   │   ├── auth/           # Telegram authentication
-│   │   ├── packages/       # Membership plan packages
-│   │   ├── subscription/   # Subscription management
-│   │   ├── transaction/    # Transaction handling
-│   │   └── user/           # User management & KYC
-│   ├── context/            # App-wide providers (Telegram SDK, theme, TanStack Query)
-│   ├── dashboard/          # Main app dashboard (auth-guarded)
-│   │   ├── activity/       # Transaction/reward activity feed
-│   │   ├── news/           # News listing & article detail
-│   │   ├── plans/          # Membership plans
-│   │   └── tasks/          # Reward tasks
-│   ├── plans/choose/       # Plan selection (onboarding)
-│   └── verification/       # KYC verification flow
-├── components/              # Reusable components
-│   ├── ui/                 # Hand-built UI primitives
-│   └── dashboard/          # Dashboard-specific components, mirrors app/dashboard structure
-├── db/                      # Database connection and schema
-├── hooks/                   # Shared hooks (auth guard, Telegram platform, etc.)
-│   └── query/               # TanStack Query hooks, one per endpoint
-├── lib/                     # Utility libraries
-│   ├── auth.ts              # Authentication helpers
-│   ├── fetchy.ts             # HTTP client wrapper
-│   ├── query-keys.ts         # TanStack Query key registry
-│   ├── store.ts              # Zustand global state
-│   ├── types.ts              # TypeScript definitions
-│   └── validations.ts        # Zod schemas
-└── styles/                  # Global styles and themes
+├── app/                  # Next.js App Router pages
+│   ├── api/user/         # The only API route left (Mongo-backed user count)
+│   ├── context/          # Providers (theme, TanStack Query)
+│   ├── dashboard/        # Signed-in app (activity, news, plans, tasks)
+│   ├── plans/choose/     # Plan selection / checkout
+│   └── verification/     # KYC flow
+├── platform/             # Telegram vs browser differences (usePlatform)
+├── pwa/                  # Service worker registration, auto-update, install button
+├── sw.template.js        # Service worker source (stamped into public/sw.js at build)
+├── components/
+│   ├── ui/               # Shared UI components
+│   └── dashboard/        # Feature components, mirrors app/dashboard
+├── db/                   # Mongo connection and schema (/api/user only)
+├── hooks/                # useSession, useUser, useAuthGuard, ...
+│   └── query/            # TanStack Query hooks, one per endpoint
+├── lib/                  # fetchy, auth, query keys, store, types, validations
+└── styles/               # Global styles and theme tokens
 ```
 
 ## 🏗 Architecture Patterns
 
+### Platform
+
+- `src/platform/` is the only code that talks to Telegram; components use `usePlatform()` and get a web fallback automatically
+
 ### API Layer
 
-- All HTTP requests use `fetchy` from `@/lib/fetchy`
-- RESTful API routes in `src/app/api/`
-- MongoDB connection via `src/db/connect.ts`
+- All HTTP requests use `fetchy` from `@/lib/fetchy`, which calls the backend directly and attaches the auth token
 
 ### Authentication
 
-- Telegram-based authentication using `@/lib/auth`
-- Auth token stored in localStorage
-- Dashboard layout (`src/app/dashboard/layout.tsx`) runs `useAuthGuard` to gate access
+- Inside Telegram: signed launch data (`initData`) is exchanged for a token on every launch
+- In the browser / PWA: Telegram Login widget; tokens last 7 days
+- `useSession()` is the single source of auth state; `useAuthGuard` gates `src/app/dashboard/`
 
 ### State Management
 
 - **Global UI State**: Zustand store (`@/lib/store`)
 - **Server State**: TanStack Query with keys in `@/lib/query-keys`
 - **Form State**: React Hook Form with Zod validation
-
-### Database Models
-
-- **User**: Profile with subscription, wallet, and rewards data
-- **Subscription**: Weekly/monthly membership plans
-- **Transaction**: Bitcoin transactions with multiple types
-- **Wallet**: Bitcoin balance with USD/LKR tracking
 
 ## 💳 Payment Integration
 
@@ -171,54 +131,15 @@ The app integrates with PayHere payment gateway for Sri Lankan users:
 
 ## 🌍 Deployment
 
-The app is configured for deployment on Railway:
-
-```json
-{
-  "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "bun install && bun run build"
-  },
-  "deploy": {
-    "startCommand": "bun run start",
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
-  },
-  "environments": {
-    "production": {
-      "variables": {
-        "NODE_ENV": "production",
-        "NODE_OPTIONS": "--max-old-space-size=512",
-        "NEXT_TELEMETRY_DISABLED": "1"
-      }
-    }
-  }
-}
-```
+Deployed on Railway (see `railway.json`): `bun install --frozen-lockfile && bun run build`, then `bun run start`. Set the variables from `.env.example` in the Railway service; `NEXT_PUBLIC_*` values are baked in at build time.
 
 ## 🤝 Contributing
 
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Make your changes** following the coding standards
-4. **Run quality checks**: `bun run format && bun run build`
-5. **Commit your changes**: `git commit -m 'feat: add amazing feature'`
-6. **Push to the branch**: `git push origin feature/amazing-feature`
-7. **Open a Pull Request**
-
-### Commit Message Format
-
-- `feat:` for new features
-- `fix:` for bug fixes
-- `docs:` for documentation changes
-- `style:` for formatting changes
-- `refactor:` for code refactoring
-- `test:` for adding tests
-- `chore:` for maintenance tasks
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 📄 License
 
-This project is private and proprietary. All rights reserved.
+[MIT](LICENSE) © CeyLabs
 
 ## 🆘 Support
 
