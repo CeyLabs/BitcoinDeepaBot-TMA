@@ -1,7 +1,7 @@
 function SkeletonRow() {
   return (
-    <div className="flex items-center gap-2 px-3 py-2.5">
-      <div className="size-9 shrink-0 animate-pulse rounded-full bg-[#e2e8f0] dark:bg-[#1e293b]" />
+    <div className="flex h-20 items-center gap-2 px-3">
+      <div className="size-10 shrink-0 animate-pulse rounded-full bg-[#e2e8f0] dark:bg-[#1e293b]" />
       <div className="flex flex-1 flex-col gap-1.5">
         <div className="h-3.5 w-24 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
         <div className="h-3 w-32 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
