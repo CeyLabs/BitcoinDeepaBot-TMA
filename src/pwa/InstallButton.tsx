@@ -63,7 +63,7 @@ export function InstallButton({ variant = "button", className }: InstallButtonPr
 }
 
 const IOS_STEPS = [
-  { Icon: Share, text: "Tap the Share button in Safari's toolbar" },
+  { Icon: Share, text: "Tap the Share button in your browser" },
   { Icon: SquarePlus, text: "Choose “Add to Home Screen”" },
   { Icon: null, text: "Tap “Add” in the top-right corner" },
 ];

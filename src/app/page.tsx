@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Badge, Button, Cell, Navigation, Progress, Title } from "@telegram-apps/telegram-ui";
 import { useTheme } from "@/app/context/theme";
 import { useStore } from "@/lib/store";
-import { getIsExistingUserFromStorage } from "@/lib/auth";
+import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
 import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
 import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
 import { useUserCount } from "@/hooks/query/useUserCount";
@@ -190,6 +190,10 @@ function TelegramHome() {
   // useRegisterTelegramUser) — lets a known returning user skip straight to
   // the dashboard without waiting on the network at all.
   const [cachedReturningUser] = useState(() => getIsExistingUserFromStorage());
+  // Whether a session existed when the app opened. The live token can't be
+  // used for the copy: the launch sign-in issues one to brand-new users too,
+  // which would flip "Join…" to "Welcome Back!" a moment after opening.
+  const [hadTokenAtLaunch] = useState(() => !!getAuthTokenFromStorage());
 
   // /api/user (Mongo-backed) already fires on every launch — read its
   // result instead of ignoring it. status 409 means this Telegram id was
@@ -211,7 +215,7 @@ function TelegramHome() {
   // redirect fires as soon as it lands.
   const { token: authToken } = useSession();
   const shouldRedirect = isReturningUser && !!authToken;
-  const isExisting = !!authToken || isExistingUser || cachedReturningUser;
+  const isExisting = hadTokenAtLaunch || isExistingUser || cachedReturningUser;
 
   useEffect(() => {
     if (shouldRedirect) {

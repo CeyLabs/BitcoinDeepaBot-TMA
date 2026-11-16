@@ -1,6 +1,13 @@
 import { create } from "zustand";
 import type { User, Subscription, UserRewards, Referral } from "./types";
 
+/**
+ * Telegram silent sign-in from initData (see useRegisterUser):
+ * "pending" while a request is in flight, "failed" once the backend rejects
+ * the initData (e.g. older than its 24 h limit) — only reopening the app helps.
+ */
+export type TelegramReauth = "idle" | "pending" | "failed";
+
 export type Store = {
   count: number;
   setCount: (count: number) => void;
@@ -21,6 +28,8 @@ export type Store = {
   balanceVisible: boolean;
   setBalanceVisible: (visible: boolean) => void;
   toggleBalanceVisible: () => void;
+  telegramReauth: TelegramReauth;
+  setTelegramReauth: (state: TelegramReauth) => void;
 };
 
 const initialRewards: UserRewards = {
@@ -78,4 +87,6 @@ export const useStore = create<Store>((set, get) => ({
   balanceVisible: true,
   setBalanceVisible: (visible: boolean) => set({ balanceVisible: visible }),
   toggleBalanceVisible: () => set({ balanceVisible: !get().balanceVisible }),
+  telegramReauth: "idle",
+  setTelegramReauth: (telegramReauth: TelegramReauth) => set({ telegramReauth }),
 }));

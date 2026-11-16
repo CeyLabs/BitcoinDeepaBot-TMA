@@ -16,6 +16,15 @@ interface BackButtonProps {
  */
 export function BackButton({ onBack, className }: BackButtonProps) {
   useBackButton(onBack);
+  return <WebBackButton onBack={onBack} className={className} />;
+}
+
+/**
+ * Only the in-page (web) button. For pages that call useBackButton once at
+ * the top themselves, so Telegram's native button stays shown across their
+ * loading/content states instead of hiding and re-showing.
+ */
+export function WebBackButton({ onBack, className }: BackButtonProps) {
   const { kind } = usePlatform();
 
   if (kind !== "web") return null;

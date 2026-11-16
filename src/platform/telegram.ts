@@ -8,7 +8,8 @@ import {
 } from "@telegram-apps/sdk-react";
 import type { ColorScheme, Platform, TelegramLaunch } from "./types";
 
-const MOBILE_CLIENTS = ["ios", "android"];
+// "android_x" is Telegram X.
+const MOBILE_CLIENTS = ["ios", "android", "android_x"];
 
 // Everything goes through the SDK's Mini Apps bridge — we don't load
 // telegram.org's telegram-web-app.js, so plain-browser users never download
@@ -40,11 +41,19 @@ export function readLaunch(): TelegramLaunch | null {
 }
 
 /** One-time native setup once we know we're inside Telegram. */
+/**
+ * Tells Telegram the page is ready (hides its loading placeholder) and
+ * expands the sheet. Without `web_app_ready` Telegram keeps its placeholder
+ * up until a fallback timeout (several seconds) — telegram-web-app.js used to
+ * send it automatically, the SDK doesn't. Safe to call more than once.
+ */
 export function setupTelegram() {
-  try {
-    postEvent("web_app_expand");
-  } catch {
-    // Older clients may not support it — not fatal.
+  for (const event of ["web_app_ready", "web_app_expand"] as const) {
+    try {
+      postEvent(event);
+    } catch {
+      // Older clients may not support it — not fatal.
+    }
   }
 }
 

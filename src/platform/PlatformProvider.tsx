@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { SDKProvider, isTMA } from "@telegram-apps/sdk-react";
+import { SDKProvider, isTMA, request } from "@telegram-apps/sdk-react";
 import { createTelegramPlatform, readLaunch, setupTelegram } from "./telegram";
 import { createWebPlatform } from "./web";
 import type { Platform } from "./types";
@@ -18,6 +18,27 @@ async function detectTelegram(): Promise<boolean> {
   const isTMAComplete = isTMA as unknown as (type: "complete") => Promise<boolean>;
   try {
     return await isTMAComplete("complete");
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * isTMA() only waits 100 ms for Telegram Web (an iframe) to answer, so a slow
+ * tab could look like a plain browser. When launch params are present, don't
+ * downgrade on that single miss:
+ * - In an iframe it's Telegram Web — frame-ancestors only lets *.telegram.org
+ *   embed us (next.config.mjs).
+ * - Otherwise ask again with a longer timeout before giving up.
+ * Without launch params (a normal browser) the quick check is enough.
+ */
+async function confirmTelegram(hasLaunchParams: boolean): Promise<boolean> {
+  if (await detectTelegram()) return true;
+  if (!hasLaunchParams) return false;
+  if (window.self !== window.top) return true;
+  try {
+    await request({ method: "web_app_request_theme", event: "theme_changed", timeout: 2000 });
+    return true;
   } catch {
     return false;
   }
@@ -43,7 +64,11 @@ export function PlatformProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    detectTelegram().then((inTelegram) => {
+    // Launched by Telegram: drop its loading placeholder as soon as we've
+    // hydrated (the server-rendered UI is already on screen) instead of after
+    // the async confirmation below.
+    if (readLaunch()) setupTelegram();
+    confirmTelegram(!!readLaunch()).then((inTelegram) => {
       if (cancelled) return;
       if (inTelegram) {
         setupTelegram();

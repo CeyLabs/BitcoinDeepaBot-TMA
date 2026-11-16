@@ -75,7 +75,7 @@ There is no test suite configured. Always run `bun run format` and `bun run buil
 
 - The service worker source is `src/sw.template.js`. `scripts/stamp-sw.mjs` (part of `build`, or `bun run stamp-sw`) writes `public/sw.js` with the commit sha, so every deploy ships new worker bytes. Never edit `public/sw.js` — it's generated and gitignored.
 - The worker caches only hashed `/_next/static/` assets and `/icons/`, per build. Never cache HTML or API responses (see the `no-store` note above).
-- `src/pwa/`: registration and safe auto-update (`register-sw.ts` — reloads after a new worker takes over, deferred on checkout/KYC/payment paths), install prompt state (`install.ts`), and `InstallButton` (Chromium prompt / iOS instructions, web only).
+- `src/pwa/`: registration and safe auto-update (`register-sw.ts` — reloads after a new worker takes over, deferred on checkout/KYC/payment paths), install prompt state (`install.ts`), a one-time reload on chunk-load errors after a deploy (`chunk-reload.ts`), and `InstallButton` (Chromium prompt / iOS instructions, web only).
 - The worker only registers in production builds (`bun run build && bun start` to test locally).
 
 ### Deployment
