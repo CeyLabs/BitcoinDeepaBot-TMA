@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SlowLoadNotice } from "@/components/SlowLoadNotice";
 import { Logo } from "@/components/ui/logo";
+import { Bone } from "@/components/ui/bone";
 import Image from "next/image";
+import { cn } from "cn";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -42,8 +45,8 @@ function UserProgress() {
       <div className="w-full space-y-2">
         <Progress value={0} className="h-2" />
         <div className="flex w-full items-baseline justify-between">
-          <div className="h-7 w-28 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
-          <div className="h-4 w-12 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
+          <Bone className="h-7 w-28" />
+          <Bone className="h-4 w-12" />
         </div>
       </div>
     );
@@ -69,15 +72,32 @@ function UserProgress() {
 
 // ─── Shared page shell ───────────────────────────────────────────────────────
 
-function PageShell({ children }: { children: React.ReactNode }) {
+/**
+ * Logo + content. With no children it's the start screen (platform detection,
+ * sign-in, redirect): it appears only after 300ms so fast loads never flash
+ * it, the logo breathes slowly, and a retry shows up if it takes too long.
+ * The logo stays in the same spot when the real content arrives.
+ */
+function PageShell({ children }: { children?: React.ReactNode }) {
+  const loading = !children;
   return (
     <main className="flex min-h-screen flex-col justify-center bg-white px-5 dark:bg-[#1b2027]">
-      {/* Logo + heading slot */}
-      <section className="flex flex-col items-center justify-center text-center">
-        <div className="relative mb-5 h-[150px] w-[220px]">
+      <section
+        aria-busy={loading || undefined}
+        className={cn(
+          "flex flex-col items-center justify-center text-center",
+          loading && "animate-appear motion-reduce:animate-none"
+        )}
+      >
+        <div
+          className={cn(
+            "relative mb-5 h-[150px] w-[220px]",
+            loading && "animate-breathe motion-reduce:animate-none"
+          )}
+        >
           <Logo priority />
         </div>
-        {children}
+        {loading ? <SlowLoadNotice /> : children}
       </section>
     </main>
   );
@@ -212,7 +232,7 @@ function TelegramHome() {
   }, [shouldRedirect, router]);
 
   if (checkPending || shouldRedirect) {
-    return <PageShell>{null}</PageShell>;
+    return <PageShell />;
   }
 
   return (
@@ -236,13 +256,13 @@ export default function Home() {
 
   // Platform detection still running — avoid flashing either UI.
   if (kind === null) {
-    return <PageShell>{null}</PageShell>;
+    return <PageShell />;
   }
 
   if (kind === "web") {
     // Already authenticated — redirecting into /dashboard above; render
     // nothing in the meantime instead of flashing the login screen.
-    return isBrowserAuthed ? <PageShell>{null}</PageShell> : <BrowserLoginScreen />;
+    return isBrowserAuthed ? <PageShell /> : <BrowserLoginScreen />;
   }
 
   return <TelegramHome />;

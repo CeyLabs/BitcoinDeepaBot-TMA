@@ -12,7 +12,7 @@ import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotic
 import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { useSubscriptionCurrent } from "@/hooks/query/useSubscriptionCurrent";
-import LoadingPage from "@/components/LoadingPage";
+import PlansLoading from "./loading";
 import { useStore } from "@/lib/store";
 
 export default function PlansPage() {
@@ -34,9 +34,10 @@ export default function PlansPage() {
     if (noActivePlan) router.replace("/plans/choose");
   }, [noActivePlan, router]);
 
-  if (kycLoading) return <LoadingPage />;
+  if (kycLoading) return <PlansLoading />;
   if (!kycApproved) return <KycRequiredNotice />;
-  if (noActivePlan) return <LoadingPage />;
+  // Redirecting to the plan picker.
+  if (noActivePlan) return <PlansLoading />;
 
   return (
     <div className="flex w-full flex-col gap-5">

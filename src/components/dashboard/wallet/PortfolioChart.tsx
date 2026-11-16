@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import dynamic from "next/dynamic";
 import type { TooltipItem } from "chart.js";
 import { Card } from "@/components/ui/card";
+import { Bone } from "@/components/ui/bone";
 // import { cn } from "cn";
 import { fmtLkrCurrency, fmtPriceCompact } from "@/lib/formatters";
 import { useTheme } from "@/app/context/theme";
@@ -17,7 +18,7 @@ const Line = dynamic(() => import("./PortfolioLine"), {
 });
 
 function ChartPlaceholder() {
-  return <div className="h-full w-full animate-pulse rounded-lg bg-[#e2e8f0] dark:bg-[#1e293b]" />;
+  return <Bone className="h-full w-full rounded-lg" />;
 }
 
 // Period switcher is disabled for now — chart always renders the full "All" range.

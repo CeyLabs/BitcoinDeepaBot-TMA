@@ -71,20 +71,17 @@ export function PlanCard({
         active
           ? "border border-[#16a34a] bg-white dark:bg-[#0b0f14]"
           : isHighlighted
-            ? "border border-[#fa7119] bg-[#eeeff3] dark:bg-[#1b2027]"
+            ? "border border-[#fa7119] bg-[#fff6ef] dark:bg-[#2a1c12]"
             : "border border-transparent bg-white dark:border-[#1b2027] dark:bg-[#0b0f14]",
         !active &&
           "focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-hidden",
         className
       )}
     >
+      {/* Sits on the card's top border. */}
       {mostPopular && !active && (
-        <div className="relative mb-[-10px] flex shrink-0 flex-col items-start self-end px-[10px] pt-[6px]">
-          <div className="flex h-4 items-center justify-center rounded-full bg-[#fa7119] px-2.5">
-            <p className="text-[12px] leading-[16px] whitespace-nowrap text-[#eeeff3]">
-              Most Popular
-            </p>
-          </div>
+        <div className="absolute -top-2 right-4 flex h-4 items-center justify-center rounded-full bg-[#fa7119] px-2.5">
+          <p className="text-[12px] leading-[16px] whitespace-nowrap text-white">Most Popular</p>
         </div>
       )}
       <div className="flex w-full flex-col items-start gap-0 px-4 py-3">

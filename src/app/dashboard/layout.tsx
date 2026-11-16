@@ -19,7 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Warm the shared query cache as soon as any dashboard page mounts, not
   // just when the plans tab does — by the time the user taps into Plans,
   // these are already fetched (or in flight), so it skips straight past
-  // the kycLoading/noActivePlan LoadingPage states instead of flashing them.
+  // the kycLoading/noActivePlan skeleton states instead of flashing them.
   useKycStatus();
   useSubscriptionCurrent();
 
