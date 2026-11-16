@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Download, Share, SquarePlus, X } from "lucide-react";
 import { usePlatform } from "@/platform";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 import { promptInstall, useInstallKind } from "./install";
 
 interface InstallButtonProps {

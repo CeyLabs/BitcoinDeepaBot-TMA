@@ -1,4 +1,4 @@
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 
 const TONE_STYLES = {
   // Light card surfaces (white/#0B0F14 backgrounds).

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { SegmentedControl } from "@telegram-apps/telegram-ui";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 import { haptic } from "@/platform";
 import { useTheme } from "@/app/context/theme";
 

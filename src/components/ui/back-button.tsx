@@ -2,7 +2,7 @@
 
 import { ChevronLeft } from "lucide-react";
 import { useBackButton, usePlatform } from "@/platform";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 
 interface BackButtonProps {
   onBack: () => void;

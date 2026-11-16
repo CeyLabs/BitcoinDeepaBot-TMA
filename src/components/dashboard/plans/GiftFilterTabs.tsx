@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@telegram-apps/telegram-ui";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 import { haptic } from "@/platform";
 
 export type GiftFilter = "all" | "received" | "sent";

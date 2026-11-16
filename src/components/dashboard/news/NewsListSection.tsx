@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Clock } from "lucide-react";
 import { Button } from "@telegram-apps/telegram-ui";
 import { BackButton } from "@/components/ui/back-button";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 import type { NewsArticle } from "@/lib/types";
 
 export function NewsDetailBackButton() {

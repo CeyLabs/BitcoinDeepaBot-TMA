@@ -15,7 +15,7 @@ import {
 } from "chart.js";
 import { Card } from "@telegram-apps/telegram-ui";
 // import { Card, Button } from "@telegram-apps/telegram-ui";
-// import { cn } from "@/lib/cn";
+// import { cn } from "cn";
 import { fmtLkrCurrency, fmtPriceCompact } from "@/lib/formatters";
 import { useTheme } from "@/app/context/theme";
 import type { DcaTransaction } from "@/hooks/query/useTransactionHistory";

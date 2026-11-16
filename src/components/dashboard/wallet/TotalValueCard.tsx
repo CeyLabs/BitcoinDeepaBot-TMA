@@ -5,7 +5,7 @@ import { ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, Badge } from "@telegram-apps/telegram-ui";
 import { NumberTicker } from "@/components/motion/number-ticker";
 import { ValueSkeleton } from "@/components/ui/value-skeleton";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 import { fmtLkr, fmtLkrCurrency, fmtSatsCompact, maskDigits, LKR_SYMBOL } from "@/lib/formatters";
 
 // Card/Badge theme their background/color through --tgui-- CSS variables (same

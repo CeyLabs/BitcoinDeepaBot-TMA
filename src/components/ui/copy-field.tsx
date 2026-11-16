@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { IconButton } from "@telegram-apps/telegram-ui";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 import { haptic } from "@/platform";
 
 interface CopyButtonProps {

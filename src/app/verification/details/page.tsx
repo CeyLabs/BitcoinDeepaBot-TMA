@@ -155,7 +155,7 @@ export default function VerificationDetailsPage() {
             >
               Start Verification
             </Button>
-            <p className="text-muted text-center text-xs">
+            <p className="text-center text-xs text-[#94a3b8]">
               Your Data is Encrypted and never Shared
             </p>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 import { haptic } from "@/platform";
 
 const RadioDefault = () => (

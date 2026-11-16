@@ -5,7 +5,7 @@ import "@telegram-apps/telegram-ui/dist/styles.css";
 import Providers from "./context/providers";
 import { PwaSetup } from "@/pwa";
 import Script from "next/script";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 
 // Google Analytics is opt-in per deployment, so forks don't report to ours.
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;

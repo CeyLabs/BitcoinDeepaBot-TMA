@@ -13,6 +13,25 @@
   }
 }
 
+/*
+  Semantic tokens (shadcn names, so components from the shadcn registry work
+  as-is). Values live on .light / .dark below; use these instead of raw hex in
+  new code, e.g. bg-card, text-muted-foreground, border-border.
+*/
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
 @theme {
   --color-muted-foreground: var(--muted-foreground);
 
@@ -99,6 +118,34 @@
   --muted-foreground: #94a3b8;
 
   --text-muted: var(--muted-foreground);
+}
+
+/* Semantic token values (see @theme inline above). */
+:root,
+.light {
+  --background: #eeeff3;
+  --foreground: #1b2027;
+  --card: #ffffff;
+  --card-foreground: #1b2027;
+  --muted: #f1f5f9;
+  --primary: #fa7119;
+  --primary-foreground: #ffffff;
+  --destructive: #f45a5a;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #fa7119;
+  --radius: 12px;
+}
+
+.dark {
+  --background: #1b2027;
+  --foreground: #ffffff;
+  --card: #0b0f14;
+  --card-foreground: #ffffff;
+  --muted: #1e293b;
+  --destructive: #f45a5a;
+  --border: #1e293b;
+  --input: #1e293b;
 }
 
 /* Light theme overrides */

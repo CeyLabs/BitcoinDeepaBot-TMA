@@ -4,7 +4,7 @@
 import { animate, motion, useInView, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EASE_OUT } from "@/lib/ease";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 
 export interface NumberTickerProps {
   value: number;
