@@ -1,18 +1,16 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useBackButtonRaw } from "@telegram-apps/sdk-react";
+import { backButton } from "@tma.js/sdk";
+import { usePlatform } from "./PlatformProvider";
 
 /**
  * Shows the native Telegram back chevron and wires it to `onBack` for the
- * page's lifetime. Uses the "raw" (non-throwing) resource hook — the plain
- * useBackButton() throws outside Telegram, where there's no such control to
- * show; here we just no-op instead.
- *
- * Must be rendered inside PlatformProvider (which mounts the SDKProvider).
+ * page's lifetime. No-op outside Telegram (or on clients without one), where
+ * pages render their own back button instead.
  */
 export function useBackButton(onBack: () => void) {
-  const backButton = useBackButtonRaw(true)?.result;
+  const inTelegram = usePlatform().kind === "telegram";
 
   // Callers typically pass an inline arrow function, which is a new reference
   // every render. Routing the call through a ref keeps the effect's dependency
@@ -23,14 +21,18 @@ export function useBackButton(onBack: () => void) {
   });
 
   useEffect(() => {
-    if (!backButton) return;
-
-    backButton.show();
-    const handleClick = () => onBackRef.current();
-    backButton.on("click", handleClick);
-    return () => {
-      backButton.off("click", handleClick);
-      backButton.hide();
-    };
-  }, [backButton]);
+    if (!inTelegram) return;
+    try {
+      if (!backButton.isSupported()) return;
+      if (!backButton.isMounted()) backButton.mount();
+      backButton.show();
+      const off = backButton.onClick(() => onBackRef.current());
+      return () => {
+        off();
+        backButton.hide();
+      };
+    } catch {
+      // SDK not initialized / unsupported client — no native back button.
+    }
+  }, [inTelegram]);
 }

@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { createContext, useCallback, use, useEffect, useState, useSyncExternalStore } from "react";
 import { usePlatform, type ColorScheme } from "@/platform";
 
 interface ThemeContextType {
@@ -21,7 +14,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const useTheme = () => {
-  const context = useContext(ThemeContext);
+  const context = use(ThemeContext);
   if (!context) {
     throw new Error("useTheme must be used within ThemeProvider");
   }
@@ -79,5 +72,5 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     setThemeOverride,
   };
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return <ThemeContext value={value}>{children}</ThemeContext>;
 }

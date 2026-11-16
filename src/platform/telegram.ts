@@ -1,11 +1,18 @@
 import {
-  initPopup,
-  initUtils,
+  deepSnakeToCamelObjKeys,
+  init,
   isColorDark,
   on,
+  openLink,
+  openTelegramLink,
+  popup,
   postEvent,
   retrieveLaunchParams,
-} from "@telegram-apps/sdk-react";
+  retrieveRawInitData,
+  shareStory,
+  shareURL,
+  swipeBehavior,
+} from "@tma.js/sdk";
 import type { ColorScheme, Platform, TelegramLaunch } from "./types";
 
 // "android_x" is Telegram X.
@@ -22,38 +29,84 @@ const schemeFromBg = (bgColor: string | undefined): ColorScheme | null =>
 /**
  * Synchronous hint: launch params only exist when Telegram opened the page
  * (the SDK reads them from the URL hash, then sessionStorage on reload).
- * Throws/null in a plain browser. Not proof on its own — confirm with the
- * async isTMA("complete") check.
+ * Null in a plain browser. Not proof on its own — confirm with the async
+ * isTMA("complete") check.
  */
 export function readLaunch(): TelegramLaunch | null {
   try {
-    const raw = retrieveLaunchParams();
+    const params = retrieveLaunchParams();
+    const initData = params.tgWebAppData ? deepSnakeToCamelObjKeys(params.tgWebAppData) : undefined;
+    const user = initData?.user;
     return {
-      initDataRaw: raw.initDataRaw,
-      initData: raw.initData,
-      user: raw.initData?.user,
-      clientPlatform: raw.platform,
-      raw,
+      initDataRaw: retrieveRawInitData(),
+      initData,
+      user: user && {
+        id: user.id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        photoUrl: user.photoUrl,
+      },
+      clientPlatform: params.tgWebAppPlatform,
+      // Same camelCase shape the old SDK produced, so what /api/user stores
+      // in Mongo doesn't change.
+      raw: {
+        initData,
+        initDataRaw: retrieveRawInitData(),
+        platform: params.tgWebAppPlatform,
+        version: params.tgWebAppVersion,
+        themeParams: deepSnakeToCamelObjKeys(params.tgWebAppThemeParams),
+        startParam: params.tgWebAppStartParam,
+        botInline: params.tgWebAppBotInline,
+      },
     };
   } catch {
     return null;
   }
 }
 
-/** One-time native setup once we know we're inside Telegram. */
+let initialized = false;
+
 /**
- * Tells Telegram the page is ready (hides its loading placeholder) and
- * expands the sheet. Without `web_app_ready` Telegram keeps its placeholder
- * up until a fallback timeout (several seconds) — telegram-web-app.js used to
- * send it automatically, the SDK doesn't. Safe to call more than once.
+ * One-time native setup once we know we're inside Telegram:
+ * - init() the SDK (every SDK feature throws until it's called).
+ * - `web_app_ready` drops Telegram's loading placeholder — without it the
+ *   placeholder stays up until a fallback timeout (several seconds).
+ * - Expand the sheet, and stop a downward scroll from closing the app.
+ * Safe to call more than once.
  */
 export function setupTelegram() {
+  if (!initialized) {
+    try {
+      init();
+      initialized = true;
+    } catch {
+      // No launch params (not really Telegram) — the raw events below still work.
+    }
+  }
   for (const event of ["web_app_ready", "web_app_expand"] as const) {
     try {
       postEvent(event);
     } catch {
       // Older clients may not support it — not fatal.
     }
+  }
+  try {
+    if (swipeBehavior.isSupported()) {
+      if (!swipeBehavior.isMounted()) swipeBehavior.mount();
+      swipeBehavior.disableVertical();
+    }
+  } catch {
+    // Older clients — swiping down closes the app as before.
+  }
+}
+
+/** Runs an SDK call, falling back when the client doesn't support it. */
+function tryOr(fn: () => void, fallback: () => void) {
+  try {
+    fn();
+  } catch {
+    fallback();
   }
 }
 
@@ -63,29 +116,35 @@ export function createTelegramPlatform(launch: TelegramLaunch | null = readLaunc
   let scheme = schemeFromBg(
     (launch?.raw as { themeParams?: { bgColor?: string } } | undefined)?.themeParams?.bgColor
   );
-  const utils = () => initUtils();
 
   return {
     kind: "telegram",
     launch,
     isMobileDevice: !!launch?.clientPlatform && MOBILE_CLIENTS.includes(launch.clientPlatform),
     capabilities: { stories: true },
-    openLink: (url) => utils().openLink(url),
-    openTelegramLink: (url) => utils().openTelegramLink(url),
+    openLink: (url) =>
+      tryOr(
+        () => openLink(url),
+        () => window.open(url, "_blank", "noopener,noreferrer")
+      ),
+    openTelegramLink: (url) =>
+      tryOr(
+        () => openTelegramLink(url),
+        () => window.open(url, "_blank", "noopener,noreferrer")
+      ),
     shareStory: (mediaUrl, { text, widget_link }) =>
-      // Not typed in this SDK version (Bot API 7.8+); clients without
-      // support ignore it.
-      (postEvent as unknown as (method: string, params: unknown) => void)(
-        "web_app_share_to_story",
-        { media_url: mediaUrl, text, widget_link }
+      // Clients without story support (Bot API < 7.8) just do nothing.
+      tryOr(
+        () => shareStory(mediaUrl, { text, widgetLink: widget_link }),
+        () => {}
       ),
     share: async ({ url, text }) => {
-      utils().shareURL(url, text);
+      shareURL(url, text);
       return "shared";
     },
     confirm: async ({ title, message, confirmText, destructive }) => {
       try {
-        const buttonId = await initPopup().open({
+        const buttonId = await popup.show({
           title,
           message,
           buttons: [

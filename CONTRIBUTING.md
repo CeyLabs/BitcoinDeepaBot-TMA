@@ -48,7 +48,7 @@ bun run build
 
 Rules worth knowing:
 
-- **Don't import `@telegram-apps/sdk*` or use `window.Telegram` outside `src/platform/`.** ESLint enforces this. If you need a new Telegram capability, add it to the `Platform` interface with a web fallback.
+- **Don't import `@tma.js/*` (the Telegram SDK) or use `window.Telegram` outside `src/platform/`.** ESLint enforces this. If you need a new Telegram capability, add it to the `Platform` interface with a web fallback.
 - **Every feature must work in the browser too.** Check both `kind === "telegram"` and `kind === "web"` paths.
 - **Never cache user data in the service worker.** It only caches hashed static assets.
 - `NEXT_PUBLIC_*` env vars end up in the browser bundle. Never put secrets in them.

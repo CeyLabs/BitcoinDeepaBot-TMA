@@ -26,7 +26,7 @@ The API lives in [BitcoinDeepa-DCA-BE](https://github.com/CeyLabs/BitcoinDeepa-D
 - **State Management**: TanStack Query (server state); small `useSyncExternalStore` hooks for client state
 - **Forms**: plain React state + Zod validation
 - **Charts**: Chart.js
-- **Telegram SDK**: @telegram-apps/sdk-react
+- **Telegram SDK**: @tma.js/sdk (only used in `src/platform/`)
 - **HTTP Client**: Custom `fetchy` wrapper for API calls
 
 ## 📦 Installation

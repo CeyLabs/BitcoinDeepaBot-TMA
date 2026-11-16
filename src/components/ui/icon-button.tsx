@@ -1,6 +1,5 @@
 "use client";
 
-import { forwardRef } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 
@@ -28,14 +27,20 @@ const iconButtonVariants = cva(
 export interface IconButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof iconButtonVariants> {}
 
-export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ className, variant, size, type = "button", ...props }, ref) => (
+export function IconButton({
+  className,
+  variant,
+  size,
+  type = "button",
+  ref,
+  ...props
+}: IconButtonProps & { ref?: React.Ref<HTMLButtonElement> }) {
+  return (
     <button
       ref={ref}
       type={type}
       className={cn(iconButtonVariants({ variant, size }), className)}
       {...props}
     />
-  )
-);
-IconButton.displayName = "IconButton";
+  );
+}

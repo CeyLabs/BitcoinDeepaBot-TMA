@@ -9,7 +9,6 @@ const eslintConfig = [
   ...nextTypescript,
   {
     // Keep Telegram/web differences in one place (see src/platform).
-    // @telegram-apps/telegram-ui is a plain UI kit and stays allowed.
     files: ["src/**/*.{ts,tsx}"],
     ignores: ["src/platform/**"],
     rules: {
@@ -18,7 +17,7 @@ const eslintConfig = [
         {
           patterns: [
             {
-              group: ["@telegram-apps/sdk", "@telegram-apps/sdk-react", "@telegram-apps/sdk/*"],
+              group: ["@tma.js/*", "@telegram-apps/*"],
               message: PLATFORM_MESSAGE,
             },
           ],

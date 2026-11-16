@@ -1,4 +1,3 @@
-import { forwardRef } from "react";
 import { cn } from "cn";
 
 interface CellProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
@@ -16,8 +15,17 @@ interface CellProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
  * List row: before | title + subtitle | after. Vertical padding of the middle
  * column defaults to 16px; override with `[--cell-py:12px]` in className.
  */
-export const Cell = forwardRef<HTMLElement, CellProps>(
-  ({ before, after, subtitle, children, className, as: Component = "div", ...props }, ref) => (
+export function Cell({
+  before,
+  after,
+  subtitle,
+  children,
+  className,
+  as: Component = "div",
+  ref,
+  ...props
+}: CellProps & { ref?: React.Ref<HTMLElement> }) {
+  return (
     <Component
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ref={ref as any}
@@ -41,9 +49,8 @@ export const Cell = forwardRef<HTMLElement, CellProps>(
       </div>
       {after && <div className="flex shrink-0 items-center justify-center">{after}</div>}
     </Component>
-  )
-);
-Cell.displayName = "Cell";
+  );
+}
 
 /** Trailing ">" for navigable rows. */
 export function CellChevron({ className }: { className?: string }) {

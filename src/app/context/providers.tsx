@@ -3,13 +3,17 @@
 import { environmentManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PlatformProvider } from "@/platform";
 import { useRegisterUser } from "@/hooks/useRegisterUser";
+import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
+import { usePlatform } from "@/platform";
 import { ToastProvider } from "@/components/ui/toast";
 import ThemeProvider from "./theme";
 
 // Registers/refreshes the Telegram user on launch (and after the session
 // ends), whichever route it lands on.
 function RegisterUserOnLaunch() {
+  const launch = usePlatform().launch;
   useRegisterUser();
+  useRegisterTelegramUser(launch?.initData, launch?.raw);
   return null;
 }
 

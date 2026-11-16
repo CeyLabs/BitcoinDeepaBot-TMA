@@ -15,7 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { Title } from "@/components/ui/title";
 import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
 import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
-import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
+import { useRegisterTelegramUserResult } from "@/hooks/query/useRegisterTelegramUser";
 import { useUserCount } from "@/hooks/query/useUserCount";
 import { usePlatform } from "@/platform";
 import { useSession } from "@/hooks/useSession";
@@ -188,7 +188,8 @@ function TelegramHome() {
 
   const authData = launch?.initData;
 
-  const registerUser = useRegisterTelegramUser(authData, launch?.raw);
+  // Fired app-wide on launch (providers.tsx); read its result here.
+  const registerUser = useRegisterTelegramUserResult();
 
   // Cached from a previous launch's 409 response (see
   // useRegisterTelegramUser) — lets a known returning user skip straight to

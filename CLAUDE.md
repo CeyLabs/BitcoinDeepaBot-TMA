@@ -63,12 +63,19 @@ There is no test suite configured. Always run `bun run format` and `bun run buil
 
 ### Dependency notes
 
-- `@telegram-apps/sdk-react@1` only supports React 17/18 — it's what blocks a React 19 upgrade (see `TODO.md`).
+- Telegram SDK: `@tma.js/sdk` (the renamed successor of `@telegram-apps/sdk`), imported only in `src/platform/` (ESLint enforces it). `setupTelegram()` must run before any SDK feature — most of them throw until `init()` is called.
 - `chart.js` is used directly (`PortfolioLine.tsx`, no React wrapper) and loads in its own chunk, only on the wallet chart.
+
+### React 19 conventions
+
+- Pass `ref` as a normal prop (no `forwardRef`); render contexts as `<SomeContext value={...}>` and read them with `use(SomeContext)`.
+- Server data goes through TanStack Query (not `use(promise)`, `useActionState` or `useOptimistic`).
+- React Compiler was measured and left off (+~7% JS per page for no visible gain here); enable with `reactCompiler: true` + `babel-plugin-react-compiler` if a screen gets re-render heavy.
 
 ### Telegram-specific concerns
 
 - Mobile-first: content is constrained to `max-w-md` for a single-column mobile layout.
+- Fast launch (`src/lib/launch-redirect.ts`, wired in `src/app/layout.tsx`): returning members skip `/` and go straight to `/dashboard` from a `<head>` script; `web_app_ready` is sent from the end of `<body>` so Telegram reveals the server-rendered skeleton before the JS loads; the backend is preconnected with React 19's `preconnect()`. The launch registration (`/api/user`) runs app-wide in `providers.tsx`.
 - `next.config.mjs` forces `Cache-Control: no-store, must-revalidate` on all non-static routes — worked around a Telegram Desktop WebView bug where stale HTML gets cached; don't remove this without understanding that constraint.
 - `allowedDevOrigins` in `next.config.mjs` permits `*.sats.day` and `*.ngrok-free.app` tunnels for testing inside the real Telegram client.
 
