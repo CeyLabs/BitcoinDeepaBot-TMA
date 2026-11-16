@@ -7,4 +7,5 @@ export const queryKeys = {
   packages: ["packages"] as const,
   userCount: ["user-count"] as const,
   subscriptionCurrent: ["subscription-current"] as const,
+  kycStatus: ["kyc-status"] as const,
 } as const;

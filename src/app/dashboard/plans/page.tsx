@@ -13,12 +13,12 @@ import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { useSubscriptionCurrent } from "@/hooks/query/useSubscriptionCurrent";
 import PlansLoading from "./loading";
-import { useStore } from "@/lib/store";
+import { useBalanceVisible } from "@/hooks/useBalanceVisible";
 
 export default function PlansPage() {
   const router = useRouter();
   const { data: kyc, isLoading: kycLoading } = useKycStatus();
-  const { balanceVisible, toggleBalanceVisible } = useStore();
+  const { visible: balanceVisible, toggle: toggleBalanceVisible } = useBalanceVisible();
   const { data: subscription, isLoading: subscriptionLoading } = useSubscriptionCurrent();
   const {
     isLoading: summaryLoading,

@@ -1,10 +1,23 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { usePlatform } from "@/platform";
 import { authenticateWithTelegram, saveAuthToStorage } from "@/lib/auth";
-import { useStore } from "@/lib/store";
 import { useSession } from "@/hooks/useSession";
+
+/** Mutation key of the Telegram sign-in; useAuthGuard reads its result. */
+export const TELEGRAM_SIGN_IN_KEY = ["telegram-sign-in"] as const;
+
+/** `rejected`: the backend refused the initData itself (too old) — retrying can't help. */
+export type TelegramSignInResult = { rejected: boolean };
+
+async function signInWithTelegram(initDataRaw: string): Promise<TelegramSignInResult> {
+  const result = await authenticateWithTelegram(initDataRaw);
+  if (!result.token) return { rejected: true };
+  saveAuthToStorage(result.token);
+  return { rejected: false };
+}
 
 // At most one sign-in attempt a minute, so a backend that keeps rejecting
 // fresh tokens can't cause a request loop.
@@ -24,7 +37,10 @@ const RETRY_INTERVAL_MS = 60_000;
 export function useRegisterUser() {
   const initDataRaw = usePlatform().launch?.initDataRaw;
   const { status } = useSession();
-  const setTelegramReauth = useStore((state) => state.setTelegramReauth);
+  const { mutateAsync: signIn } = useMutation({
+    mutationKey: TELEGRAM_SIGN_IN_KEY,
+    mutationFn: signInWithTelegram,
+  });
   const lastAttemptRef = useRef(0);
   const rejectedRef = useRef(false);
   // Bumped to re-run the effect when a scheduled retry is due.
@@ -42,24 +58,14 @@ export function useRegisterUser() {
     }
 
     lastAttemptRef.current = Date.now();
-    setTelegramReauth("pending");
 
-    authenticateWithTelegram(initDataRaw)
-      .then((result) => {
-        if (result.token) {
-          saveAuthToStorage(result.token);
-          setTelegramReauth("idle");
-        } else {
-          // Backend answered but rejected this initData.
-          rejectedRef.current = true;
-          setTelegramReauth("failed");
-        }
+    signIn(initDataRaw)
+      .then(({ rejected }) => {
+        if (rejected) rejectedRef.current = true;
       })
       .catch((error) => {
-        // Network/server error — try again after the interval.
         console.error("Error registering user:", error);
-        setTelegramReauth("idle");
         setRetryTick((n) => n + 1);
       });
-  }, [initDataRaw, status, retryTick, setTelegramReauth]);
+  }, [initDataRaw, status, retryTick, signIn]);
 }

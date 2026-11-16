@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { infiniteQueryOptions, useInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { useSession } from "@/hooks/useSession";
 import type { BotTransaction } from "@/lib/types";
@@ -18,16 +17,22 @@ interface BotTransactionsResponse {
 
 const PAGE_SIZE = 50;
 
+type BotTransactionPage = { transactions: BotTransaction[]; nextOffset: number; hasMore: boolean };
+
+const NO_TRANSACTIONS: BotTransaction[] = [];
+
+// Flattened and sorted oldest-first (kept stable between renders by `select`).
+const flattenBotTransactions = (data: InfiniteData<BotTransactionPage>) =>
+  data.pages
+    .flatMap((page) => page.transactions)
+    .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+
 // Sats sent/received to other Telegram users via the bot, paginated
 // newest page first via offset/limit, sorted oldest-first once flattened.
-export function useBotTransactionHistory({ enabled = true }: { enabled?: boolean } = {}) {
-  const session = useSession();
-  const isAuthed = session.status === "authenticated";
-  const userId = session.user?.id ?? "";
-
-  const query = useInfiniteQuery({
+export const botTransactionsOptions = (userId: string) =>
+  infiniteQueryOptions({
     queryKey: queryKeys.botTransactions(userId),
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam }): Promise<BotTransactionPage> => {
       let data: BotTransactionsResponse;
       try {
         data = await fetchy.get<BotTransactionsResponse>(
@@ -58,17 +63,18 @@ export function useBotTransactionHistory({ enabled = true }: { enabled?: boolean
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextOffset : undefined),
-    enabled: enabled && isAuthed,
     staleTime: 1000 * 60 * 5,
+    select: flattenBotTransactions,
   });
 
-  const transactions = useMemo(
-    () =>
-      (query.data?.pages ?? [])
-        .flatMap((page) => page.transactions)
-        .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()),
-    [query.data]
-  );
+export function useBotTransactionHistory({ enabled = true }: { enabled?: boolean } = {}) {
+  const session = useSession();
+  const isAuthed = session.status === "authenticated";
+  const userId = session.user?.id ?? "";
 
-  return { ...query, transactions };
+  const query = useInfiniteQuery({
+    ...botTransactionsOptions(userId),
+    enabled: enabled && isAuthed,
+  });
+  return { ...query, transactions: query.data ?? NO_TRANSACTIONS };
 }

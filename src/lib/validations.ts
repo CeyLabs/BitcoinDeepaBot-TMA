@@ -38,17 +38,3 @@ export const createUserSchema = z.object({
 });
 
 export type CreateUserFormData = z.infer<typeof createUserSchema>;
-
-// Individual field validation functions for real-time validation
-export const validateField = (field: keyof CreateUserFormData, value: string) => {
-  try {
-    const fieldSchema = createUserSchema.shape[field];
-    fieldSchema.parse(value);
-    return { isValid: true, error: null };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { isValid: false, error: error.issues[0]?.message || "Invalid value" };
-    }
-    return { isValid: false, error: "Invalid value" };
-  }
-};

@@ -12,8 +12,8 @@ interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 /**
- * Outlined input with a floating label. Works with react-hook-form's
- * register() (forwards ref, name, onChange, onBlur). The label's background
+ * Outlined input with a floating label. Forwards ref and all input props
+ * (value, onChange, …). The label's background
  * follows the `--field-bg` CSS variable (defaults to the page background).
  */
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(

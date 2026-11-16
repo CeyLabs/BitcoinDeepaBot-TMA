@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 // import { useMemo, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
-import type { TooltipItem } from "chart.js";
+import type { ChartData, ChartOptions, TooltipItem } from "chart.js";
 import { Card } from "@/components/ui/card";
 import { Bone } from "@/components/ui/bone";
 // import { cn } from "cn";
@@ -92,110 +92,115 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
   const points = allPoints;
   // const points = useMemo(() => filterByPeriod(allPoints, chartPeriod), [allPoints, chartPeriod]);
 
-  const labels = points.map((p) =>
-    new Date(p.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
+  // Memoized so PortfolioLine only updates the chart when the data or theme
+  // actually changes, not on every re-render of this card.
+  const data = useMemo<ChartData<"line">>(() => {
+    const labels = points.map((p) =>
+      new Date(p.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
+    );
+    const avgBtcPrice =
+      points.length > 0 ? points.reduce((sum, p) => sum + p.bitcoin, 0) / points.length : 0;
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Portfolio",
+          data: points.map((p) => p.portfolio),
+          yAxisID: "y",
+          borderColor: "#218a54",
+          backgroundColor: "rgba(37,167,97,0.15)",
+          fill: true,
+          tension: 0.35,
+          pointRadius: 0,
+          borderWidth: 2,
+        },
+        {
+          label: "Invested",
+          data: points.map((p) => p.invested),
+          yAxisID: "y",
+          borderColor: "#fa7119",
+          backgroundColor: "transparent",
+          fill: false,
+          tension: 0.35,
+          pointRadius: 0,
+          borderWidth: 2,
+        },
+        {
+          label: "Bitcoin",
+          data: points.map((p) => p.bitcoin),
+          yAxisID: "y1",
+          borderColor: "#0088ff",
+          backgroundColor: "transparent",
+          fill: false,
+          tension: 0.35,
+          pointRadius: 0,
+          borderWidth: 2,
+        },
+        {
+          label: "Avg BTC Price",
+          data: points.map(() => avgBtcPrice),
+          yAxisID: "y1",
+          borderColor: "#94a3b8",
+          backgroundColor: "transparent",
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          borderWidth: 1.5,
+          borderDash: [6, 4],
+          spanGaps: true,
+        },
+      ],
+    };
+  }, [points]);
+
+  const options = useMemo<ChartOptions<"line">>(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          mode: "index" as const,
+          intersect: false,
+          backgroundColor: "rgba(27,32,39,0.95)",
+          titleColor: "#fff",
+          bodyColor: "#e2e8f0",
+          cornerRadius: 8,
+          callbacks: {
+            label: (context: TooltipItem<"line">) =>
+              `${context.dataset.label}: ${fmtLkrCurrency(Math.round(context.parsed.y ?? 0))}`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: "#64748b", font: { size: 10 }, maxTicksLimit: 4 },
+        },
+        y: {
+          position: "left" as const,
+          grid: { color: isDark ? "#1f2a36" : "#e2e8f0" },
+          ticks: {
+            color: "#64748b",
+            font: { size: 10 },
+            callback: (value: string | number) => fmtPriceCompact(Number(value)),
+          },
+        },
+        y1: {
+          position: "right" as const,
+          grid: { display: false },
+          ticks: {
+            color: "#64748b",
+            font: { size: 10 },
+            callback: (value: string | number) => fmtPriceCompact(Number(value)),
+          },
+        },
+      },
+      interaction: { mode: "index" as const, intersect: false },
+    }),
+    [isDark]
   );
-
-  const avgBtcPrice =
-    points.length > 0 ? points.reduce((sum, p) => sum + p.bitcoin, 0) / points.length : 0;
-
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: "Portfolio",
-        data: points.map((p) => p.portfolio),
-        yAxisID: "y",
-        borderColor: "#218a54",
-        backgroundColor: "rgba(37,167,97,0.15)",
-        fill: true,
-        tension: 0.35,
-        pointRadius: 0,
-        borderWidth: 2,
-      },
-      {
-        label: "Invested",
-        data: points.map((p) => p.invested),
-        yAxisID: "y",
-        borderColor: "#fa7119",
-        backgroundColor: "transparent",
-        fill: false,
-        tension: 0.35,
-        pointRadius: 0,
-        borderWidth: 2,
-      },
-      {
-        label: "Bitcoin",
-        data: points.map((p) => p.bitcoin),
-        yAxisID: "y1",
-        borderColor: "#0088ff",
-        backgroundColor: "transparent",
-        fill: false,
-        tension: 0.35,
-        pointRadius: 0,
-        borderWidth: 2,
-      },
-      {
-        label: "Avg BTC Price",
-        data: points.map(() => avgBtcPrice),
-        yAxisID: "y1",
-        borderColor: "#94a3b8",
-        backgroundColor: "transparent",
-        fill: false,
-        tension: 0,
-        pointRadius: 0,
-        pointHoverRadius: 0,
-        borderWidth: 1.5,
-        borderDash: [6, 4],
-        spanGaps: true,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        mode: "index" as const,
-        intersect: false,
-        backgroundColor: "rgba(27,32,39,0.95)",
-        titleColor: "#fff",
-        bodyColor: "#e2e8f0",
-        cornerRadius: 8,
-        callbacks: {
-          label: (context: TooltipItem<"line">) =>
-            `${context.dataset.label}: ${fmtLkrCurrency(Math.round(context.parsed.y ?? 0))}`,
-        },
-      },
-    },
-    scales: {
-      x: {
-        grid: { display: false },
-        ticks: { color: "#64748b", font: { size: 10 }, maxTicksLimit: 4 },
-      },
-      y: {
-        position: "left" as const,
-        grid: { color: isDark ? "#1f2a36" : "#e2e8f0" },
-        ticks: {
-          color: "#64748b",
-          font: { size: 10 },
-          callback: (value: string | number) => fmtPriceCompact(Number(value)),
-        },
-      },
-      y1: {
-        position: "right" as const,
-        grid: { display: false },
-        ticks: {
-          color: "#64748b",
-          font: { size: 10 },
-          callback: (value: string | number) => fmtPriceCompact(Number(value)),
-        },
-      },
-    },
-    interaction: { mode: "index" as const, intersect: false },
-  };
 
   return (
     <div className="flex w-full flex-col gap-3">

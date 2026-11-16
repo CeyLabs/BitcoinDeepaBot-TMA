@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Cell, CellChevron } from "@/components/ui/cell";
 import { Progress } from "@/components/ui/progress";
 import { Title } from "@/components/ui/title";
-import { useStore } from "@/lib/store";
 import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
 import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
 import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
@@ -186,15 +185,10 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
 function TelegramHome() {
   const router = useRouter();
   const launch = usePlatform().launch;
-  const { setUserID, isExistingUser } = useStore();
 
   const authData = launch?.initData;
 
   const registerUser = useRegisterTelegramUser(authData, launch?.raw);
-
-  useEffect(() => {
-    setUserID(authData?.user?.id?.toString() || "");
-  }, [authData, setUserID]);
 
   // Cached from a previous launch's 409 response (see
   // useRegisterTelegramUser) — lets a known returning user skip straight to
@@ -223,7 +217,7 @@ function TelegramHome() {
   // useRegisterUser signs in from initData (and shows a "reopen the app"
   // notice if that fails), so there's no redirect loop back to /.
   const shouldRedirect = isReturningUser;
-  const isExisting = hadTokenAtLaunch || isExistingUser || cachedReturningUser;
+  const isExisting = hadTokenAtLaunch || cachedReturningUser;
 
   useEffect(() => {
     if (shouldRedirect) {

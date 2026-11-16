@@ -15,13 +15,13 @@ import {
   mapDcaTransactionToActivityItem,
   type ActivityCategory,
 } from "@/lib/activity";
-import { useStore } from "@/lib/store";
+import { useBalanceVisible } from "@/hooks/useBalanceVisible";
 
 // Tipjar/faucet/gift and tasks have no backend endpoint yet.
 const COMING_SOON_CATEGORIES: ActivityCategory[] = ["tasks"];
 
 export default function ActivityPage() {
-  const { balanceVisible, toggleBalanceVisible } = useStore();
+  const { visible: balanceVisible, toggle: toggleBalanceVisible } = useBalanceVisible();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<ActivityCategory>("all");
 

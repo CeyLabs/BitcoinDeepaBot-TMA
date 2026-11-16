@@ -7,10 +7,10 @@ import { PerformanceGrid } from "@/components/dashboard/wallet/PerformanceGrid";
 import { PortfolioChart } from "@/components/dashboard/wallet/PortfolioChart";
 import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
 import { useUser } from "@/hooks/useUser";
-import { useStore } from "@/lib/store";
+import { useBalanceVisible } from "@/hooks/useBalanceVisible";
 
 export default function WalletPage() {
-  const { balanceVisible } = useStore();
+  const { visible: balanceVisible } = useBalanceVisible();
   const { subscription, subscriptionLoading } = useUser();
 
   const {

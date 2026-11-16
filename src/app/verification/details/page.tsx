@@ -1,15 +1,23 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useKycInitiate, useUpdateProfile } from "@/hooks/query/useKyc";
 import { haptic } from "@/platform";
 import { BackButton } from "@/components/ui/back-button";
 import { useUser } from "@/hooks/useUser";
 import { createUserSchema, type CreateUserFormData } from "@/lib/validations";
+
+type FieldName = keyof CreateUserFormData;
+type FieldErrors = Partial<Record<FieldName, string>>;
+
+/** First zod message for one field, or undefined when it's valid. */
+function fieldError(name: FieldName, value: string) {
+  const result = createUserSchema.shape[name].safeParse(value);
+  return result.success ? undefined : result.error.issues[0]?.message;
+}
 
 const FIELDS: Array<{
   name: keyof CreateUserFormData;
@@ -32,23 +40,23 @@ export default function VerificationDetailsPage() {
   const kycInitiate = useKycInitiate();
   const updateProfile = useUpdateProfile();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isValid },
-  } = useForm<CreateUserFormData>({
-    resolver: zodResolver(createUserSchema),
-    mode: "onChange",
-    defaultValues: {
-      first_name: firstName ?? "",
-      last_name: lastName ?? "",
-      email: "",
-      phone: "",
-      address: "",
-      city: "",
-      country: "Sri Lanka",
-    },
-  });
+  const [values, setValues] = useState<CreateUserFormData>(() => ({
+    first_name: firstName ?? "",
+    last_name: lastName ?? "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    country: "Sri Lanka",
+  }));
+  // Errors show for a field once it's been edited (or on submit), like before.
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const isValid = useMemo(() => createUserSchema.safeParse(values).success, [values]);
+
+  const onFieldChange = (name: FieldName, value: string) => {
+    setValues((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: fieldError(name, value) }));
+  };
 
   const error =
     updateProfile.error instanceof Error
@@ -57,7 +65,20 @@ export default function VerificationDetailsPage() {
         ? kycInitiate.error.message
         : null;
 
-  const onSubmit = (formData: CreateUserFormData) => {
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const parsed = createUserSchema.safeParse(values);
+    if (!parsed.success) {
+      const all: FieldErrors = {};
+      for (const issue of parsed.error.issues) {
+        const name = issue.path[0] as FieldName;
+        all[name] ??= issue.message;
+      }
+      setErrors(all);
+      haptic.notify("error");
+      return;
+    }
+    const formData = parsed.data;
     haptic.impact("medium");
     updateProfile.mutate(
       {
@@ -108,7 +129,7 @@ export default function VerificationDetailsPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col gap-3">
+        <form onSubmit={onSubmit} noValidate className="flex flex-1 flex-col gap-3">
           <div className="flex flex-col gap-5 [--field-bg:#f7f9fc] dark:[--field-bg:#0b0f14]">
             {FIELDS.map((field) => (
               <TextField
@@ -121,8 +142,10 @@ export default function VerificationDetailsPage() {
                   </span>
                 }
                 placeholder={field.placeholder}
-                error={errors[field.name]?.message}
-                {...register(field.name)}
+                name={field.name}
+                value={values[field.name]}
+                onChange={(e) => onFieldChange(field.name, e.target.value)}
+                error={errors[field.name]}
               />
             ))}
           </div>

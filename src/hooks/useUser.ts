@@ -1,7 +1,6 @@
 "use client";
 
 import { usePlatform, type TelegramUser } from "@/platform";
-import { useStore } from "@/lib/store";
 import { useSubscriptionCurrent } from "@/hooks/query/useSubscriptionCurrent";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { getUserFromToken } from "@/lib/auth";
@@ -33,13 +32,11 @@ function getIdentity(telegramUser: TelegramUser | undefined) {
 }
 
 /**
- * Single source of truth for user-related data: identity, registration
- * status (store, synced by useAuthGuard), and server state (subscription,
+ * Single source of truth for user-related data: identity, and server state (subscription,
  * KYC status) — so components don't each re-derive these.
  */
 export function useUser() {
   const { id, username, firstName, lastName, photoUrl } = getIdentity(usePlatform().launch?.user);
-  const { isExistingUser } = useStore();
   const { data: subscription, isLoading: subscriptionLoading } = useSubscriptionCurrent();
   const { data: kycData } = useKycStatus();
 
@@ -54,7 +51,6 @@ export function useUser() {
     displayName: (firstName && lastName ? `${firstName} ${lastName}` : firstName) ?? displayName,
     initials,
     photoUrl,
-    isExistingUser,
     subscription: subscription ?? null,
     subscriptionLoading,
     kycStatus: kycData?.status,
