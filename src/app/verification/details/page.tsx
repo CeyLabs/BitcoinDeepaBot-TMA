@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button, Input } from "@telegram-apps/telegram-ui";
+import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/ui/text-field";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useKycInitiate, useUpdateProfile } from "@/hooks/query/useKyc";
@@ -92,7 +93,7 @@ export default function VerificationDetailsPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-[#0b0f14]">
+    <div className="dark flex min-h-screen w-full flex-col bg-[#0b0f14]">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-8 pb-6">
         <BackButton
           onBack={() => router.push("/verification")}
@@ -106,31 +107,21 @@ export default function VerificationDetailsPage() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col gap-3">
-          <div
-            className="flex flex-col gap-3"
-            style={{ "--tgui--bg_color": "#0b0f14" } as React.CSSProperties}
-          >
+          <div className="flex flex-col gap-3 [--field-bg:#0b0f14]">
             {FIELDS.map((field) => (
-              <div key={field.name} className="w-full">
-                <Input
-                  type={field.type}
-                  status={errors[field.name] ? "error" : undefined}
-                  header={
-                    <span className="inline-flex items-center gap-1">
-                      {field.label}
-                      <span className="size-1 rounded-full bg-[#f13131]" />
-                    </span>
-                  }
-                  placeholder={field.placeholder}
-                  className="w-full p-0"
-                  {...register(field.name)}
-                />
-                {errors[field.name] && (
-                  <p className="pt-1 pl-6 text-[12px] text-[#f13131]">
-                    {errors[field.name]?.message}
-                  </p>
-                )}
-              </div>
+              <TextField
+                key={field.name}
+                type={field.type}
+                label={
+                  <span className="inline-flex items-center gap-1">
+                    {field.label}
+                    <span className="size-1 rounded-full bg-[#f13131]" />
+                  </span>
+                }
+                placeholder={field.placeholder}
+                error={errors[field.name]?.message}
+                {...register(field.name)}
+              />
             ))}
           </div>
 
@@ -145,11 +136,9 @@ export default function VerificationDetailsPage() {
 
           <div className="mt-auto flex flex-col gap-3 pt-4">
             <Button
+              className="w-full rounded-[12px]"
               type="submit"
-              mode="filled"
-              size="l"
-              stretched
-              style={{ borderRadius: "12px" }}
+              size="lg"
               loading={updateProfile.isPending || kycInitiate.isPending}
               disabled={updateProfile.isPending || kycInitiate.isPending || !isValid}
             >

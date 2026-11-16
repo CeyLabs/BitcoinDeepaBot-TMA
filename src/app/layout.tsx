@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/theme.css";
-import "@telegram-apps/telegram-ui/dist/styles.css";
 import Providers from "./context/providers";
 import { PwaSetup } from "@/pwa";
 import Script from "next/script";

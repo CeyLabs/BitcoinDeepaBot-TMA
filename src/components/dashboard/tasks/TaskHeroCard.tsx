@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "@telegram-apps/telegram-ui";
+import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import { fmtLkrCurrency, fmtSatsCompact, maskDigits } from "@/lib/formatters";
 
@@ -30,11 +30,7 @@ export function TaskHeroCard({ stats, visible }: TaskHeroCardProps) {
   const mask = (v: string) => maskDigits(v, visible);
 
   return (
-    <Card
-      type="plain"
-      className="relative hidden overflow-hidden rounded-[20px]! p-0! shadow-none!"
-      style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
-    >
+    <Card className="relative hidden overflow-hidden rounded-[20px] bg-transparent p-0 shadow-none">
       <Image src="/bg/note.webp" alt="" fill priority className="object-cover" />
 
       <div className="relative flex flex-col gap-4 p-4">

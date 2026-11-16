@@ -2,15 +2,12 @@
 
 import Image from "next/image";
 import { ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
-import { Card, Badge } from "@telegram-apps/telegram-ui";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { NumberTicker } from "@/components/motion/number-ticker";
 import { ValueSkeleton } from "@/components/ui/value-skeleton";
 import { cn } from "cn";
 import { fmtLkr, fmtLkrCurrency, fmtSatsCompact, maskDigits, LKR_SYMBOL } from "@/lib/formatters";
-
-// Card/Badge theme their background/color through --tgui-- CSS variables (same
-// convention as --tgui--cell--middle--padding on the homepage Cell) — override those
-// via style, and everything else (radius/shadow/padding/display) via `!` classNames.
 
 export interface TotalValueCardProps {
   totalLkr: number;
@@ -34,10 +31,7 @@ export function TotalValueCard({
   const TrendIcon = isProfit ? TrendingUp : TrendingDown;
 
   return (
-    <Card
-      type="plain"
-      style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
-    >
+    <Card className="bg-transparent">
       <Image src="/bg/wallet.webp" alt="" fill priority className="object-cover" />
       <div className="absolute inset-0 bg-black/18" />
       <div className="relative flex flex-col gap-2 p-4">
@@ -74,16 +68,8 @@ export function TotalValueCard({
           </div>
 
           <Badge
-            type="number"
-            mode={isProfit ? "primary" : "critical"}
-            className="m-0! h-auto! rounded-[8px]! px-2! py-1!"
-            style={
-              {
-                "--tgui--button_color": "#158348",
-                "--tgui--destructive_text_color": "rgba(241,49,49,0.62)",
-                "--tgui--button_text_color": "#fff",
-              } as React.CSSProperties
-            }
+            variant={isProfit ? "gain" : "loss"}
+            className="m-0 h-auto rounded-[8px] px-2 py-1"
           >
             <p className="flex items-center gap-1">
               <TrendIcon size={14} strokeWidth={2} className="text-white" />

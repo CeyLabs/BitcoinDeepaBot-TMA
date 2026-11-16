@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { SegmentedControl } from "@telegram-apps/telegram-ui";
 import { cn } from "cn";
 import { haptic } from "@/platform";
-import { useTheme } from "@/app/context/theme";
 
 // Icons are inlined (not next/image) so `fill="currentColor"` can pick up the
 // item's text color for the active/inactive + light/dark states below.
@@ -96,12 +94,10 @@ function isNavItemActive(href: string, activeHref: string) {
   return activeHref === href || activeHref.startsWith(`${href}/`);
 }
 
-// SegmentedControl is a plain (non-fixed) element, unlike Tabbar which ships its own
-// FixedLayout — so the fixed bottom-pill positioning lives on this wrapper instead.
+// Fixed bottom pill; the wrapper does the positioning.
 export default function BottomNavigation() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isDark } = useTheme();
 
   // Router navigation resolves the destination route segment before the pathname
   // (and thus `isActive` below) updates, which made the pill lag behind the tap.
@@ -121,58 +117,64 @@ export default function BottomNavigation() {
   }, [router]);
 
   const activeHref = pendingHref ?? pathname;
+  const activeIndex = navItems.findIndex((item) => isNavItemActive(item.href, activeHref));
 
   return (
     <div className="fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-50 mx-auto max-w-100">
-      <SegmentedControl
-        className={cn(
-          "flex! h-auto! w-full! rounded-full! p-1!",
-          "shadow-[0px_4px_24px_0px_rgba(0,0,0,0.10)]! backdrop-blur-md",
-          "bg-surface-glass!"
-        )}
-        style={
-          {
-            "--tgui--tertiary_bg_color": "transparent",
-            "--tgui--segmented_control_active_bg": isDark ? "#334155" : "#e2e8f0",
-          } as React.CSSProperties
-        }
+      <nav
+        aria-label="Main"
+        className="bg-surface-glass flex w-full rounded-full p-1 shadow-[0px_4px_24px_0px_rgba(0,0,0,0.10)] backdrop-blur-md"
       >
-        {navItems.map((item) => {
-          const isActive = isNavItemActive(item.href, activeHref);
-
-          return (
-            <SegmentedControl.Item
-              key={item.href}
-              selected={isActive}
-              onClick={() => {
-                if (item.href === pathname) return;
-                haptic.select();
-                setPendingHref(item.href);
-                router.push(item.href);
+        <div className="relative flex w-full">
+          {/* Active pill — slides between items. */}
+          {activeIndex >= 0 && (
+            <span
+              aria-hidden
+              className="absolute inset-y-0 left-0 rounded-[40px] bg-[#e2e8f0] transition-transform duration-150 dark:bg-[#334155]"
+              style={{
+                width: `${100 / navItems.length}%`,
+                transform: `translateX(${activeIndex * 100}%)`,
               }}
-              className={cn(
-                "h-14! w-auto! rounded-[20px]! p-0! whitespace-normal!",
-                "transition-colors duration-200",
-                isActive
-                  ? "text-[#1b2027]! dark:text-[#f1f5f9]!"
-                  : "text-[#475569]! dark:text-[#94a3b8]!"
-              )}
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
-                <item.Icon className="size-5" />
-                <span
-                  className={cn(
-                    "text-[14px] leading-3 tracking-normal",
-                    isActive ? "font-medium" : "font-normal"
-                  )}
-                >
-                  {item.label}
-                </span>
-              </div>
-            </SegmentedControl.Item>
-          );
-        })}
-      </SegmentedControl>
+            />
+          )}
+          {navItems.map((item, index) => {
+            const isActive = index === activeIndex;
+
+            return (
+              <button
+                key={item.href}
+                type="button"
+                aria-current={isActive ? "page" : undefined}
+                onClick={() => {
+                  if (item.href === pathname) return;
+                  haptic.select();
+                  setPendingHref(item.href);
+                  router.push(item.href);
+                }}
+                className={cn(
+                  "relative z-10 flex h-14 min-w-0 flex-1 cursor-pointer items-center justify-center rounded-[20px]",
+                  "transition-colors duration-200",
+                  isActive
+                    ? "text-[#1b2027] dark:text-[#f1f5f9]"
+                    : "text-[#475569] dark:text-[#94a3b8]"
+                )}
+              >
+                <div className="flex flex-col items-center justify-center gap-1">
+                  <item.Icon className="size-5" />
+                  <span
+                    className={cn(
+                      "text-[14px] leading-3 tracking-normal",
+                      isActive ? "font-medium" : "font-normal"
+                    )}
+                  >
+                    {item.label}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }

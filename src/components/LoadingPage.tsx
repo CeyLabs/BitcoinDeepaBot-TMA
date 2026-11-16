@@ -65,7 +65,7 @@ export default function LoadingPage({
 
   if (fullscreen) {
     return (
-      <div className="bg-tma-bg-secondary fixed inset-0 z-50 flex flex-col items-center justify-center">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#f5f5f5] dark:bg-[#131415]">
         {content}
       </div>
     );

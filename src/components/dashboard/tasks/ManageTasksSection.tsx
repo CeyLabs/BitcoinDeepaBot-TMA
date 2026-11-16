@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Snackbar } from "@telegram-apps/telegram-ui";
-import { AlertCircle } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
 import { TaskFilterTabs, type TaskFilter } from "@/components/dashboard/tasks/TaskFilterTabs";
 import { TaskListCard } from "@/components/dashboard/tasks/TaskListCard";
 import { haptic, usePlatform } from "@/platform";
@@ -17,7 +16,7 @@ export interface ManageTasksSectionProps {
 
 export function ManageTasksSection({ items }: ManageTasksSectionProps) {
   const [filter, setFilter] = useState<TaskFilter>("all");
-  const [snackbarError, setSnackbarError] = useState<string | null>(null);
+  const toast = useToast();
   const platform = usePlatform();
   const { count } = useStore();
   const { id: userId } = useUser();
@@ -55,7 +54,11 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
           });
         } catch (error) {
           console.error("Failed to share story:", error);
-          setSnackbarError("Couldn't open story sharing. Please try again.");
+          toast({
+            type: "error",
+            title: "Not Available",
+            description: "Couldn't open story sharing. Please try again.",
+          });
         }
         break;
       }
@@ -71,17 +74,6 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
       <TaskFilterTabs value={filter} onChange={setFilter} />
 
       <TaskListCard items={filtered} onTaskClick={handleTaskClick} />
-
-      {snackbarError && (
-        <Snackbar
-          onClose={() => setSnackbarError(null)}
-          description={snackbarError}
-          className="bottom-24! z-100!"
-          before={<AlertCircle size={20} className="text-[#F45A5A]" />}
-        >
-          Not Available
-        </Snackbar>
-      )}
     </div>
   );
 }

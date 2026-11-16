@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
+/*
+  Dark mode: inside the themed .dark wrapper, or anywhere under
+  <html data-theme="dark"> — the latter covers portals (toasts, sheets), which
+  render under <body>, outside the wrapper. ThemeProvider sets both.
+*/
+@custom-variant dark (&:is(.dark *, html[data-theme="dark"] *));
 
 @utility container {
   margin-inline: auto;
@@ -24,43 +29,22 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-muted: var(--muted);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-tertiary: var(--tertiary);
+  --color-hint: var(--hint);
+  --color-outline: var(--outline);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-}
-
-@theme {
   --color-muted-foreground: var(--muted-foreground);
-
-  --color-tma-text-primary: var(--text-primary);
-  --color-tma-text-secondary: var(--text-secondary);
-
-  --color-tma-bg-secondary: var(--bg-secondary);
-  --color-tma-bg-card: var(--card-bg);
-
-  --color-tma-border-card: var(--card-border);
-
-  --color-tma-gradient-from: var(--card-gradient-from);
-  --color-tma-gradient-to: var(--card-gradient-to);
-
-  --color-tma-accent: var(--accent);
-  --color-tma-link: var(--link);
-
-  --color-surface-gift: var(--surface-gift);
-
-  /* dashboard page background — light default, overridden for .dark below */
-  --color-surface-main: #eeeff3;
-
-  /* telegram-ui card surface — light default, overridden for .dark below */
-  --color-surface-primary: #ffffff;
-
-  /* Success green — opacity applied at the call site via color-mix() */
+  /* App-specific */
   --color-success: #25a761;
-
-  --color-surface-glass: #ffffff99;
+  --color-surface-gift: var(--surface-gift);
+  --color-surface-glass: var(--surface-glass);
 }
 
 /*
@@ -93,119 +77,62 @@
   }
 }
 
-/* App-wide variables (dark values by default; .light overrides below). */
-:root {
-  /* Brand accent — always Bitcoin Deepa orange, never overridden by Telegram */
-  --brand-accent: #ff9900;
-
-  /* Dark slate surface used for selected/active pill states (e.g. Activity tab filters) */
-  --surface-gift: #1f2a36;
-
-  /* Theme-aware text and component colors */
-  --text-primary: #ffffff;
-  --text-secondary: #b1c3d5;
-  --bg-secondary: #131415;
-  --accent: #fa7119;
-  --link: #fa7119;
-
-  /* Theme-aware card and border styles */
-  --card-bg: rgba(100, 100, 100, 0.2);
-  --card-border: rgb(75, 85, 99);
-  --card-gradient-from: rgba(75, 85, 99, 0.2);
-  --card-gradient-to: rgba(107, 114, 128, 0.2);
-
-  /* Muted/secondary text tone used across dark surfaces (#94a3b8) */
-  --muted-foreground: #94a3b8;
-
-  --text-muted: var(--muted-foreground);
-}
-
-/* Semantic token values (see @theme inline above). */
+/* Token values (see @theme inline above). Light is the default. */
 :root,
 .light {
   --background: #eeeff3;
   --foreground: #1b2027;
+  /* Default text color for everything inside the themed wrapper */
+  --text-primary: #000000;
   --card: #ffffff;
   --card-foreground: #1b2027;
   --muted: #f1f5f9;
+  --muted-foreground: #94a3b8;
+  /* Soft neutral fill/text (gray buttons, icon buttons, badges) */
+  --secondary: rgba(0, 0, 0, 0.04);
+  --secondary-foreground: rgba(0, 0, 0, 0.8);
+  /* Card/cell hover surface */
+  --tertiary: #f4f4f7;
+  /* Secondary text in lists (cell subtitles, chevrons) */
+  --hint: #707579;
+  /* Hairline ring (outline buttons, avatars) */
+  --outline: rgba(0, 0, 0, 0.05);
   --primary: #fa7119;
   --primary-foreground: #ffffff;
-  --destructive: #f45a5a;
+  --destructive: #e53935;
   --border: #e2e8f0;
   --input: #e2e8f0;
   --ring: #fa7119;
   --radius: 12px;
+  /* Selected pill (filter tabs) */
+  --surface-gift: #1f2a36;
+  /* Translucent blur surfaces (bottom nav, toasts) */
+  --surface-glass: #ffffff99;
 }
 
-.dark {
+.dark,
+html[data-theme="dark"] {
   --background: #1b2027;
   --foreground: #ffffff;
+  --text-primary: #ffffff;
   --card: #0b0f14;
   --card-foreground: #ffffff;
   --muted: #1e293b;
-  --destructive: #f45a5a;
+  --secondary: rgba(255, 255, 255, 0.08);
+  --secondary-foreground: rgba(255, 255, 255, 0.95);
+  --tertiary: #2a2a2a;
+  --hint: #b1c3d5;
+  --outline: rgba(255, 255, 255, 0.1);
+  --destructive: #ef5b5b;
   --border: #1e293b;
   --input: #1e293b;
+  --surface-glass: #00000099;
 }
 
-/* Light theme overrides */
-.light {
-  --text-primary: #000000;
-  --text-secondary: #666666;
-  --bg-secondary: #f5f5f5;
-
-  /* Light theme card styles */
-  --card-bg: rgba(0, 0, 0, 0.05);
-  --card-border: rgb(209, 213, 219);
-  --card-gradient-from: rgba(229, 231, 235, 0.3);
-  --card-gradient-to: rgba(243, 244, 246, 0.3);
-}
-
+/* The themed wrapper (ThemeProvider) and dark-only pages set the base text color. */
+.light,
 .dark {
-  /* Override the Tailwind color tokens directly (single-level var), so
-       `bg-surface-main`/`bg-surface-primary` resolve to the dark value for
-       any .dark descendant. */
-  --color-surface-main: #1b2027;
-  --color-surface-primary: #0b0f14;
-  --color-surface-glass: #00000099;
-}
-
-/*
-  telegram-ui components read Telegram's --tg-theme-* variables. We pin them
-  to the Bitcoin Deepa palette instead of the user's Telegram colors, so the
-  app looks the same in Telegram, the browser and the installed PWA. Only
-  light/dark comes from Telegram (see app/context/theme.tsx).
-*/
-.dark {
-  --tg-theme-bg-color: #212121;
-  --tg-theme-header-bg-color: #212121;
-  --tg-theme-secondary-bg-color: #131415;
-  --tg-theme-section-bg-color: #18222d;
-  --tg-theme-text-color: #ffffff;
-  --tg-theme-hint-color: #b1c3d5;
-  --tg-theme-subtitle-text-color: #b1c3d5;
-  --tg-theme-section-header-text-color: #b1c3d5;
-  --tg-theme-link-color: #fa7119;
-  --tg-theme-button-color: #fa7119;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-accent-text-color: #2ea6ff;
-  --tg-theme-destructive-text-color: #ef5b5b;
-}
-
-.light {
-  --tg-theme-bg-color: #ffffff;
-  --tg-theme-header-bg-color: #ffffff;
-  --tg-theme-secondary-bg-color: #efeff4;
-  --tg-theme-section-bg-color: #ffffff;
-  --tg-theme-text-color: #000000;
-  --tg-theme-hint-color: #707579;
-  --tg-theme-subtitle-text-color: #707579;
-  --tg-theme-section-header-text-color: #707579;
-  --tg-theme-link-color: #fa7119;
-  --tg-theme-button-color: #fa7119;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-accent-text-color: #2ea6ff;
-  --tg-theme-destructive-text-color: #e53935;
+  color: var(--text-primary);
 }
 
 /* <html data-theme> is set by ThemeProvider; body sits outside the themed wrapper. */
@@ -227,8 +154,4 @@ html[data-theme="light"] body {
   body {
     padding-top: env(safe-area-inset-top);
   }
-}
-
-#tg-ui-root {
-  color: var(--text-primary);
 }

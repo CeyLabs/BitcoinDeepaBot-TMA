@@ -37,7 +37,7 @@ export function InstallButton({ variant = "button", className }: InstallButtonPr
           aria-label="Install app"
           onClick={handleClick}
           className={cn(
-            "bg-surface-primary flex size-10 items-center justify-center rounded-full text-[#111821] dark:text-[#f1f5f9]",
+            "bg-card flex size-10 items-center justify-center rounded-full text-[#111821] dark:text-[#f1f5f9]",
             className
           )}
         >

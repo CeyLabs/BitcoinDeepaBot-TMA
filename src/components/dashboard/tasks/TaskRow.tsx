@@ -1,6 +1,7 @@
 "use client";
 
-import { Badge, Cell } from "@telegram-apps/telegram-ui";
+import { Badge } from "@/components/ui/badge";
+import { Cell } from "@/components/ui/cell";
 import Image from "next/image";
 import type { Task } from "@/lib/types";
 
@@ -12,7 +13,7 @@ export interface TaskRowProps {
 export function TaskRow({ task, onClick }: TaskRowProps) {
   return (
     <Cell
-      Component={onClick ? "button" : "div"}
+      as={onClick ? "button" : "div"}
       onClick={onClick}
       before={
         <Image src={task.icon} alt="" width={40} height={40} className="size-10 self-center" />
@@ -22,18 +23,13 @@ export function TaskRow({ task, onClick }: TaskRowProps) {
       }
       after={
         <div className="flex flex-col items-end gap-1">
-          <Badge
-            type="number"
-            className="bg-[#FA7119]! text-xs! font-light! whitespace-nowrap text-white!"
-          >
-            {task.rewardSats} sats
-          </Badge>
+          <Badge className="text-xs font-light">{task.rewardSats} sats</Badge>
           <span className="text-[12px] font-medium text-[#3B7DF5]">
             {task.frequency === "daily" ? "Daily" : "One Time"}
           </span>
         </div>
       }
-      className="w-full! gap-2! px-3! text-left!"
+      className="gap-2 px-3"
     >
       <span className="text-base leading-5 font-semibold text-[#1b2027] dark:text-white">
         {task.title}

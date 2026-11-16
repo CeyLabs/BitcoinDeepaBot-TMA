@@ -1,7 +1,7 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
-import { IconButton } from "@telegram-apps/telegram-ui";
+import { IconButton } from "@/components/ui/icon-button";
 import { cn } from "cn";
 import { haptic } from "@/platform";
 
@@ -17,8 +17,6 @@ export function VisibleToggle({ visible, onToggle, dark = false, className }: Vi
 
   return (
     <IconButton
-      mode="gray"
-      size="m"
       onClick={() => {
         haptic.impact("medium");
         onToggle();

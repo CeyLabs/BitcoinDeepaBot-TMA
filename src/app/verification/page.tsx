@@ -3,10 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Button, Modal } from "@telegram-apps/telegram-ui";
-import { X } from "lucide-react";
-import { Drawer } from "@xelene/vaul-with-scroll-fix";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { Button } from "@/components/ui/button";
+import { Sheet } from "@/components/ui/sheet";
 import { useUser } from "@/hooks/useUser";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { haptic, usePlatform } from "@/platform";
@@ -139,7 +137,7 @@ export default function VerificationIntroPage() {
   const showSteps = SHOW_STEPS_FOR.includes(status);
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-[#0b0f14]">
+    <div className="dark flex min-h-screen w-full flex-col bg-[#0b0f14]">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-8 pb-6">
         <BackButton
           onBack={() => router.push("/dashboard")}
@@ -214,10 +212,8 @@ export default function VerificationIntroPage() {
 
           {status === "APPROVED" ? (
             <Button
-              mode="filled"
-              size="l"
-              stretched
-              style={{ borderRadius: "12px" }}
+              className="w-full rounded-[12px]"
+              size="lg"
               onClick={() => {
                 haptic.impact("medium");
                 router.push("/plans/choose");
@@ -227,10 +223,8 @@ export default function VerificationIntroPage() {
             </Button>
           ) : status === "IN_PROGRESS" ? (
             <Button
-              mode="filled"
-              size="l"
-              stretched
-              style={{ borderRadius: "12px" }}
+              className="w-full rounded-[12px]"
+              size="lg"
               onClick={
                 verificationUrl
                   ? continueVerification
@@ -244,17 +238,9 @@ export default function VerificationIntroPage() {
             </Button>
           ) : status === "IN_REVIEW" ? (
             <Button
-              mode="outline"
-              size="l"
-              stretched
-              style={
-                {
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  "--tgui--outline": "#fa7119",
-                  "--tgui--plain_foreground": "#fa7119",
-                } as React.CSSProperties
-              }
+              variant="outline"
+              className="w-full rounded-[12px] text-[#fa7119] shadow-[0_0_0_1px_#fa7119]"
+              size="lg"
               onClick={() => {
                 haptic.impact("medium");
                 router.push("/dashboard");
@@ -264,10 +250,8 @@ export default function VerificationIntroPage() {
             </Button>
           ) : (
             <Button
-              mode="filled"
-              size="l"
-              stretched
-              style={{ borderRadius: "12px" }}
+              className="w-full rounded-[12px]"
+              size="lg"
               disabled={showSteps && !userId}
               onClick={initiateVerification}
             >
@@ -282,25 +266,13 @@ export default function VerificationIntroPage() {
         </div>
       </div>
 
-      <Modal
+      <Sheet
         open={showMobileWarning}
         onOpenChange={setShowMobileWarning}
-        header={
-          <Modal.Header
-            after={
-              <Modal.Close>
-                <X size={20} className="text-[#94a3b8]" />
-              </Modal.Close>
-            }
-          >
-            Use Mobile Device
-          </Modal.Header>
-        }
+        title="Use Mobile Device"
+        className="bg-[#0b0f14] text-white"
       >
         <div className="flex flex-col gap-5 px-5 pt-2 pb-6">
-          <VisuallyHidden asChild>
-            <Drawer.Title>Use Mobile Device</Drawer.Title>
-          </VisuallyHidden>
           <div className="flex flex-col items-center gap-3 text-center">
             <div className="flex size-44 items-center justify-center rounded-full">
               <Image
@@ -332,10 +304,8 @@ export default function VerificationIntroPage() {
           </div>
 
           <Button
-            mode="filled"
-            size="l"
-            stretched
-            style={{ borderRadius: "12px" }}
+            className="w-full rounded-[12px]"
+            size="lg"
             onClick={() => {
               haptic.impact("medium");
               setShowMobileWarning(false);
@@ -344,7 +314,7 @@ export default function VerificationIntroPage() {
             Got It
           </Button>
         </div>
-      </Modal>
+      </Sheet>
     </div>
   );
 }

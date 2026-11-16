@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
-import { Accordion, Badge } from "@telegram-apps/telegram-ui";
+import { Collapsible } from "@base-ui/react/collapsible";
+import { Badge } from "@/components/ui/badge";
+import { Cell } from "@/components/ui/cell";
 import { CopyField } from "@/components/ui/copy-field";
 import { ACTIVITY_ICON, ACTIVITY_TITLE } from "@/lib/activity";
 import {
@@ -36,84 +38,79 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
   const time = fmtActivityTime(item.timestamp);
 
   return (
-    <Accordion expanded={expanded} onChange={setExpanded}>
-      <Accordion.Summary
-        className="mx-1! my-0.5! gap-2! rounded-xl! pr-1.5! pl-3! transition-colors duration-150 hover:bg-[#f1f5f9]! dark:hover:bg-[#1B2027]!"
-        before={
-          <div className="flex size-10 shrink-0 items-center justify-center">
-            <Image
-              src={ACTIVITY_ICON[item.type]}
-              alt=""
-              width={36}
-              height={36}
-              className="size-9"
-            />
-          </div>
-        }
-        subtitle={
-          <span className="text-xs text-[#64748B]">
-            {item.detailLabel ? (
-              `${item.detailLabel} at ${time}`
-            ) : (
-              <>
-                {isOutgoing ? "To" : "From"}{" "}
-                <span className="text-[#FA7119]">@{item.counterparty}</span> at {time}
-              </>
+    <Collapsible.Root open={expanded} onOpenChange={setExpanded}>
+      <Collapsible.Trigger className="mx-1 my-0.5 block w-[calc(100%-0.5rem)] cursor-pointer rounded-xl text-left transition-colors duration-150 hover:bg-[#f1f5f9] dark:hover:bg-[#1B2027]">
+        <Cell
+          className="gap-2 pr-1.5 pl-3"
+          before={
+            <div className="flex size-10 shrink-0 items-center justify-center">
+              <Image
+                src={ACTIVITY_ICON[item.type]}
+                alt=""
+                width={36}
+                height={36}
+                className="size-9"
+              />
+            </div>
+          }
+          subtitle={
+            <span className="text-xs text-[#64748B]">
+              {item.detailLabel ? (
+                `${item.detailLabel} at ${time}`
+              ) : (
+                <>
+                  {isOutgoing ? "To" : "From"}{" "}
+                  <span className="text-[#FA7119]">@{item.counterparty}</span> at {time}
+                </>
+              )}
+            </span>
+          }
+          after={
+            <div className="flex items-center gap-0.5">
+              <div className="flex flex-col items-end gap-0.5">
+                <p
+                  className={`text-right text-[14px] leading-4 ${
+                    isOutgoing ? "text-[#F45A5A]" : "text-[#218A54]"
+                  }`}
+                >
+                  {mask(`${isOutgoing ? "-" : "+"}${fmtLkr(Math.abs(item.sats))} sats`)}
+                </p>
+                <p className="text-right text-xs leading-4 text-[#475569] dark:text-[#94A3B8]">
+                  {mask(`≈ ${fmtLkrCurrency(item.lkr)}`)}
+                </p>
+              </div>
+              <ChevronDown
+                size={16}
+                strokeWidth={2}
+                className={`shrink-0 text-[#64748b] transition-transform duration-150 ${
+                  expanded ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+          }
+        >
+          <span className="flex items-center gap-1.5 text-base leading-5 font-semibold whitespace-nowrap text-[#1b2027] dark:text-white">
+            {ACTIVITY_TITLE[item.type]}
+            {item.statusDot && (
+              <span
+                className="inline-block size-2 shrink-0 rounded-full"
+                style={{ backgroundColor: STATUS_COLOR[item.statusDot] }}
+              />
             )}
           </span>
-        }
-        after={
-          <div className="flex items-center gap-0.5">
-            <div className="flex flex-col items-end gap-0.5">
-              <p
-                className={`text-right text-[14px] leading-4 ${
-                  isOutgoing ? "text-[#F45A5A]" : "text-[#218A54]"
-                }`}
-              >
-                {mask(`${isOutgoing ? "-" : "+"}${fmtLkr(Math.abs(item.sats))} sats`)}
-              </p>
-              <p className="text-right text-xs leading-4 text-[#475569] dark:text-[#94A3B8]">
-                {mask(`≈ ${fmtLkrCurrency(item.lkr)}`)}
-              </p>
-            </div>
-            <ChevronDown
-              size={16}
-              strokeWidth={2}
-              className={`shrink-0 text-[#64748b] transition-transform duration-150 ${
-                expanded ? "rotate-180" : ""
-              }`}
-            />
-          </div>
-        }
-      >
-        <span className="flex items-center gap-1.5 text-base leading-5 font-semibold whitespace-nowrap text-[#1b2027] dark:text-white">
-          {ACTIVITY_TITLE[item.type]}
-          {item.statusDot && (
-            <span
-              className="inline-block size-2 shrink-0 rounded-full"
-              style={{ backgroundColor: STATUS_COLOR[item.statusDot] }}
-            />
-          )}
-        </span>
-      </Accordion.Summary>
+        </Cell>
+      </Collapsible.Trigger>
 
-      <Accordion.Content className="bg-white! dark:bg-[#0B0F14]!">
+      <Collapsible.Panel className="bg-card h-(--collapsible-panel-height) overflow-hidden transition-[height] duration-100 ease-in-out data-ending-style:h-0 data-starting-style:h-0">
         <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col items-start">
               <p className="text-xs leading-4 text-[#475569]">Status</p>
               <Badge
-                type="number"
-                mode="primary"
-                className="m-0! flex! min-w-0! items-center! justify-center! rounded-[8px]! px-2! py-1! text-sm! leading-3! whitespace-nowrap!"
-                style={
-                  {
-                    "--tgui--button_color": item.statusDot
-                      ? STATUS_COLOR[item.statusDot]
-                      : "#25A761",
-                    "--tgui--button_text_color": "#fff",
-                  } as React.CSSProperties
-                }
+                className="m-0 h-auto min-w-0 rounded-[8px] px-2 py-1 text-sm leading-3 text-white"
+                style={{
+                  backgroundColor: item.statusDot ? STATUS_COLOR[item.statusDot] : "#25A761",
+                }}
               >
                 {item.settlement.status}
               </Badge>
@@ -172,7 +169,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
             <CopyField value={item.settlement.transactionId} />
           </div>
         </div>
-      </Accordion.Content>
-    </Accordion>
+      </Collapsible.Panel>
+    </Collapsible.Root>
   );
 }

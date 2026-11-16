@@ -13,8 +13,7 @@ import {
   Filler,
   type TooltipItem,
 } from "chart.js";
-import { Card } from "@telegram-apps/telegram-ui";
-// import { Card, Button } from "@telegram-apps/telegram-ui";
+import { Card } from "@/components/ui/card";
 // import { cn } from "cn";
 import { fmtLkrCurrency, fmtPriceCompact } from "@/lib/formatters";
 import { useTheme } from "@/app/context/theme";
@@ -204,36 +203,20 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
         Reward Portfolio Performance
       </p>
 
-      <Card
-        type="plain"
-        className="block! w-full! rounded-[12px]! p-3!"
-        style={
-          {
-            "--tgui--tertiary_bg_color": "var(--color-surface-primary)",
-          } as React.CSSProperties
-        }
-      >
+      <Card className="bg-card block w-full rounded-[12px] p-3">
         {/* Period switcher — disabled, see PERIODS comment above.
         <div className="mb-3 flex items-center gap-2">
           {PERIODS.map((p) => (
             <Button
               key={p}
-              mode="gray"
-              size="s"
-              stretched
+              variant="secondary"
+              size="sm"
               onClick={() => handlePeriodClick(p)}
-              style={
-                {
-                  "--tgui--button--hovered-opacity": 0,
-                  backgroundColor:
-                    selectedPeriod === p ? "#1f2a36" : isDark ? "#1e293b" : "#eeeff3",
-                  color: selectedPeriod === p ? "#fff" : isDark ? "#94a3b8" : "#64748b",
-                } as React.CSSProperties
-              }
-              // tgui's Button renders a square `:after` hover overlay that isn't clipped to
-              // its own border-radius, so its corners poke out past the pill on mouse hover
-              // unless the button itself clips overflow.
-              className="overflow-hidden! rounded-[12px]!"
+              style={{
+                backgroundColor: selectedPeriod === p ? "#1f2a36" : isDark ? "#1e293b" : "#eeeff3",
+                color: selectedPeriod === p ? "#fff" : isDark ? "#94a3b8" : "#64748b",
+              }}
+              className="w-full rounded-[12px] [--btn-hover-opacity:0]"
             >
               <span className="text-[12px]">{p}</span>
             </Button>

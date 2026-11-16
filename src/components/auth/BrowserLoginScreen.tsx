@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Button, Title } from "@telegram-apps/telegram-ui";
+import { Button } from "@/components/ui/button";
+import { Title } from "@/components/ui/title";
 import { useTheme } from "@/app/context/theme";
 import { authenticateWithTelegramOidc, saveAuthToStorage } from "@/lib/auth";
 import type { TelegramOidcAuthData } from "@/lib/auth";
@@ -55,9 +56,7 @@ export default function BrowserLoginScreen() {
         />
       </div>
 
-      <Title level="2" weight="2" className="max-w-sm leading-snug">
-        Sign In With Telegram
-      </Title>
+      <Title className="max-w-sm leading-snug">Sign In With Telegram</Title>
 
       <p className="text-muted-foreground mt-2 max-w-sm text-[15px] dark:text-[#64748b]">
         Sign in with your Telegram account to continue.
@@ -82,7 +81,7 @@ export default function BrowserLoginScreen() {
         rel="noopener noreferrer"
         className="mt-3 block w-full max-w-xs"
       >
-        <Button mode="outline" size="l" stretched style={{ borderRadius: "12px" }}>
+        <Button variant="outline" size="lg" className="w-full rounded-[12px]">
           Open in Telegram Instead
         </Button>
       </a>

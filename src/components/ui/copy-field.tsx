@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, Copy } from "lucide-react";
-import { IconButton } from "@telegram-apps/telegram-ui";
+import { IconButton } from "@/components/ui/icon-button";
 import { cn } from "cn";
 import { haptic } from "@/platform";
 
@@ -16,14 +16,11 @@ export function CopyButton({ onCopy, copied = false, className }: CopyButtonProp
   return (
     <IconButton
       type="button"
-      mode="outline"
-      size="s"
+      variant="outline"
+      size="sm"
       aria-label={copied ? "Copied" : "Copy to clipboard"}
       onClick={onCopy}
-      className={cn(
-        "flex! size-9! shrink-0! items-center! justify-center! rounded-lg! bg-white! dark:bg-[#1b2027]!",
-        className
-      )}
+      className={cn("size-9 rounded-lg bg-white dark:bg-[#1b2027]", className)}
     >
       <span className="relative flex size-4 items-center justify-center">
         <Check

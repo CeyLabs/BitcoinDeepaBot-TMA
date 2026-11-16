@@ -3,7 +3,10 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import { Card, Badge, Button, Cell, Navigation } from "@telegram-apps/telegram-ui";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Cell, CellChevron } from "@/components/ui/cell";
 import {
   fmtLkrCurrency,
   fmtSatsCompact,
@@ -53,11 +56,7 @@ export function PlanHeroCard({
           <VisibleToggle visible={visible} onToggle={onToggleVisible} />
         </div>
 
-        <Card
-          type="plain"
-          className="relative overflow-hidden rounded-[20px]! p-0! shadow-none!"
-          style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
-        >
+        <Card className="relative overflow-hidden rounded-[20px] bg-transparent p-0 shadow-none">
           <Image src="/bg/star.webp" alt="" fill priority className="object-cover" />
           <div className="absolute inset-0 bg-black/18" />
 
@@ -113,9 +112,8 @@ export function PlanHeroCard({
           before={
             <Image src="/emoji/notepad.webp" alt="" width={36} height={36} className="size-9" />
           }
-          after={<Navigation />}
-          style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
-          className="gap-2! rounded-xl border border-transparent bg-white px-4! shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-none dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
+          after={<CellChevron />}
+          className="gap-2 rounded-xl border border-transparent bg-white px-4 shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 [--cell-py:12px] hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-none dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
           onClick={() => router.push("/plans/choose")}
         >
           <p className="flex flex-col items-start pl-1 font-semibold text-[#1b2027] dark:text-white">
@@ -138,11 +136,7 @@ export function PlanHeroCard({
         <VisibleToggle visible={visible} onToggle={onToggleVisible} />
       </div>
 
-      <Card
-        type="plain"
-        className="relative overflow-hidden rounded-[20px]! p-0! shadow-none!"
-        style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
-      >
+      <Card className="relative overflow-hidden rounded-[20px] bg-transparent p-0 shadow-none">
         <Image src="/bg/star.webp" alt="" fill priority className="object-cover" />
         <div className="absolute inset-0 bg-black/18" />
 
@@ -170,15 +164,8 @@ export function PlanHeroCard({
                 </div>
                 {subscription.isActive && (
                   <Badge
-                    type="number"
-                    mode="primary"
-                    className="m-0! w-fit! rounded-full! px-2.5! py-1! text-xs!"
-                    style={
-                      {
-                        "--tgui--button_color": "#25A761",
-                        "--tgui--button_text_color": "#fff",
-                      } as React.CSSProperties
-                    }
+                    variant="success"
+                    className="m-0 h-auto w-fit rounded-full px-2.5 py-1 text-xs"
                   >
                     <span className="mr-1 inline-block size-1.5 rounded-full bg-white align-middle" />
                     Active
@@ -188,17 +175,9 @@ export function PlanHeroCard({
             </div>
 
             <Button
-              mode="gray"
-              size="s"
-              className="shrink-0 overflow-hidden rounded-full! bg-white/20! px-3!"
-              style={
-                {
-                  "--tgui--plain_background": "rgba(255,255,255,0.2)",
-                  "--tgui--plain_foreground": "#fff",
-                  "--tgui--bg_color": "rgba(255,255,255,0.3)",
-                  "--tgui--button--hovered-opacity": 0.3,
-                } as React.CSSProperties
-              }
+              variant="secondary"
+              size="sm"
+              className="shrink-0 rounded-full bg-white/20 px-3 text-white [--btn-hover-opacity:0.3] after:bg-white dark:after:bg-white"
               onClick={() => router.push("/plans/choose")}
             >
               <span className="flex items-center gap-1 text-[12px] font-medium whitespace-nowrap text-white">

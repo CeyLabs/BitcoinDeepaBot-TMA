@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, Avatar, AvatarStack } from "@telegram-apps/telegram-ui";
+import { Avatar, AvatarStack } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import { usePlatform } from "@/platform";
 import { useUser } from "@/hooks/useUser";
@@ -28,10 +29,8 @@ export function ReferralProgressCard({ joined, target, rewardSats }: ReferralPro
 
   return (
     <Card
-      type="plain"
       onClick={handleShare}
-      className="relative hidden w-full cursor-pointer overflow-hidden rounded-full! p-0! shadow-none!"
-      style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
+      className="relative hidden w-full cursor-pointer overflow-hidden rounded-full bg-transparent p-0 shadow-none"
     >
       <Image src="/bg/pill.webp" alt="" fill className="object-cover" />
 
@@ -41,7 +40,7 @@ export function ReferralProgressCard({ joined, target, rewardSats }: ReferralPro
         </p>
 
         <div className="flex items-center gap-3 px-5">
-          <AvatarStack style={{ "--tgui--bg_color": "transparent" } as React.CSSProperties}>
+          <AvatarStack>
             <Avatar size={28} src="/avatar/boy.png" />
             <Avatar size={28} src="/avatar/girl.png" />
           </AvatarStack>

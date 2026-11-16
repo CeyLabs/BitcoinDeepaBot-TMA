@@ -38,8 +38,8 @@ There is no test suite configured. Always run `bun run format` and `bun run buil
 
 ### App shell / providers
 
-- `src/app/context/providers.tsx` composes, in order: Telegram SDK `SDKProvider` → TMA setup (`tma.tsx`, dynamic/no-SSR) → `ThemeProvider` (`theme.tsx`, dynamic/no-SSR) → TanStack Query `QueryClientProvider` → a `ThemedAppRoot` that syncs telegram-ui's `AppRoot` appearance with the app's own theme context.
-- TMA/theme providers are loaded with `next/dynamic({ ssr: false })` because they depend on browser/Telegram WebView APIs.
+- `src/app/context/providers.tsx` composes, in order: `PlatformProvider` (`src/platform`, Telegram vs web) → `ThemeProvider` (`theme.tsx`, dynamic/no-SSR) → TanStack Query `QueryClientProvider` → `ToastProvider` (`src/components/ui/toast.tsx`).
+- `ThemeProvider` is loaded with `next/dynamic({ ssr: false })` because it depends on browser APIs. It wraps the app in a `.light`/`.dark` element that the theme tokens hang off.
 
 ### State management
 
@@ -56,13 +56,15 @@ There is no test suite configured. Always run `bun run format` and `bun run buil
 
 ### Components
 
-- `src/components/ui/` — hand-built UI primitives (`plan-card.tsx`, `toggle-plan.tsx`, etc.), styled directly with Tailwind. None use `cva()` or Radix; there's no component registry to regenerate from.
+- `src/components/ui/` — our UI components, shadcn-style (`components.json`, style `base-nova`): variants with `cva()`, class merging with `cn` (the `cn` package — `import { cn } from "cn"`), interactive parts on Base UI (`@base-ui/react`: Dialog → `sheet.tsx`, Toast → `toast.tsx`, Collapsible). Simple ones (`button`, `badge`, `card`, `cell`, `avatar`, …) are plain Tailwind.
+- Colors come from semantic tokens in `src/styles/theme.css` (`bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground`, `text-hint`, `bg-primary`, `border-border`, …), each with light and dark values. Prefer them over raw hex in new code.
+- `@telegram-apps/telegram-ui` has been removed — don't reintroduce it.
 - `src/components/dashboard/<feature>/` — feature-scoped components mirroring the dashboard route structure (activity, news, plans, tasks, wallet).
 
 ### Dependency notes
 
-- `radix-ui` is used in exactly one place — `VisuallyHidden` in `src/app/verification/page.tsx`.
-- `class-variance-authority` and `framer-motion` are listed in `package.json` but not imported anywhere in `src/` — don't assume `cva()` or motion-based animation is available just because the package is installed.
+- `framer-motion` is only used by `src/components/motion/number-ticker.tsx`.
+- `@telegram-apps/sdk-react@1` only supports React 17/18 — it's what blocks a React 19 upgrade (see `TODO.md`).
 - `sharp` is only used by the build-time script `scripts/optimize-emoji-svgs.mjs`, not by the app at runtime.
 
 ### Telegram-specific concerns

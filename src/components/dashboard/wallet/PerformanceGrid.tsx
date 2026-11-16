@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Card, Badge } from "@telegram-apps/telegram-ui";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { ValueSkeleton } from "@/components/ui/value-skeleton";
 import {
   fmtLkrCurrency,
@@ -10,10 +11,6 @@ import {
   fmtSatsCompact,
   maskDigits,
 } from "@/lib/formatters";
-
-const CARD_SURFACE_STYLE = {
-  "--tgui--tertiary_bg_color": "var(--color-surface-primary)",
-} as React.CSSProperties;
 
 export interface PerformanceGridProps {
   dcaSpent: number;
@@ -50,11 +47,7 @@ export function PerformanceGrid({
       </p>
 
       <div className="grid grid-cols-2 gap-2">
-        <Card
-          type="plain"
-          className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
-          style={CARD_SURFACE_STYLE}
-        >
+        <Card className="bg-card flex flex-col items-start gap-2 rounded-2xl p-3 shadow-none">
           <Image src="/emoji/wallet.webp" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
             You Invested
@@ -81,11 +74,7 @@ export function PerformanceGrid({
           )}
         </Card>
 
-        <Card
-          type="plain"
-          className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
-          style={CARD_SURFACE_STYLE}
-        >
+        <Card className="bg-card flex flex-col items-start gap-2 rounded-2xl p-3 shadow-none">
           <Image src="/emoji/coins.webp" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
             Current Value
@@ -103,16 +92,8 @@ export function PerformanceGrid({
             ) : (
               dcaSpent > 0 && (
                 <Badge
-                  type="number"
-                  mode={isProfit ? "primary" : "critical"}
-                  className="m-0! flex! h-auto! min-w-0! items-center! justify-center! rounded-lg! px-2.5! py-1! text-[12px]! leading-4! font-medium! whitespace-nowrap!"
-                  style={
-                    {
-                      "--tgui--button_color": "#158348",
-                      "--tgui--destructive_text_color": "rgba(241,49,49,0.62)",
-                      "--tgui--button_text_color": "#fff",
-                    } as React.CSSProperties
-                  }
+                  variant={isProfit ? "gain" : "loss"}
+                  className="m-0 flex h-auto min-w-0 rounded-lg px-2.5 py-1 text-[12px] leading-4 font-medium"
                 >
                   {mask(
                     `${fmtLkrCurrency(Math.abs(profitLkr))} (${isProfit ? "+" : "-"} ${Math.abs(profitPct).toFixed(0)}%)`
@@ -123,11 +104,7 @@ export function PerformanceGrid({
           </div>
         </Card>
 
-        <Card
-          type="plain"
-          className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
-          style={CARD_SURFACE_STYLE}
-        >
+        <Card className="bg-card flex flex-col items-start gap-2 rounded-2xl p-3 shadow-none">
           <Image src="/emoji/calculator.webp" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
             Avg Price
@@ -156,11 +133,7 @@ export function PerformanceGrid({
           )}
         </Card>
 
-        <Card
-          type="plain"
-          className="flex! flex-col! items-start! gap-2! rounded-2xl! p-3! shadow-none!"
-          style={CARD_SURFACE_STYLE}
-        >
+        <Card className="bg-card flex flex-col items-start gap-2 rounded-2xl p-3 shadow-none">
           <Image src="/emoji/graph.webp" alt="" width={36} height={36} className="size-9" />
           <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
             Current Price

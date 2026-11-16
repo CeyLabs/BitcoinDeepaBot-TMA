@@ -52,7 +52,7 @@ Rules worth knowing:
 - **Every feature must work in the browser too.** Check both `kind === "telegram"` and `kind === "web"` paths.
 - **Never cache user data in the service worker.** It only caches hashed static assets.
 - `NEXT_PUBLIC_*` env vars end up in the browser bundle. Never put secrets in them.
-- UI components are moving from `@telegram-apps/telegram-ui` to our own (see `TODO.md`). Prefer our components and theme tokens for new UI.
+- Build UI with `src/components/ui/` (shadcn-style, Base UI for interactive parts) and the theme tokens in `src/styles/theme.css` (`bg-card`, `text-muted-foreground`, …) rather than raw hex colors. New shadcn components can be added with `bunx shadcn@latest add <name>`.
 
 ## Commits and PRs
 

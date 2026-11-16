@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 import Image from "next/image";
-import { Button, Title } from "@telegram-apps/telegram-ui";
+import { Button } from "@/components/ui/button";
+import { Title } from "@/components/ui/title";
 import { TELEGRAM_BOT_URL } from "@/lib/constants";
 
 export default function Error({
@@ -30,7 +31,7 @@ export default function Error({
         unoptimized
       />
 
-      <Title level="2" weight="2" className="mt-3 max-w-sm leading-snug">
+      <Title className="mt-3 max-w-sm leading-snug">
         {isLaunchParamsError ? "Open This In Telegram" : "Something Went Wrong"}
       </Title>
 
@@ -47,18 +48,12 @@ export default function Error({
           rel="noopener noreferrer"
           className="mt-8 block w-full max-w-xs"
         >
-          <Button mode="filled" size="l" stretched style={{ borderRadius: "12px" }}>
+          <Button size="lg" className="w-full rounded-[12px]">
             Open in Telegram
           </Button>
         </a>
       ) : (
-        <Button
-          mode="filled"
-          size="l"
-          style={{ borderRadius: "12px" }}
-          onClick={reset}
-          className="mt-8 w-full max-w-xs"
-        >
+        <Button size="lg" onClick={reset} className="mt-8 w-full max-w-xs rounded-[12px]">
           Try Again
         </Button>
       )}
