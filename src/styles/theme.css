@@ -129,7 +129,8 @@ html[data-theme="dark"] {
   --surface-glass: #00000099;
 }
 
-/* The themed wrapper (ThemeProvider) and dark-only pages set the base text color. */
+/* Base text color: the page (via <html data-theme>) and dark-only sections. */
+body,
 .light,
 .dark {
   color: var(--text-primary);

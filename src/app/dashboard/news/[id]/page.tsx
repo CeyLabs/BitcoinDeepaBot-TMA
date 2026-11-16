@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Clock } from "lucide-react";
+import { NewsImage } from "@/components/dashboard/news/NewsImage";
 import { NewsDetailBackButton, NewsArticleCard } from "@/components/dashboard/news/NewsListSection";
 import { fmtShortDate } from "@/lib/formatters";
 import { getNewsArticles } from "@/lib/news";
@@ -28,10 +29,10 @@ export default async function NewsArticleDetailPage({
       <NewsDetailBackButton />
 
       {article.thumbnailUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <NewsImage
           src={article.thumbnailUrl}
-          alt=""
+          width={408}
+          height={192}
           className="h-48 w-full rounded-[16px] object-cover"
         />
       )}

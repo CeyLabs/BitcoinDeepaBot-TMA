@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { BtcSign } from "@/components/ui/btc-sign";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -225,8 +226,9 @@ export function PlanHeroCard({
                 <ValueSkeleton tone="dark" className="h-3 w-28" />
               ) : (
                 <p className="text-[12px] leading-4 text-white/70">
+                  <BtcSign />
                   {mask(
-                    `₿${(investedSats / 1e8).toFixed(5)} ·  ≈ 丰 ${fmtSatsCompact(investedSats)}`
+                    `${(investedSats / 1e8).toFixed(5)} ·  ≈ 丰 ${fmtSatsCompact(investedSats)}`
                   )}
                 </p>
               )}

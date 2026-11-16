@@ -1,13 +1,11 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { PlatformProvider } from "@/platform";
 import { useRegisterUser } from "@/hooks/useRegisterUser";
 import { ToastProvider } from "@/components/ui/toast";
-
-const ThemeProvider = dynamic(() => import("./theme"), { ssr: false });
+import ThemeProvider from "./theme";
 
 // Registers/refreshes the Telegram user on launch (and after the session
 // ends), whichever route it lands on.

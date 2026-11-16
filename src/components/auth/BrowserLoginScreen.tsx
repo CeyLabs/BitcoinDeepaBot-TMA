@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { Title } from "@/components/ui/title";
-import { useTheme } from "@/app/context/theme";
 import { authenticateWithTelegramOidc, saveAuthToStorage } from "@/lib/auth";
 import type { TelegramOidcAuthData } from "@/lib/auth";
 import { TELEGRAM_BOT_URL } from "@/lib/constants";
@@ -18,7 +17,6 @@ import { InstallButton } from "@/pwa";
  * Saving the token updates useSession, which moves the user on.
  */
 export default function BrowserLoginScreen() {
-  const { isDark } = useTheme();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,14 +44,7 @@ export default function BrowserLoginScreen() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-white px-5 text-center dark:bg-[#1b2027]">
       <div className="relative mb-5 h-[150px] w-[220px]">
-        <Image
-          src={isDark ? "/BDLogo_White.svg" : "/BDLogo_Black.svg"}
-          alt="Bitcoin Deepa"
-          fill
-          priority
-          sizes="220px"
-          className="object-contain"
-        />
+        <Logo priority />
       </div>
 
       <Title className="max-w-sm leading-snug">Sign In With Telegram</Title>

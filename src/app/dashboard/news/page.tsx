@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { NewsImage } from "@/components/dashboard/news/NewsImage";
 import { Clock } from "lucide-react";
 import { NewsListSection } from "@/components/dashboard/news/NewsListSection";
 import { getNewsArticles } from "@/lib/news";
@@ -33,10 +34,10 @@ function NewsFeaturedCard({ article }: { article: NewsArticle }) {
       </span>
 
       {article.thumbnailUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <NewsImage
           src={article.thumbnailUrl}
-          alt=""
+          width={408}
+          height={160}
           className="h-40 w-full rounded-[14px] object-cover"
         />
       )}

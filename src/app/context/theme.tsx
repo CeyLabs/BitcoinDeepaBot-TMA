@@ -52,7 +52,11 @@ function useColorScheme(): ColorScheme {
   const getSnapshot = (): ColorScheme =>
     platform.getColorScheme() ?? (window.matchMedia(DARK_QUERY).matches ? "dark" : "light");
 
-  return useSyncExternalStore(subscribe, getSnapshot, () => "dark");
+  // The server can't know the scheme. Colors don't depend on this value —
+  // they follow <html data-theme>, set before paint by THEME_BOOT_SCRIPT — so
+  // a fixed server snapshot only affects JS consumers (e.g. chart colors),
+  // which update right after hydration.
+  return useSyncExternalStore(subscribe, getSnapshot, () => "light");
 }
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -60,8 +64,8 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   const [themeOverride, setThemeOverride] = useState<ColorScheme | null>(null);
   const effectiveTheme = themeOverride ?? scheme;
 
-  // <body> sits outside the themed wrapper below — mirror the theme onto
-  // <html> so the page background and native controls match.
+  // Keep <html data-theme> (which drives every color token and the `dark:`
+  // variant) in sync with the live scheme after the boot script's first guess.
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.theme = effectiveTheme;
@@ -75,11 +79,5 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     setThemeOverride,
   };
 
-  return (
-    <ThemeContext.Provider value={value}>
-      <div className={effectiveTheme} data-theme={effectiveTheme}>
-        {children}
-      </div>
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

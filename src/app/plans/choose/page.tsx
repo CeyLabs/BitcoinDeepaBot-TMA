@@ -134,7 +134,9 @@ export default function ChoosePlanPage() {
     }
   };
 
-  if (kycLoading) return <LoadingPage />;
+  // "loading" session = server render / hydration: KYC hasn't been fetched
+  // yet, so don't show "Verification Required" to a verified user.
+  if (kycLoading || sessionStatus === "loading") return <LoadingPage />;
   if (kyc?.status !== "APPROVED") {
     return (
       <div className="bg-background mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">

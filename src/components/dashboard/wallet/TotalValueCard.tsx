@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { BtcSign } from "@/components/ui/btc-sign";
 import { ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -58,8 +59,11 @@ export function TotalValueCard({
         <div className={cn("flex flex-col items-start gap-2", isLoading && "invisible")}>
           <div className="flex items-center gap-2">
             <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
-              <span>{mask(`₿ ${(totalSats / 1e8).toFixed(6)}`)}</span>
-              <span>BTC</span>
+              <span>
+                <BtcSign /> {mask((totalSats / 1e8).toFixed(6))}
+              </span>
+              {/* BtcSign already reads "BTC". */}
+              <span aria-hidden>BTC</span>
             </div>
             <div className="size-1 rounded-full bg-white" />
             <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">

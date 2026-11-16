@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { BtcSign } from "@/components/ui/btc-sign";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ValueSkeleton } from "@/components/ui/value-skeleton";
@@ -64,7 +65,7 @@ export function PerformanceGrid({
           ) : (
             <div className="flex items-center gap-2">
               <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
-                {mask(`₿ ${(dcaSats / 1e8).toFixed(5)}`)}
+                <BtcSign /> {mask((dcaSats / 1e8).toFixed(5))}
               </p>
               <div className="size-0.75 rounded-full bg-[#e2e8f0] dark:bg-[#334155]" />
               <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">

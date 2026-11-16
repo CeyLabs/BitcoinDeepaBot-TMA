@@ -2,24 +2,23 @@
 
 import { useMemo } from "react";
 // import { useMemo, useState, useTransition } from "react";
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Filler,
-  type TooltipItem,
-} from "chart.js";
+import dynamic from "next/dynamic";
+import type { TooltipItem } from "chart.js";
 import { Card } from "@/components/ui/card";
 // import { cn } from "cn";
 import { fmtLkrCurrency, fmtPriceCompact } from "@/lib/formatters";
 import { useTheme } from "@/app/context/theme";
 import type { DcaTransaction } from "@/hooks/query/useTransactionHistory";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
+// chart.js (~115 KB) lives in its own chunk, loaded after the page is interactive.
+const Line = dynamic(() => import("./PortfolioLine"), {
+  ssr: false,
+  loading: () => <ChartPlaceholder />,
+});
+
+function ChartPlaceholder() {
+  return <div className="h-full w-full animate-pulse rounded-lg bg-[#e2e8f0] dark:bg-[#1e293b]" />;
+}
 
 // Period switcher is disabled for now — chart always renders the full "All" range.
 // Kept here (commented) so it can be re-enabled without reconstructing the logic.

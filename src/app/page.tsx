@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Logo } from "@/components/ui/logo";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Cell, CellChevron } from "@/components/ui/cell";
 import { Progress } from "@/components/ui/progress";
 import { Title } from "@/components/ui/title";
-import { useTheme } from "@/app/context/theme";
 import { useStore } from "@/lib/store";
 import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
 import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
@@ -70,21 +70,12 @@ function UserProgress() {
 // ─── Shared page shell ───────────────────────────────────────────────────────
 
 function PageShell({ children }: { children: React.ReactNode }) {
-  const { isDark } = useTheme();
-
   return (
     <main className="flex min-h-screen flex-col justify-center bg-white px-5 dark:bg-[#1b2027]">
       {/* Logo + heading slot */}
       <section className="flex flex-col items-center justify-center text-center">
         <div className="relative mb-5 h-[150px] w-[220px]">
-          <Image
-            src={isDark ? "/BDLogo_White.svg" : "/BDLogo_Black.svg"}
-            alt="Bitcoin Deepa"
-            fill
-            priority
-            sizes="220px"
-            className="object-contain"
-          />
+          <Logo priority />
         </div>
         {children}
       </section>
@@ -207,13 +198,11 @@ function TelegramHome() {
     registerUser.data === undefined &&
     !registerUser.isError;
 
-  // /dashboard's useAuthGuard bounces back to / without a token, so only
-  // redirect once one exists — otherwise a returning user with no token
-  // (auth still in flight, auth failed, or just logged out) loops between
-  // / and /dashboard. useRegisterUser mints the token asynchronously; the
-  // redirect fires as soon as it lands.
-  const { token: authToken } = useSession();
-  const shouldRedirect = isReturningUser && !!authToken;
+  // Returning users go straight to the wallet without waiting for the token:
+  // inside Telegram, /dashboard's useAuthGuard waits in place while
+  // useRegisterUser signs in from initData (and shows a "reopen the app"
+  // notice if that fails), so there's no redirect loop back to /.
+  const shouldRedirect = isReturningUser;
   const isExisting = hadTokenAtLaunch || isExistingUser || cachedReturningUser;
 
   useEffect(() => {

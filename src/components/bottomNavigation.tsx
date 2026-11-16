@@ -112,8 +112,16 @@ export default function BottomNavigation() {
     setPendingHref(null);
   }
 
+  // Prefetch the other tabs once the browser is idle, so it doesn't compete
+  // with this page's own data on slow networks.
   useEffect(() => {
-    navItems.forEach((item) => router.prefetch(item.href));
+    const prefetchAll = () => navItems.forEach((item) => router.prefetch(item.href));
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(prefetchAll, { timeout: 3000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(prefetchAll, 1500);
+    return () => window.clearTimeout(id);
   }, [router]);
 
   const activeHref = pendingHref ?? pathname;
