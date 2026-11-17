@@ -14,6 +14,7 @@ import {
   swipeBehavior,
 } from "@tma.js/sdk";
 import type { ColorScheme, Platform, TelegramLaunch } from "./types";
+import { requestConfirm } from "@/components/ui/confirm-dialog";
 
 // "android_x" is Telegram X.
 const MOBILE_CLIENTS = ["ios", "android", "android_x"];
@@ -154,8 +155,8 @@ export function createTelegramPlatform(launch: TelegramLaunch | null = readLaunc
         });
         return buttonId === "confirm";
       } catch {
-        // Popup API unsupported on this client — fall back to the browser dialog.
-        return window.confirm(`${title}\n\n${message}`);
+        // Popup API unsupported on this client — fall back to the in-app sheet.
+        return requestConfirm({ title, message, confirmText, destructive });
       }
     },
     getColorScheme: () => scheme,

@@ -6,6 +6,7 @@ import { useRegisterUser } from "@/hooks/useRegisterUser";
 import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
 import { usePlatform } from "@/platform";
 import { ToastProvider } from "@/components/ui/toast";
+import { ConfirmHost } from "@/components/ui/confirm-dialog";
 import ThemeProvider from "./theme";
 
 // Registers/refreshes the Telegram user on launch (and after the session
@@ -44,7 +45,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
           {/* Needs the query client (useSession). */}
           <RegisterUserOnLaunch />
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            {children}
+            <ConfirmHost />
+          </ToastProvider>
         </QueryClientProvider>
       </ThemeProvider>
     </PlatformProvider>
