@@ -14,7 +14,7 @@ import {
   swipeBehavior,
 } from "@tma.js/sdk";
 import type { ColorScheme, Platform, TelegramLaunch } from "./types";
-import { requestConfirm } from "@/components/ui/confirm-dialog";
+import { requestConfirm } from "./confirm";
 
 // "android_x" is Telegram X.
 const MOBILE_CLIENTS = ["ios", "android", "android_x"];
@@ -140,23 +140,32 @@ export function createTelegramPlatform(launch: TelegramLaunch | null = readLaunc
         () => {}
       ),
     share: async ({ url, text }) => {
-      shareURL(url, text);
-      return "shared";
+      try {
+        shareURL(url, text);
+        return "shared";
+      } catch {
+        // Share sheet unsupported on this client — copy the link instead.
+        await navigator.clipboard.writeText(text ? `${text}\n${url}` : url);
+        return "copied";
+      }
     },
-    confirm: async ({ title, message, confirmText, destructive }) => {
+    confirm: async (options) => {
+      const { title, message, confirmText, cancelText, destructive } = options;
       try {
         const buttonId = await popup.show({
           title,
           message,
           buttons: [
             { id: "confirm", type: destructive ? "destructive" : "default", text: confirmText },
-            { id: "cancel", type: "cancel" },
+            cancelText
+              ? { id: "cancel", type: "default", text: cancelText }
+              : { id: "cancel", type: "cancel" },
           ],
         });
         return buttonId === "confirm";
       } catch {
         // Popup API unsupported on this client — fall back to the in-app sheet.
-        return requestConfirm({ title, message, confirmText, destructive });
+        return requestConfirm(options);
       }
     },
     getColorScheme: () => scheme,

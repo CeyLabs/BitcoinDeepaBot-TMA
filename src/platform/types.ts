@@ -39,6 +39,8 @@ export interface ConfirmOptions {
   title: string;
   message: string;
   confirmText: string;
+  /** Defaults to "Cancel". Set it when "Cancel" would clash with confirmText. */
+  cancelText?: string;
   destructive?: boolean;
 }
 

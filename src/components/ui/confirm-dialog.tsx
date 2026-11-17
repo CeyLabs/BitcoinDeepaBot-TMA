@@ -1,56 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
-import type { ConfirmOptions } from "@/platform/types";
+import { onConfirmRequest, type ConfirmRequest } from "@/platform/confirm";
 
-type PendingConfirm = ConfirmOptions & { resolve: (confirmed: boolean) => void };
-
-// platform.confirm() is a plain async function (no React context), so it
-// hands requests to the mounted <ConfirmHost /> through this listener.
-let showConfirm: ((request: PendingConfirm) => void) | null = null;
-
-/**
- * In-app confirmation sheet. Used on the web and as the fallback when
- * Telegram's native popup isn't available, instead of window.confirm.
- */
-export function requestConfirm(options: ConfirmOptions): Promise<boolean> {
-  if (!showConfirm) {
-    // Host not mounted (shouldn't happen inside Providers) - last resort.
-    return Promise.resolve(window.confirm(`${options.title}\n\n${options.message}`));
-  }
-  const show = showConfirm;
-  return new Promise((resolve) => show({ ...options, resolve }));
-}
-
-/** Mount once (in Providers) to render requestConfirm() calls. */
+/** Mount once (in Providers) to render platform confirm requests. */
 export function ConfirmHost() {
-  const [request, setRequest] = useState<PendingConfirm | null>(null);
+  // `request` outlives `open` so the sheet keeps its text while sliding out.
+  const [request, setRequest] = useState<ConfirmRequest | null>(null);
+  const [open, setOpen] = useState(false);
+  const pending = useRef<ConfirmRequest | null>(null);
 
-  useEffect(() => {
-    showConfirm = (next) =>
-      setRequest((current) => {
-        current?.resolve(false); // a newer request replaces an unanswered one
-        return next;
-      });
-    return () => {
-      showConfirm = null;
-    };
-  }, []);
+  useEffect(
+    () =>
+      onConfirmRequest((next) => {
+        pending.current?.resolve(false); // a newer request replaces an unanswered one
+        pending.current = next;
+        setRequest(next);
+        setOpen(true);
+      }),
+    []
+  );
 
   const answer = (confirmed: boolean) => {
-    request?.resolve(confirmed);
-    setRequest(null);
+    pending.current?.resolve(confirmed);
+    pending.current = null;
+    setOpen(false);
   };
 
   return (
-    <Sheet
-      open={request !== null}
-      onOpenChange={(open) => !open && answer(false)}
-      title={request?.title ?? ""}
-    >
+    <Sheet open={open} onOpenChange={(next) => !next && answer(false)} title={request?.title ?? ""}>
       <div className="flex flex-col gap-5 px-4 pb-6">
         <p className="text-muted-foreground text-center text-[15px] leading-[22px]">
           {request?.message}
@@ -64,7 +45,7 @@ export function ConfirmHost() {
             {request?.confirmText}
           </Button>
           <Button size="lg" variant="secondary" onClick={() => answer(false)}>
-            Cancel
+            {request?.cancelText ?? "Cancel"}
           </Button>
         </div>
       </div>

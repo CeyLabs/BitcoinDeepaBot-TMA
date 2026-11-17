@@ -47,7 +47,7 @@ function buildPoints(transactions: DcaTransaction[], currentBtcPrice: number): C
   // Only purchases that actually bought BTC; failed/pending/cancelled
   // attempts have no price and would drop the Bitcoin line to 0.
   const purchases = transactions.filter(
-    (tx) => tx.status === "SUCCESS" && tx.satoshis_purchased > 0
+    (tx) => tx.status.toUpperCase() === "SUCCESS" && tx.satoshis_purchased > 0
   );
 
   return purchases.map((tx) => {

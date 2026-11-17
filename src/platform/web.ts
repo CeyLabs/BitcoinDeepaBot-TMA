@@ -1,5 +1,5 @@
 import type { Platform, ShareInput, ShareResult } from "./types";
-import { requestConfirm } from "@/components/ui/confirm-dialog";
+import { requestConfirm } from "./confirm";
 
 function isMobileBrowser(): boolean {
   if (typeof navigator === "undefined") return false;

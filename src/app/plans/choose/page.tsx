@@ -109,6 +109,7 @@ export default function ChoosePlanPage() {
       title: "Cancel Plan",
       message: "Your membership rewards will stop accruing immediately. This can't be undone.",
       confirmText: "Cancel Plan",
+      cancelText: "Keep Plan",
       destructive: true,
     });
     if (!confirmed) return;
