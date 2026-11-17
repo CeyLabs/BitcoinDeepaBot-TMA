@@ -141,7 +141,10 @@ export interface NewsArticle {
 export interface DCSummary {
   dca: {
     balance: number;
+    /** LKR that went into BTC, excluding fees */
     spent: number;
+    /** Payment processor + platform fees on those purchases (older backends omit it) */
+    fees?: number;
     avg_btc_price: number;
   };
   total_balance: number;

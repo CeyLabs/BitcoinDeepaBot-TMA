@@ -30,6 +30,7 @@ export function useWalletMetrics({
     : 0;
   const totalSats = summary?.total_balance ?? 0;
   const dcaSpent = summary?.dca.spent ?? 0;
+  const dcaFees = summary?.dca.fees ?? 0;
   const dcaSats = summary?.dca.balance ?? 0;
   const avgBtcPrice = summary?.dca.avg_btc_price ?? 0;
   const changePercent = summary?.["24_hr_change"] ?? 0;
@@ -53,6 +54,7 @@ export function useWalletMetrics({
     totalLkr,
     totalSats,
     dcaSpent,
+    dcaFees,
     dcaSats,
     avgBtcPrice,
     avgBtcPriceUsd,

@@ -23,6 +23,8 @@ import type { Subscription } from "@/lib/types";
 export interface PlanHeroCardProps {
   subscription: Subscription | null | undefined;
   investedLkr: number;
+  /** Fees paid on top of investedLkr */
+  feesLkr?: number;
   investedSats: number;
   currentValueLkr: number;
   visible: boolean;
@@ -34,6 +36,7 @@ export interface PlanHeroCardProps {
 export function PlanHeroCard({
   subscription,
   investedLkr,
+  feesLkr = 0,
   investedSats,
   currentValueLkr,
   visible,
@@ -230,6 +233,11 @@ export function PlanHeroCard({
                   {mask(
                     `${(investedSats / 1e8).toFixed(5)} ·  ≈ 丰 ${fmtSatsCompact(investedSats)}`
                   )}
+                </p>
+              )}
+              {!summaryLoading && feesLkr > 0 && (
+                <p className="text-[12px] leading-4 text-white/70">
+                  + {mask(fmtLkrCurrency(feesLkr))} fees
                 </p>
               )}
             </div>

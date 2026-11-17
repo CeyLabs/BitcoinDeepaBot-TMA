@@ -44,9 +44,16 @@ function buildPoints(transactions: DcaTransaction[], currentBtcPrice: number): C
   let cumulativeSats = 0;
   let cumulativeInvested = 0;
 
-  return transactions.map((tx) => {
+  // Only purchases that actually bought BTC; failed/pending/cancelled
+  // attempts have no price and would drop the Bitcoin line to 0.
+  const purchases = transactions.filter(
+    (tx) => tx.status === "SUCCESS" && tx.satoshis_purchased > 0
+  );
+
+  return purchases.map((tx) => {
     cumulativeSats += tx.satoshis_purchased;
-    cumulativeInvested += tx.gross_amount;
+    // Same basis as the "You Invested" card: excluding fees
+    cumulativeInvested += tx.net_amount || tx.gross_amount;
     return {
       date: tx.created_at,
       invested: cumulativeInvested,

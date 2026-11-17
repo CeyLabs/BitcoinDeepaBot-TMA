@@ -19,6 +19,7 @@ export default function WalletPage() {
     totalLkr,
     totalSats,
     dcaSpent,
+    dcaFees,
     dcaSats,
     avgBtcPrice,
     avgBtcPriceUsd,
@@ -46,6 +47,7 @@ export default function WalletPage() {
 
       <PerformanceGrid
         dcaSpent={dcaSpent}
+        dcaFees={dcaFees}
         dcaSats={dcaSats}
         totalLkr={currentValueLkr}
         avgBtcPrice={avgBtcPrice}
