@@ -40,8 +40,10 @@ export function PerformanceGrid({
   isLoading = false,
 }: PerformanceGridProps) {
   const mask = (v: string) => maskDigits(v, visible);
-  const profitLkr = totalLkr - dcaSpent;
-  const profitPct = dcaSpent > 0 ? (profitLkr / dcaSpent) * 100 : 0;
+  // Profit is against what the user actually paid, fees included.
+  const totalCost = dcaSpent + dcaFees;
+  const profitLkr = totalLkr - totalCost;
+  const profitPct = totalCost > 0 ? (profitLkr / totalCost) * 100 : 0;
   const isProfit = profitLkr >= 0;
 
   return (

@@ -46,8 +46,10 @@ export function PlanHeroCard({
 }: PlanHeroCardProps) {
   const router = useRouter();
   const mask = (v: string) => maskDigits(v, visible);
-  const profitLkr = currentValueLkr - investedLkr;
-  const profitPct = investedLkr > 0 ? (profitLkr / investedLkr) * 100 : 0;
+  // Profit is against what the user actually paid, fees included.
+  const totalCostLkr = investedLkr + feesLkr;
+  const profitLkr = currentValueLkr - totalCostLkr;
+  const profitPct = totalCostLkr > 0 ? (profitLkr / totalCostLkr) * 100 : 0;
   const isProfit = profitLkr >= 0;
 
   if (subscriptionLoading) {
