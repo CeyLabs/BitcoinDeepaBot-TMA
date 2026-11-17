@@ -10,6 +10,7 @@ import { usePayHereRedirect } from "@/lib/hooks";
 import { usePackages } from "@/hooks/query/usePackages";
 import { useCancelSubscription } from "@/hooks/query/useCancelSubscription";
 import { useUser } from "@/hooks/useUser";
+import { useOffline } from "@/hooks/useOffline";
 import { useSession } from "@/hooks/useSession";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { haptic, useBackButton, usePlatform } from "@/platform";
@@ -38,6 +39,7 @@ export default function ChoosePlanPage() {
   const platform = usePlatform();
   const { status: sessionStatus } = useSession();
   const { subscription } = useUser();
+  const offline = useOffline();
   const cancelSubscription = useCancelSubscription();
 
   const [duration, setDuration] = useState<PlanDuration>("weekly");
@@ -243,7 +245,7 @@ export default function ChoosePlanPage() {
           className="w-full rounded-[12px]"
           size="lg"
           loading={payhereLinkLoading}
-          disabled={!selectedPlanId || packagesLoading}
+          disabled={!selectedPlanId || packagesLoading || offline}
           onClick={handleSubscribe}
         >
           Continue with Selected Plan
@@ -254,6 +256,7 @@ export default function ChoosePlanPage() {
             variant="outline"
             className="w-full rounded-[12px] text-[#F13131] shadow-[0_0_0_1px_#F13131]"
             loading={cancelSubscription.isPending}
+            disabled={offline}
             onClick={handleCancel}
           >
             Cancel Current Plan
