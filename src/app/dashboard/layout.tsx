@@ -11,6 +11,8 @@ import WalletLoading from "./loading";
 import ActivityLoading from "./activity/loading";
 import NewsLoading from "./news/loading";
 import PlansLoading from "./plans/loading";
+import ProfileLoading from "./profile/loading";
+import SellLoading from "./sell/loading";
 import { kycStatusOptions } from "@/hooks/query/useKyc";
 import { subscriptionCurrentOptions } from "@/hooks/query/useSubscriptionCurrent";
 
@@ -81,5 +83,7 @@ function TabSkeleton({ pathname }: { pathname: string }) {
   if (pathname.startsWith("/dashboard/activity")) return <ActivityLoading />;
   if (pathname.startsWith("/dashboard/news")) return <NewsLoading />;
   if (pathname.startsWith("/dashboard/plans")) return <PlansLoading />;
+  if (pathname.startsWith("/dashboard/profile")) return <ProfileLoading />;
+  if (pathname.startsWith("/dashboard/sell")) return <SellLoading />;
   return <WalletLoading />;
 }

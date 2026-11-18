@@ -38,3 +38,47 @@ export const createUserSchema = z.object({
 });
 
 export type CreateUserFormData = z.infer<typeof createUserSchema>;
+
+// Payout bank account — mirrors the backend's AddBankAccountDto.
+export const STATEMENT_TYPES = ["application/pdf", "image/jpeg", "image/png"] as const;
+export const STATEMENT_MAX_BYTES = 8 * 1024 * 1024;
+
+export const bankAccountSchema = z.object({
+  bankCode: z.number({ message: "Choose your bank" }).int().positive("Choose your bank"),
+  accountNumber: z
+    .string()
+    .transform((v) => v.replace(/[\s-]/g, ""))
+    .pipe(z.string().regex(/^\d{6,20}$/, "Account number must be 6–20 digits")),
+  accountName: z
+    .string()
+    .trim()
+    .min(1, "Account holder name is required")
+    .max(255, "Account holder name is too long"),
+  statement: z
+    .instanceof(File, { message: "Upload a bank statement" })
+    .refine((f) => (STATEMENT_TYPES as readonly string[]).includes(f.type), {
+      message: "Statement must be a PDF, JPEG or PNG",
+    })
+    .refine((f) => f.size > 0 && f.size <= STATEMENT_MAX_BYTES, {
+      message: "Statement must be 8 MB or smaller",
+    }),
+});
+
+export type BankAccountFormInput = z.input<typeof bankAccountSchema>;
+export type BankAccountFormData = z.output<typeof bankAccountSchema>;
+
+/** Used until /sell/price (which returns the backend's minimum) has loaded. */
+export const DEFAULT_SELL_MIN_SATS = 1000;
+
+/** Sats to sell: a whole number between the minimum and the balance. */
+export const sellAmountSchema = (
+  balanceSats: number,
+  minSats = DEFAULT_SELL_MIN_SATS,
+  maxSats = Number.POSITIVE_INFINITY
+) =>
+  z
+    .number({ message: "Enter an amount in sats" })
+    .int("Use whole sats")
+    .min(minSats, `Minimum is ${minSats.toLocaleString("en-US")} sats`)
+    .max(maxSats, `Maximum per sale is ${maxSats.toLocaleString("en-US")} sats`)
+    .max(balanceSats, "That's more than your balance");

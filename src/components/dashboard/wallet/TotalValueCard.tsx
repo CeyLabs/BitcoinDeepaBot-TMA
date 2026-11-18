@@ -17,6 +17,8 @@ export interface TotalValueCardProps {
   changeLkr: number;
   visible: boolean;
   isLoading?: boolean;
+  /** Optional action in the top-right corner (e.g. the Sell button). */
+  action?: React.ReactNode;
 }
 
 export function TotalValueCard({
@@ -26,6 +28,7 @@ export function TotalValueCard({
   changeLkr,
   visible,
   isLoading = false,
+  action,
 }: TotalValueCardProps) {
   const mask = (v: string) => maskDigits(v, visible);
   const isProfit = changePercent >= 0;
@@ -38,6 +41,7 @@ export function TotalValueCard({
       <div className="relative flex flex-col gap-2 p-4">
         <div className="flex items-end justify-between">
           <p className="text-[14px] leading-3 text-white capitalize">Total Value</p>
+          {action}
           <div className="hidden items-center gap-1 rounded-[12px] border border-white py-1 pr-1 pl-2">
             <p className="text-[12px] leading-4 text-white">රු.</p>
             <ChevronDown size={14} strokeWidth={2} className="text-white" />

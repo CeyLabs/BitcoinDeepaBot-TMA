@@ -2,9 +2,16 @@
 // the newest build — reloading it would only flash a blank screen.
 const FRESH_MS = 60_000;
 
-// Never reload mid-task: plan checkout (PayHere redirect), KYC and payment
-// return screens. A pending reload waits until the user is elsewhere.
-const BUSY_PATHS = ["/plans/choose", "/verification", "/payment"];
+// Never reload mid-task: plan checkout (PayHere redirect), KYC, payment
+// return screens, bank statement upload (profile) and selling. A pending
+// reload waits until the user is elsewhere.
+const BUSY_PATHS = [
+  "/plans/choose",
+  "/verification",
+  "/payment",
+  "/dashboard/profile",
+  "/dashboard/sell",
+];
 
 const isBusy = () => BUSY_PATHS.some((path) => location.pathname.startsWith(path));
 

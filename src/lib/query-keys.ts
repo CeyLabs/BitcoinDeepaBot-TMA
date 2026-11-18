@@ -8,4 +8,10 @@ export const queryKeys = {
   userCount: ["user-count"] as const,
   subscriptionCurrent: ["subscription-current"] as const,
   kycStatus: ["kyc-status"] as const,
+  userMe: ["user-me"] as const,
+  banks: ["banks"] as const,
+  bankAccounts: ["bank-accounts"] as const,
+  sellPrice: ["sell", "price"] as const,
+  sellOrders: ["sell", "orders"] as const,
+  sellOrder: (id: string) => ["sell", "orders", id] as const,
 } as const;

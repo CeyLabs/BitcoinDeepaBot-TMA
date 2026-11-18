@@ -16,6 +16,10 @@ const badgeVariants = cva(
         success: "bg-success text-white",
         /** Soft green status pill ("Active"). */
         active: "bg-[rgba(37,167,97,0.1)] text-[#25a761]",
+        /** Soft amber status pill ("In review", "Processing"). */
+        pending: "bg-[rgba(245,158,11,0.12)] text-[#b45309] dark:text-[#fbbf24]",
+        /** Soft red status pill ("Rejected", "Failed"). */
+        negative: "bg-[rgba(241,49,49,0.1)] text-[#f13131]",
       },
     },
     defaultVariants: { variant: "default" },
