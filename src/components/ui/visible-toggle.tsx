@@ -17,6 +17,8 @@ export function VisibleToggle({ visible, onToggle, dark = false, className }: Vi
 
   return (
     <IconButton
+      aria-label="Hide balances"
+      aria-pressed={!visible}
       onClick={() => {
         haptic.impact("medium");
         onToggle();

@@ -11,7 +11,7 @@ Test these on a staging/preview build pointed at the real backend, inside the Te
 
 ## 0. Setup (before building)
 
-- [ ] `NEXT_PUBLIC_API_BASE_URL` is set on the host (Railway, plus Vercel if it's used). The old `API_BASE_URL` is no longer read.
+- [ ] `NEXT_PUBLIC_API_BASE_URL` is set on the host (Vercel). The old `API_BASE_URL` is no longer read.
   - It's baked in at **build** time, so set it first and redeploy afterwards.
 - [ ] The backend's `CORS_ORIGIN` is either `*` or includes the TMA's exact origin (scheme + host, no trailing slash).
 - [ ] Vercel builds on `dev` have been failing since `71c9ff9` (before these PRs). Find out why, or confirm Vercel isn't the real deploy target.

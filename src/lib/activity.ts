@@ -1,6 +1,5 @@
 import type { ActivityItem, ActivityType, BotTransaction } from "@/lib/types";
 import type { DcaTransaction } from "@/hooks/query/useTransactionHistory";
-import { fmtActivityTime } from "@/lib/formatters";
 
 type StatusDot = NonNullable<ActivityItem["statusDot"]>;
 
@@ -119,15 +118,4 @@ export function mapBotTransactionToActivityItem(tx: BotTransaction): ActivityIte
       transactionId: String(tx.id),
     },
   };
-}
-
-export function getActivitySubtitle(item: ActivityItem): string {
-  const time = fmtActivityTime(item.timestamp);
-
-  if (item.detailLabel) return `${item.detailLabel} at ${time}`;
-  if (item.counterparty) {
-    const isOutgoing = item.sats < 0;
-    return `${isOutgoing ? "To" : "From"} @${item.counterparty} at ${time}`;
-  }
-  return time;
 }

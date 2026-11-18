@@ -137,17 +137,17 @@ export default function VerificationIntroPage() {
   const showSteps = SHOW_STEPS_FOR.includes(status);
 
   return (
-    <div className="dark flex min-h-screen w-full flex-col bg-[#0b0f14]">
+    <div className="flex min-h-screen w-full flex-col bg-[#f7f9fc] dark:bg-[#0b0f14]">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-8 pb-6">
         <BackButton
           onBack={() => router.push("/dashboard")}
-          className="bg-white/10 text-white dark:text-white"
+          className="bg-white text-[#1b2027] dark:bg-white/10 dark:text-white"
         />
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-[24px] leading-7 font-bold text-white">
+          <h1 className="text-[24px] leading-7 font-bold text-[#1b2027] dark:text-white">
             {content?.title ?? "Verify Your Identity"}
           </h1>
-          <p className="text-[14px] leading-4.5 text-[#94a3b8]">
+          <p className="text-[14px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">
             {content?.description ?? "Complete verification to continue with Bitcoin දීප"}
           </p>
         </div>
@@ -165,12 +165,16 @@ export default function VerificationIntroPage() {
         {showSteps && (
           <div className="flex flex-col gap-3">
             {STEPS.map((step, index) => (
-              <div key={step.title} className="rounded-2xl bg-[#12161d] px-4 py-4">
+              <div key={step.title} className="rounded-2xl bg-white px-4 py-4 dark:bg-[#12161d]">
                 <p className="text-[13px] leading-4 font-semibold text-[#fa7119]">
                   Step {String(index + 1).padStart(2, "0")}
                 </p>
-                <p className="mt-1 text-[16px] leading-5 font-bold text-white">{step.title}</p>
-                <p className="mt-0.5 text-[13px] leading-4.25 text-[#94a3b8]">{step.description}</p>
+                <p className="mt-1 text-[16px] leading-5 font-bold text-[#1b2027] dark:text-white">
+                  {step.title}
+                </p>
+                <p className="mt-0.5 text-[13px] leading-4.25 text-[#64748b] dark:text-[#94a3b8]">
+                  {step.description}
+                </p>
               </div>
             ))}
           </div>
@@ -179,28 +183,28 @@ export default function VerificationIntroPage() {
         {status === "KYC_EXPIRED" && (
           <div className="rounded-2xl bg-[#fa7119]/10 px-4 py-4">
             <p className="text-[13px] leading-4 font-semibold text-[#fa7119]">KYC Expired</p>
-            <p className="mt-1 text-[13px] leading-4.5 text-[#94a3b8]">
+            <p className="mt-1 text-[13px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">
               Your previous verification has expired, please verify again.
             </p>
           </div>
         )}
 
         {status === "IN_REVIEW" && (
-          <div className="flex flex-col items-center gap-2 rounded-2xl bg-[#12161d] px-4 py-5 text-center">
+          <div className="flex flex-col items-center gap-2 rounded-2xl bg-white px-4 py-5 text-center dark:bg-[#12161d]">
             <p className="text-[15px] leading-5 font-bold text-[#fa7119]">
               We&apos;re reviewing your documents.
             </p>
-            <p className="text-[16px] leading-5 font-bold text-white">
+            <p className="text-[16px] leading-5 font-bold text-[#1b2027] dark:text-white">
               This usually takes up to 24 hours.
             </p>
-            <p className="text-[13px] leading-4.5 text-[#94a3b8]">
+            <p className="text-[13px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">
               You&apos;ll receive a notification once approved.
             </p>
           </div>
         )}
 
         {showSteps && (
-          <p className="text-center text-sm font-medium text-white">
+          <p className="text-center text-sm font-medium text-[#1b2027] dark:text-white">
             Your Data is Secured and never Shared
           </p>
         )}
@@ -270,7 +274,7 @@ export default function VerificationIntroPage() {
         open={showMobileWarning}
         onOpenChange={setShowMobileWarning}
         title="Use Mobile Device"
-        className="bg-[#0b0f14] text-white"
+        className="bg-white text-[#1b2027] dark:bg-[#0b0f14] dark:text-white"
       >
         <div className="flex flex-col gap-5 px-5 pt-2 pb-6">
           <div className="flex flex-col items-center gap-3 text-center">
@@ -283,14 +287,16 @@ export default function VerificationIntroPage() {
                 unoptimized
               />
             </div>
-            <h2 className="text-[16px] leading-5 font-bold text-white">Use Mobile Device</h2>
-            <p className="text-[14px] leading-4.5 text-[#94a3b8]">
+            <h2 className="text-[16px] leading-5 font-bold text-[#1b2027] dark:text-white">
+              Use Mobile Device
+            </h2>
+            <p className="text-[14px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">
               Identity verification works best on mobile devices for security and camera access.
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 rounded-2xl bg-[#12161d] px-4 py-4">
-            <p className="text-[13px] leading-4 font-semibold text-white">
+          <div className="flex flex-col gap-3 rounded-2xl bg-white px-4 py-4 dark:bg-[#12161d]">
+            <p className="text-[13px] leading-4 font-semibold text-[#1b2027] dark:text-white">
               How to verify on mobile:
             </p>
             {MOBILE_STEPS.map((step, index) => (
@@ -298,7 +304,7 @@ export default function VerificationIntroPage() {
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#fa7119] text-[12px] font-bold text-white">
                   {index + 1}
                 </span>
-                <p className="text-[13px] leading-4.5 text-[#94a3b8]">{step}</p>
+                <p className="text-[13px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">{step}</p>
               </div>
             ))}
           </div>

@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 
-export function usePostRedirect() {
+function usePostRedirect() {
   const redirectInPost = useCallback((fullUrl: string) => {
     try {
       const url = new URL(fullUrl);

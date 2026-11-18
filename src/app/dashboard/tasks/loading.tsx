@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { Bone } from "@/components/ui/bone";
+import { Bone, BoneCard } from "@/components/ui/bone";
 
 // Route fallback while navigating here. Without it Next falls back to the
 // wallet's loading.tsx. Mirrors the tasks list: title, filter pills, rows.
@@ -8,9 +8,11 @@ export default function TasksLoading() {
     <div className="flex w-full flex-col gap-3">
       <Bone className="h-4 w-12" />
       <div className="flex h-9 gap-2">
-        <Bone className="h-9 w-24 rounded-[12px]" />
-        <Bone className="h-9 w-16 rounded-[12px]" />
-        <Bone className="h-9 w-24 rounded-[12px]" />
+        {["w-24", "w-16", "w-24"].map((w, i) => (
+          <BoneCard key={i} className={`flex h-9 ${w} items-center justify-center rounded-[12px]`}>
+            <Bone className="h-3 w-2/3" />
+          </BoneCard>
+        ))}
       </div>
       <div className="w-full overflow-hidden rounded-[12px] bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] dark:bg-[#0B0F14]">
         {Array.from({ length: 2 }).map((_, i) => (

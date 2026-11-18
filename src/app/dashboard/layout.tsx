@@ -1,15 +1,17 @@
 "use client";
 
 import BottomNavigation from "@/components/bottomNavigation";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { useSession } from "@/hooks/useSession";
 import WalletLoading from "./loading";
 import ActivityLoading from "./activity/loading";
 import NewsLoading from "./news/loading";
 import PlansLoading from "./plans/loading";
-import { useKycStatus } from "@/hooks/query/useKyc";
-import { useSubscriptionCurrent } from "@/hooks/query/useSubscriptionCurrent";
+import { kycStatusOptions } from "@/hooks/query/useKyc";
+import { subscriptionCurrentOptions } from "@/hooks/query/useSubscriptionCurrent";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { sessionExpired, signingIn } = useAuthGuard();
@@ -19,9 +21,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Warm the shared query cache as soon as any dashboard page mounts, not
   // just when the plans tab does — by the time the user taps into Plans,
   // these are already fetched (or in flight), so it skips straight past
-  // the kycLoading/noActivePlan LoadingPage states instead of flashing them.
-  useKycStatus();
-  useSubscriptionCurrent();
+  // the kycLoading/noActivePlan skeleton states instead of flashing them.
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    queryClient.prefetchQuery(kycStatusOptions());
+    queryClient.prefetchQuery(subscriptionCurrentOptions());
+  }, [status, queryClient]);
 
   return (
     // Phone-width column. On wider screens (desktop web) it's framed as a

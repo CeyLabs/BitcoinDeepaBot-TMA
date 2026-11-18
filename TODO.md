@@ -8,7 +8,7 @@ Done on `rr/web-pwa-support`: the platform layer, auth (`useSession`, token expi
 
 Before deploying (tested 2026-11-13 against the dev backend):
 
-- [ ] Set `NEXT_PUBLIC_GA_ID` on Railway (analytics is off when unset)
+- [ ] Set `NEXT_PUBLIC_GA_ID` on Vercel (analytics is off when unset)
 - [x] `bun run build` passes (`/api/user` dynamic)
 - Inside Telegram (bot @ceylabs_tma_bot, via a CeyPort tunnel):
   - [x] Android (Galaxy S24):

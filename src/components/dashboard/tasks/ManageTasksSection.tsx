@@ -5,7 +5,7 @@ import { useToast } from "@/components/ui/toast";
 import { TaskFilterTabs, type TaskFilter } from "@/components/dashboard/tasks/TaskFilterTabs";
 import { TaskListCard } from "@/components/dashboard/tasks/TaskListCard";
 import { haptic, usePlatform } from "@/platform";
-import { useStore } from "@/lib/store";
+import { useUserCount } from "@/hooks/query/useUserCount";
 import { useUser } from "@/hooks/useUser";
 import { getInviteUrl, TELEGRAM_BOT_URL } from "@/lib/constants";
 import type { Task } from "@/lib/types";
@@ -18,7 +18,7 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
   const [filter, setFilter] = useState<TaskFilter>("all");
   const toast = useToast();
   const platform = usePlatform();
-  const { count } = useStore();
+  const { count } = useUserCount();
   const { id: userId } = useUser();
 
   const filtered = useMemo(() => {

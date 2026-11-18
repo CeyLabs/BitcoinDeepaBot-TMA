@@ -1,8 +1,9 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import { useSession } from "@/hooks/useSession";
 import fetchy from "@/lib/fetchy";
+import { queryKeys } from "@/lib/query-keys";
 import type { User } from "@/lib/types";
 
 export interface KycStatusResponse {
@@ -10,14 +11,18 @@ export interface KycStatusResponse {
   url?: string;
 }
 
+export const kycStatusOptions = () =>
+  queryOptions({
+    queryKey: queryKeys.kycStatus,
+    queryFn: () => fetchy.get<KycStatusResponse>("/user/kyc/status"),
+    // Changes outside the app (the user finishes KYC on the provider's page),
+    // so refetch whenever they come back instead of trusting the 60s default.
+    staleTime: 0,
+  });
+
 export function useKycStatus() {
   const isAuthed = useSession().status === "authenticated";
-
-  return useQuery<KycStatusResponse>({
-    queryKey: ["kyc-status"],
-    queryFn: () => fetchy.get<KycStatusResponse>("/user/kyc/status"),
-    enabled: isAuthed,
-  });
+  return useQuery({ ...kycStatusOptions(), enabled: isAuthed });
 }
 
 interface KycInitiatePayload {

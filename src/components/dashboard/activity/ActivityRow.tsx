@@ -41,7 +41,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
     <Collapsible.Root open={expanded} onOpenChange={setExpanded}>
       <Collapsible.Trigger className="mx-1 my-0.5 block w-[calc(100%-0.5rem)] cursor-pointer rounded-xl text-left transition-colors duration-150 hover:bg-[#f1f5f9] dark:hover:bg-[#1B2027]">
         <Cell
-          className="gap-2 pr-1.5 pl-3"
+          className="gap-2 pr-1.5 pl-3 [--cell-py:12px]"
           before={
             <div className="flex size-10 shrink-0 items-center justify-center">
               <Image
@@ -54,7 +54,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
             </div>
           }
           subtitle={
-            <span className="text-xs text-[#64748B]">
+            <span className="block text-xs leading-4 text-[#64748B]">
               {item.detailLabel ? (
                 `${item.detailLabel} at ${time}`
               ) : (

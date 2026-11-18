@@ -1,7 +1,6 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { environmentManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PlatformProvider } from "@/platform";
 import { useRegisterUser } from "@/hooks/useRegisterUser";
 import { ToastProvider } from "@/components/ui/toast";
@@ -14,8 +13,27 @@ function RegisterUserOnLaunch() {
   return null;
 }
 
+function makeQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      // Don't refetch on every mount/focus; data is fresh for a minute.
+      queries: { staleTime: 60 * 1000 },
+    },
+  });
+}
+
+let browserQueryClient: QueryClient | undefined;
+
+// TanStack's Next.js setup: a new client per server render, one shared client
+// in the browser (kept even if React throws away a suspended first render).
+function getQueryClient() {
+  if (environmentManager.isServer()) return makeQueryClient();
+  browserQueryClient ??= makeQueryClient();
+  return browserQueryClient;
+}
+
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
+  const queryClient = getQueryClient();
   return (
     <PlatformProvider>
       <ThemeProvider>

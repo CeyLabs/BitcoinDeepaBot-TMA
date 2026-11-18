@@ -25,11 +25,9 @@ The API lives in [BitcoinDeepa-DCA-BE](https://github.com/CeyLabs/BitcoinDeepa-D
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS with hand-built UI primitives (`src/components/ui/`)
 - **Database**: MongoDB with Mongoose ODM
-- **State Management**:
-- Zustand (global state)
-- TanStack Query (server state management)
-- **Forms**: React Hook Form + Zod validation
-- **Charts**: Chart.js with react-chartjs-2
+- **State Management**: TanStack Query (server state); small `useSyncExternalStore` hooks for client state
+- **Forms**: plain React state + Zod validation
+- **Charts**: Chart.js
 - **Telegram SDK**: @telegram-apps/sdk-react
 - **HTTP Client**: Custom `fetchy` wrapper for API calls
 
@@ -104,9 +102,9 @@ src/
 
 ### State Management
 
-- **Global UI State**: Zustand store (`@/lib/store`)
-- **Server State**: TanStack Query with keys in `@/lib/query-keys`
-- **Form State**: React Hook Form with Zod validation
+- **Server State**: TanStack Query, `queryOptions` factories per endpoint, keys in `@/lib/query-keys`
+- **Client State**: small hooks over localStorage (`useSession`, `useBalanceVisible`), no global store
+- **Form State**: React state, validated with Zod
 
 ## 💳 Payment Integration
 
@@ -133,7 +131,7 @@ The app integrates with PayHere payment gateway for Sri Lankan users:
 
 ## 🌍 Deployment
 
-Deployed on Railway (see `railway.json`): `bun install --frozen-lockfile && bun run build`, then `bun run start`. Set the variables from `.env.example` in the Railway service; `NEXT_PUBLIC_*` values are baked in at build time.
+Deployed on Vercel (Next.js preset, `bun run build`). Set the variables from `.env.example` in the Vercel project; `NEXT_PUBLIC_*` values are baked in at build time. Any Node host works too: `bun install --frozen-lockfile && bun run build`, then `bun run start`.
 
 ## 🤝 Contributing
 

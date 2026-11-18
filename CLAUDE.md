@@ -38,14 +38,14 @@ There is no test suite configured. Always run `bun run format` and `bun run buil
 
 ### App shell / providers
 
-- `src/app/context/providers.tsx` composes, in order: `PlatformProvider` (`src/platform`, Telegram vs web) → `ThemeProvider` (`theme.tsx`, dynamic/no-SSR) → TanStack Query `QueryClientProvider` → `ToastProvider` (`src/components/ui/toast.tsx`).
-- `ThemeProvider` is loaded with `next/dynamic({ ssr: false })` because it depends on browser APIs. It wraps the app in a `.light`/`.dark` element that the theme tokens hang off.
+- `src/app/context/providers.tsx` composes, in order: `PlatformProvider` (`src/platform`, Telegram vs web) → `ThemeProvider` (`theme.tsx`) → TanStack Query `QueryClientProvider` → `ToastProvider` (`src/components/ui/toast.tsx`).
+- Light/dark is driven by `<html data-theme>`: an inline script (`src/lib/theme-boot.ts`) sets it before first paint, and `ThemeProvider` keeps it in sync after hydration. The theme tokens and the `dark:` variant hang off it.
 
 ### State management
 
-- Global UI state: Zustand (`src/lib/store.ts`).
-- Server state: TanStack Query, with query keys centralized in `src/lib/query-keys.ts` and query hooks under `src/hooks/query/*` (one hook per endpoint, e.g. `useSubscriptionCurrent`, `useWalletSummary`, `useKyc`).
-- Forms: React Hook Form + Zod, schemas in `src/lib/validations.ts`.
+- Server state: TanStack Query. Each endpoint in `src/hooks/query/*` exports a `queryOptions`/`infiniteQueryOptions` factory (e.g. `kycStatusOptions`) plus a hook; keys live in `src/lib/query-keys.ts`. Use the factory for `prefetchQuery`/`invalidateQueries`. The client sets a 60s default `staleTime` (`src/app/context/providers.tsx`).
+- No global store. Client state is small `useSyncExternalStore` hooks over localStorage: `useSession` (auth token), `useBalanceVisible` (the eye toggle, remembered). Request status comes from TanStack (e.g. the Telegram sign-in is a mutation; `useAuthGuard` reads it with `useMutationState`).
+- Forms: plain React state + Zod (`safeParse`), schemas in `src/lib/validations.ts`. No form library.
 
 ### Routing / pages (App Router)
 
@@ -63,9 +63,8 @@ There is no test suite configured. Always run `bun run format` and `bun run buil
 
 ### Dependency notes
 
-- `framer-motion` is only used by `src/components/motion/number-ticker.tsx`.
 - `@telegram-apps/sdk-react@1` only supports React 17/18 — it's what blocks a React 19 upgrade (see `TODO.md`).
-- `sharp` is only used by the build-time script `scripts/optimize-emoji-svgs.mjs`, not by the app at runtime.
+- `chart.js` is used directly (`PortfolioLine.tsx`, no React wrapper) and loads in its own chunk, only on the wallet chart.
 
 ### Telegram-specific concerns
 
@@ -82,4 +81,4 @@ There is no test suite configured. Always run `bun run format` and `bun run buil
 
 ### Deployment
 
-- Railway (`railway.json`), Nixpacks builder, `bun install && bun run build` at build time, `bun run start` as the start command, restart-on-failure.
+- Vercel (Next.js preset). `bun run build` also stamps the service worker with the commit sha (`VERCEL_GIT_COMMIT_SHA`).

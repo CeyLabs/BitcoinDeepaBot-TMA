@@ -1,26 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
-import { useStore } from "@/lib/store";
 import fetchy from "@/lib/fetchy";
 
-export function useUserCount() {
-  const { count, setCount } = useStore();
-
-  const { data, isLoading } = useQuery({
+export const userCountOptions = () =>
+  queryOptions({
     queryKey: queryKeys.userCount,
     queryFn: () => fetchy.get<{ count: number }>("/api/user"),
   });
 
-  useEffect(() => {
-    if (data) {
-      setCount(data.count ?? 80);
-    }
-  }, [data, setCount]);
-
-  // Loading only until we have a count to show — a count already in the
-  // store from earlier in the session is fine to display while refetching.
-  return { count, isLoading: isLoading && count === 0 };
+/** Community member count (Mongo-backed /api/user). */
+export function useUserCount() {
+  const { data, isPending } = useQuery(userCountOptions());
+  // isPending only until the first count arrives; refetches keep showing the cached one.
+  return { count: data ? (data.count ?? 80) : 0, isLoading: isPending };
 }

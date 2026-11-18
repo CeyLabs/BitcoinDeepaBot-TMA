@@ -58,31 +58,6 @@ export interface Subscription {
   payhereSubId?: string;
 }
 
-export interface Transaction {
-  id: string;
-  type: "subscription" | "wallet" | "gift" | "reward" | "referral";
-  amount: number;
-  currency: string;
-  date: string;
-  description: string;
-  status: "completed" | "pending" | "cancelled";
-  recipient?: string;
-  duration?: string;
-}
-
-export interface ApiTransaction {
-  payhere_pay_id: string;
-  payhere_sub_id?: string;
-  status: "SUCCESS" | "PENDING" | "CANCELLED" | "FAILED" | "CHARGEBACK";
-  btc_price_at_purchase?: number;
-  satoshis_purchased?: number;
-  package_amount?: number;
-  coingecko_timestamp?: string;
-  created_at: string;
-  updated_at: string;
-  settled?: boolean;
-}
-
 export type ActivityType =
   | "sent"
   | "received"
@@ -121,14 +96,6 @@ export interface ActivityItem {
   };
 }
 
-export interface Wallet {
-  balance: number;
-  balanceUSD: number;
-  change24h: number;
-  changePercent: number;
-  assets: CryptoAsset[];
-}
-
 export interface CryptoAsset {
   symbol: string;
   name: string;
@@ -140,6 +107,14 @@ export interface CryptoAsset {
   icon: string;
 }
 
+export interface Wallet {
+  balance: number;
+  balanceUSD: number;
+  change24h: number;
+  changePercent: number;
+  assets: CryptoAsset[];
+}
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
@@ -148,11 +123,6 @@ export interface SubscriptionPlan {
   currency: string;
   features: string[];
   popular?: boolean;
-}
-
-export interface UserExistsResponse {
-  registered: boolean;
-  error?: string;
 }
 
 export interface NewsArticle {

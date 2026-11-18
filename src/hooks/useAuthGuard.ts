@@ -2,10 +2,10 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { getIsExistingUserFromStorage } from "@/lib/auth";
+import { useMutationState } from "@tanstack/react-query";
 import { useSession } from "@/hooks/useSession";
 import { usePlatform } from "@/platform";
+import { TELEGRAM_SIGN_IN_KEY, type TelegramSignInResult } from "@/hooks/useRegisterUser";
 
 /**
  * Keeps signed-out users out of the dashboard.
@@ -20,21 +20,21 @@ export function useAuthGuard() {
   const router = useRouter();
   const { status } = useSession();
   const canReauth = !!usePlatform().launch?.initDataRaw;
-  const { isExistingUser, setIsExistingUser, telegramReauth } = useStore();
+  // Whether the latest Telegram sign-in was refused (initData too old).
+  const signInRejected =
+    useMutationState({
+      filters: { mutationKey: TELEGRAM_SIGN_IN_KEY, status: "success" },
+      select: (mutation) => (mutation.state.data as TelegramSignInResult | undefined)?.rejected,
+    }).at(-1) === true;
 
   useEffect(() => {
-    if (status === "authenticated") {
-      setIsExistingUser(getIsExistingUserFromStorage());
-    } else if (status === "unauthenticated" && !canReauth) {
-      router.replace("/");
-    }
-  }, [status, canReauth, router, setIsExistingUser]);
+    if (status === "unauthenticated" && !canReauth) router.replace("/");
+  }, [status, canReauth, router]);
 
   return {
-    isExistingUser,
-    sessionExpired: status === "unauthenticated" && canReauth && telegramReauth === "failed",
+    sessionExpired: status === "unauthenticated" && canReauth && signInRejected,
     // Telegram: no (valid) token yet, but the sign-in from initData is running
     // or will retry. Pages have no data to show until it lands.
-    signingIn: status === "unauthenticated" && canReauth && telegramReauth !== "failed",
+    signingIn: status === "unauthenticated" && canReauth && !signInRejected,
   };
 }

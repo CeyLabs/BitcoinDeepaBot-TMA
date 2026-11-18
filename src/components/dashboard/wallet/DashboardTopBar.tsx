@@ -5,7 +5,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { LogOut } from "lucide-react";
 import { VisibleToggle } from "@/components/ui/visible-toggle";
 import { useUser } from "@/hooks/useUser";
-import { useStore } from "@/lib/store";
+import { useBalanceVisible } from "@/hooks/useBalanceVisible";
 import { useSession } from "@/hooks/useSession";
 import { InstallButton } from "@/pwa";
 import { haptic, usePlatform } from "@/platform";
@@ -13,7 +13,7 @@ import { haptic, usePlatform } from "@/platform";
 export function DashboardTopBar() {
   const { logout } = useSession();
   const { initials, displayName, photoUrl } = useUser();
-  const { balanceVisible, toggleBalanceVisible } = useStore();
+  const { visible: balanceVisible, toggle: toggleBalanceVisible } = useBalanceVisible();
   const { kind } = usePlatform();
 
   return (

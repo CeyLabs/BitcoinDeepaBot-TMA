@@ -27,12 +27,12 @@ if (typeof window !== "undefined") {
   });
 }
 
-export const isStandalone = () =>
+const isStandalone = () =>
   window.matchMedia("(display-mode: standalone)").matches ||
   (navigator as Navigator & { standalone?: boolean }).standalone === true;
 
 // iPadOS reports itself as a Mac; touch points tell them apart.
-export const isIos = () =>
+const isIos = () =>
   /iPhone|iPad|iPod/.test(navigator.userAgent) ||
   (navigator.userAgent.includes("Mac") && navigator.maxTouchPoints > 1);
 

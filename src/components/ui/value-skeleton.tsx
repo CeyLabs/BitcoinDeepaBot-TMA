@@ -2,11 +2,11 @@ import { cn } from "cn";
 
 const TONE_STYLES = {
   // Light card surfaces (white/#0B0F14 backgrounds).
-  surface: "bg-[#e2e8f0] dark:bg-[#334155]",
+  surface: "",
   // Cards rendered over a photo/color background (e.g. hero cards).
-  dark: "bg-white/25 dark:bg-white/15",
+  dark: "[--bone:rgb(255_255_255/0.25)] dark:[--bone:rgb(255_255_255/0.15)]",
   // Subtler variant for prominent hero values — a faint tint rather than a solid block.
-  translucent: "bg-white/10",
+  translucent: "[--bone:rgb(255_255_255/0.1)]",
 };
 
 export interface ValueSkeletonProps {
@@ -15,7 +15,5 @@ export interface ValueSkeletonProps {
 }
 
 export function ValueSkeleton({ className, tone = "surface" }: ValueSkeletonProps) {
-  return (
-    <span className={cn("inline-block animate-pulse rounded", TONE_STYLES[tone], className)} />
-  );
+  return <span className={cn("skeleton inline-block rounded", TONE_STYLES[tone], className)} />;
 }

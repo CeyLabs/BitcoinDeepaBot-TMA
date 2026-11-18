@@ -12,8 +12,8 @@ interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 /**
- * Outlined input with a floating label. Works with react-hook-form's
- * register() (forwards ref, name, onChange, onBlur). The label's background
+ * Outlined input with a floating label. Forwards ref and all input props
+ * (value, onChange, …). The label's background
  * follows the `--field-bg` CSS variable (defaults to the page background).
  */
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
@@ -40,7 +40,8 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
           aria-describedby={error ? errorId : undefined}
           className={cn(
             "text-foreground block w-full rounded-[14px] bg-transparent px-4 py-3 text-[16px] leading-6 outline-none placeholder:text-[#a2acb0]",
-            "shadow-[0_0_0_2px_var(--outline)] focus:shadow-[0_0_0_2px_var(--primary)]",
+            "[--field-ring:#e2e8f0] dark:[--field-ring:var(--outline)]",
+            "shadow-[0_0_0_2px_var(--field-ring)] focus:shadow-[0_0_0_2px_var(--primary)]",
             error &&
               "shadow-[0_0_0_2px_var(--destructive)] focus:shadow-[0_0_0_2px_var(--destructive)]",
             "[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"

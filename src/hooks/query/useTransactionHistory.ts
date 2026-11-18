@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { infiniteQueryOptions, useInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { useSession } from "@/hooks/useSession";
 import fetchy, { FetchyError } from "@/lib/fetchy";
@@ -59,14 +58,20 @@ function normalize(tx: RawTransaction): DcaTransaction {
 // All DCA purchase attempts (success, pending, cancelled, failed, chargeback),
 // paginated newest page first via `has_more`, sorted oldest-first within the
 // flattened result with numeric fields normalized.
-export function useTransactionHistory({ enabled = true }: { enabled?: boolean } = {}) {
-  const session = useSession();
-  const isAuthed = session.status === "authenticated";
-  const userId = session.user?.id ?? "";
+type TransactionPage = { transactions: DcaTransaction[]; hasMore: boolean };
 
-  const query = useInfiniteQuery({
+const NO_TRANSACTIONS: DcaTransaction[] = [];
+
+// Flattened and sorted oldest-first (kept stable between renders by `select`).
+const flattenTransactions = (data: InfiniteData<TransactionPage>) =>
+  data.pages
+    .flatMap((page) => page.transactions)
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+export const transactionsOptions = (userId: string) =>
+  infiniteQueryOptions({
     queryKey: queryKeys.transactions(userId),
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam }): Promise<TransactionPage> => {
       let data: RawTransaction[] | PaginatedTransactions;
       try {
         data = await fetchy.get<RawTransaction[] | PaginatedTransactions>(
@@ -89,17 +94,15 @@ export function useTransactionHistory({ enabled = true }: { enabled?: boolean } 
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => (lastPage.hasMore ? allPages.length + 1 : undefined),
-    enabled: enabled && isAuthed,
     staleTime: 1000 * 60 * 5,
+    select: flattenTransactions,
   });
 
-  const transactions = useMemo(
-    () =>
-      (query.data?.pages ?? [])
-        .flatMap((page) => page.transactions)
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
-    [query.data]
-  );
+export function useTransactionHistory({ enabled = true }: { enabled?: boolean } = {}) {
+  const session = useSession();
+  const isAuthed = session.status === "authenticated";
+  const userId = session.user?.id ?? "";
 
-  return { ...query, transactions };
+  const query = useInfiniteQuery({ ...transactionsOptions(userId), enabled: enabled && isAuthed });
+  return { ...query, transactions: query.data ?? NO_TRANSACTIONS };
 }

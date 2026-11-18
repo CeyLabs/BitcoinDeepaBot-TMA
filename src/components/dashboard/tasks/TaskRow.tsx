@@ -19,7 +19,9 @@ export function TaskRow({ task, onClick }: TaskRowProps) {
         <Image src={task.icon} alt="" width={40} height={40} className="size-10 self-center" />
       }
       subtitle={
-        <span className="text-xs text-[#64748B] dark:text-[#94a3b8]">{task.description}</span>
+        <span className="block text-xs leading-4 whitespace-normal text-[#64748B] dark:text-[#94a3b8]">
+          {task.description}
+        </span>
       }
       after={
         <div className="flex flex-col items-end gap-1">

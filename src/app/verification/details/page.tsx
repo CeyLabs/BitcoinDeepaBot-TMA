@@ -1,15 +1,23 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useKycInitiate, useUpdateProfile } from "@/hooks/query/useKyc";
 import { haptic } from "@/platform";
 import { BackButton } from "@/components/ui/back-button";
 import { useUser } from "@/hooks/useUser";
 import { createUserSchema, type CreateUserFormData } from "@/lib/validations";
+
+type FieldName = keyof CreateUserFormData;
+type FieldErrors = Partial<Record<FieldName, string>>;
+
+/** First zod message for one field, or undefined when it's valid. */
+function fieldError(name: FieldName, value: string) {
+  const result = createUserSchema.shape[name].safeParse(value);
+  return result.success ? undefined : result.error.issues[0]?.message;
+}
 
 const FIELDS: Array<{
   name: keyof CreateUserFormData;
@@ -32,23 +40,23 @@ export default function VerificationDetailsPage() {
   const kycInitiate = useKycInitiate();
   const updateProfile = useUpdateProfile();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isValid },
-  } = useForm<CreateUserFormData>({
-    resolver: zodResolver(createUserSchema),
-    mode: "onChange",
-    defaultValues: {
-      first_name: firstName ?? "",
-      last_name: lastName ?? "",
-      email: "",
-      phone: "",
-      address: "",
-      city: "",
-      country: "Sri Lanka",
-    },
-  });
+  const [values, setValues] = useState<CreateUserFormData>(() => ({
+    first_name: firstName ?? "",
+    last_name: lastName ?? "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    country: "Sri Lanka",
+  }));
+  // Errors show for a field once it's been edited (or on submit), like before.
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const isValid = useMemo(() => createUserSchema.safeParse(values).success, [values]);
+
+  const onFieldChange = (name: FieldName, value: string) => {
+    setValues((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: fieldError(name, value) }));
+  };
 
   const error =
     updateProfile.error instanceof Error
@@ -57,7 +65,20 @@ export default function VerificationDetailsPage() {
         ? kycInitiate.error.message
         : null;
 
-  const onSubmit = (formData: CreateUserFormData) => {
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const parsed = createUserSchema.safeParse(values);
+    if (!parsed.success) {
+      const all: FieldErrors = {};
+      for (const issue of parsed.error.issues) {
+        const name = issue.path[0] as FieldName;
+        all[name] ??= issue.message;
+      }
+      setErrors(all);
+      haptic.notify("error");
+      return;
+    }
+    const formData = parsed.data;
     haptic.impact("medium");
     updateProfile.mutate(
       {
@@ -93,21 +114,23 @@ export default function VerificationDetailsPage() {
   };
 
   return (
-    <div className="dark flex min-h-screen w-full flex-col bg-[#0b0f14]">
+    <div className="flex min-h-screen w-full flex-col bg-[#f7f9fc] dark:bg-[#0b0f14]">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-8 pb-6">
         <BackButton
           onBack={() => router.push("/verification")}
-          className="bg-white/10 text-white dark:text-white"
+          className="bg-white text-[#1b2027] dark:bg-white/10 dark:text-white"
         />
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-[24px] leading-7 font-bold text-white">Your Details</h1>
-          <p className="text-[14px] leading-4.5 text-[#94a3b8]">
+          <h1 className="text-[24px] leading-7 font-bold text-[#1b2027] dark:text-white">
+            Your Details
+          </h1>
+          <p className="text-[14px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">
             We need a few details before starting verification
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col gap-3">
-          <div className="flex flex-col gap-3 [--field-bg:#0b0f14]">
+        <form onSubmit={onSubmit} noValidate className="flex flex-1 flex-col gap-3">
+          <div className="flex flex-col gap-5 [--field-bg:#f7f9fc] dark:[--field-bg:#0b0f14]">
             {FIELDS.map((field) => (
               <TextField
                 key={field.name}
@@ -119,8 +142,10 @@ export default function VerificationDetailsPage() {
                   </span>
                 }
                 placeholder={field.placeholder}
-                error={errors[field.name]?.message}
-                {...register(field.name)}
+                name={field.name}
+                value={values[field.name]}
+                onChange={(e) => onFieldChange(field.name, e.target.value)}
+                error={errors[field.name]}
               />
             ))}
           </div>
@@ -130,7 +155,9 @@ export default function VerificationDetailsPage() {
               <p className="text-[13px] leading-4 font-semibold text-[#f13131]">
                 Verification Error
               </p>
-              <p className="mt-1 text-[13px] leading-4.5 text-[#94a3b8]">{error}</p>
+              <p className="mt-1 text-[13px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">
+                {error}
+              </p>
             </div>
           )}
 
@@ -144,7 +171,7 @@ export default function VerificationDetailsPage() {
             >
               Start Verification
             </Button>
-            <p className="text-center text-xs text-[#94a3b8]">
+            <p className="text-center text-xs text-[#64748b] dark:text-[#94a3b8]">
               Your Data is Encrypted and never Shared
             </p>
           </div>

@@ -14,7 +14,7 @@ import { useSession } from "@/hooks/useSession";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { haptic, useBackButton, usePlatform } from "@/platform";
 import { WebBackButton } from "@/components/ui/back-button";
-import LoadingPage from "@/components/LoadingPage";
+import { ChoosePlanSkeleton } from "@/components/skeletons/choose-plan";
 import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotice";
 import { PageTitle } from "@/components/ui/page-title";
 import { TogglePlan, type PlanDuration } from "@/components/ui/toggle-plan";
@@ -136,7 +136,14 @@ export default function ChoosePlanPage() {
 
   // "loading" session = server render / hydration: KYC hasn't been fetched
   // yet, so don't show "Verification Required" to a verified user.
-  if (kycLoading || sessionStatus === "loading") return <LoadingPage />;
+  if (kycLoading || sessionStatus === "loading") {
+    return (
+      <div className="bg-background mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
+        <WebBackButton onBack={goBack} />
+        <ChoosePlanSkeleton />
+      </div>
+    );
+  }
   if (kyc?.status !== "APPROVED") {
     return (
       <div className="bg-background mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
@@ -199,7 +206,7 @@ export default function ChoosePlanPage() {
           <p className="text-[14px] text-[#64748b]">No {duration} plans available</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {filteredPlans.map((plan) => {
             const perMonth = perMonthAmount(plan);
             const perYear = perMonth * 12;
