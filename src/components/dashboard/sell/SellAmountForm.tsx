@@ -32,7 +32,9 @@ export function SellAmountForm({
     event.preventDefault();
     // The balance may still be loading: don't judge the amount against 0
     if (balanceLoading) return;
-    const parsed = sellAmountSchema(totalSats, price?.minSats).safeParse(sats || undefined);
+    const parsed = sellAmountSchema(totalSats, price?.minSats, price?.maxSats).safeParse(
+      sats || undefined
+    );
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message);
       haptic.notify("error");
@@ -75,7 +77,7 @@ export function SellAmountForm({
             disabled={!totalSats}
             onClick={() => {
               haptic.select();
-              setValue(String(totalSats));
+              setValue(String(Math.min(totalSats, price?.maxSats ?? totalSats)));
               setError(undefined);
             }}
             className="bg-primary/10 text-primary absolute top-[17px] right-3 rounded-full px-3 py-1 text-[13px] font-semibold disabled:opacity-40"

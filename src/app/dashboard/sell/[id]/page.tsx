@@ -26,6 +26,11 @@ const STATE: Record<
     title: "Quote expired",
     text: (o) => o.failureReason ?? "Nothing was sold. Get a new quote to sell.",
   },
+  COLLECTING: {
+    title: "Selling your sats",
+    text: () => "Taking the sats from your wallet. This only takes a moment.",
+    spinner: true,
+  },
   SATS_COLLECTED: {
     title: "Sending LKR to your bank",
     text: () => "Your sats are sold. The bank transfer is on its way.",
@@ -40,6 +45,12 @@ const STATE: Record<
     title: "LKR sent",
     text: (o) => `${fmtLkrExact(o.amountLkr)} was sent to your bank account.`,
     emoji: "/emoji/animated/party-popper.webp",
+  },
+  REFUNDING: {
+    title: "Returning your sats",
+    text: (o) =>
+      `We couldn't send the LKR to your bank, so we're returning your ${fmtSats(o.sats)} sats to your wallet.`,
+    spinner: true,
   },
   REFUNDED: {
     title: "Sale cancelled",

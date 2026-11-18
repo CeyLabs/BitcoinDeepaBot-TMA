@@ -6,9 +6,11 @@ export const SELL_STATUS_BADGE: Record<
 > = {
   QUOTED: { label: "Quoted", variant: "secondary" },
   EXPIRED: { label: "Expired", variant: "secondary" },
+  COLLECTING: { label: "Processing", variant: "pending" },
   SATS_COLLECTED: { label: "Processing", variant: "pending" },
   PAYOUT_PENDING: { label: "Processing", variant: "pending" },
   COMPLETED: { label: "Paid", variant: "active" },
+  REFUNDING: { label: "Refunding", variant: "pending" },
   REFUNDED: { label: "Refunded", variant: "negative" },
   NEEDS_REVIEW: { label: "Checking", variant: "pending" },
 };
