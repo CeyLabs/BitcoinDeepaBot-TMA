@@ -1,8 +1,14 @@
-/** Mirrors the backend's pricing: fee in sats (rounded up), LKR rounded down. */
+/**
+ * Mirrors the backend's pricing: the whole sale in LKR (rounded down), then
+ * the fee off it in LKR (rounded up). Works in cents to avoid float drift.
+ */
 export function estimateSellLkr(sats: number, feeBasisPoints: number, btcLkrRate: number) {
-  if (!(sats > 0) || !(btcLkrRate > 0)) return { feeSats: 0, netSats: 0, amountLkr: 0 };
-  const feeSats = Math.ceil((sats * feeBasisPoints) / 10_000);
-  const netSats = Math.max(0, sats - feeSats);
-  const amountLkr = Math.floor((netSats / 1e8) * btcLkrRate * 100) / 100;
-  return { feeSats, netSats, amountLkr };
+  if (!(sats > 0) || !(btcLkrRate > 0)) return { grossLkr: 0, feeLkr: 0, amountLkr: 0 };
+  const grossCents = Math.floor((sats / 1e8) * btcLkrRate * 100);
+  const feeCents = Math.ceil((grossCents * feeBasisPoints) / 10_000);
+  return {
+    grossLkr: grossCents / 100,
+    feeLkr: feeCents / 100,
+    amountLkr: (grossCents - feeCents) / 100,
+  };
 }

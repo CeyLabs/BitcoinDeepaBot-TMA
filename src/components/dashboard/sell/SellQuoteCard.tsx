@@ -92,9 +92,10 @@ export function SellQuoteCard({
           </span>
         </div>
         <Row label="You sell" value={`${fmtSats(quote.sats)} sats`} />
+        <Row label="Value" value={fmtLkrExact(quote.grossLkr)} />
         <Row
           label={`Fee (${(quote.feeBasisPoints / 100).toFixed(2)}%)`}
-          value={`${fmtSats(quote.feeSats)} sats`}
+          value={`− ${fmtLkrExact(quote.feeLkr)}`}
         />
         <Row label="Rate" value={`1 BTC = ${fmtLkrExact(quote.btcLkrRate)}`} />
         <Row label="Paid to" value={`${account.bankName} ${account.accountNumber}`} />

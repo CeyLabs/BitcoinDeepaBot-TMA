@@ -21,8 +21,9 @@ export interface SellOrder {
   status: SellStatus;
   sats: number;
   feeBasisPoints: number;
-  feeSats: number;
-  netSats: number;
+  /** The whole sale at the rate, before the fee */
+  grossLkr: number;
+  feeLkr: number;
   btcLkrRate: number;
   amountLkr: number;
   expiresAt: string;

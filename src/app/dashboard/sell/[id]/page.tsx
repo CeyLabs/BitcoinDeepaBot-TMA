@@ -142,7 +142,7 @@ export default function SellOrderPage({ params }: { params: Promise<{ id: string
           label={SOLD_STATUSES.includes(order.status) ? "Sats sold" : "Sats"}
           value={`${fmtSats(order.sats)} sats`}
         />
-        <Row label="Fee" value={`${fmtSats(order.feeSats)} sats`} />
+        <Row label="Fee" value={fmtLkrExact(order.feeLkr)} />
         <Row label="Rate" value={`1 BTC = ${fmtLkrExact(order.btcLkrRate)}`} />
         {order.bankRef && <Row label="Bank reference" value={order.bankRef} />}
         <Row label="Date" value={fmtActivityDateTime(order.createdAt)} />
