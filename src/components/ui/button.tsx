@@ -1,6 +1,5 @@
 "use client";
 
-import { forwardRef } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 import { cn } from "cn";
@@ -40,8 +39,18 @@ export interface ButtonProps
   loading?: boolean;
 }
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, loading, disabled, type = "button", children, ...props }, ref) => (
+export function Button({
+  className,
+  variant,
+  size,
+  loading,
+  disabled,
+  type = "button",
+  children,
+  ref,
+  ...props
+}: ButtonProps & { ref?: React.Ref<HTMLButtonElement> }) {
+  return (
     <button
       ref={ref}
       type={type}
@@ -57,8 +66,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         </span>
       )}
     </button>
-  )
-);
-Button.displayName = "Button";
+  );
+}
 
 export { buttonVariants };

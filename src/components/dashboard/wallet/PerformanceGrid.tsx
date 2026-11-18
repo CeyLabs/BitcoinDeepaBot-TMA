@@ -15,6 +15,8 @@ import {
 
 export interface PerformanceGridProps {
   dcaSpent: number;
+  /** Fees paid on top of dcaSpent; shown under You Invested */
+  dcaFees?: number;
   dcaSats: number;
   totalLkr: number;
   avgBtcPrice: number;
@@ -27,6 +29,7 @@ export interface PerformanceGridProps {
 
 export function PerformanceGrid({
   dcaSpent,
+  dcaFees = 0,
   dcaSats,
   totalLkr,
   avgBtcPrice,
@@ -37,8 +40,10 @@ export function PerformanceGrid({
   isLoading = false,
 }: PerformanceGridProps) {
   const mask = (v: string) => maskDigits(v, visible);
-  const profitLkr = totalLkr - dcaSpent;
-  const profitPct = dcaSpent > 0 ? (profitLkr / dcaSpent) * 100 : 0;
+  // Profit is against what the user actually paid, fees included.
+  const totalCost = dcaSpent + dcaFees;
+  const profitLkr = totalLkr - totalCost;
+  const profitPct = totalCost > 0 ? (profitLkr / totalCost) * 100 : 0;
   const isProfit = profitLkr >= 0;
 
   return (
@@ -72,6 +77,11 @@ export function PerformanceGrid({
                 {mask(`≈ 丰 ${fmtSatsCompact(dcaSats)}`)}
               </p>
             </div>
+          )}
+          {!isLoading && dcaFees > 0 && (
+            <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
+              + {mask(fmtLkrCurrency(dcaFees))} fees
+            </p>
           )}
         </Card>
 

@@ -3,13 +3,20 @@
 import { environmentManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PlatformProvider } from "@/platform";
 import { useRegisterUser } from "@/hooks/useRegisterUser";
+import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
+import { usePlatform } from "@/platform";
 import { ToastProvider } from "@/components/ui/toast";
+import { ConfirmHost } from "@/components/ui/confirm-dialog";
+import { OfflineBanner } from "@/components/offline-banner";
+import { SwipeClickGuard } from "@/components/swipe-click-guard";
 import ThemeProvider from "./theme";
 
 // Registers/refreshes the Telegram user on launch (and after the session
 // ends), whichever route it lands on.
 function RegisterUserOnLaunch() {
+  const launch = usePlatform().launch;
   useRegisterUser();
+  useRegisterTelegramUser(launch?.initData, launch?.raw);
   return null;
 }
 
@@ -36,11 +43,16 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
   return (
     <PlatformProvider>
+      <SwipeClickGuard />
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
           {/* Needs the query client (useSession). */}
           <RegisterUserOnLaunch />
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <OfflineBanner />
+            {children}
+            <ConfirmHost />
+          </ToastProvider>
         </QueryClientProvider>
       </ThemeProvider>
     </PlatformProvider>

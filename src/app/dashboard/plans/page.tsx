@@ -23,6 +23,7 @@ export default function PlansPage() {
   const {
     isLoading: summaryLoading,
     dcaSpent: investedLkr,
+    dcaFees: feesLkr,
     dcaSats: investedSats,
     currentValueLkr,
   } = useWalletMetrics();
@@ -44,6 +45,7 @@ export default function PlansPage() {
       <PlanHeroCard
         subscription={subscription}
         investedLkr={investedLkr}
+        feesLkr={feesLkr}
         investedSats={investedSats}
         currentValueLkr={currentValueLkr}
         visible={balanceVisible}

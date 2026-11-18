@@ -1,9 +1,12 @@
-import { forwardRef } from "react";
 import { cn } from "cn";
 
 /** Rounded surface with a soft shadow. Style the background per use. */
-export const Card = forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
-  ({ className, ...props }, ref) => (
+export function Card({
+  className,
+  ref,
+  ...props
+}: React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLElement> }) {
+  return (
     <article
       ref={ref}
       className={cn(
@@ -12,6 +15,5 @@ export const Card = forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
       )}
       {...props}
     />
-  )
-);
-Card.displayName = "Card";
+  );
+}

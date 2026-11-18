@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { ActivitySearchBar } from "@/components/dashboard/activity/ActivitySearchBar";
 import { ActivityTabs } from "@/components/dashboard/activity/ActivityTabs";
@@ -23,6 +23,9 @@ const COMING_SOON_CATEGORIES: ActivityCategory[] = ["tasks"];
 export default function ActivityPage() {
   const { visible: balanceVisible, toggle: toggleBalanceVisible } = useBalanceVisible();
   const [search, setSearch] = useState("");
+  // The input updates on every key press; the (possibly long) list re-filters
+  // with the deferred value, so typing never waits on it.
+  const deferredSearch = useDeferredValue(search);
   const [category, setCategory] = useState<ActivityCategory>("all");
 
   const showDca = category === "all" || category === "plans";
@@ -70,9 +73,9 @@ export default function ActivityPage() {
       if (category !== "all" && itemCategory !== category) {
         return false;
       }
-      if (!search.trim()) return true;
+      if (!deferredSearch.trim()) return true;
 
-      const query = search.trim().toLowerCase();
+      const query = deferredSearch.trim().toLowerCase();
       return (
         ACTIVITY_TITLE[item.type].toLowerCase().includes(query) ||
         item.counterparty?.toLowerCase().includes(query) ||
@@ -93,7 +96,7 @@ export default function ActivityPage() {
     }
 
     return Array.from(byDay.entries());
-  }, [activity, comingSoon, search, category]);
+  }, [activity, comingSoon, deferredSearch, category]);
 
   return (
     <div className="flex w-full flex-col gap-5">

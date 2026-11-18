@@ -2,7 +2,8 @@
 
 import BottomNavigation from "@/components/bottomNavigation";
 import { useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { PullToRefresh } from "@/components/pull-to-refresh";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { useSession } from "@/hooks/useSession";
@@ -29,6 +30,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     queryClient.prefetchQuery(subscriptionCurrentOptions());
   }, [status, queryClient]);
 
+  // Pull down from the top of any tab: refetch what's on screen, and re-render
+  // the server parts (news is fetched on the server).
+  const router = useRouter();
+  const refresh = () => {
+    router.refresh();
+    return queryClient.refetchQueries({ type: "active" });
+  };
+
   return (
     // Phone-width column. On wider screens (desktop web) it's framed as a
     // card so it doesn't look like a stray strip.
@@ -42,7 +51,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         // the page with no data, which would flash "No Active Plan" and zeros.
         <TabSkeleton pathname={pathname} />
       ) : (
-        children
+        <PullToRefresh onRefresh={refresh} className="flex flex-1 flex-col gap-5">
+          {children}
+        </PullToRefresh>
       )}
       <BottomNavigation />
     </div>

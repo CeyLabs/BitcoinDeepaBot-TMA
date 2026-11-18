@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useSyncExternalStore } from "react";
-import { SDKProvider, isTMA, request } from "@telegram-apps/sdk-react";
+import { createContext, use, useEffect, useState, useSyncExternalStore } from "react";
+import { isTMA, request2 } from "@tma.js/sdk";
 import { createTelegramPlatform, readLaunch, setupTelegram } from "./telegram";
 import { createWebPlatform } from "./web";
 import type { Platform } from "./types";
@@ -12,12 +12,8 @@ import type { Platform } from "./types";
  * be copied into a normal browser.
  */
 async function detectTelegram(): Promise<boolean> {
-  // Cast around the ambient overload set — depending on which of
-  // @telegram-apps/sdk's and @telegram-apps/bridge's declarations TS resolves
-  // through the re-export chain, it sometimes only "sees" the sync signature.
-  const isTMAComplete = isTMA as unknown as (type: "complete") => Promise<boolean>;
   try {
-    return await isTMAComplete("complete");
+    return await isTMA("complete");
   } catch {
     return false;
   }
@@ -37,7 +33,7 @@ async function confirmTelegram(hasLaunchParams: boolean): Promise<boolean> {
   if (!hasLaunchParams) return false;
   if (window.self !== window.top) return true;
   try {
-    await request({ method: "web_app_request_theme", event: "theme_changed", timeout: 2000 });
+    await request2("web_app_request_theme", "theme_changed", { timeout: 2000 });
     return true;
   } catch {
     return false;
@@ -98,14 +94,10 @@ export function PlatformProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  return (
-    <SDKProvider>
-      <PlatformContext.Provider value={platform}>{children}</PlatformContext.Provider>
-    </SDKProvider>
-  );
+  return <PlatformContext value={platform}>{children}</PlatformContext>;
 }
 
 /** Current platform. `kind` is null until detection finishes. */
 export function usePlatform(): Platform {
-  return useContext(PlatformContext);
+  return use(PlatformContext);
 }

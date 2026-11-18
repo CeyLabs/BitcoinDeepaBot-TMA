@@ -1,4 +1,5 @@
 import type { Platform, ShareInput, ShareResult } from "./types";
+import { requestConfirm } from "./confirm";
 
 function isMobileBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
@@ -42,7 +43,8 @@ export function createWebPlatform(kind: Platform["kind"] = "web"): Platform {
       throw new Error("Story sharing is only available inside Telegram");
     },
     share: shareOrCopy,
-    confirm: async ({ title, message }) => window.confirm(`${title}\n\n${message}`),
+    // In-app sheet rather than the browser's native confirm() box
+    confirm: requestConfirm,
     getColorScheme: () => null,
     onColorSchemeChange: () => null,
   };

@@ -1,11 +1,17 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Title } from "@/components/ui/title";
+import { celebrate } from "@/lib/celebrate";
 
 export default function PaymentSuccessPage() {
+  useEffect(() => {
+    void celebrate();
+  }, []);
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-white px-5 text-center dark:bg-[#1b2027]">
       <Image

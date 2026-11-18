@@ -119,7 +119,7 @@ Follow-ups:
 
 - [ ] Visual check in Telegram (Android/Web) and a browser, light + dark — not done yet. Known intentional changes: app font (Inter) on buttons/titles instead of system-ui; no tap ripple; the sheet can't be swiped down (close button / backdrop instead)
 - [ ] Replace remaining hardcoded hex colors with tokens as files are touched (only exact matches were converted). No bulk replace
-- [ ] React 19: blocked by `@telegram-apps/sdk-react@1` (React 17/18 only). Needs the SDK v3 migration (contained in `src/platform/`), then React 19
+- [x] React 19: moved `src/platform/` to `@tma.js/sdk` (successor of `@telegram-apps/sdk-react`, which was React 17/18 only), then React 19.3
 
 ## Later (optional) — Vite
 

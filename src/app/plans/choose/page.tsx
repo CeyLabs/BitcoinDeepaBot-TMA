@@ -10,6 +10,7 @@ import { usePayHereRedirect } from "@/lib/hooks";
 import { usePackages } from "@/hooks/query/usePackages";
 import { useCancelSubscription } from "@/hooks/query/useCancelSubscription";
 import { useUser } from "@/hooks/useUser";
+import { useOffline } from "@/hooks/useOffline";
 import { useSession } from "@/hooks/useSession";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { haptic, useBackButton, usePlatform } from "@/platform";
@@ -38,6 +39,7 @@ export default function ChoosePlanPage() {
   const platform = usePlatform();
   const { status: sessionStatus } = useSession();
   const { subscription } = useUser();
+  const offline = useOffline();
   const cancelSubscription = useCancelSubscription();
 
   const [duration, setDuration] = useState<PlanDuration>("weekly");
@@ -87,18 +89,23 @@ export default function ChoosePlanPage() {
         { package_id: plan.id }
       );
 
-      if (result.link) {
-        haptic.notify("success");
-        redirectToPayHereViaPage(result.link);
-      }
+      if (!result.link) throw new Error("No payment link in response");
+      haptic.notify("success");
+      redirectToPayHereViaPage(result.link);
     } catch (err) {
       // Backend's KycVerifiedGuard rejects with 403 until KYC is approved.
       if (err instanceof FetchyError && err.status === 403) {
         router.push("/verification");
         return;
       }
+      // Also covers "online but unreachable", which the offline check can't see.
       haptic.notify("error");
       console.error(err);
+      toast({
+        type: "error",
+        title: "Couldn't Start Payment",
+        description: "Check your connection and try again.",
+      });
     } finally {
       setPayhereLinkLoading(false);
     }
@@ -109,6 +116,7 @@ export default function ChoosePlanPage() {
       title: "Cancel Plan",
       message: "Your membership rewards will stop accruing immediately. This can't be undone.",
       confirmText: "Cancel Plan",
+      cancelText: "Keep Plan",
       destructive: true,
     });
     if (!confirmed) return;
@@ -242,7 +250,7 @@ export default function ChoosePlanPage() {
           className="w-full rounded-[12px]"
           size="lg"
           loading={payhereLinkLoading}
-          disabled={!selectedPlanId || packagesLoading}
+          disabled={!selectedPlanId || packagesLoading || offline}
           onClick={handleSubscribe}
         >
           Continue with Selected Plan
@@ -253,6 +261,7 @@ export default function ChoosePlanPage() {
             variant="outline"
             className="w-full rounded-[12px] text-[#F13131] shadow-[0_0_0_1px_#F13131]"
             loading={cancelSubscription.isPending}
+            disabled={offline}
             onClick={handleCancel}
           >
             Cancel Current Plan

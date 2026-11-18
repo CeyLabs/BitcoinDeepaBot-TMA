@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useMutationState } from "@tanstack/react-query";
 import fetchy from "@/lib/fetchy";
 import { markIsExistingUserInStorage, clearIsExistingUserInStorage } from "@/lib/auth";
 
@@ -19,8 +19,17 @@ export interface RegisterUserResponse {
   user?: unknown;
 }
 
+/** Mutation key of the launch registration; read its result with useRegisterTelegramUserResult. */
+export const REGISTER_TELEGRAM_USER_KEY = ["register-telegram-user"] as const;
+
+/**
+ * Registers the Telegram user in Mongo (/api/user) once per launch, on any
+ * route. Mounted app-wide (providers.tsx) so returning users who go straight
+ * to /dashboard are still registered.
+ */
 export function useRegisterTelegramUser(authData: TelegramAuthData, launchParams: unknown) {
   const mutation = useMutation({
+    mutationKey: REGISTER_TELEGRAM_USER_KEY,
     mutationFn: (payload: RegisterUserPayload) =>
       fetchy.post<RegisterUserResponse>("/api/user", payload),
     onSuccess: (data) => {
@@ -49,4 +58,16 @@ export function useRegisterTelegramUser(authData: TelegramAuthData, launchParams
   }, [authData, launchParams, mutate]);
 
   return mutation;
+}
+
+/** Latest launch-registration result (status 201 new / 409 existing), shared app-wide. */
+export function useRegisterTelegramUserResult() {
+  const latest = useMutationState({
+    filters: { mutationKey: REGISTER_TELEGRAM_USER_KEY },
+    select: (mutation) => ({
+      data: mutation.state.data as RegisterUserResponse | undefined,
+      isError: mutation.state.status === "error",
+    }),
+  }).at(-1);
+  return { data: latest?.data, isError: latest?.isError ?? false };
 }

@@ -12,6 +12,8 @@ export interface DcaTransaction {
   btc_price_at_purchase: number;
   package_amount: number;
   gross_amount: number;
+  /** Amount that bought BTC (gross minus fees); 0 on older rows */
+  net_amount: number;
   package_name?: string;
   status: string;
   settled?: boolean;
@@ -24,6 +26,7 @@ interface RawTransaction {
   btc_price_at_purchase?: string | number | null;
   package_amount?: string | number | null;
   gross_amount?: string | number | null;
+  net_amount?: string | number | null;
   package_name?: string;
   status: string;
   settled?: boolean;
@@ -49,6 +52,7 @@ function normalize(tx: RawTransaction): DcaTransaction {
     btc_price_at_purchase: toNumber(tx.btc_price_at_purchase),
     package_amount: toNumber(tx.package_amount),
     gross_amount: toNumber(tx.gross_amount),
+    net_amount: toNumber(tx.net_amount),
     package_name: tx.package_name,
     status: tx.status,
     settled: tx.settled,

@@ -4,6 +4,9 @@ import "@/styles/theme.css";
 import Providers from "./context/providers";
 import { PwaSetup } from "@/pwa";
 import { THEME_BOOT_SCRIPT } from "@/lib/theme-boot";
+import { EARLY_READY_SCRIPT, LAUNCH_REDIRECT_SCRIPT } from "@/lib/launch-redirect";
+import { preconnect } from "react-dom";
+import { API_BASE_URL } from "@/lib/constants";
 import Script from "next/script";
 import { cn } from "cn";
 
@@ -42,9 +45,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Open the backend connection (DNS + TLS) while the JS downloads, so the
+  // first API call doesn't pay for it. React 19 puts this in <head>.
+  if (API_BASE_URL) preconnect(API_BASE_URL, { crossOrigin: "anonymous" });
+
   return (
     <html lang="en" className={cn("font-sans", inter.variable)} suppressHydrationWarning>
       <head>
+        {/* Returning members skip the landing page (see lib/launch-redirect.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: LAUNCH_REDIRECT_SCRIPT }} />
         {/* Sets <html data-theme> before first paint (see lib/theme-boot.ts). */}
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         {/* Telegram iOS WebView sometimes ignores the Cache-Control response header (see next.config.mjs) but respects this meta tag instead. */}
@@ -71,6 +80,8 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-screen leading-tight`}>
         <PwaSetup />
         <Providers>{children}</Providers>
+        {/* Reveal the server-rendered page inside Telegram right away (see lib/launch-redirect.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: EARLY_READY_SCRIPT }} />
       </body>
     </html>
   );
