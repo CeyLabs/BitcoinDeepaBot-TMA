@@ -2,7 +2,7 @@
 
 import { ChevronLeft } from "lucide-react";
 import { useBackButton, usePlatform } from "@/platform";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 
 interface BackButtonProps {
   onBack: () => void;
@@ -35,7 +35,7 @@ export function WebBackButton({ onBack, className }: BackButtonProps) {
       aria-label="Back"
       onClick={onBack}
       className={cn(
-        "bg-surface-primary -ml-1 flex size-10 shrink-0 items-center justify-center self-start rounded-full text-[#1b2027] dark:text-white",
+        "bg-card -ml-1 flex size-10 shrink-0 items-center justify-center self-start rounded-full text-[#1b2027] dark:text-white",
         className
       )}
     >

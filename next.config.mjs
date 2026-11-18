@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   allowedDevOrigins: ["*.sats.day", "*.ngrok-free.app"],
+  images: {
+    // News feed images (see components/dashboard/news/NewsImage.tsx), resized
+    // by the optimizer instead of downloading ~200 KB originals.
+    remotePatterns: [
+      { protocol: "https", hostname: "bitcoinmagazine.com" },
+      { protocol: "https", hostname: "img.youtube.com" },
+    ],
+  },
   experimental: {
     // Since Next 15, page segments aren't reused across Link/router.push
     // navigation by default (only layouts + true back/forward are). This

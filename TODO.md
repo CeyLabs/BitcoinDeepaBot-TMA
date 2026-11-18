@@ -104,30 +104,22 @@ Decide first:
   - no stale pages
   - `sw.js` updates ship
 
-## Later — Replace telegram-ui with our own components
+## Replace telegram-ui with our own components
 
-After the PWA work. `@telegram-apps/telegram-ui` is unmaintained (last release 2.1.13, Oct 2025) and only supports React 18, which blocks the React 19 upgrade. It's used in 33 files.
+Done on `rr/base-ui-components` (based on `rr/web-pwa-support`). `@telegram-apps/telegram-ui` was unmaintained (last release Oct 2025) and React 18 only.
 
-Approach: shadcn conventions (`components.json`, `cn()`, `cva`, semantic tokens) on **Base UI** (`shadcn init -b base`, the shadcn default since July 2026).
+- [x] shadcn conventions (`components.json`, style `base-nova`), `cn` package instead of clsx + tailwind-merge, `@base-ui/react`
+- [x] Semantic tokens in `theme.css` (light + dark); legacy `tma-*`, `card-*`, `--tg-theme-*` variables removed
+- [x] Simple components: Button, IconButton, Badge (incl. gain/loss/active/success variants), Card, Title, Cell + CellChevron, Avatar/AvatarStack, Progress
+- [x] Interactive: Snackbar → toast (`useToast`), Modal → Sheet (Dialog), Input → TextField, Accordion → Collapsible, SegmentedControl → nav with sliding pill
+- [x] Removed `AppRoot`, the telegram-ui CSS, the package, `radix-ui`; `!important` / `--tgui--` overrides gone
+- [x] Docs: `CLAUDE.md`, `CONTRIBUTING.md`
 
-Tokens first:
+Follow-ups:
 
-- [ ] Define ~12 semantic tokens in `theme.css`, each with light and dark values: `background`, `surface`, `surface-raised`, `foreground`, `muted-foreground`, `border`, `primary`, `primary-foreground`, `success`, `destructive`, `ring`, `radius`
-- [ ] Skip shadcn's `chart-*`, `sidebar-*`, `popover` unless needed
-- [ ] Remove unused `tma-*` / `card-*` variables (target: ~15 tokens, down from 41)
-
-Components (one commit per component, replace its usages in the same commit):
-
-- [ ] Write ourselves (styling only): Button (16 files), Card (8), Badge (7), Title (6), Cell (6), Navigation, IconButton, Avatar/AvatarStack, Progress
-- [ ] Start from shadcn on Base UI, then restyle: Modal → Dialog/Drawer, Accordion, SegmentedControl → Tabs/ToggleGroup, Snackbar → Toast, Input → Field
-- [ ] Replace hardcoded hex colors with tokens in each file as it migrates (516 uses, 53 unique, e.g. `bg-[#e2e8f0] dark:bg-[#1e293b]` → `bg-border`). No bulk replace
-- [ ] Move `VisuallyHidden` (the only `radix-ui` usage) to Base UI and drop `radix-ui`
-
-Cleanup:
-
-- [ ] Remove `AppRoot`, the telegram-ui CSS import, the `--tg-theme-*` block in `theme.css`, and the package
-- [ ] Update `CLAUDE.md` (component conventions, `cva` now used)
-- [ ] Separate step: upgrade to React 19
+- [ ] Visual check in Telegram (Android/Web) and a browser, light + dark — not done yet. Known intentional changes: app font (Inter) on buttons/titles instead of system-ui; no tap ripple; the sheet can't be swiped down (close button / backdrop instead)
+- [ ] Replace remaining hardcoded hex colors with tokens as files are touched (only exact matches were converted). No bulk replace
+- [ ] React 19: blocked by `@telegram-apps/sdk-react@1` (React 17/18 only). Needs the SDK v3 migration (contained in `src/platform/`), then React 19
 
 ## Later (optional) — Vite
 

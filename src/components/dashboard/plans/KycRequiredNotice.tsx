@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Button } from "@telegram-apps/telegram-ui";
+import { Button } from "@/components/ui/button";
 import { haptic } from "@/platform";
 
 export function KycRequiredNotice() {
@@ -22,9 +22,7 @@ export function KycRequiredNotice() {
       </div>
 
       <Button
-        mode="filled"
-        size="m"
-        className="mt-1 rounded-full! bg-[#fa7119]!"
+        className="mt-1 rounded-full"
         onClick={() => {
           haptic.impact("medium");
           router.push("/verification");

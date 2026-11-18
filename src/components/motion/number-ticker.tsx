@@ -1,10 +1,11 @@
 "use client";
-// beui.dev/components/motion/number
+// Rolling-digit number (after beui.dev/components/motion/number), built on CSS
+// transitions + the Web Animations API instead of framer-motion — same look,
+// ~100 KB less JavaScript on the wallet.
 
-import { animate, motion, useInView, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { EASE_OUT } from "@/lib/ease";
-import { cn } from "@/lib/cn";
+import { EASE_OUT_CSS } from "@/lib/ease";
+import { cn } from "cn";
 
 export interface NumberTickerProps {
   value: number;
@@ -31,6 +32,27 @@ export interface NumberTickerProps {
 const DIGIT_HEIGHT_EM = 1.1;
 const DIGITS = Array.from({ length: 10 }, (_, n) => n);
 
+/** True once at least `amount` of the element has been visible (latches). */
+function useInViewOnce(ref: React.RefObject<Element | null>, amount: number, enabled: boolean) {
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const node = ref.current;
+    if (!enabled || inView || !node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: amount }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [ref, amount, enabled, inView]);
+  return inView;
+}
+
 export function NumberTicker({
   value,
   pad,
@@ -46,8 +68,7 @@ export function NumberTicker({
   format,
 }: NumberTickerProps) {
   const containerRef = useRef<HTMLSpanElement>(null);
-  const inView = useInView(containerRef, { once: true, amount: 0.6 });
-  // useInView({ once: true }) stays true once seen, so this latches too.
+  const inView = useInViewOnce(containerRef, 0.6, startOnView);
   const armed = !startOnView || inView;
 
   const text = useMemo(() => {
@@ -86,19 +107,17 @@ export function NumberTicker({
       <span aria-hidden="true" className="inline-flex items-center">
         {prefix ? <span>{prefix}</span> : null}
         {glyphs.map(({ char, id }, i) => {
-          const isDigit = /\d/.test(char);
-          if (!isDigit) {
+          if (!/\d/.test(char)) {
             return (
               <span key={id} className="inline-block">
                 {char}
               </span>
             );
           }
-          const digit = Number(char);
           return (
             <Digit
               key={id}
-              digit={armed ? digit : 0}
+              digit={armed ? Number(char) : 0}
               delay={entered ? 0 : i * stagger}
               duration={duration}
               blur={blur}
@@ -125,49 +144,45 @@ function Digit({
   blur: boolean;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
   const columnRef = useRef<HTMLSpanElement>(null);
 
+  // Optional blur-in on each roll (native Web Animations API).
   useEffect(() => {
-    if (reduce || !blur || !columnRef.current || !Number.isFinite(digit)) {
-      return;
-    }
-
     const node = columnRef.current;
-    const controls = animate(
-      node,
-      { filter: ["blur(10px)", "blur(0px)"] },
-      {
-        duration: Math.min(duration * 0.75, 0.32),
-        delay,
-        ease: EASE_OUT,
-      }
-    );
-
-    return () => {
-      controls.stop();
-      node.style.filter = "blur(0px)";
-    };
-  }, [blur, delay, digit, duration, reduce]);
+    if (!blur || !node || typeof node.animate !== "function") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const animation = node.animate([{ filter: "blur(10px)" }, { filter: "blur(0px)" }], {
+      duration: Math.min(duration * 0.75, 0.32) * 1000,
+      delay: delay * 1000,
+      easing: EASE_OUT_CSS,
+      fill: "backwards",
+    });
+    return () => animation.cancel();
+  }, [blur, delay, digit, duration]);
 
   return (
     <span
       className={cn("relative inline-block overflow-hidden", className)}
       style={{ height: `${DIGIT_HEIGHT_EM}em`, width: "1ch" }}
     >
-      <motion.span
+      <span
         ref={columnRef}
-        initial={{ y: 0 }}
-        animate={{ y: `-${digit * DIGIT_HEIGHT_EM}em` }}
-        transition={reduce ? { duration: 0 } : { duration, delay, ease: EASE_OUT }}
-        className="absolute inset-x-0 top-0 flex flex-col items-center will-change-[transform,filter]"
+        // The transition goes through a CSS variable: an inline `transition`
+        // would beat motion-reduce:transition-none.
+        className="absolute inset-x-0 top-0 flex flex-col items-center will-change-transform [transition:var(--roll)] motion-reduce:transition-none"
+        style={
+          {
+            transform: `translateY(-${digit * DIGIT_HEIGHT_EM}em)`,
+            "--roll": `transform ${duration}s ${EASE_OUT_CSS} ${delay}s`,
+          } as React.CSSProperties
+        }
       >
         {DIGITS.map((n) => (
           <span key={n} className="flex h-[1.1em] items-center justify-center leading-none">
             {n}
           </span>
         ))}
-      </motion.span>
+      </span>
     </span>
   );
 }

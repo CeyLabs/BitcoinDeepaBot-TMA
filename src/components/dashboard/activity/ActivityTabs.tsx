@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@telegram-apps/telegram-ui";
-import { cn } from "@/lib/cn";
+import { Button } from "@/components/ui/button";
+import { cn } from "cn";
 import { haptic } from "@/platform";
 import type { ActivityCategory } from "@/lib/activity";
 
@@ -27,18 +27,17 @@ export function ActivityTabs({ value, onChange }: ActivityTabsProps) {
           return (
             <Button
               key={tab.value}
-              mode="gray"
-              size="s"
+              variant="secondary"
+              size="sm"
               onClick={() => {
                 haptic.select();
                 onChange(tab.value);
               }}
-              style={{ "--tgui--button--hovered-opacity": 0 } as React.CSSProperties}
               className={cn(
-                "rounded-[12px]! whitespace-nowrap!",
+                "rounded-[12px] whitespace-nowrap [--btn-hover-opacity:0]",
                 isActive
-                  ? "bg-surface-gift! text-white!"
-                  : "bg-white! text-[#1b2027]! dark:bg-[#0B0F14]! dark:text-[#f1f5f9]!"
+                  ? "bg-surface-gift text-white"
+                  : "bg-card text-[#1b2027] dark:text-[#f1f5f9]"
               )}
             >
               <span className="text-[14px] font-medium">{tab.label}</span>

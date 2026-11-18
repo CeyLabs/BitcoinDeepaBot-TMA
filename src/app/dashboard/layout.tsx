@@ -1,12 +1,20 @@
 "use client";
 
 import BottomNavigation from "@/components/bottomNavigation";
+import { usePathname } from "next/navigation";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { useSession } from "@/hooks/useSession";
+import WalletLoading from "./loading";
+import ActivityLoading from "./activity/loading";
+import NewsLoading from "./news/loading";
+import PlansLoading from "./plans/loading";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { useSubscriptionCurrent } from "@/hooks/query/useSubscriptionCurrent";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { sessionExpired } = useAuthGuard();
+  const { sessionExpired, signingIn } = useAuthGuard();
+  const { status } = useSession();
+  const pathname = usePathname();
 
   // Warm the shared query cache as soon as any dashboard page mounts, not
   // just when the plans tab does — by the time the user taps into Plans,
@@ -18,8 +26,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     // Phone-width column. On wider screens (desktop web) it's framed as a
     // card so it doesn't look like a stray strip.
-    <div className="bg-surface-main mx-auto flex min-h-screen max-w-md flex-col gap-5 px-5 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:my-6 md:min-h-[calc(100vh-3rem)] md:rounded-[24px] md:shadow-[0px_4px_24px_0px_rgba(0,0,0,0.08)] md:ring-1 md:ring-black/5 dark:md:ring-white/5">
-      {sessionExpired ? <SessionExpiredNotice /> : children}
+    <div className="bg-background mx-auto flex min-h-screen max-w-md flex-col gap-5 px-5 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:my-6 md:min-h-[calc(100vh-3rem)] md:rounded-[24px] md:shadow-[0px_4px_24px_0px_rgba(0,0,0,0.08)] md:ring-1 md:ring-black/5 dark:md:ring-white/5">
+      {sessionExpired ? (
+        <SessionExpiredNotice />
+      ) : (status === "loading" || signingIn) &&
+        !RENDER_WITHOUT_SESSION.some((p) => pathname.startsWith(p)) ? (
+        // Server render / hydration (the localStorage token isn't known yet),
+        // or Telegram signing in again: show this tab's skeleton instead of
+        // the page with no data, which would flash "No Active Plan" and zeros.
+        <TabSkeleton pathname={pathname} />
+      ) : (
+        children
+      )}
       <BottomNavigation />
     </div>
   );
@@ -36,4 +54,15 @@ function SessionExpiredNotice() {
       </p>
     </div>
   );
+}
+
+// Pages that don't depend on the session render for real from the server
+// instead of a skeleton: news (server-fetched) and tasks (static list).
+const RENDER_WITHOUT_SESSION = ["/dashboard/news", "/dashboard/tasks"];
+
+function TabSkeleton({ pathname }: { pathname: string }) {
+  if (pathname.startsWith("/dashboard/activity")) return <ActivityLoading />;
+  if (pathname.startsWith("/dashboard/news")) return <NewsLoading />;
+  if (pathname.startsWith("/dashboard/plans")) return <PlansLoading />;
+  return <WalletLoading />;
 }

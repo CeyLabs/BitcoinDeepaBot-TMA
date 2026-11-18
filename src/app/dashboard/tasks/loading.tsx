@@ -1,24 +1,33 @@
+import { Fragment } from "react";
+import { Bone } from "@/components/ui/bone";
+
+// Route fallback while navigating here. Without it Next falls back to the
+// wallet's loading.tsx. Mirrors the tasks list: title, filter pills, rows.
 export default function TasksLoading() {
   return (
     <div className="flex w-full flex-col gap-3">
-      <div className="h-3.5 w-16 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
-
-      <div className="flex gap-2">
-        <div className="h-9 w-14 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
-        <div className="h-9 w-20 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
-        <div className="h-9 w-20 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
+      <Bone className="h-4 w-12" />
+      <div className="flex h-9 gap-2">
+        <Bone className="h-9 w-24 rounded-[12px]" />
+        <Bone className="h-9 w-16 rounded-[12px]" />
+        <Bone className="h-9 w-24 rounded-[12px]" />
       </div>
-
-      <div className="flex w-full flex-col gap-3 overflow-hidden rounded-[12px] bg-white p-3 dark:bg-[#0B0F14]">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3">
-            <div className="size-10 shrink-0 animate-pulse rounded-full bg-[#e2e8f0] dark:bg-[#1e293b]" />
-            <div className="flex flex-1 flex-col gap-2">
-              <div className="h-3.5 w-2/3 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
-              <div className="h-3 w-1/3 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
+      <div className="w-full overflow-hidden rounded-[12px] bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] dark:bg-[#0B0F14]">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <Fragment key={i}>
+            {i > 0 && <div className="h-px bg-[#e2e8f0] dark:bg-[#334155]" />}
+            <div className="flex h-20 items-center gap-2 px-3">
+              <Bone className="size-10 shrink-0 rounded-full" />
+              <div className="flex flex-1 flex-col gap-2">
+                <Bone className="h-4 w-36" />
+                <Bone className="h-3 w-48" />
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <Bone className="h-5 w-16 rounded-[20px]" />
+                <Bone className="h-3 w-14" />
+              </div>
             </div>
-            <div className="h-8 w-16 shrink-0 animate-pulse rounded-[10px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
-          </div>
+          </Fragment>
         ))}
       </div>
     </div>

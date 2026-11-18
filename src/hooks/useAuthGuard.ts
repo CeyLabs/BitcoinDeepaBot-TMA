@@ -33,5 +33,8 @@ export function useAuthGuard() {
   return {
     isExistingUser,
     sessionExpired: status === "unauthenticated" && canReauth && telegramReauth === "failed",
+    // Telegram: no (valid) token yet, but the sign-in from initData is running
+    // or will retry. Pages have no data to show until it lands.
+    signingIn: status === "unauthenticated" && canReauth && telegramReauth !== "failed",
   };
 }

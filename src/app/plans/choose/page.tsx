@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Button, Snackbar } from "@telegram-apps/telegram-ui";
-import { CheckCircle2, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import fetchy, { FetchyError } from "@/lib/fetchy";
 import { usePayHereRedirect } from "@/lib/hooks";
 import { usePackages } from "@/hooks/query/usePackages";
@@ -43,11 +43,7 @@ export default function ChoosePlanPage() {
   const [duration, setDuration] = useState<PlanDuration>("weekly");
   const [selectedId, setSelectedId] = useState<string | undefined>();
   const [payhereLinkLoading, setPayhereLinkLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState<{
-    tone: "success" | "error";
-    title: string;
-    description: string;
-  } | null>(null);
+  const toast = useToast();
 
   const { data: fetchedPackages, isLoading: packagesLoading } = usePackages();
   const packages = fetchedPackages ?? EMPTY_PLANS;
@@ -122,26 +118,28 @@ export default function ChoosePlanPage() {
     try {
       await cancelSubscription.mutateAsync();
       haptic.notify("success");
-      setSnackbar({
-        tone: "success",
+      toast({
+        type: "success",
         title: "Plan Cancelled",
         description: "Your membership has been cancelled successfully.",
       });
       setTimeout(() => router.push("/dashboard/plans"), 1500);
     } catch (err) {
       haptic.notify("error");
-      setSnackbar({
-        tone: "error",
+      toast({
+        type: "error",
         title: "Cancellation Failed",
         description: err instanceof Error ? err.message : "Failed to cancel plan",
       });
     }
   };
 
-  if (kycLoading) return <LoadingPage />;
+  // "loading" session = server render / hydration: KYC hasn't been fetched
+  // yet, so don't show "Verification Required" to a verified user.
+  if (kycLoading || sessionStatus === "loading") return <LoadingPage />;
   if (kyc?.status !== "APPROVED") {
     return (
-      <div className="bg-surface-main mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
+      <div className="bg-background mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
         <WebBackButton onBack={goBack} />
         <KycRequiredNotice />
       </div>
@@ -149,7 +147,7 @@ export default function ChoosePlanPage() {
   }
 
   return (
-    <div className="bg-surface-main mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
+    <div className="bg-background mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
       <WebBackButton onBack={goBack} />
       {currentPlan ? (
         <PageTitle title="Manage your Plan" subtitle="View or switch to another plan" />
@@ -234,10 +232,8 @@ export default function ChoosePlanPage() {
 
       <div className="flex flex-col gap-3">
         <Button
-          mode="filled"
-          size="l"
-          stretched
-          style={{ borderRadius: "12px" }}
+          className="w-full rounded-[12px]"
+          size="lg"
           loading={payhereLinkLoading}
           disabled={!selectedPlanId || packagesLoading}
           onClick={handleSubscribe}
@@ -247,18 +243,10 @@ export default function ChoosePlanPage() {
 
         {currentPlan && (
           <Button
-            mode="outline"
-            stretched
+            variant="outline"
+            className="w-full rounded-[12px] text-[#F13131] shadow-[0_0_0_1px_#F13131]"
             loading={cancelSubscription.isPending}
             onClick={handleCancel}
-            style={
-              {
-                borderRadius: "12px",
-                overflow: "hidden",
-                "--tgui--outline": "#F13131",
-                "--tgui--plain_foreground": "#F13131",
-              } as React.CSSProperties
-            }
           >
             Cancel Current Plan
           </Button>
@@ -274,28 +262,6 @@ export default function ChoosePlanPage() {
           </Link>
         )}
       </div>
-
-      {snackbar && (
-        <Snackbar
-          onClose={() => setSnackbar(null)}
-          description={snackbar.description}
-          style={
-            {
-              "--tgui--surface_dark": "var(--color-surface-glass)",
-              "--tgui--white": "var(--color-tma-text-primary)",
-            } as React.CSSProperties
-          }
-          before={
-            snackbar.tone === "success" ? (
-              <CheckCircle2 size={20} className="text-success" />
-            ) : (
-              <AlertCircle size={20} className="text-[#F45A5A]" />
-            )
-          }
-        >
-          {snackbar.title}
-        </Snackbar>
-      )}
     </div>
   );
 }

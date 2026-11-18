@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/theme.css";
-import "@telegram-apps/telegram-ui/dist/styles.css";
 import Providers from "./context/providers";
 import { PwaSetup } from "@/pwa";
+import { THEME_BOOT_SCRIPT } from "@/lib/theme-boot";
 import Script from "next/script";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 
 // Google Analytics is opt-in per deployment, so forks don't report to ours.
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
@@ -45,6 +45,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("font-sans", inter.variable)} suppressHydrationWarning>
       <head>
+        {/* Sets <html data-theme> before first paint (see lib/theme-boot.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         {/* Telegram iOS WebView sometimes ignores the Cache-Control response header (see next.config.mjs) but respects this meta tag instead. */}
         <meta httpEquiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
         <meta httpEquiv="Pragma" content="no-cache" />

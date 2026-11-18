@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
-import { Cell } from "@telegram-apps/telegram-ui";
+import { Cell } from "@/components/ui/cell";
 import { ACTIVITY_ICON } from "@/lib/activity";
 import { fmtActivityDateTime, fmtLkr, fmtLkrCurrency, maskDigits } from "@/lib/formatters";
 import type { ActivityItem } from "@/lib/types";
@@ -47,7 +47,7 @@ export function GiftRow({ item, visible }: GiftRowProps) {
           <ChevronRight size={18} strokeWidth={2} className="shrink-0 text-[#64748b]" />
         </div>
       }
-      className="gap-2! px-3!"
+      className="gap-2 px-3"
     >
       <span className="text-base leading-5 font-semibold text-[#1b2027] dark:text-white">
         {isOutgoing ? "Sent" : "Received"}

@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Button, Title } from "@telegram-apps/telegram-ui";
+import { Button } from "@/components/ui/button";
+import { Title } from "@/components/ui/title";
 
 export default function NotFound() {
   return (
@@ -15,16 +16,14 @@ export default function NotFound() {
         unoptimized
       />
 
-      <Title level="2" weight="2" className="mt-3 max-w-sm leading-snug">
-        Page Not Found
-      </Title>
+      <Title className="mt-3 max-w-sm leading-snug">Page Not Found</Title>
 
       <p className="text-muted-foreground mt-2 max-w-sm text-[15px] dark:text-[#64748b]">
         The page you&apos;re looking for doesn&apos;t exist or may have moved.
       </p>
 
       <Link href="/" className="mt-8 block w-full max-w-xs">
-        <Button mode="filled" size="l" stretched style={{ borderRadius: "12px" }}>
+        <Button size="lg" className="w-full rounded-[12px]">
           Back to Home
         </Button>
       </Link>

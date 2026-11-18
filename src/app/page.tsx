@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Logo } from "@/components/ui/logo";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Badge, Button, Cell, Navigation, Progress, Title } from "@telegram-apps/telegram-ui";
-import { useTheme } from "@/app/context/theme";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Cell, CellChevron } from "@/components/ui/cell";
+import { Progress } from "@/components/ui/progress";
+import { Title } from "@/components/ui/title";
 import { useStore } from "@/lib/store";
 import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
 import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
@@ -36,7 +40,7 @@ function UserProgress() {
   if (isLoading) {
     return (
       <div className="w-full space-y-2">
-        <Progress value={0} style={{ height: "8px" }} />
+        <Progress value={0} className="h-2" />
         <div className="flex w-full items-baseline justify-between">
           <div className="h-7 w-28 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
           <div className="h-4 w-12 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
@@ -47,7 +51,7 @@ function UserProgress() {
 
   return (
     <div className="w-full space-y-2">
-      <Progress value={progressPct} style={{ height: "8px" }} />
+      <Progress value={progressPct} className="h-2" />
       <div className="flex w-full items-baseline justify-between">
         <p className="text-[22px] font-bold text-[#1b2027] tabular-nums dark:text-white">
           {count.toLocaleString()}
@@ -66,21 +70,12 @@ function UserProgress() {
 // ─── Shared page shell ───────────────────────────────────────────────────────
 
 function PageShell({ children }: { children: React.ReactNode }) {
-  const { isDark } = useTheme();
-
   return (
     <main className="flex min-h-screen flex-col justify-center bg-white px-5 dark:bg-[#1b2027]">
       {/* Logo + heading slot */}
       <section className="flex flex-col items-center justify-center text-center">
         <div className="relative mb-5 h-[150px] w-[220px]">
-          <Image
-            src={isDark ? "/BDLogo_White.svg" : "/BDLogo_Black.svg"}
-            alt="Bitcoin Deepa"
-            fill
-            priority
-            sizes="220px"
-            className="object-contain"
-          />
+          <Logo priority />
         </div>
         {children}
       </section>
@@ -94,7 +89,7 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
   const { openTelegramLink } = usePlatform();
   return (
     <div className="flex w-full flex-col">
-      <Title level="2" weight="2" className="max-w-sm self-center text-center leading-snug">
+      <Title className="max-w-sm self-center text-center leading-snug">
         {isExisting ? (
           <>
             Welcome Back!
@@ -112,7 +107,7 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
 
       <div className="space-y-3">
         <Link href="/dashboard?tab=wallet" className="block">
-          <Button mode="filled" size="l" stretched style={{ borderRadius: "12px" }}>
+          <Button size="lg" className="w-full rounded-[12px]">
             {isExisting ? "Open My Wallet" : "Start Using Wallet"}
           </Button>
         </Link>
@@ -120,9 +115,8 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
         <Link href="/dashboard/plans" className="block">
           <Cell
             before={<Image src="/emoji/bitcoin.webp" alt="Bitcoin" width={40} height={40} />}
-            after={<Navigation />}
-            style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
-            className="gap-2! rounded-[12px] border border-transparent bg-white px-4! shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-none dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
+            after={<CellChevron />}
+            className="gap-2 rounded-[12px] border border-transparent bg-white px-4 shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 [--cell-py:12px] hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-none dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
           >
             <p className="flex flex-col items-start pl-1 font-semibold text-[#1b2027] dark:text-white">
               {isExisting ? "Manage My Plans" : "Subscribe to a Plan"}
@@ -138,18 +132,14 @@ function UserScreen({ isExisting }: { isExisting: boolean }) {
         {/* Gifting isn't launched yet (see GiftPlansComingSoon) — disabled, not linked. */}
         <Cell
           before={<Image src="/emoji/gift.webp" alt="Gift" width={40} height={40} />}
-          readOnly
           aria-disabled="true"
           tabIndex={-1}
-          style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
-          className="pointer-events-none gap-2! rounded-[12px] border border-transparent bg-white px-4! opacity-60 shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)]"
+          className="pointer-events-none gap-2 rounded-[12px] border border-transparent bg-white px-4 opacity-60 shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] [--cell-py:12px] dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)]"
         >
           <div className="flex flex-col items-start pl-1">
             <div className="flex items-center gap-2">
               <p className="font-semibold text-[#1b2027] dark:text-white">Send a Gift</p>
-              <Badge type="number" mode="gray">
-                Coming Soon
-              </Badge>
+              <Badge variant="secondary">Coming Soon</Badge>
             </div>
             <span className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">
               Send a bitcoin subscription to a friend
@@ -208,13 +198,11 @@ function TelegramHome() {
     registerUser.data === undefined &&
     !registerUser.isError;
 
-  // /dashboard's useAuthGuard bounces back to / without a token, so only
-  // redirect once one exists — otherwise a returning user with no token
-  // (auth still in flight, auth failed, or just logged out) loops between
-  // / and /dashboard. useRegisterUser mints the token asynchronously; the
-  // redirect fires as soon as it lands.
-  const { token: authToken } = useSession();
-  const shouldRedirect = isReturningUser && !!authToken;
+  // Returning users go straight to the wallet without waiting for the token:
+  // inside Telegram, /dashboard's useAuthGuard waits in place while
+  // useRegisterUser signs in from initData (and shows a "reopen the app"
+  // notice if that fails), so there's no redirect loop back to /.
+  const shouldRedirect = isReturningUser;
   const isExisting = hadTokenAtLaunch || isExistingUser || cachedReturningUser;
 
   useEffect(() => {

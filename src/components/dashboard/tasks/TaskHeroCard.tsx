@@ -1,6 +1,7 @@
 "use client";
 
-import { Card } from "@telegram-apps/telegram-ui";
+import { Card } from "@/components/ui/card";
+import { BtcSign } from "@/components/ui/btc-sign";
 import Image from "next/image";
 import { fmtLkrCurrency, fmtSatsCompact, maskDigits } from "@/lib/formatters";
 
@@ -23,18 +24,14 @@ export interface TaskHeroCardProps {
 function btcLkrLabel(sats: number): string {
   const btc = sats / 1e8;
   const lkr = btc * BTC_PRICE_LKR;
-  return `₿${btc.toFixed(5)} · ${fmtLkrCurrency(lkr)}`;
+  return `${btc.toFixed(5)} · ${fmtLkrCurrency(lkr)}`;
 }
 
 export function TaskHeroCard({ stats, visible }: TaskHeroCardProps) {
   const mask = (v: string) => maskDigits(v, visible);
 
   return (
-    <Card
-      type="plain"
-      className="relative hidden overflow-hidden rounded-[20px]! p-0! shadow-none!"
-      style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
-    >
+    <Card className="relative hidden overflow-hidden rounded-[20px] bg-transparent p-0 shadow-none">
       <Image src="/bg/note.webp" alt="" fill priority className="object-cover" />
 
       <div className="relative flex flex-col gap-4 p-4">
@@ -66,7 +63,7 @@ export function TaskHeroCard({ stats, visible }: TaskHeroCardProps) {
               {mask(`${fmtSatsCompact(stats.totalEarnedSats)} sats`)}
             </p>
             <p className="text-[12px] leading-4 text-white/70">
-              {mask(btcLkrLabel(stats.totalEarnedSats))}
+              <BtcSign /> {mask(btcLkrLabel(stats.totalEarnedSats))}
             </p>
           </div>
           <div className="w-px self-stretch bg-white/25" />
@@ -76,7 +73,7 @@ export function TaskHeroCard({ stats, visible }: TaskHeroCardProps) {
               {mask(`${fmtSatsCompact(stats.todayEarningsSats)} sats`)}
             </p>
             <p className="text-[12px] leading-4 text-white/70">
-              {mask(btcLkrLabel(stats.todayEarningsSats))}
+              <BtcSign /> {mask(btcLkrLabel(stats.todayEarningsSats))}
             </p>
           </div>
         </div>

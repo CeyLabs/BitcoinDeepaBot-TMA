@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { NewsImage } from "@/components/dashboard/news/NewsImage";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Clock } from "lucide-react";
-import { Button } from "@telegram-apps/telegram-ui";
+import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/ui/back-button";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 import type { NewsArticle } from "@/lib/types";
 
 export function NewsDetailBackButton() {
@@ -21,10 +22,10 @@ export function NewsArticleCard({ article }: { article: NewsArticle }) {
       className="flex w-full items-start gap-3 rounded-[16px] bg-white p-3 shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] dark:bg-[#0B0F14]"
     >
       {article.thumbnailUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <NewsImage
           src={article.thumbnailUrl}
-          alt=""
+          width={80}
+          height={80}
           className="size-20 shrink-0 rounded-[12px] object-cover"
         />
       ) : (
@@ -81,15 +82,14 @@ export function NewsListSection({ articles }: NewsListSectionProps) {
             return (
               <Button
                 key={tab}
-                mode="gray"
-                size="s"
+                variant="secondary"
+                size="sm"
                 onClick={() => setCategory(tab)}
-                style={{ "--tgui--button--hovered-opacity": 0 } as React.CSSProperties}
                 className={cn(
-                  "rounded-[12px]! whitespace-nowrap!",
+                  "rounded-[12px] whitespace-nowrap [--btn-hover-opacity:0]",
                   isActive
-                    ? "bg-surface-gift! text-white!"
-                    : "bg-white! text-[#1b2027]! dark:bg-[#0B0F14]! dark:text-[#f1f5f9]!"
+                    ? "bg-surface-gift text-white"
+                    : "bg-card text-[#1b2027] dark:text-[#f1f5f9]"
                 )}
               >
                 <span className="text-[14px] font-medium">{tab}</span>

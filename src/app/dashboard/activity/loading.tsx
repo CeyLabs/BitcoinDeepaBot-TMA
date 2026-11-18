@@ -1,17 +1,21 @@
+import { Bone } from "@/components/ui/bone";
 import { ActivitySkeleton } from "@/components/dashboard/activity/ActivitySkeleton";
 
 export default function ActivityLoading() {
   return (
     <div className="flex w-full flex-col gap-5">
-      <div className="flex w-full items-center justify-between gap-2">
-        <div className="h-10 flex-1 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
-        <div className="size-10 shrink-0 animate-pulse rounded-full bg-[#e2e8f0] dark:bg-[#1e293b]" />
+      {/* Search + eye + filter buttons */}
+      <div className="flex h-9 w-full items-center gap-2">
+        <Bone className="h-9 flex-1 rounded-2xl" />
+        <Bone className="size-[34px] shrink-0 rounded-[12px]" />
+        <Bone className="size-[34px] shrink-0 rounded-[12px]" />
       </div>
 
-      <div className="flex gap-2">
-        <div className="h-9 w-16 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
-        <div className="h-9 w-20 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
-        <div className="h-9 w-20 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
+      {/* Filter pills */}
+      <div className="flex h-9 gap-2">
+        <Bone className="h-9 w-28 rounded-[12px]" />
+        <Bone className="h-9 w-28 rounded-[12px]" />
+        <Bone className="h-9 w-16 rounded-[12px]" />
       </div>
 
       <ActivitySkeleton />

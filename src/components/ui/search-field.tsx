@@ -2,7 +2,7 @@
 
 import { forwardRef } from "react";
 import { Search } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "cn";
 
 export interface SearchFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   className?: string;

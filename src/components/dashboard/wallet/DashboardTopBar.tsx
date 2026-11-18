@@ -1,6 +1,7 @@
 "use client";
 
-import { Avatar, IconButton } from "@telegram-apps/telegram-ui";
+import { Avatar } from "@/components/ui/avatar";
+import { IconButton } from "@/components/ui/icon-button";
 import { LogOut } from "lucide-react";
 import { VisibleToggle } from "@/components/ui/visible-toggle";
 import { useUser } from "@/hooks/useUser";
@@ -18,12 +19,7 @@ export function DashboardTopBar() {
   return (
     <div className="flex w-full items-center justify-between">
       <div className="flex items-center gap-2">
-        <Avatar
-          src={photoUrl}
-          acronym={initials}
-          size={40}
-          className="shrink-0! bg-[#ffb14c]! text-white!"
-        />
+        <Avatar src={photoUrl} acronym={initials} size={40} className="bg-[#ffb14c] text-white" />
         <p className="truncate text-[14px] leading-5 font-semibold text-[#475569] capitalize dark:text-[#94a3b8]">
           {displayName}
         </p>
@@ -32,9 +28,7 @@ export function DashboardTopBar() {
         <InstallButton variant="icon" />
         {kind === "web" && (
           <IconButton
-            mode="gray"
-            size="m"
-            className="bg-surface-primary!"
+            className="bg-card"
             onClick={() => {
               haptic.impact("medium");
               logout();
@@ -46,7 +40,7 @@ export function DashboardTopBar() {
         <VisibleToggle
           visible={balanceVisible}
           onToggle={toggleBalanceVisible}
-          className="bg-surface-primary!"
+          className="bg-card"
         />
       </div>
     </div>

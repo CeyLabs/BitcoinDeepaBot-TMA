@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { Cell, Navigation } from "@telegram-apps/telegram-ui";
+import { Cell, CellChevron } from "@/components/ui/cell";
 
 const CELL_CLASSNAME =
-  "gap-2! px-4! rounded-[12px] border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]";
+  "gap-2 px-4 [--cell-py:12px] rounded-[12px] border border-transparent bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]";
 
 // Gifting isn't launched yet, so the plans page renders GiftPlansComingSoon below
 // instead of GiftPlanActions. Swap the render back to GiftPlanActions once it's ready.
@@ -50,8 +50,7 @@ export function GiftPlanActions() {
       <div className="flex flex-col gap-2">
         <Cell
           before={<Image src="/emoji/gift.webp" alt="Gift" width={40} height={40} />}
-          after={<Navigation />}
-          style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
+          after={<CellChevron />}
           className={CELL_CLASSNAME}
         >
           <p className="flex flex-col items-start pl-1 font-semibold text-[#1b2027] dark:text-white">
@@ -71,8 +70,7 @@ export function GiftPlanActions() {
               height={40}
             />
           }
-          after={<Navigation />}
-          style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
+          after={<CellChevron />}
           className={CELL_CLASSNAME}
         >
           <p className="flex flex-col items-start pl-1 font-semibold text-[#1b2027] dark:text-white">

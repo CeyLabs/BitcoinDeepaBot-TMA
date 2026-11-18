@@ -2,14 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Card, Badge, Cell, Navigation } from "@telegram-apps/telegram-ui";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Cell, CellChevron } from "@/components/ui/cell";
 import { ValueSkeleton } from "@/components/ui/value-skeleton";
 import { fmtLkrCurrency, fmtShortDate, fmtRelativeDays } from "@/lib/formatters";
 import type { Subscription } from "@/lib/types";
-
-const CARD_SURFACE_STYLE = {
-  "--tgui--tertiary_bg_color": "var(--color-surface-primary)",
-} as React.CSSProperties;
 
 export const PLAN_ICONS: Record<string, string> = {
   shrimp: "/emoji/shrimp.webp",
@@ -38,11 +36,7 @@ function RewardCard({
   iconSrc: string;
 }) {
   return (
-    <Card
-      type="plain"
-      className="flex flex-1 flex-col rounded-[12px] p-3"
-      style={CARD_SURFACE_STYLE}
-    >
+    <Card className="bg-card flex flex-1 flex-col rounded-[12px] p-3">
       <p className="pb-2 text-sm leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
         {label}
       </p>
@@ -115,25 +109,15 @@ export function PlanSummaryCard({ subscription, isLoading = false }: PlanSummary
               after={
                 <div className="flex shrink-0 items-center gap-1">
                   {subscription?.isActive && (
-                    <Badge
-                      type="number"
-                      mode="primary"
-                      style={
-                        {
-                          "--tgui--button_color": "rgba(37,167,97,0.1)",
-                          "--tgui--button_text_color": "#25a761",
-                        } as React.CSSProperties
-                      }
-                    >
+                    <Badge variant="active">
                       <span className="mr-1 inline-block size-1.5 rounded-full bg-[#25a761] align-middle" />
                       Active
                     </Badge>
                   )}
-                  <Navigation />
+                  <CellChevron />
                 </div>
               }
-              style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
-              className="gap-2! rounded-xl border border-transparent bg-white px-4! shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-none dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
+              className="gap-2 rounded-xl border border-transparent bg-white px-4 shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 [--cell-py:12px] hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-none dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
             >
               <div className="flex min-w-0 flex-1 flex-col items-start gap-1 pl-1">
                 <p className="truncate text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-white">

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useSyncExternalStore } from "react";
 import { SDKProvider, isTMA, request } from "@telegram-apps/sdk-react";
 import { createTelegramPlatform, readLaunch, setupTelegram } from "./telegram";
 import { createWebPlatform } from "./web";
@@ -48,19 +48,31 @@ const PENDING_PLATFORM = createWebPlatform(null);
 
 const PlatformContext = createContext<Platform>(PENDING_PLATFORM);
 
-/**
- * Optimistic first guess so Telegram users get their theme and identity on
- * the very first render (no light/dark flash): if launch params are present
- * we're almost certainly inside Telegram. The async check below confirms it.
- */
-function initialPlatform(): Platform {
-  if (typeof window === "undefined") return PENDING_PLATFORM;
-  const launch = readLaunch();
-  return launch ? createTelegramPlatform(launch) : PENDING_PLATFORM;
+/*
+  Optimistic first guess: if launch params are present we're almost certainly
+  inside Telegram, so use that right after hydration instead of waiting for
+  the async check (which confirms or corrects it). Read through
+  useSyncExternalStore so the server render and hydration both see "pending"
+  (no mismatch) and the guess applies in the same commit.
+*/
+let optimistic: Platform | undefined;
+function getOptimisticPlatform(): Platform {
+  if (optimistic === undefined) {
+    const launch = readLaunch();
+    optimistic = launch ? createTelegramPlatform(launch) : PENDING_PLATFORM;
+  }
+  return optimistic;
 }
+const subscribeNever = () => () => {};
 
 export function PlatformProvider({ children }: { children: React.ReactNode }) {
-  const [platform, setPlatform] = useState<Platform>(initialPlatform);
+  const optimisticPlatform = useSyncExternalStore(
+    subscribeNever,
+    getOptimisticPlatform,
+    () => PENDING_PLATFORM
+  );
+  const [confirmed, setConfirmed] = useState<Platform | null>(null);
+  const platform = confirmed ?? optimisticPlatform;
 
   useEffect(() => {
     let cancelled = false;
@@ -72,14 +84,13 @@ export function PlatformProvider({ children }: { children: React.ReactNode }) {
       if (cancelled) return;
       if (inTelegram) {
         setupTelegram();
-        // Keep the optimistic object if we already had it — avoids a
+        // Reuse the optimistic object if it's already Telegram — avoids a
         // pointless re-render of every consumer.
-        setPlatform((current) =>
-          current.kind === "telegram" ? current : createTelegramPlatform()
-        );
+        const guess = getOptimisticPlatform();
+        setConfirmed(guess.kind === "telegram" ? guess : createTelegramPlatform());
       } else {
         // e.g. a t.me URL with launch params pasted into a normal browser.
-        setPlatform(createWebPlatform());
+        setConfirmed(createWebPlatform());
       }
     });
     return () => {
