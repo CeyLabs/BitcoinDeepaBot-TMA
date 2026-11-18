@@ -4,7 +4,9 @@ Bitcoin membership reward accrual with subscription management for Sri Lankan us
 
 The API lives in [BitcoinDeepa-DCA-BE](https://github.com/CeyLabs/BitcoinDeepa-DCA-BE).
 
-![Bitcoin Deepa Logo](./public/BDLogo_White.svg)
+<p align="center">
+  <img src="./public/BDLogo_White.svg" alt="Bitcoin Deepa Logo" width="280" />
+</p>
 
 ## 🚀 Features
 
