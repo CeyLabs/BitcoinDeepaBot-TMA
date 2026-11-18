@@ -67,7 +67,8 @@ export function SwipeClickGuard() {
       release();
     };
     const onClick = (e: MouseEvent) => {
-      if (!armedUntil) return;
+      // Keyboard, assistive-tech and programmatic clicks have detail 0; only a tap is synthesised.
+      if (!armedUntil || e.detail === 0) return;
       const armed = performance.now() < armedUntil;
       armedUntil = 0;
       if (!armed) return;

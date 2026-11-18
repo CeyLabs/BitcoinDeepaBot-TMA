@@ -89,18 +89,23 @@ export default function ChoosePlanPage() {
         { package_id: plan.id }
       );
 
-      if (result.link) {
-        haptic.notify("success");
-        redirectToPayHereViaPage(result.link);
-      }
+      if (!result.link) throw new Error("No payment link in response");
+      haptic.notify("success");
+      redirectToPayHereViaPage(result.link);
     } catch (err) {
       // Backend's KycVerifiedGuard rejects with 403 until KYC is approved.
       if (err instanceof FetchyError && err.status === 403) {
         router.push("/verification");
         return;
       }
+      // Also covers "online but unreachable", which the offline check can't see.
       haptic.notify("error");
       console.error(err);
+      toast({
+        type: "error",
+        title: "Couldn't Start Payment",
+        description: "Check your connection and try again.",
+      });
     } finally {
       setPayhereLinkLoading(false);
     }
