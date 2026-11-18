@@ -10,6 +10,7 @@
  * - Throws FetchyError (message + HTTP status) on non-OK responses, so TanStack
  *   Query sees them as errors.
  * - Bypasses the browser HTTP cache — TanStack Query owns caching.
+ * - putRaw: sends a file to a presigned storage URL (not JSON, no token).
  */
 
 import { API_BASE_URL } from "@/lib/constants";
@@ -88,6 +89,21 @@ async function request<T>(
   return data as T;
 }
 
+/**
+ * PUT a file to an absolute URL as-is (no JSON, no auth header), e.g. a
+ * presigned storage upload URL. Throws FetchyError on non-OK responses.
+ */
+async function putRaw(url: string, body: Blob, headers: Record<string, string> = {}) {
+  // https only, except a local S3 server (e.g. MinIO) during development
+  if (!/^https:\/\//.test(url) && !/^http:\/\/localhost(:\d+)?\//.test(url)) {
+    throw new Error("fetchy.putRaw: only absolute https URLs are allowed");
+  }
+  const response = await fetch(url, { method: "PUT", cache: "no-store", headers, body });
+  if (!response.ok) {
+    throw new FetchyError(`Upload failed with status ${response.status}`, response.status);
+  }
+}
+
 const fetchy = {
   get: <T>(url: string, options?: FetchOptions) => request<T>("GET", url, undefined, options),
   post: <T, B = unknown>(url: string, body?: B, options?: FetchOptions) =>
@@ -95,6 +111,7 @@ const fetchy = {
   put: <T, B = unknown>(url: string, body?: B, options?: FetchOptions) =>
     request<T>("PUT", url, body, options),
   delete: <T>(url: string, options?: FetchOptions) => request<T>("DELETE", url, undefined, options),
+  putRaw,
 };
 
 export default fetchy;

@@ -5,6 +5,7 @@ import { TotalValueCard } from "@/components/dashboard/wallet/TotalValueCard";
 import { PlanSummaryCard } from "@/components/dashboard/wallet/PlanSummaryCard";
 import { PerformanceGrid } from "@/components/dashboard/wallet/PerformanceGrid";
 import { PortfolioChart } from "@/components/dashboard/wallet/PortfolioChart";
+import { SellButton } from "@/components/dashboard/sell/SellButton";
 import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
 import { useUser } from "@/hooks/useUser";
 import { useBalanceVisible } from "@/hooks/useBalanceVisible";
@@ -41,6 +42,7 @@ export default function WalletPage() {
         changeLkr={changeLkr}
         visible={balanceVisible}
         isLoading={isSummaryLoading}
+        action={<SellButton />}
       />
 
       <PlanSummaryCard subscription={subscription} isLoading={subscriptionLoading} />

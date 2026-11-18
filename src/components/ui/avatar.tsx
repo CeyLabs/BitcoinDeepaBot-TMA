@@ -7,7 +7,7 @@ interface AvatarProps {
   src?: string;
   /** Initials shown when there's no image (or it fails to load). */
   acronym?: string;
-  size?: 28 | 40;
+  size?: 28 | 40 | 72;
   className?: string;
   alt?: string;
 }
@@ -38,9 +38,11 @@ export function Avatar({ src, acronym, size = 40, className, alt = "" }: AvatarP
           <span
             className={cn(
               "uppercase",
-              size === 40
-                ? "text-[19px] leading-7 font-semibold"
-                : "text-[13px] leading-5 font-bold"
+              size === 72
+                ? "text-[30px] leading-9 font-semibold"
+                : size === 40
+                  ? "text-[19px] leading-7 font-semibold"
+                  : "text-[13px] leading-5 font-bold"
             )}
           >
             {acronym}

@@ -11,6 +11,20 @@ export function fmtLkr(value: number): string {
   return value.toLocaleString("en-US", { maximumFractionDigits: 0 });
 }
 
+// LKR with cents for payouts (e.g. 19800.5 -> "රු. 19,800.50")
+export function fmtLkrExact(value: number): string {
+  if (!Number.isFinite(value)) return `${LKR_SYMBOL} 0.00`;
+  return `${LKR_SYMBOL} ${value.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+// Whole sats with separators (e.g. 100000 -> "100,000")
+export function fmtSats(sats: number): string {
+  return Math.floor(sats).toLocaleString("en-US");
+}
+
 // Sri Lankan Rupee symbol used in place of the "LKR" code throughout the UI
 export const LKR_SYMBOL = "රු.";
 

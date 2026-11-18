@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { haptic } from "@/platform";
 
-export function KycRequiredNotice() {
+export function KycRequiredNotice({
+  message = "Complete identity verification to view and manage plans.",
+}: {
+  message?: string;
+}) {
   const router = useRouter();
 
   return (
@@ -16,9 +20,7 @@ export function KycRequiredNotice() {
         <p className="text-[16px] font-bold text-[#1b2027] dark:text-white">
           Verification Required
         </p>
-        <p className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">
-          Complete identity verification to view and manage plans.
-        </p>
+        <p className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">{message}</p>
       </div>
 
       <Button
