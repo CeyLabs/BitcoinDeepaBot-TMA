@@ -67,12 +67,13 @@ export const bankAccountSchema = z.object({
 export type BankAccountFormInput = z.input<typeof bankAccountSchema>;
 export type BankAccountFormData = z.output<typeof bankAccountSchema>;
 
-export const SELL_MIN_SATS = 1000;
+/** Used until /sell/price (which returns the backend's minimum) has loaded. */
+export const DEFAULT_SELL_MIN_SATS = 1000;
 
 /** Sats to sell: a whole number between the minimum and the balance. */
-export const sellAmountSchema = (balanceSats: number) =>
+export const sellAmountSchema = (balanceSats: number, minSats = DEFAULT_SELL_MIN_SATS) =>
   z
     .number({ message: "Enter an amount in sats" })
     .int("Use whole sats")
-    .min(SELL_MIN_SATS, `Minimum is ${SELL_MIN_SATS.toLocaleString("en-US")} sats`)
+    .min(minSats, `Minimum is ${minSats.toLocaleString("en-US")} sats`)
     .max(balanceSats, "That's more than your balance");

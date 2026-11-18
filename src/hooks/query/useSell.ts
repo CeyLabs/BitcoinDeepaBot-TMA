@@ -33,10 +33,27 @@ export interface SellOrder {
 export interface SellPrice {
   btcLkrRate: number;
   feeBasisPoints: number;
+  /** Smallest sale the backend accepts */
+  minSats?: number;
 }
 
 /** Statuses where the payout is still on its way. */
 export const IN_PROGRESS_SELL_STATUSES: SellStatus[] = ["SATS_COLLECTED", "PAYOUT_PENDING"];
+
+/**
+ * How often to re-check an order, or false once it is final:
+ * - payout on its way: every 5s
+ * - QUOTED: a confirm may still be in flight (the app lost the response), or
+ *   the quote will expire within a minute: every 5s until it settles
+ * - NEEDS_REVIEW: a normal refund passes through it for a second, and a real
+ *   review ends in a final status too: every 15s
+ */
+export function sellOrderPollInterval(status: SellStatus | undefined): number | false {
+  if (!status) return false;
+  if (status === "QUOTED" || IN_PROGRESS_SELL_STATUSES.includes(status)) return 5_000;
+  if (status === "NEEDS_REVIEW") return 15_000;
+  return false;
+}
 
 export const sellPriceOptions = () =>
   queryOptions({
@@ -58,11 +75,7 @@ export const sellOrderOptions = (id: string) =>
     queryKey: queryKeys.sellOrder(id),
     queryFn: () => fetchy.get<SellOrder>(`/sell/orders/${id}`),
     staleTime: 0,
-    // Poll while the payout is on its way
-    refetchInterval: (query) =>
-      query.state.data && IN_PROGRESS_SELL_STATUSES.includes(query.state.data.status)
-        ? 5_000
-        : false,
+    refetchInterval: (query) => sellOrderPollInterval(query.state.data?.status),
   });
 
 function useAuthed() {

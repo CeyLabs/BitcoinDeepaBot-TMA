@@ -15,9 +15,12 @@ const STATE: Record<
   SellOrder["status"],
   { title: string; text: (o: SellOrder) => string; emoji?: string; spinner?: boolean }
 > = {
+  // Shown while a confirm the app lost track of may still be running; it
+  // ends as sold, or expires (nothing sold) within about a minute.
   QUOTED: {
-    title: "Not confirmed",
-    text: () => "This quote was never confirmed. Nothing was sold.",
+    title: "Checking your sale",
+    text: () => "We're checking whether this sale went through. This takes up to a minute.",
+    spinner: true,
   },
   EXPIRED: {
     title: "Quote expired",

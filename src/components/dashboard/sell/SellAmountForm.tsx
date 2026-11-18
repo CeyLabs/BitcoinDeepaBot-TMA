@@ -32,7 +32,7 @@ export function SellAmountForm({
     event.preventDefault();
     // The balance may still be loading: don't judge the amount against 0
     if (balanceLoading) return;
-    const parsed = sellAmountSchema(totalSats).safeParse(sats || undefined);
+    const parsed = sellAmountSchema(totalSats, price?.minSats).safeParse(sats || undefined);
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message);
       haptic.notify("error");

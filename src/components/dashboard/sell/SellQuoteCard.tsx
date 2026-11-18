@@ -62,17 +62,23 @@ export function SellQuoteCard({
       haptic.notify("success");
       onConfirmed(order);
     } catch (err) {
+      // No answer (network error, timeout) or a server error: the sale may
+      // have gone through. The order page checks and shows what happened.
+      if (!(err instanceof FetchyError) || err.status >= 500) {
+        toast({
+          title: "Checking your sale",
+          description: "We didn't get an answer in time. Checking whether it went through.",
+        });
+        onConfirmed(quote);
+        return;
+      }
       haptic.notify("error");
-      if (err instanceof FetchyError && err.status === 410) {
+      if (err.status === 410) {
         toast({ type: "error", title: "Quote expired", description: "Get a new quote to sell." });
         onBack();
         return;
       }
-      toast({
-        type: "error",
-        title: "Sale failed",
-        description: err instanceof Error ? err.message : undefined,
-      });
+      toast({ type: "error", title: "Sale failed", description: err.message });
     }
   };
 
