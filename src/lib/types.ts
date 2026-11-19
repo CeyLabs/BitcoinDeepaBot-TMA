@@ -84,6 +84,8 @@ export interface ActivityItem {
   /** Absolute approx LKR value shown as "≈ LKR x" */
   lkr: number;
   statusDot?: "green" | "orange" | "red" | "gray";
+  /** Set when the sats never reached (or left) the wallet: a failed, cancelled or charged-back purchase */
+  notCredited?: boolean;
   settlement: {
     status: string;
     settledOn: string;
@@ -150,6 +152,8 @@ export interface DCSummary {
   };
   total_balance: number;
   total_lkr: string;
+  /** False when the backend couldn't reach the BitcoinDeepa wallet: total_* are 0, not real. Missing on older backends. */
+  balance_available?: boolean;
   currency: string;
   "24_hr_change": number;
   current_btc_price?: {

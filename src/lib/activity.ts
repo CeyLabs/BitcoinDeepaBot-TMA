@@ -12,6 +12,10 @@ const TRANSACTION_STATUS: Record<string, { dot: StatusDot; label: string }> = {
   CHARGEBACK: { dot: "red", label: "Chargeback" },
 };
 
+// Purchases whose sats were never credited (or were taken back): their amount
+// must not read like a reward.
+const NOT_CREDITED_STATUSES = new Set(["CANCELLED", "FAILED", "CHARGEBACK"]);
+
 export const ACTIVITY_ICON: Record<ActivityType, string> = {
   sent: "/emoji/sent.webp",
   received: "/emoji/receive.webp",
@@ -85,6 +89,7 @@ export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityIte
     sats: tx.satoshis_purchased,
     lkr: tx.gross_amount,
     statusDot: dot,
+    notCredited: NOT_CREDITED_STATUSES.has(status),
     settlement: {
       status: label,
       settledOn: tx.created_at,

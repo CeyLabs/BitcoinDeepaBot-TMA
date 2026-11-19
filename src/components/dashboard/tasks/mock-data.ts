@@ -14,7 +14,7 @@ export const MOCK_TASKS: Task[] = [
   {
     id: "task-join-community",
     title: "Join the Community",
-    description: "Stay update and connect with members",
+    description: "Stay updated and connect with members",
     rewardSats: 200,
     frequency: "one_time",
     icon: "/emoji/community.webp",

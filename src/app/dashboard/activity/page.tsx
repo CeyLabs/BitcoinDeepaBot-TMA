@@ -45,7 +45,9 @@ export default function ActivityPage() {
     [dca.transactions, botHistory.transactions]
   );
 
-  const isLoading = (showDca && dca.isLoading) || (showBotHistory && botHistory.isLoading);
+  const dcaLoading = showDca && dca.isLoading;
+  const botLoading = showBotHistory && botHistory.isLoading;
+  const stillLoading = dcaLoading || botLoading;
   const dcaFailed = showDca && dca.isError;
   const botFailed = showBotHistory && botHistory.isError;
   const isError = dcaFailed || botFailed;
@@ -100,6 +102,10 @@ export default function ActivityPage() {
     return Array.from(byDay.entries());
   }, [activity, comingSoon, deferredSearch, category]);
 
+  // Show whatever has loaded: a slow or failing source (the bot API can take
+  // its full 10s timeout) must not hide purchases that are already here.
+  const isLoading = stillLoading && groups.length === 0;
+
   return (
     <div className="flex w-full flex-col gap-5">
       <ActivitySearchBar
@@ -141,6 +147,11 @@ export default function ActivityPage() {
                 Try again
               </button>
             </div>
+          )}
+          {stillLoading && (
+            <p className="text-center text-[13px] text-[#64748b]">
+              Loading {dcaLoading ? "purchases" : "transfers"}…
+            </p>
           )}
 
           {groups.map(([dayKey, items]) => (

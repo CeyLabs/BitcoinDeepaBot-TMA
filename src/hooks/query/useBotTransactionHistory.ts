@@ -62,6 +62,8 @@ export const botTransactionsOptions = (userId: string) =>
       return { transactions, nextOffset, hasMore };
     },
     initialPageParam: 0,
+    // A bot outage costs the backend's full 10s timeout per attempt: retry once, not 3 times
+    retry: 1,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextOffset : undefined),
     staleTime: 1000 * 60 * 5,
     select: flattenBotTransactions,
