@@ -93,3 +93,14 @@ export function fmtActivityDateTime(dateInput: string | Date): string {
 export function maskDigits(value: string, visible: boolean): string {
   return visible ? value : value.replace(/[\d,.]+[KM]?/g, "****");
 }
+
+// US dollars, whole (e.g. 1234.5 -> "$1,235")
+export function fmtUsd(value: number): string {
+  if (!Number.isFinite(value)) return "$0";
+  return `$${value.toLocaleString("en-US", { maximumFractionDigits: value < 100 ? 2 : 0 })}`;
+}
+
+// BTC with the ₿ sign (e.g. 12345 sats -> "₿ 0.000123")
+export function fmtBtc(sats: number, digits = 6): string {
+  return `₿ ${(sats / 1e8).toFixed(digits)}`;
+}

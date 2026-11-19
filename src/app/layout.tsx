@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Noto_Sans_Sinhala, Nunito_Sans, Ubuntu } from "next/font/google";
 import "@/styles/theme.css";
 import Providers from "./context/providers";
 import { PwaSetup } from "@/pwa";
@@ -13,7 +13,24 @@ import { cn } from "cn";
 // Google Analytics is opt-in per deployment, so forks don't report to ours.
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+// Brand type: Nunito Sans for text, Ubuntu for headings and numbers.
+const nunito = Nunito_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-nunito",
+});
+// The rupee sign (රු.) and Sinhala copy; Nunito and Ubuntu have no Sinhala glyphs.
+const sinhala = Noto_Sans_Sinhala({
+  subsets: ["sinhala"],
+  weight: ["400", "600", "700"],
+  variable: "--font-sinhala",
+});
+const ubuntu = Ubuntu({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-ubuntu",
+});
 
 export const metadata: Metadata = {
   title: "Bitcoin Deepa",
@@ -35,8 +52,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   // Status bar / browser chrome matches the page background.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#1b2027" },
+    { media: "(prefers-color-scheme: light)", color: "#eeeff3" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0f14" },
   ],
 };
 
@@ -50,7 +67,11 @@ export default function RootLayout({
   if (API_BASE_URL) preconnect(API_BASE_URL, { crossOrigin: "anonymous" });
 
   return (
-    <html lang="en" className={cn("font-sans", inter.variable)} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={cn("font-sans", nunito.variable, ubuntu.variable, sinhala.variable)}
+      suppressHydrationWarning
+    >
       <head>
         {/* Returning members skip the landing page (see lib/launch-redirect.ts). */}
         <script dangerouslySetInnerHTML={{ __html: LAUNCH_REDIRECT_SCRIPT }} />
@@ -77,7 +98,7 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className={`${inter.className} min-h-screen leading-tight`}>
+      <body className="bg-background text-foreground min-h-screen font-sans leading-normal antialiased">
         <PwaSetup />
         <Providers>{children}</Providers>
         {/* Reveal the server-rendered page inside Telegram right away (see lib/launch-redirect.ts). */}

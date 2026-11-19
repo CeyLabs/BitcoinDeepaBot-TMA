@@ -16,5 +16,5 @@ export function BoneCard({
   className?: string;
   children?: React.ReactNode;
 }) {
-  return <div className={cn("bg-card rounded-2xl", className)}>{children}</div>;
+  return <div className={cn("bg-card rounded-xl", className)}>{children}</div>;
 }

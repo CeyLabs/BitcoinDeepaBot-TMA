@@ -4,22 +4,23 @@ interface ProgressProps {
   /** 0–100 */
   value: number;
   className?: string;
+  label?: string;
 }
 
-/** Thin progress bar on a faded track. */
-export function Progress({ value, className }: ProgressProps) {
+/** 8px bar with the brand flame gradient. */
+export function Progress({ value, className, label }: ProgressProps) {
   const clamped = Math.min(Math.max(value, 0), 100);
   return (
     <div
       role="progressbar"
+      aria-label={label}
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={Math.round(clamped)}
-      className={cn("relative h-1 overflow-hidden rounded-full", className)}
+      className={cn("bg-chip h-2 overflow-hidden rounded-lg", className)}
     >
-      <div className="bg-primary absolute inset-0 opacity-40" />
-      <div
-        className="bg-primary absolute inset-y-0 left-0 rounded-[inherit] transition-[width] duration-200"
+      <span
+        className="bg-yaka block h-full rounded-lg transition-[width] duration-[1500ms] ease-(--ease-out-soft)"
         style={{ width: `${clamped}%` }}
       />
     </div>

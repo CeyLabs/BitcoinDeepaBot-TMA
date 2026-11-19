@@ -1,6 +1,5 @@
 "use client";
 
-import { ChevronLeft } from "lucide-react";
 import { useBackButton, usePlatform } from "@/platform";
 import { cn } from "cn";
 
@@ -11,8 +10,8 @@ interface BackButtonProps {
 
 /**
  * Back navigation for sub-pages. Inside Telegram it drives the native back
- * button and renders nothing; on web it renders an in-page button, since an
- * installed PWA has no browser back button.
+ * button and renders nothing; on web it renders an in-page "‹ Back" button,
+ * since an installed PWA has no browser back button.
  */
 export function BackButton({ onBack, className }: BackButtonProps) {
   useBackButton(onBack);
@@ -32,14 +31,47 @@ export function WebBackButton({ onBack, className }: BackButtonProps) {
   return (
     <button
       type="button"
-      aria-label="Back"
       onClick={onBack}
       className={cn(
-        "bg-card -ml-1 flex size-10 shrink-0 items-center justify-center self-start rounded-full text-[#1b2027] dark:text-white",
+        "press text-foreground inline-flex min-h-11 items-center gap-1 self-start rounded-xl border-0 bg-transparent pr-2.5 text-[14px] font-bold",
         className
       )}
     >
-      <ChevronLeft size={22} strokeWidth={2} />
+      <svg
+        className="size-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+      Back
     </button>
+  );
+}
+
+/**
+ * Header for pushed pages (News, an article, Choose plan): "‹ Back" on the
+ * left (web only; Telegram shows its native one) and a centered title.
+ */
+export function PushHeader({
+  title,
+  onBack,
+  className,
+}: {
+  title?: React.ReactNode;
+  onBack: () => void;
+  className?: string;
+}) {
+  useBackButton(onBack);
+  return (
+    <div className={cn("relative flex min-h-11 items-center justify-center", className)}>
+      <WebBackButton onBack={onBack} className="absolute top-0 -left-2" />
+      {title && <h1 className="text-[16px] leading-5">{title}</h1>}
+    </div>
   );
 }
