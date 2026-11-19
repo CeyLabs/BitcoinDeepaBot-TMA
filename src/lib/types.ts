@@ -179,4 +179,6 @@ export interface BotTransaction {
   success: boolean;
   /** The transfer that settled one of the user's successful purchases (already listed) */
   purchase_settlement?: boolean;
+  /** The payment that took one of the user's sales' sats (already listed as the sale) */
+  sale_payment?: boolean;
 }
