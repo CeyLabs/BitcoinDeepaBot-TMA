@@ -1,11 +1,14 @@
 "use client";
 
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { BuyOrderStatus } from "@/components/dashboard/buy/BuyOrderStatus";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Title } from "@/components/ui/title";
 
-export default function PaymentCancelPage() {
+function PlanPaymentCancelled() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-white px-5 text-center dark:bg-[#1b2027]">
       <Image
@@ -28,5 +31,19 @@ export default function PaymentCancelPage() {
         </Button>
       </Link>
     </main>
+  );
+}
+
+/** One-time buys come back with ?buy_order=<id> (set by the backend). */
+function Content() {
+  const buyOrder = useSearchParams().get("buy_order");
+  return buyOrder ? <BuyOrderStatus orderId={buyOrder} cancelled /> : <PlanPaymentCancelled />;
+}
+
+export default function PaymentCancelPage() {
+  return (
+    <Suspense>
+      <Content />
+    </Suspense>
   );
 }

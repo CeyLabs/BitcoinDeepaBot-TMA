@@ -70,7 +70,12 @@ export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityIte
   return {
     id: tx.id,
     type: "membership_reward",
-    detailLabel: tx.package_name ? `${tx.package_name} Plan` : "Destributed",
+    detailLabel:
+      tx.kind === "ONE_TIME"
+        ? "One-time Buy"
+        : tx.package_name
+          ? `${tx.package_name} Plan`
+          : "Destributed",
     timestamp: tx.created_at,
     sats: tx.satoshis_purchased,
     lkr: tx.gross_amount,
