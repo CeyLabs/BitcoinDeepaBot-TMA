@@ -132,7 +132,7 @@ export function PlanHeroCard({
           as="button"
           onClick={() => {
             haptic.impact("light");
-            router.push("/plans/choose");
+            router.push("/dashboard/plans/choose");
           }}
           before={<Emoji src="/emoji/notepad.webp" />}
           after={<CellChevron />}
@@ -251,7 +251,7 @@ export function PlanHeroCard({
             className="h-11 flex-1 rounded-xl text-[15px]"
             onClick={() => {
               haptic.impact("light");
-              router.push("/plans/choose");
+              router.push("/dashboard/plans/choose");
             }}
           >
             Change plan

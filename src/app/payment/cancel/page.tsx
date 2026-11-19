@@ -14,7 +14,7 @@ function PlanPaymentCancelled() {
       title="Payment cancelled"
       actions={
         <>
-          <Link href="/plans/choose" className={buttonVariants()}>
+          <Link href="/dashboard/plans/choose" className={buttonVariants()}>
             Back to plans
           </Link>
           <Link href="/dashboard" className={buttonVariants({ variant: "secondary" })}>

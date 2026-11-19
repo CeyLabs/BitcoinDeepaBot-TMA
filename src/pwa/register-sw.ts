@@ -7,6 +7,7 @@ const FRESH_MS = 60_000;
 // reload waits until the user is elsewhere.
 const BUSY_PATHS = [
   "/plans/choose",
+  "/dashboard/plans",
   "/verification",
   "/payment",
   "/dashboard/profile",

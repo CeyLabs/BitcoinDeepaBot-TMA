@@ -70,7 +70,7 @@ export function PlanSummaryCard({
         <>
           <Cell
             as="button"
-            onClick={() => router.push(subscription ? "/dashboard/plans" : "/plans/choose")}
+            onClick={() => router.push("/dashboard/plans")}
             before={
               <Emoji
                 src={subscription ? getPlanIconSrc(subscription.planName) : "/emoji/notepad.webp"}
