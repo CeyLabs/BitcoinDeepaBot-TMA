@@ -114,8 +114,9 @@ export function BuyAmountForm() {
           )}
           {price && (
             <p className="text-[12px] text-[#94a3b8]">
-              {fmtLkrExact(price.minLkr)} – {fmtLkrExact(price.maxLkr)} per buy. The final amount of
-              sats uses the price when your payment is confirmed.
+              {fmtLkrExact(price.minLkr)} – {fmtLkrExact(price.maxLkr)} per buy, up to{" "}
+              {fmtLkrExact(price.dailyMaxLkr)} a day. The final amount of sats uses the price when
+              your payment is confirmed.
             </p>
           )}
         </div>

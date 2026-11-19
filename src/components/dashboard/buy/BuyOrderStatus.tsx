@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Title } from "@/components/ui/title";
-import { useBuyOrder, type BuyOrder } from "@/hooks/query/useBuy";
+import { isBuyOrderId, useBuyOrder, type BuyOrder } from "@/hooks/query/useBuy";
+import { useSession } from "@/hooks/useSession";
 import { celebrate } from "@/lib/celebrate";
 import { fmtLkrExact, fmtSats } from "@/lib/formatters";
 import { queryKeys } from "@/lib/query-keys";
@@ -37,6 +38,13 @@ function stateOf(order: BuyOrder | undefined, cancelled: boolean) {
         spinner: true,
       };
     case "SUCCESS":
+      if (order.held && !order.settled) {
+        return {
+          title: "Payment under review",
+          text: `We received your ${amount} payment and our team is checking it before sending your sats. This usually takes a few hours. You can leave this page.`,
+          emoji: "/emoji/animated/microscope.webp",
+        };
+      }
       return order.settled
         ? {
             title: "Bitcoin received",
@@ -65,15 +73,37 @@ function stateOf(order: BuyOrder | undefined, cancelled: boolean) {
   }
 }
 
+// Shown on every "we don't know yet" screen: paying again buys twice
+const DONT_PAY_AGAIN =
+  "If you paid, it will show in Activity once confirmed. Please don't pay again.";
+// After this long, "a few seconds" is no longer true
+const SLOW_AFTER_MS = 60_000;
+
+function useSlow(active: boolean) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    if (!active) return;
+    const timer = setTimeout(() => setSlow(true), SLOW_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, [active]);
+  return active && slow;
+}
+
 /**
  * Return screen for a one-time buy (PayHere success/cancel). Polls the order
- * until the sats are sent, then refreshes the wallet.
+ * until the sats are sent, then refreshes the wallet. Never spins forever:
+ * a failed lookup, a missing session or a slow confirmation each get their
+ * own message.
  */
 export function BuyOrderStatus({ orderId, cancelled }: { orderId: string; cancelled: boolean }) {
   const queryClient = useQueryClient();
-  const { data: order } = useBuyOrder(orderId);
-  const state = stateOf(order, cancelled);
+  const { status: session } = useSession();
+  const validId = isBuyOrderId(orderId);
+  const { data: order, isError, refetch, isFetching } = useBuyOrder(validId ? orderId : null);
   const done = order?.status === "SUCCESS" && order.settled;
+  const waiting =
+    !cancelled && (order?.status === "AWAITING_PAYMENT" || order?.status === "PENDING");
+  const slow = useSlow(waiting);
   const celebrated = useRef(false);
 
   useEffect(() => {
@@ -84,6 +114,38 @@ export function BuyOrderStatus({ orderId, cancelled }: { orderId: string; cancel
     void queryClient.invalidateQueries({ queryKey: ["transactions"] });
     void queryClient.invalidateQueries({ queryKey: ["bot-transactions"] });
   }, [done, queryClient]);
+
+  let state: { title: string; text: string; emoji?: string; spinner?: boolean };
+  let retry = false;
+  if (!validId) {
+    state = {
+      title: "Purchase not found",
+      text: `We couldn't find this purchase. ${DONT_PAY_AGAIN}`,
+      emoji: "/emoji/animated/exclamation-mark.webp",
+    };
+  } else if (session === "unauthenticated") {
+    state = {
+      title: "Sign in to see your purchase",
+      text: `Your session ended while you were paying. Sign in again to see this purchase. ${DONT_PAY_AGAIN}`,
+      emoji: "/emoji/animated/exclamation-mark.webp",
+    };
+  } else if (isError && !order) {
+    state = {
+      title: "Couldn't load your purchase",
+      text: `Check your connection and try again. ${DONT_PAY_AGAIN}`,
+      emoji: "/emoji/animated/exclamation-mark.webp",
+    };
+    retry = true;
+  } else {
+    state = stateOf(order, cancelled);
+    if (slow) {
+      state = {
+        ...state,
+        title: "Still confirming your payment",
+        text: `PayHere hasn't confirmed it yet. You can leave this page. ${DONT_PAY_AGAIN}`,
+      };
+    }
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-white px-5 text-center dark:bg-[#1b2027]">
@@ -100,12 +162,23 @@ export function BuyOrderStatus({ orderId, cancelled }: { orderId: string; cancel
       </p>
 
       <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
-        <Link href="/dashboard" className="block w-full">
+        {retry && (
+          <Button
+            size="lg"
+            variant="outline"
+            className="w-full rounded-[12px]"
+            loading={isFetching}
+            onClick={() => void refetch()}
+          >
+            Try again
+          </Button>
+        )}
+        <Link href={session === "unauthenticated" ? "/" : "/dashboard"} className="block w-full">
           <Button size="lg" className="w-full rounded-[12px]">
-            Go to Dashboard
+            {session === "unauthenticated" ? "Sign in" : "Go to Dashboard"}
           </Button>
         </Link>
-        {!state.spinner && !done && (
+        {order && !state.spinner && !done && !order.held && !slow && (
           <Link href="/dashboard/buy" className="text-primary text-[15px] font-semibold">
             Buy again
           </Link>

@@ -26,6 +26,10 @@ export interface BuyOrder {
   payhere_pay_id: string | null;
   satoshis: number | null;
   settled: boolean;
+  /** Paid, but our team checks it before the sats are sent */
+  held: boolean;
+  /** The checkout can be paid until then */
+  expires_at: string;
 }
 
 /**
@@ -35,8 +39,13 @@ export interface BuyOrder {
  */
 export function buyOrderPollInterval(order: BuyOrder | undefined): number | false {
   if (!order) return false;
-  if (order.status === "AWAITING_PAYMENT" || order.status === "PENDING") return 4_000;
-  if (order.status === "SUCCESS" && !order.settled) return 4_000;
+  if (order.status === "AWAITING_PAYMENT" || order.status === "PENDING") {
+    // Slow down once it's clearly not a matter of seconds
+    const ageMs = Date.now() - new Date(order.created_at).getTime();
+    return ageMs < 5 * 60_000 ? 4_000 : 15_000;
+  }
+  // Held: a person releases it, so check now and then
+  if (order.status === "SUCCESS" && !order.settled) return order.held ? 30_000 : 4_000;
   return false;
 }
 
@@ -65,9 +74,13 @@ export function useBuyPrice(enabled = true) {
   return useQuery({ ...buyPriceOptions(), enabled: isAuthed && enabled });
 }
 
+/** Order ids are UUIDs; anything else (e.g. a crafted ?buy_order=) isn't requested. */
+export const isBuyOrderId = (id: string | null): id is string =>
+  !!id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
 export function useBuyOrder(id: string | null) {
   const isAuthed = useAuthed();
-  return useQuery({ ...buyOrderOptions(id ?? ""), enabled: isAuthed && !!id });
+  return useQuery({ ...buyOrderOptions(id ?? ""), enabled: isAuthed && isBuyOrderId(id) });
 }
 
 export function useCreateBuyLink() {
