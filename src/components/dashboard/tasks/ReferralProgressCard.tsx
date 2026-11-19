@@ -1,64 +1,69 @@
 "use client";
 
-import { Avatar, AvatarStack } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
 import Image from "next/image";
-import { usePlatform } from "@/platform";
+import { useToast } from "@/components/ui/toast";
+import { haptic, usePlatform } from "@/platform";
 import { useUser } from "@/hooks/useUser";
 import { getInviteUrl } from "@/lib/constants";
 
-export interface ReferralProgressCardProps {
-  joined: number;
-  target: number;
-  rewardSats: number;
-}
-
-export function ReferralProgressCard({ joined, target, rewardSats }: ReferralProgressCardProps) {
-  const progress = target > 0 ? Math.min(joined / target, 1) : 0;
+/**
+ * "Orange pill your friends" invite pill. Sharing the invite link is real;
+ * referral counts and rewards aren't tracked yet, so no progress is shown.
+ */
+export function ReferralProgressCard() {
   const platform = usePlatform();
+  const toast = useToast();
   const { id: userId } = useUser();
 
   const handleShare = () => {
+    haptic.impact("medium");
     platform
       .share({
         url: getInviteUrl(userId),
         text: "🚀 Here's a link to get some Free Satoshis, the bitcoin wallet I was telling you about!",
       })
+      .then((result) => {
+        if (result === "copied") toast({ type: "success", title: "Invite link copied" });
+      })
       .catch((error) => console.error("Failed to share invite:", error));
   };
 
   return (
-    <Card
+    <button
+      type="button"
       onClick={handleShare}
-      className="relative hidden w-full cursor-pointer overflow-hidden rounded-full bg-transparent p-0 shadow-none"
+      className="press bg-primary relative isolate flex w-full flex-col items-center gap-2.5 overflow-hidden rounded-full border-0 px-[50px] py-2.5 text-center text-white"
     >
-      <Image src="/bg/pill.webp" alt="" fill className="object-cover" />
-
-      <div className="relative flex flex-col gap-1 p-2">
-        <p className="mx-auto max-w-60 text-center text-lg leading-5 font-bold text-white">
-          Orange Pill your friends and get {rewardSats} sats
-        </p>
-
-        <div className="flex items-center gap-3 px-5">
-          <AvatarStack>
-            <Avatar size={28} src="/avatar/boy.png" />
-            <Avatar size={28} src="/avatar/girl.png" />
-          </AvatarStack>
-
-          <div className="flex flex-1 flex-col gap-1">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-white/25">
-              <div
-                className="h-full rounded-full bg-white"
-                style={{ width: `${progress * 100}%` }}
-              />
-            </div>
-          </div>
-
-          <p className="text-[13px] font-medium whitespace-nowrap text-white">
-            {joined}/{target} joined
-          </p>
-        </div>
-      </div>
-    </Card>
+      <Image
+        src="/bg/invite.webp"
+        alt=""
+        fill
+        sizes="(max-width: 448px) 100vw, 448px"
+        className="-z-10 object-cover"
+      />
+      <span className="text-[16px] leading-4 font-semibold">
+        <span className="block">Orange pill your friends</span>
+        <span className="block">Share your invite link</span>
+      </span>
+      <span className="flex items-center gap-2.5">
+        <span className="flex shrink-0">
+          <Image
+            src="/avatar/friend-1.webp"
+            alt=""
+            width={32}
+            height={32}
+            className="size-8 rounded-full object-cover"
+          />
+          <Image
+            src="/avatar/friend-2.webp"
+            alt=""
+            width={32}
+            height={32}
+            className="-ml-4 size-8 rounded-full object-cover"
+          />
+        </span>
+        <span className="text-[12px] leading-4">Referral rewards coming soon</span>
+      </span>
+    </button>
   );
 }

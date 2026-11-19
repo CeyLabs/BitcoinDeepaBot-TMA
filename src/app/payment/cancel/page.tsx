@@ -1,36 +1,30 @@
 "use client";
 
 import { Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { BuyOrderStatus } from "@/components/dashboard/buy/BuyOrderStatus";
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Title } from "@/components/ui/title";
+import { BigEmoji, StatusScreen } from "@/components/auth/StatusScreen";
+import { buttonVariants } from "@/components/ui/button";
 
 function PlanPaymentCancelled() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-white px-5 text-center dark:bg-[#1b2027]">
-      <Image
-        src="/emoji/animated/cross-mark.webp"
-        alt="Cancelled"
-        width={96}
-        height={96}
-        unoptimized
-      />
-
-      <Title className="mt-3 max-w-sm leading-snug">Payment Cancelled</Title>
-
-      <p className="text-muted-foreground mt-2 max-w-sm text-[15px] dark:text-[#64748b]">
-        Your payment was not completed. You can try again anytime from the plans page.
-      </p>
-
-      <Link href="/plans/choose" className="mt-8 block w-full max-w-xs">
-        <Button size="lg" className="w-full rounded-[12px]">
-          Back to Plans
-        </Button>
-      </Link>
-    </main>
+    <StatusScreen
+      art={<BigEmoji src="/emoji/animated/cross-mark.webp" />}
+      title="Payment cancelled"
+      actions={
+        <>
+          <Link href="/plans/choose" className={buttonVariants()}>
+            Back to plans
+          </Link>
+          <Link href="/dashboard" className={buttonVariants({ variant: "secondary" })}>
+            Go to my wallet
+          </Link>
+        </>
+      }
+    >
+      Your payment wasn&apos;t completed. You can try again anytime from the plans page.
+    </StatusScreen>
   );
 }
 

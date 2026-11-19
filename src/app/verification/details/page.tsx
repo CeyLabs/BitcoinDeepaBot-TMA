@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
 import { useKycInitiate, useUpdateProfile } from "@/hooks/query/useKyc";
 import { haptic } from "@/platform";
-import { BackButton } from "@/components/ui/back-button";
+import { PushHeader } from "@/components/ui/back-button";
+import { SectionLabel } from "@/components/ui/section";
+import { Icon } from "@/components/dashboard/settings/icons";
 import { useUser } from "@/hooks/useUser";
 import { createUserSchema, type CreateUserFormData } from "@/lib/validations";
 
@@ -25,8 +27,8 @@ const FIELDS: Array<{
   placeholder: string;
   type: string;
 }> = [
-  { name: "first_name", label: "First Name", placeholder: "Enter your first name", type: "text" },
-  { name: "last_name", label: "Last Name", placeholder: "Enter your last name", type: "text" },
+  { name: "first_name", label: "First name", placeholder: "Enter your first name", type: "text" },
+  { name: "last_name", label: "Last name", placeholder: "Enter your last name", type: "text" },
   { name: "email", label: "Email", placeholder: "e.g. example@gmail.com", type: "email" },
   { name: "phone", label: "Phone", placeholder: "e.g. +94771234567", type: "tel" },
   { name: "address", label: "Address", placeholder: "Enter your address", type: "text" },
@@ -113,24 +115,21 @@ export default function VerificationDetailsPage() {
     );
   };
 
+  const submitting = updateProfile.isPending || kycInitiate.isPending;
+
   return (
-    <div className="flex min-h-screen w-full flex-col bg-[#f7f9fc] dark:bg-[#0b0f14]">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-8 pb-6">
-        <BackButton
-          onBack={() => router.push("/verification")}
-          className="bg-white text-[#1b2027] dark:bg-white/10 dark:text-white"
-        />
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-[24px] leading-7 font-bold text-[#1b2027] dark:text-white">
-            Your Details
-          </h1>
-          <p className="text-[14px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">
-            We need a few details before starting verification
+    <div className="bg-background flex min-h-screen w-full flex-col">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 pt-3">
+        <PushHeader title="Your details" onBack={() => router.push("/verification")} />
+        <div className="flex flex-col gap-1">
+          <SectionLabel as="h2">Before we start</SectionLabel>
+          <p className="text-ink3 text-[13px] leading-4">
+            We need a few details before starting verification. Use the name on your ID.
           </p>
         </div>
 
         <form onSubmit={onSubmit} noValidate className="flex flex-1 flex-col gap-3">
-          <div className="flex flex-col gap-5 [--field-bg:#f7f9fc] dark:[--field-bg:#0b0f14]">
+          <div className="stagger flex flex-col gap-5 [--field-bg:var(--background)]">
             {FIELDS.map((field) => (
               <TextField
                 key={field.name}
@@ -138,7 +137,7 @@ export default function VerificationDetailsPage() {
                 label={
                   <span className="inline-flex items-center gap-1">
                     {field.label}
-                    <span className="size-1 rounded-full bg-[#f13131]" />
+                    <span aria-hidden className="bg-loss size-1 rounded-full" />
                   </span>
                 }
                 placeholder={field.placeholder}
@@ -146,33 +145,25 @@ export default function VerificationDetailsPage() {
                 value={values[field.name]}
                 onChange={(e) => onFieldChange(field.name, e.target.value)}
                 error={errors[field.name]}
+                required
               />
             ))}
           </div>
 
           {error && (
-            <div className="rounded-2xl bg-[#f13131]/10 px-4 py-4">
-              <p className="text-[13px] leading-4 font-semibold text-[#f13131]">
-                Verification Error
-              </p>
-              <p className="mt-1 text-[13px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">
-                {error}
-              </p>
+            <div role="alert" className="bg-loss-bg rounded-xl px-4 py-3">
+              <p className="text-loss text-[13px] leading-4 font-bold">Verification error</p>
+              <p className="text-ink2 mt-1 text-[13px] leading-4.5">{error}</p>
             </div>
           )}
 
-          <div className="mt-auto flex flex-col gap-3 pt-4">
-            <Button
-              className="w-full rounded-[12px]"
-              type="submit"
-              size="lg"
-              loading={updateProfile.isPending || kycInitiate.isPending}
-              disabled={updateProfile.isPending || kycInitiate.isPending || !isValid}
-            >
-              Start Verification
+          <div className="bg-background sticky bottom-0 mt-auto flex flex-col gap-2 pt-4 pb-[calc(16px+env(safe-area-inset-bottom))]">
+            <Button type="submit" loading={submitting} disabled={submitting || !isValid}>
+              Start verification
             </Button>
-            <p className="text-center text-xs text-[#64748b] dark:text-[#94a3b8]">
-              Your Data is Encrypted and never Shared
+            <p className="text-ink3 flex items-center justify-center gap-1.5 text-center text-[12px]">
+              <Icon name="lock" className="text-success size-3.5" />
+              Your data is encrypted and never shared
             </p>
           </div>
         </form>

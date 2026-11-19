@@ -9,9 +9,9 @@ export function OfflineBanner() {
   return (
     <div
       role="status"
-      className="sticky top-0 z-50 flex items-center justify-center gap-2.5 bg-[#fef3c7] px-4 py-2.5 text-[13px] font-medium text-[#92400e] dark:bg-[#422006] dark:text-[#fcd34d]"
+      className="bg-inv text-on-inv animate-rise sticky top-0 z-50 flex items-center justify-center gap-2.5 px-4 py-2.5 text-[13px] font-semibold"
     >
-      <span className="size-1.5 flex-none rounded-full bg-current" aria-hidden="true" />
+      <span className="bg-primary size-1.5 flex-none rounded-full" aria-hidden="true" />
       You’re offline. Showing the last data we had. Payments are paused.
     </div>
   );

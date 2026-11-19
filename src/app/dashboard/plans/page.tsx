@@ -1,25 +1,26 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { PlanHeroCard } from "@/components/dashboard/plans/PlanHeroCard";
-// GiftPlanActions holds the real gifting UI (send/manage gift plans). Gifting isn't
-// launched yet, so GiftPlansComingSoon renders in its place — swap back in once it's ready.
-import { GiftPlansComingSoon } from "@/components/dashboard/plans/GiftPlanActions";
-import { ManageGiftsSection } from "@/components/dashboard/plans/ManageGiftsSection";
-import { MOCK_GIFTS } from "@/components/dashboard/plans/mock-data";
+import { GiftPlansComingSoon } from "@/components/dashboard/plans/GiftPlansComingSoon";
 import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotice";
+import { useToast } from "@/components/ui/toast";
 import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { useSubscriptionCurrent } from "@/hooks/query/useSubscriptionCurrent";
-import PlansLoading from "./loading";
+import { useCancelSubscription } from "@/hooks/query/useCancelSubscription";
 import { useBalanceVisible } from "@/hooks/useBalanceVisible";
+import { useOffline } from "@/hooks/useOffline";
+import { haptic, usePlatform } from "@/platform";
+import PlansLoading from "./loading";
 
 export default function PlansPage() {
-  const router = useRouter();
+  const platform = usePlatform();
+  const toast = useToast();
+  const offline = useOffline();
   const { data: kyc, isLoading: kycLoading } = useKycStatus();
   const { visible: balanceVisible, toggle: toggleBalanceVisible } = useBalanceVisible();
   const { data: subscription, isLoading: subscriptionLoading } = useSubscriptionCurrent();
+  const cancelSubscription = useCancelSubscription();
   const {
     isLoading: summaryLoading,
     dcaSpent: investedLkr,
@@ -28,20 +29,42 @@ export default function PlansPage() {
     currentValueLkr,
   } = useWalletMetrics();
 
-  const kycApproved = kyc?.status === "APPROVED";
-  const noActivePlan = kycApproved && !subscriptionLoading && !subscription;
+  const handleCancel = async () => {
+    const confirmed = await platform.confirm({
+      title: "Cancel Plan",
+      message: "Your membership rewards will stop accruing immediately. This can't be undone.",
+      confirmText: "Cancel Plan",
+      cancelText: "Keep Plan",
+      destructive: true,
+    });
+    if (!confirmed) return;
 
-  useEffect(() => {
-    if (noActivePlan) router.replace("/plans/choose");
-  }, [noActivePlan, router]);
+    haptic.impact("rigid");
+
+    try {
+      // Invalidates the current subscription, so this page falls back to "No active plan".
+      await cancelSubscription.mutateAsync();
+      haptic.notify("success");
+      toast({
+        type: "success",
+        title: "Plan Cancelled",
+        description: "Your membership has been cancelled successfully.",
+      });
+    } catch (err) {
+      haptic.notify("error");
+      toast({
+        type: "error",
+        title: "Cancellation Failed",
+        description: err instanceof Error ? err.message : "Failed to cancel plan",
+      });
+    }
+  };
 
   if (kycLoading) return <PlansLoading />;
-  if (!kycApproved) return <KycRequiredNotice />;
-  // Redirecting to the plan picker.
-  if (noActivePlan) return <PlansLoading />;
+  if (kyc?.status !== "APPROVED") return <KycRequiredNotice />;
 
   return (
-    <div className="flex w-full flex-col gap-5">
+    <div className="stagger flex w-full flex-col gap-5">
       <PlanHeroCard
         subscription={subscription}
         investedLkr={investedLkr}
@@ -52,11 +75,12 @@ export default function PlansPage() {
         onToggleVisible={toggleBalanceVisible}
         subscriptionLoading={subscriptionLoading}
         summaryLoading={summaryLoading}
+        onCancel={handleCancel}
+        cancelling={cancelSubscription.isPending}
+        offline={offline}
       />
 
       <GiftPlansComingSoon />
-
-      <ManageGiftsSection items={MOCK_GIFTS} visible={balanceVisible} />
     </div>
   );
 }

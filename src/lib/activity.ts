@@ -44,6 +44,14 @@ export const ACTIVITY_TITLE: Record<ActivityType, string> = {
   bitcoin_purchase: "Bitcoin Purchase",
 };
 
+/** An activity row plus display-only extras the shared ActivityItem type doesn't carry. */
+export type ActivityEntry = ActivityItem & {
+  settlement: ActivityItem["settlement"] & {
+    /** LKR taken as fees (gross minus the amount that bought BTC); only when the backend sent it */
+    feeLkr?: number;
+  };
+};
+
 export type ActivityCategory = "all" | "transactions" | "tasks" | "plans";
 
 const TRANSACTION_TYPES: ActivityType[] = [
@@ -69,7 +77,7 @@ export function getActivityCategory(type: ActivityType): ActivityCategory {
 // Each purchase attempt — successful, pending, cancelled, failed, or charged
 // back — maps 1:1 onto an activity: "membership_reward" for plan charges,
 // "bitcoin_purchase" for one-time buys.
-export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityItem {
+export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityEntry {
   const status = tx.status.toUpperCase();
   const isProcessingSuccess = status === "SUCCESS" && !tx.settled;
   const { dot, label } = isProcessingSuccess
@@ -95,6 +103,11 @@ export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityIte
       settledOn: tx.created_at,
       btcSats: tx.satoshis_purchased,
       btcPriceLkr: tx.btc_price_at_purchase,
+      // net_amount is 0 on older rows: no fee shown rather than a wrong one
+      feeLkr:
+        tx.net_amount > 0 && tx.gross_amount >= tx.net_amount
+          ? tx.gross_amount - tx.net_amount
+          : undefined,
       transactionId: tx.id,
     },
   };
@@ -110,7 +123,7 @@ function parseLkr(value: string | number | null | undefined): number {
   return Number(value.replace(/,/g, "")) || 0;
 }
 
-export function mapBotTransactionToActivityItem(tx: BotTransaction): ActivityItem {
+export function mapBotTransactionToActivityItem(tx: BotTransaction): ActivityEntry {
   const isOutgoing = tx.direction === "outgoing";
   const counterpartyRaw = isOutgoing ? tx.to_user : tx.from_user;
   const counterparty =

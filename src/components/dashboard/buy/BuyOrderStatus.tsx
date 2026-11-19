@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { cn } from "cn";
+import { PushHeader } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
-import { Title } from "@/components/ui/title";
+import { KeyValueList } from "@/components/ui/section";
+import { ResultHero, Timeline, type TimelineState } from "@/components/dashboard/trade/parts";
 import { isBuyOrderId, isUnpaidAndExpired, useBuyOrder, type BuyOrder } from "@/hooks/query/useBuy";
 import { FetchyError } from "@/lib/fetchy";
 import { useSession } from "@/hooks/useSession";
 import { celebrate } from "@/lib/celebrate";
-import { fmtLkrExact, fmtSats } from "@/lib/formatters";
+import { fmtActivityDateTime, fmtLkrExact, fmtSats } from "@/lib/formatters";
 import { queryKeys } from "@/lib/query-keys";
 
 function stateOf(order: BuyOrder | undefined, cancelled: boolean) {
@@ -51,7 +52,7 @@ function stateOf(order: BuyOrder | undefined, cancelled: boolean) {
         return {
           title: "Payment under review",
           text: `We received your ${amount} payment and our team is checking it before sending your sats. This usually takes a few hours. You can leave this page.`,
-          emoji: "/emoji/animated/microscope.webp",
+          spinner: true,
         };
       }
       return order.settled
@@ -117,7 +118,17 @@ function useSlow(active: boolean) {
  * a failed lookup, a missing session or a slow confirmation each get their
  * own message.
  */
-export function BuyOrderStatus({ orderId, cancelled }: { orderId: string; cancelled: boolean }) {
+export function BuyOrderStatus({
+  orderId,
+  cancelled,
+  embedded = false,
+}: {
+  orderId: string;
+  cancelled: boolean;
+  /** Inside the dashboard shell (a pushed page) instead of a full screen. */
+  embedded?: boolean;
+}) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { status: session } = useSession();
   const validId = isBuyOrderId(orderId);
@@ -186,43 +197,95 @@ export function BuyOrderStatus({ orderId, cancelled }: { orderId: string; cancel
     }
   }
 
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-white px-5 text-center dark:bg-[#1b2027]">
-      {state.spinner ? (
-        <Loader2 size={64} className="text-primary animate-spin" />
+  const doneOrder = done ? order : undefined;
+  const rows = order
+    ? [
+        { k: "Amount paid", v: fmtLkrExact(order.amount_lkr) },
+        ...(order.satoshis
+          ? [{ k: done ? "Sats added" : "Sats", v: `${fmtSats(order.satoshis)} sats` }]
+          : []),
+        { k: "Paid with", v: "PayHere" },
+        { k: "Date", v: fmtActivityDateTime(order.created_at) },
+        { k: "Reference", v: order.order_id.slice(0, 8).toUpperCase() },
+      ]
+    : [];
+  const signedOut = session === "unauthenticated";
+
+  const content = (
+    <>
+      {doneOrder ? (
+        <ResultHero
+          visual="party"
+          big={`+${fmtSats(doneOrder.satoshis ?? 0)} sats`}
+          text={`Bought for ${fmtLkrExact(doneOrder.amount_lkr)} and added to your wallet`}
+        />
+      ) : state.spinner ? (
+        <>
+          <div className="flex flex-col items-center gap-1 px-2 pt-2 text-center">
+            <h2 className="text-[22px] leading-7">{state.title}</h2>
+            <p className="text-ink2 text-[14px] leading-5 font-semibold">{state.text}</p>
+          </div>
+          <Timeline steps={buyTimeline(order)} />
+        </>
       ) : (
-        <Image src={state.emoji!} alt="" width={96} height={96} unoptimized />
+        <ResultHero visual={{ emoji: state.emoji! }} title={state.title} text={state.text} />
       )}
 
-      <Title className="mt-3 max-w-sm leading-snug">{state.title}</Title>
+      {rows.length > 0 && <KeyValueList rows={rows} />}
 
-      <p className="text-muted-foreground mt-2 max-w-sm text-[15px] dark:text-[#64748b]">
-        {state.text}
-      </p>
-
-      <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
+      <div className="mt-auto flex w-full flex-col gap-1 pt-2">
         {retry && (
-          <Button
-            size="lg"
-            variant="outline"
-            className="w-full rounded-[12px]"
-            loading={isFetching}
-            onClick={() => void refetch()}
-          >
+          <Button variant="secondary" loading={isFetching} onClick={() => void refetch()}>
             Try again
           </Button>
         )}
-        <Link href={session === "unauthenticated" ? "/" : "/dashboard"} className="block w-full">
-          <Button size="lg" className="w-full rounded-[12px]">
-            {session === "unauthenticated" ? "Sign in" : "Go to Dashboard"}
-          </Button>
-        </Link>
+        <Button onClick={() => router.push(signedOut ? "/" : "/dashboard")}>
+          {signedOut ? "Sign in" : "Go to wallet"}
+        </Button>
         {order && !state.spinner && !done && !order.held && order.status !== "CHARGEBACK" && (
-          <Link href="/dashboard/buy" className="text-primary text-[15px] font-semibold">
+          <Button variant="text" size="text" onClick={() => router.push("/dashboard/buy")}>
             Buy again
-          </Link>
+          </Button>
         )}
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="flex flex-1 flex-col gap-5">
+        <PushHeader title="Purchase" onBack={() => router.push("/dashboard")} />
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <main
+      className={cn(
+        "bg-background text-foreground mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4",
+        "pt-[calc(24px+env(safe-area-inset-top))] pb-[calc(24px+env(safe-area-inset-bottom))]"
+      )}
+    >
+      <div className="flex flex-1 flex-col justify-center gap-5">{content}</div>
     </main>
   );
+}
+
+/**
+ * Checkout → PayHere confirms → sats sent (or a person checks a held
+ * payment first) → in the wallet.
+ */
+function buyTimeline(order: BuyOrder | undefined): { label: string; state: TimelineState }[] {
+  const paid = order?.status === "SUCCESS";
+  const settled = paid && order.settled;
+  return [
+    { label: "Checkout opened", state: "done" },
+    { label: "Payment confirmed by PayHere", state: paid ? "done" : "active" },
+    {
+      label: order?.held ? "Checked by our team" : "Sending sats to your wallet",
+      state: settled ? "done" : paid ? "active" : "todo",
+    },
+    { label: "Sats added to your wallet", state: settled ? "done" : "todo" },
+  ];
 }

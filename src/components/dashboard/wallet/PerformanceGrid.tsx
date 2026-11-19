@@ -1,21 +1,24 @@
 "use client";
 
-import Image from "next/image";
-import { BtcSign } from "@/components/ui/btc-sign";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "cn";
 import { Card } from "@/components/ui/card";
+import { Emoji } from "@/components/ui/emoji";
+import { Section } from "@/components/ui/section";
 import { ValueSkeleton } from "@/components/ui/value-skeleton";
+import type { DisplayCurrency } from "@/hooks/useDisplayCurrency";
 import {
+  fmtBtc,
   fmtLkrCurrency,
   fmtLkrCurrencyCompact,
   fmtPriceCompact,
   fmtSatsCompact,
+  fmtUsd,
   maskDigits,
 } from "@/lib/formatters";
 
 export interface PerformanceGridProps {
   dcaSpent: number;
-  /** Fees paid on top of dcaSpent; shown under You Invested */
+  /** Fees paid on top of dcaSpent; shown under You invested */
   dcaFees?: number;
   dcaSats: number;
   totalLkr: number;
@@ -23,6 +26,9 @@ export interface PerformanceGridProps {
   avgBtcPriceUsd?: number;
   currentBtcPrice: number;
   currentBtcPriceUsd?: number;
+  changePercent: number;
+  currency: DisplayCurrency;
+  usdRate?: number;
   visible: boolean;
   isLoading?: boolean;
 }
@@ -36,143 +42,131 @@ export function PerformanceGrid({
   avgBtcPriceUsd,
   currentBtcPrice,
   currentBtcPriceUsd,
+  changePercent,
+  currency,
+  usdRate,
   visible,
   isLoading = false,
 }: PerformanceGridProps) {
   const mask = (v: string) => maskDigits(v, visible);
+  const isUsd = currency === "USD" && usdRate !== undefined;
+  const fiat = (lkr: number) => (isUsd ? fmtUsd(lkr * usdRate) : fmtLkrCurrency(lkr));
   // Profit is against what the user actually paid, fees included.
   const totalCost = dcaSpent + dcaFees;
   const profitLkr = totalLkr - totalCost;
   const profitPct = totalCost > 0 ? (profitLkr / totalCost) * 100 : 0;
   const isProfit = profitLkr >= 0;
+  const hasBuys = dcaSpent > 0 && dcaSats > 0;
 
   return (
-    <div className="flex w-full flex-col gap-3">
-      <p className="text-[14px] leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
-        Performance
-      </p>
-
+    <Section title="Performance">
       <div className="grid grid-cols-2 gap-2">
-        <Card className="bg-card flex flex-col items-start gap-2 rounded-2xl p-3 shadow-none">
-          <Image src="/emoji/wallet.webp" alt="" width={36} height={36} className="size-9" />
-          <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
-            You Invested
+        <Tile img="/emoji/wallet.webp" label="You invested" loading={isLoading}>
+          <p className="num text-[16px] leading-[18px] font-semibold">
+            {dcaSpent > 0 ? mask(fiat(dcaSpent)) : "–"}
           </p>
-          {isLoading ? (
-            <ValueSkeleton className="h-4 w-24" />
-          ) : (
-            <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-              {mask(fmtLkrCurrency(dcaSpent))}
-            </p>
+          <p className="num text-ink3 flex flex-wrap items-center gap-1.5 text-[12px] leading-4">
+            {mask(fmtBtc(dcaSats, 5))}
+            <Sep />
+            {mask(`≈ 丰 ${fmtSatsCompact(dcaSats)}`)}
+          </p>
+          {dcaFees > 0 && (
+            <p className="text-ink3 text-[12px] leading-4">+ {mask(fiat(dcaFees))} fees</p>
           )}
-          {isLoading ? (
-            <ValueSkeleton className="h-3 w-32" />
-          ) : (
-            <div className="flex items-center gap-2">
-              <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
-                <BtcSign /> {mask((dcaSats / 1e8).toFixed(5))}
-              </p>
-              <div className="size-0.75 rounded-full bg-[#e2e8f0] dark:bg-[#334155]" />
-              <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
-                {mask(`≈ 丰 ${fmtSatsCompact(dcaSats)}`)}
-              </p>
-            </div>
-          )}
-          {!isLoading && dcaFees > 0 && (
-            <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">
-              + {mask(fmtLkrCurrency(dcaFees))} fees
-            </p>
-          )}
-        </Card>
+        </Tile>
 
-        <Card className="bg-card flex flex-col items-start gap-2 rounded-2xl p-3 shadow-none">
-          <Image src="/emoji/coins.webp" alt="" width={36} height={36} className="size-9" />
-          <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
-            Current Value
+        <Tile img="/emoji/coins.webp" label="Current value" loading={isLoading}>
+          <p className="num text-[16px] leading-[18px] font-semibold">
+            {dcaSats > 0 ? mask(fiat(totalLkr)) : "–"}
           </p>
-          <div className="flex flex-col items-start gap-2">
-            {isLoading ? (
-              <ValueSkeleton className="h-4 w-24" />
-            ) : (
-              <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-                {mask(fmtLkrCurrency(totalLkr))}
-              </p>
+          {totalCost > 0 && (
+            <span
+              className={cn(
+                "inline-flex h-6 items-center self-start rounded-lg px-2.5 text-[12px] font-semibold text-white",
+                isProfit ? "bg-gain-fill" : "bg-loss-solid"
+              )}
+            >
+              {mask(
+                `${isProfit ? "+" : "−"}${fiat(Math.abs(profitLkr))} (${isProfit ? "+" : "−"}${Math.abs(profitPct).toFixed(0)}%)`
+              )}
+            </span>
+          )}
+        </Tile>
+
+        <Tile img="/emoji/calculator.webp" label="Average price" loading={isLoading}>
+          <p className="num text-[16px] leading-[18px] font-semibold">
+            {hasBuys ? mask(fmtLkrCurrencyCompact(avgBtcPrice)) : "–"}{" "}
+            <span className="text-ink2 font-sans text-[12px] font-normal">per BTC</span>
+          </p>
+          <p className="num text-ink3 text-[12px] leading-4 font-semibold">
+            {hasBuys && avgBtcPriceUsd !== undefined
+              ? mask(`USD ${fmtPriceCompact(avgBtcPriceUsd)}`)
+              : "No buys yet"}
+          </p>
+        </Tile>
+
+        <Tile
+          img="/emoji/bitcoin.webp"
+          label={
+            <>
+              Current price{" "}
+              <span
+                aria-hidden
+                className="animate-pulse-soft text-success ml-0.5 inline-block size-1.5 rounded-full bg-current align-middle"
+              />
+            </>
+          }
+          loading={isLoading}
+        >
+          <p className="num text-[16px] leading-[18px] font-semibold">
+            {fmtLkrCurrencyCompact(currentBtcPrice)}{" "}
+            <span className="text-ink2 font-sans text-[12px] font-normal">per BTC</span>
+          </p>
+          <p className="num text-ink3 text-[12px] leading-4">
+            <span className={cn("font-bold", changePercent >= 0 ? "text-success" : "text-loss")}>
+              {changePercent >= 0 ? "+" : "−"}
+              {Math.abs(changePercent).toFixed(2)}%
+            </span>{" "}
+            today
+            {currentBtcPriceUsd !== undefined && (
+              <>
+                {" · "}USD {fmtPriceCompact(currentBtcPriceUsd)}
+              </>
             )}
-            {isLoading ? (
-              <ValueSkeleton className="h-6 w-28 rounded-lg" />
-            ) : (
-              dcaSpent > 0 && (
-                <Badge
-                  variant={isProfit ? "gain" : "loss"}
-                  className="m-0 flex h-auto min-w-0 rounded-lg px-2.5 py-1 text-[12px] leading-4 font-medium"
-                >
-                  {mask(
-                    `${fmtLkrCurrency(Math.abs(profitLkr))} (${isProfit ? "+" : "-"} ${Math.abs(profitPct).toFixed(0)}%)`
-                  )}
-                </Badge>
-              )
-            )}
-          </div>
-        </Card>
-
-        <Card className="bg-card flex flex-col items-start gap-2 rounded-2xl p-3 shadow-none">
-          <Image src="/emoji/calculator.webp" alt="" width={36} height={36} className="size-9" />
-          <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
-            Avg Price
           </p>
-          {isLoading ? (
-            <ValueSkeleton className="h-4 w-20" />
-          ) : (
-            <div className="flex items-center gap-1">
-              <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-                {mask(fmtLkrCurrencyCompact(avgBtcPrice))}
-              </p>
-              <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
-            </div>
-          )}
-          {isLoading ? (
-            <ValueSkeleton className="h-3.5 w-20" />
-          ) : (
-            avgBtcPriceUsd !== undefined && (
-              <div className="flex items-center gap-1">
-                <p className="text-[14px] leading-4 font-semibold text-[#64748b]">
-                  {mask(`USD ${fmtPriceCompact(avgBtcPriceUsd)}`)}
-                </p>
-                <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
-              </div>
-            )
-          )}
-        </Card>
-
-        <Card className="bg-card flex flex-col items-start gap-2 rounded-2xl p-3 shadow-none">
-          <Image src="/emoji/graph.webp" alt="" width={36} height={36} className="size-9" />
-          <p className="text-[14px] leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
-            Current Price
-          </p>
-          {isLoading ? (
-            <ValueSkeleton className="h-4 w-20" />
-          ) : (
-            <div className="flex items-center gap-1">
-              <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-                {fmtLkrCurrencyCompact(currentBtcPrice)}
-              </p>
-              <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
-            </div>
-          )}
-          {isLoading ? (
-            <ValueSkeleton className="h-3.5 w-20" />
-          ) : (
-            currentBtcPriceUsd !== undefined && (
-              <div className="flex items-center gap-1">
-                <p className="text-[14px] leading-4 font-semibold text-[#64748b]">
-                  USD {fmtPriceCompact(currentBtcPriceUsd)}
-                </p>
-                <p className="text-[12px] leading-4 text-[#475569] dark:text-[#94a3b8]">per BTC</p>
-              </div>
-            )
-          )}
-        </Card>
+        </Tile>
       </div>
-    </div>
+    </Section>
   );
+}
+
+function Tile({
+  img,
+  label,
+  loading,
+  children,
+}: {
+  img: string;
+  label: React.ReactNode;
+  loading: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card flat className="flex min-w-0 flex-col gap-2 p-3">
+      <Emoji src={img} />
+      <p className="text-[14px] leading-4">{label}</p>
+      {loading ? (
+        <>
+          <ValueSkeleton className="h-4 w-24" />
+          <ValueSkeleton className="h-3 w-28" />
+        </>
+      ) : (
+        children
+      )}
+    </Card>
+  );
+}
+
+function Sep() {
+  return <span aria-hidden className="size-1 shrink-0 rounded-full bg-current opacity-60" />;
 }
