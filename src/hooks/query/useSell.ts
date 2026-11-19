@@ -42,8 +42,20 @@ export interface SellOrder {
  * awaiting_confirmation (approved; Confirm in the bot chat), processing /
  * in_flight / completed (being paid).
  */
+export type SellCollectState =
+  | "requesting"
+  | "pending"
+  | "awaiting_confirmation"
+  | "processing"
+  | "in_flight"
+  | "completed"
+  | "failed"
+  | "declined"
+  | "cancelled"
+  | "expired";
+
 export interface SellCollect {
-  state: string;
+  state: SellCollectState;
   /** Approve before this, or the sale is cancelled (nothing sold) */
   expiresAt: string;
   /** Pay from the app; otherwise only in the bot chat */
