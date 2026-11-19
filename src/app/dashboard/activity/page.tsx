@@ -11,7 +11,6 @@ import { useBotTransactionHistory } from "@/hooks/query/useBotTransactionHistory
 import {
   ACTIVITY_TITLE,
   getActivityCategory,
-  isPurchaseSettlement,
   mapBotTransactionToActivityItem,
   mapDcaTransactionToActivityItem,
   type ActivityCategory,
@@ -38,16 +37,17 @@ export default function ActivityPage() {
   const dca = useTransactionHistory({ enabled: showDca });
   const botHistory = useBotTransactionHistory({ enabled: showBotHistory });
 
-  const activity = useMemo(() => {
-    // A purchase's sats arrive as a bot transfer too: show the purchase once
-    const purchaseIds = new Set(dca.transactions.map((tx) => tx.id));
-    return [
+  const activity = useMemo(
+    () => [
       ...dca.transactions.map(mapDcaTransactionToActivityItem),
+      // A purchase's sats arrive as a bot transfer too: the backend marks
+      // that transfer, so the purchase shows once
       ...botHistory.transactions
-        .filter((tx) => !isPurchaseSettlement(tx, purchaseIds))
+        .filter((tx) => !tx.purchase_settlement)
         .map(mapBotTransactionToActivityItem),
-    ];
-  }, [dca.transactions, botHistory.transactions]);
+    ],
+    [dca.transactions, botHistory.transactions]
+  );
 
   const dcaLoading = showDca && dca.isLoading;
   const botLoading = showBotHistory && botHistory.isLoading;

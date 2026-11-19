@@ -176,4 +176,6 @@ export interface BotTransaction {
   amount_lkr: string | number | null;
   memo?: string;
   success: boolean;
+  /** The transfer that settled one of the user's successful purchases (already listed) */
+  purchase_settlement?: boolean;
 }
