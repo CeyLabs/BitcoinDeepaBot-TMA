@@ -14,4 +14,6 @@ export const queryKeys = {
   sellPrice: ["sell", "price"] as const,
   sellOrders: ["sell", "orders"] as const,
   sellOrder: (id: string) => ["sell", "orders", id] as const,
+  buyPrice: ["buy", "price"] as const,
+  buyOrder: (id: string) => ["buy", "orders", id] as const,
 } as const;

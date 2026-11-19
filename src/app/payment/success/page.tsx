@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { BuyOrderStatus } from "@/components/dashboard/buy/BuyOrderStatus";
+import { Suspense, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Title } from "@/components/ui/title";
 import { celebrate } from "@/lib/celebrate";
 
-export default function PaymentSuccessPage() {
+function PlanPaymentSuccess() {
   useEffect(() => {
     void celebrate();
   }, []);
@@ -34,5 +36,23 @@ export default function PaymentSuccessPage() {
         </Button>
       </Link>
     </main>
+  );
+}
+
+/** One-time buys come back with ?buy_order=<id> (set by the backend). */
+function Content() {
+  const buyOrder = useSearchParams().get("buy_order");
+  return buyOrder ? (
+    <BuyOrderStatus orderId={buyOrder} cancelled={false} />
+  ) : (
+    <PlanPaymentSuccess />
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense>
+      <Content />
+    </Suspense>
   );
 }

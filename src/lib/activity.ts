@@ -23,6 +23,7 @@ export const ACTIVITY_ICON: Record<ActivityType, string> = {
   gift_received: "/emoji/gift_receive.webp",
   tasks_reward: "/emoji/tasks_reward.webp",
   membership_reward: "/emoji/membership_reward.webp",
+  bitcoin_purchase: "/emoji/bitcoin.webp",
 };
 
 export const ACTIVITY_TITLE: Record<ActivityType, string> = {
@@ -36,6 +37,7 @@ export const ACTIVITY_TITLE: Record<ActivityType, string> = {
   gift_received: "Gift Received",
   tasks_reward: "Tasks Reward",
   membership_reward: "Membership Reward",
+  bitcoin_purchase: "Bitcoin Purchase",
 };
 
 export type ActivityCategory = "all" | "transactions" | "tasks" | "plans";
@@ -49,6 +51,8 @@ const TRANSACTION_TYPES: ActivityType[] = [
   "faucet_received",
   "gift_sent",
   "gift_received",
+  // One-time buys aren't part of a plan
+  "bitcoin_purchase",
 ];
 
 export function getActivityCategory(type: ActivityType): ActivityCategory {
@@ -58,8 +62,9 @@ export function getActivityCategory(type: ActivityType): ActivityCategory {
   return "all";
 }
 
-// Each DCA purchase attempt — successful, pending, cancelled, failed, or
-// charged back — maps 1:1 onto the "membership_reward" activity type.
+// Each purchase attempt — successful, pending, cancelled, failed, or charged
+// back — maps 1:1 onto an activity: "membership_reward" for plan charges,
+// "bitcoin_purchase" for one-time buys.
 export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityItem {
   const status = tx.status.toUpperCase();
   const isProcessingSuccess = status === "SUCCESS" && !tx.settled;
@@ -69,8 +74,13 @@ export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityIte
 
   return {
     id: tx.id,
-    type: "membership_reward",
-    detailLabel: tx.package_name ? `${tx.package_name} Plan` : "Destributed",
+    type: tx.kind === "ONE_TIME" ? "bitcoin_purchase" : "membership_reward",
+    detailLabel:
+      tx.kind === "ONE_TIME"
+        ? "One-time Buy"
+        : tx.package_name
+          ? `${tx.package_name} Plan`
+          : "Destributed",
     timestamp: tx.created_at,
     sats: tx.satoshis_purchased,
     lkr: tx.gross_amount,

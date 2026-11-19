@@ -82,3 +82,11 @@ export const sellAmountSchema = (
     .min(minSats, `Minimum is ${minSats.toLocaleString("en-US")} sats`)
     .max(maxSats, `Maximum per sale is ${maxSats.toLocaleString("en-US")} sats`)
     .max(balanceSats, "That's more than your balance");
+
+/** One-time buy amount in whole LKR; limits come from GET /buy/price. */
+export const buyAmountSchema = (minLkr = 100, maxLkr = Number.POSITIVE_INFINITY) =>
+  z
+    .number({ message: "Enter an amount in LKR" })
+    .int("Use whole rupees")
+    .min(minLkr, `Minimum is ${minLkr.toLocaleString("en-US")} LKR`)
+    .max(maxLkr, `Maximum per buy is ${maxLkr.toLocaleString("en-US")} LKR`);

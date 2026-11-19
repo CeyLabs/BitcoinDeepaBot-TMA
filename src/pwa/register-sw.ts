@@ -3,7 +3,7 @@
 const FRESH_MS = 60_000;
 
 // Never reload mid-task: plan checkout (PayHere redirect), KYC, payment
-// return screens, bank statement upload (profile) and selling. A pending
+// return screens, bank statement upload (profile), buying and selling. A pending
 // reload waits until the user is elsewhere.
 const BUSY_PATHS = [
   "/plans/choose",
@@ -11,6 +11,7 @@ const BUSY_PATHS = [
   "/payment",
   "/dashboard/profile",
   "/dashboard/sell",
+  "/dashboard/buy",
 ];
 
 const isBusy = () => BUSY_PATHS.some((path) => location.pathname.startsWith(path));

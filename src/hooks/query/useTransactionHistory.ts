@@ -15,6 +15,8 @@ export interface DcaTransaction {
   /** Amount that bought BTC (gross minus fees); 0 on older rows */
   net_amount: number;
   package_name?: string;
+  /** RECURRING = plan charge, ONE_TIME = one-time buy */
+  kind: "RECURRING" | "ONE_TIME";
   status: string;
   settled?: boolean;
 }
@@ -28,6 +30,7 @@ interface RawTransaction {
   gross_amount?: string | number | null;
   net_amount?: string | number | null;
   package_name?: string;
+  kind?: "RECURRING" | "ONE_TIME";
   status: string;
   settled?: boolean;
 }
@@ -54,6 +57,7 @@ function normalize(tx: RawTransaction): DcaTransaction {
     gross_amount: toNumber(tx.gross_amount),
     net_amount: toNumber(tx.net_amount),
     package_name: tx.package_name,
+    kind: tx.kind ?? "RECURRING",
     status: tx.status,
     settled: tx.settled,
   };

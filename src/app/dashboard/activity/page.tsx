@@ -28,7 +28,9 @@ export default function ActivityPage() {
   const deferredSearch = useDeferredValue(search);
   const [category, setCategory] = useState<ActivityCategory>("all");
 
-  const showDca = category === "all" || category === "plans";
+  // Plan charges show on Plans, one-time buys on Transactions: both come
+  // from the purchase history
+  const showDca = category !== "tasks";
   const showBotHistory = category === "all" || category === "transactions";
 
   // Only fetch the sources the current tab actually shows.
@@ -50,7 +52,7 @@ export default function ActivityPage() {
   // Names the source(s) that failed, for the notice shown above whatever
   // activity did load.
   const failedLabel =
-    dcaFailed && botFailed ? "activity" : dcaFailed ? "plan history" : "transfers";
+    dcaFailed && botFailed ? "activity" : dcaFailed ? "purchase history" : "transfers";
   const refetch = () => {
     if (showDca && dca.isError) dca.refetch();
     if (showBotHistory && botHistory.isError) botHistory.refetch();
