@@ -204,6 +204,12 @@ export const clearAuthFromStorage = () => {
  * the Login Widget) mint tokens with the same payload shape, so this works
  * regardless of which one signed the user in.
  */
+/** The Telegram user id a backend token was issued for */
+export const tokenUserId = (token: string): string | null => {
+  const id = decodeTokenPayload(token)?.id;
+  return typeof id === "string" ? id : null;
+};
+
 export const getUserFromToken = (): { id: string; username?: string } | null => {
   const token = getAuthTokenFromStorage();
   if (!token) return null;

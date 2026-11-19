@@ -168,6 +168,11 @@ export function createTelegramPlatform(launch: TelegramLaunch | null = readLaunc
         return requestConfirm(options);
       }
     },
+    close: () =>
+      tryOr(
+        () => postEvent("web_app_close"),
+        () => {}
+      ),
     getColorScheme: () => scheme,
     onColorSchemeChange: (onChange) =>
       on("theme_changed", ({ theme_params }) => {

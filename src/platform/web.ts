@@ -45,6 +45,7 @@ export function createWebPlatform(kind: Platform["kind"] = "web"): Platform {
     share: shareOrCopy,
     // In-app sheet rather than the browser's native confirm() box
     confirm: requestConfirm,
+    close: () => {},
     getColorScheme: () => null,
     onColorSchemeChange: () => null,
   };

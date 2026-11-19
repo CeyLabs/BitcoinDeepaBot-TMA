@@ -90,3 +90,22 @@ export const buyAmountSchema = (minLkr = 100, maxLkr = Number.POSITIVE_INFINITY)
     .int("Use whole rupees")
     .min(minLkr, `Minimum is ${minLkr.toLocaleString("en-US")} LKR`)
     .max(maxLkr, `Maximum per buy is ${maxLkr.toLocaleString("en-US")} LKR`);
+
+/** P2P send amount; limits come from GET /p2p/me (the bot's). */
+export const sendAmountSchema = (balanceSats: number, maxSats: number, dailyRemaining: number) =>
+  z
+    .number({ message: "Enter an amount in sats" })
+    .int("Use whole sats")
+    .min(1, "Enter an amount in sats")
+    .max(maxSats, `Maximum per send is ${maxSats.toLocaleString("en-US")} sats`)
+    .max(dailyRemaining, `You can send ${dailyRemaining.toLocaleString("en-US")} more sats today`)
+    .max(balanceSats, "That's more than your balance");
+
+/** @username, username or a numeric Telegram ID */
+export const sendRecipientSchema = z
+  .string()
+  .trim()
+  .min(1, "Enter a @username or Telegram ID")
+  .max(64, "That's too long for a username or ID");
+
+export const sendMemoSchema = z.string().max(280, "Keep the note under 280 characters");

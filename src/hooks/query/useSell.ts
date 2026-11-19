@@ -4,6 +4,7 @@ import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/r
 import { useSession } from "@/hooks/useSession";
 import fetchy from "@/lib/fetchy";
 import { queryKeys } from "@/lib/query-keys";
+import { useP2pHeaders } from "@/hooks/query/useP2p";
 
 export type SellStatus =
   | "QUOTED"
@@ -31,6 +32,34 @@ export interface SellOrder {
   failureReason: string | null;
   createdAt: string;
   completedAt: string | null;
+  /** While COLLECTING: the user approves the payment of the sats */
+  collect: SellCollect | null;
+}
+
+/**
+ * The payment the user approves to finish a sale (the bot's collect request).
+ * state: requesting (being set up), pending (waiting for the user),
+ * awaiting_confirmation (approved; Confirm in the bot chat), processing /
+ * in_flight / completed (being paid).
+ */
+export type SellCollectState =
+  | "requesting"
+  | "pending"
+  | "awaiting_confirmation"
+  | "processing"
+  | "in_flight"
+  | "completed"
+  | "failed"
+  | "declined"
+  | "cancelled"
+  | "expired";
+
+export interface SellCollect {
+  state: SellCollectState;
+  /** Approve before this, or the sale is cancelled (nothing sold) */
+  expiresAt: string;
+  /** Pay from the app; otherwise only in the bot chat */
+  payInApp: boolean;
 }
 
 export interface SellPrice {
@@ -51,6 +80,7 @@ export const IN_PROGRESS_SELL_STATUSES: SellStatus[] = [
 
 /**
  * How often to re-check an order, or false once it is final:
+ * - waiting for the user to approve the payment (in the bot chat too): 3s
  * - sats being taken, payout on its way, or sats being returned: every 5s
  * - QUOTED: a confirm may still be in flight (the app lost the response), or
  *   the quote will expire within a minute: every 5s until it settles
@@ -58,6 +88,7 @@ export const IN_PROGRESS_SELL_STATUSES: SellStatus[] = [
  */
 export function sellOrderPollInterval(status: SellStatus | undefined): number | false {
   if (!status) return false;
+  if (status === "COLLECTING") return 3_000;
   if (status === "QUOTED" || IN_PROGRESS_SELL_STATUSES.includes(status)) return 5_000;
   if (status === "NEEDS_REVIEW") return 15_000;
   return false;
@@ -108,6 +139,41 @@ export function useSellOrder(id: string) {
 export function useSellQuote() {
   return useMutation({
     mutationFn: (sats: number) => fetchy.post<SellOrder>("/sell/quote", { sats }),
+  });
+}
+
+/** Refresh what a sale's payment changes: the wallet, history and orders */
+function useInvalidateAfterSale() {
+  const queryClient = useQueryClient();
+  return (order?: SellOrder) => {
+    if (order) queryClient.setQueryData(queryKeys.sellOrder(order.id), order);
+    void queryClient.invalidateQueries({ queryKey: queryKeys.walletSummary });
+    void queryClient.invalidateQueries({ queryKey: ["bot-transactions"] });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.sellOrders });
+  };
+}
+
+/**
+ * Pay a confirmed sale from the app, with the user's Telegram credential (the
+ * Mini App's launch data; on the web the backend keeps the latest login).
+ * 403 credential_stale / credential_rejected: reopen the app or log in again.
+ */
+export function usePaySell(id: string) {
+  const headers = useP2pHeaders();
+  const refresh = useInvalidateAfterSale();
+  return useMutation({
+    mutationFn: () => fetchy.post<SellOrder>(`/sell/orders/${id}/pay`, undefined, { headers }),
+    onSuccess: (order) => refresh(order),
+    onError: () => refresh(),
+  });
+}
+
+/** Cancel a sale that isn't paid yet (nothing is sold) */
+export function useCancelSell(id: string) {
+  const refresh = useInvalidateAfterSale();
+  return useMutation({
+    mutationFn: () => fetchy.post<SellOrder>(`/sell/orders/${id}/cancel`),
+    onSuccess: (order) => refresh(order),
   });
 }
 
