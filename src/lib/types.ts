@@ -68,7 +68,8 @@ export type ActivityType =
   | "gift_sent"
   | "gift_received"
   | "tasks_reward"
-  | "membership_reward";
+  | "membership_reward"
+  | "bitcoin_purchase";
 
 export interface ActivityItem {
   id: string;
