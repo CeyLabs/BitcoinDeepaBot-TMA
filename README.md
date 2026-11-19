@@ -19,6 +19,10 @@ The API lives in [BitcoinDeepa-DCA-BE](https://github.com/CeyLabs/BitcoinDeepa-D
 - **Referral System**: Earn rewards for inviting friends
 - **Currency Formatting**: LKR/satoshi amounts formatted for Sri Lankan users
 
+## 📖 User Guide
+
+The guide for members (installation, setup and how to use each screen) lives in [docs/user-guide](docs/user-guide/README.md). It is laid out for GitBook Git Sync: `.gitbook.yaml` points GitBook at that folder.
+
 ## 🛠 Tech Stack
 
 - **Framework**: Next.js 16 with App Router

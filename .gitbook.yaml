@@ -1,0 +1,6 @@
+# GitBook Git Sync: publish the user guide from docs/user-guide.
+root: ./docs/user-guide/
+
+structure:
+  readme: README.md
+  summary: SUMMARY.md
