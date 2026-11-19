@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
@@ -18,9 +18,26 @@ export function BuyAmountForm() {
   const router = useRouter();
   const [value, setValue] = useState("");
   const [error, setError] = useState<string>();
-  const { data: price } = useBuyPrice();
+  const [redirectFailed, setRedirectFailed] = useState(false);
+  const {
+    data: price,
+    isError: priceFailed,
+    refetch: refetchPrice,
+    isFetching: priceFetching,
+  } = useBuyPrice();
   const createLink = useCreateBuyLink();
+  const { reset: resetCreateLink } = createLink;
   const redirectToPayHere = usePayHereRedirect();
+
+  // Back from PayHere can restore this page from the browser's cache with
+  // the button still loading: make it usable again
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) resetCreateLink();
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, [resetCreateLink]);
 
   const amount = Number(value.replace(/[,\s]/g, "")) || 0;
   const estimate = price
@@ -37,18 +54,27 @@ export function BuyAmountForm() {
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const parsed = buyAmountSchema(price?.minLkr, price?.maxLkr).safeParse(amount || undefined);
+    // The user must see the fee, estimate and limits before paying
+    if (!price) return;
+    const parsed = buyAmountSchema(price.minLkr, price.maxLkr).safeParse(amount || undefined);
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message);
       haptic.notify("error");
       return;
     }
     setError(undefined);
+    setRedirectFailed(false);
     haptic.impact("medium");
     createLink.mutate(parsed.data, {
       onSuccess: ({ link }) => {
-        haptic.notify("success");
-        redirectToPayHere(link);
+        if (redirectToPayHere(link)) {
+          haptic.notify("success");
+          return;
+        }
+        // The checkout is reserved until it expires; a new one can be made
+        haptic.notify("error");
+        resetCreateLink();
+        setRedirectFailed(true);
       },
       onError: (err) => {
         // Backend's KycVerifiedGuard rejects with 403 until KYC is approved
@@ -122,6 +148,31 @@ export function BuyAmountForm() {
         </div>
       </div>
 
+      {priceFailed && !price && (
+        <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#f13131]/10 px-4 py-3">
+          <p className="text-[13px] leading-4.5 text-[#f13131]">
+            Couldn&apos;t load the current price and fees.
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            loading={priceFetching}
+            onClick={() => void refetchPrice()}
+          >
+            Try again
+          </Button>
+        </div>
+      )}
+
+      {redirectFailed && (
+        <div className="rounded-2xl bg-[#f13131]/10 px-4 py-3">
+          <p className="text-[13px] leading-4.5 text-[#f13131]">
+            Couldn&apos;t open PayHere. Please try again.
+          </p>
+        </div>
+      )}
+
       {createLink.error instanceof Error &&
         !(createLink.error instanceof FetchyError && createLink.error.status === 403) && (
           <div className="rounded-2xl bg-[#f13131]/10 px-4 py-3">
@@ -134,7 +185,7 @@ export function BuyAmountForm() {
         size="lg"
         className="w-full rounded-[12px]"
         loading={createLink.isPending || createLink.isSuccess}
-        disabled={!amount}
+        disabled={!amount || !price}
       >
         Pay with PayHere
       </Button>

@@ -7,7 +7,8 @@ import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Title } from "@/components/ui/title";
-import { isBuyOrderId, useBuyOrder, type BuyOrder } from "@/hooks/query/useBuy";
+import { isBuyOrderId, isUnpaidAndExpired, useBuyOrder, type BuyOrder } from "@/hooks/query/useBuy";
+import { FetchyError } from "@/lib/fetchy";
 import { useSession } from "@/hooks/useSession";
 import { celebrate } from "@/lib/celebrate";
 import { fmtLkrExact, fmtSats } from "@/lib/formatters";
@@ -20,17 +21,25 @@ function stateOf(order: BuyOrder | undefined, cancelled: boolean) {
   const amount = fmtLkrExact(order.amount_lkr);
   switch (order.status) {
     case "AWAITING_PAYMENT":
-      return cancelled
-        ? {
-            title: "Payment Cancelled",
-            text: `Your ${amount} buy was not completed. You can try again anytime.`,
-            emoji: "/emoji/animated/cross-mark.webp",
-          }
-        : {
-            title: "Waiting for PayHere",
-            text: `We're waiting for PayHere to confirm your ${amount} payment. This usually takes a few seconds.`,
-            spinner: true,
-          };
+      if (cancelled) {
+        return {
+          title: "Payment Cancelled",
+          text: `Your ${amount} buy was not completed. You can try again anytime.`,
+          emoji: "/emoji/animated/cross-mark.webp",
+        };
+      }
+      if (isUnpaidAndExpired(order)) {
+        return {
+          title: "No payment received",
+          text: `We didn't receive a payment for this ${amount} checkout. If you did pay, it will show in Activity once confirmed.`,
+          emoji: "/emoji/animated/cross-mark.webp",
+        };
+      }
+      return {
+        title: "Waiting for PayHere",
+        text: `We're waiting for PayHere to confirm your ${amount} payment. This usually takes a few seconds.`,
+        spinner: true,
+      };
     case "PENDING":
       return {
         title: "Payment pending",
@@ -64,11 +73,24 @@ function stateOf(order: BuyOrder | undefined, cancelled: boolean) {
         text: "This payment was reversed by your bank. Contact support if this is unexpected.",
         emoji: "/emoji/animated/cross-mark.webp",
       };
-    default:
+    case "FAILED":
       return {
         title: "Payment failed",
         text: `Your ${amount} payment didn't go through. Nothing was charged.`,
         emoji: "/emoji/animated/cross-mark.webp",
+      };
+    case "CANCELLED":
+      return {
+        title: "Payment cancelled",
+        text: `Your ${amount} payment was cancelled. Nothing was charged.`,
+        emoji: "/emoji/animated/cross-mark.webp",
+      };
+    default:
+      // A status this screen doesn't know: don't claim anything about money
+      return {
+        title: "Payment status unknown",
+        text: "We couldn't confirm this payment. Check Activity or contact support.",
+        emoji: "/emoji/animated/exclamation-mark.webp",
       };
   }
 }
@@ -99,11 +121,22 @@ export function BuyOrderStatus({ orderId, cancelled }: { orderId: string; cancel
   const queryClient = useQueryClient();
   const { status: session } = useSession();
   const validId = isBuyOrderId(orderId);
-  const { data: order, isError, refetch, isFetching } = useBuyOrder(validId ? orderId : null);
+  const {
+    data: order,
+    error,
+    isError,
+    refetch,
+    isFetching,
+  } = useBuyOrder(validId ? orderId : null);
   const done = order?.status === "SUCCESS" && order.settled;
-  const waiting =
-    !cancelled && (order?.status === "AWAITING_PAYMENT" || order?.status === "PENDING");
-  const slow = useSlow(waiting);
+  // Spinner states: PayHere hasn't confirmed yet, or it has and the sats
+  // are being sent. Each gets its own message once it takes a while.
+  const confirming =
+    order?.status === "PENDING" ||
+    (!cancelled && order?.status === "AWAITING_PAYMENT" && !isUnpaidAndExpired(order));
+  const sending = order?.status === "SUCCESS" && !order.settled && !order.held;
+  const slow = useSlow(confirming || sending);
+  const notFound = error instanceof FetchyError && error.status === 404;
   const celebrated = useRef(false);
 
   useEffect(() => {
@@ -117,7 +150,7 @@ export function BuyOrderStatus({ orderId, cancelled }: { orderId: string; cancel
 
   let state: { title: string; text: string; emoji?: string; spinner?: boolean };
   let retry = false;
-  if (!validId) {
+  if (!validId || (notFound && !order)) {
     state = {
       title: "Purchase not found",
       text: `We couldn't find this purchase. ${DONT_PAY_AGAIN}`,
@@ -138,11 +171,17 @@ export function BuyOrderStatus({ orderId, cancelled }: { orderId: string; cancel
     retry = true;
   } else {
     state = stateOf(order, cancelled);
-    if (slow) {
+    if (slow && confirming) {
       state = {
         ...state,
         title: "Still confirming your payment",
         text: `PayHere hasn't confirmed it yet. You can leave this page. ${DONT_PAY_AGAIN}`,
+      };
+    } else if (slow && sending) {
+      state = {
+        ...state,
+        title: "Payment received",
+        text: "Your sats are on the way. You can leave this page; they'll show in your wallet.",
       };
     }
   }
@@ -178,7 +217,7 @@ export function BuyOrderStatus({ orderId, cancelled }: { orderId: string; cancel
             {session === "unauthenticated" ? "Sign in" : "Go to Dashboard"}
           </Button>
         </Link>
-        {order && !state.spinner && !done && !order.held && !slow && (
+        {order && !state.spinner && !done && !order.held && order.status !== "CHARGEBACK" && (
           <Link href="/dashboard/buy" className="text-primary text-[15px] font-semibold">
             Buy again
           </Link>

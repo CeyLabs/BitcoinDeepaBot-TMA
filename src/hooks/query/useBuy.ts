@@ -2,7 +2,7 @@
 
 import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import { useSession } from "@/hooks/useSession";
-import fetchy from "@/lib/fetchy";
+import fetchy, { FetchyError } from "@/lib/fetchy";
 import { queryKeys } from "@/lib/query-keys";
 
 export interface BuyPrice {
@@ -39,14 +39,25 @@ export interface BuyOrder {
  */
 export function buyOrderPollInterval(order: BuyOrder | undefined): number | false {
   if (!order) return false;
-  if (order.status === "AWAITING_PAYMENT" || order.status === "PENDING") {
-    // Slow down once it's clearly not a matter of seconds
-    const ageMs = Date.now() - new Date(order.created_at).getTime();
-    return ageMs < 5 * 60_000 ? 4_000 : 15_000;
-  }
+  // Slow down once it's clearly not a matter of seconds
+  const ageMs = Date.now() - new Date(order.created_at).getTime();
+  const interval = ageMs < 5 * 60_000 ? 4_000 : 15_000;
+  if (order.status === "AWAITING_PAYMENT") return isUnpaidAndExpired(order) ? false : interval;
+  if (order.status === "PENDING") return interval;
   // Held: a person releases it, so check now and then
-  if (order.status === "SUCCESS" && !order.settled) return order.held ? 30_000 : 4_000;
+  if (order.status === "SUCCESS" && !order.settled) return order.held ? 30_000 : interval;
   return false;
+}
+
+/** The backend still accepts (and holds) a payment this long after expires_at */
+const BUY_ORDER_EXPIRY_GRACE_MS = 10 * 60_000;
+
+/** Never paid, and past the point where PayHere could still confirm it. */
+export function isUnpaidAndExpired(order: BuyOrder): boolean {
+  return (
+    order.status === "AWAITING_PAYMENT" &&
+    Date.now() > new Date(order.expires_at).getTime() + BUY_ORDER_EXPIRY_GRACE_MS
+  );
 }
 
 export const buyPriceOptions = () =>
@@ -63,6 +74,9 @@ export const buyOrderOptions = (id: string) =>
     queryFn: () => fetchy.get<BuyOrder>(`/buy/orders/${id}`),
     staleTime: 0,
     refetchInterval: (query) => buyOrderPollInterval(query.state.data),
+    // A 4xx (e.g. 404: another account's order) won't change on retry
+    retry: (failures, error) =>
+      !(error instanceof FetchyError && error.status < 500) && failures < 3,
   });
 
 function useAuthed() {
