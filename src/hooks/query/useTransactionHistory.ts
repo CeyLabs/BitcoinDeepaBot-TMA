@@ -4,7 +4,7 @@ import { infiniteQueryOptions, useInfiniteQuery, type InfiniteData } from "@tans
 import { queryKeys } from "@/lib/query-keys";
 import { useSession } from "@/hooks/useSession";
 import fetchy, { FetchyError } from "@/lib/fetchy";
-import { IN_PROGRESS_SELL_STATUSES, type SellOrder } from "@/hooks/query/useSell";
+import type { SellOrder } from "@/hooks/query/useSell";
 
 export interface DcaTransaction {
   id: string;
@@ -129,14 +129,6 @@ export const transactionsOptions = (userId: string) =>
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => (lastPage.hasMore ? allPages.length + 1 : undefined),
     staleTime: 1000 * 60 * 5,
-    // A sale still moving (sats being taken, payout on its way, refund):
-    // follow it until it settles
-    refetchInterval: (query) =>
-      query.state.data?.pages.some((page) =>
-        page.sales.some((sale) => IN_PROGRESS_SELL_STATUSES.includes(sale.status))
-      )
-        ? 15_000
-        : false,
     select: flattenTransactions,
   });
 

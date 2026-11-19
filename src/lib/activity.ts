@@ -125,7 +125,7 @@ const SELL_BADGE_DOT: Record<
   active: "green",
   pending: "orange",
   negative: "red",
-  secondary: "gray",
+  soft: "gray",
 };
 
 // A sale from the member's history: sats out of the wallet, LKR to their
@@ -134,7 +134,7 @@ const SELL_BADGE_DOT: Record<
 export function mapSellOrderToActivityItem(order: SellOrder): ActivityItem {
   const { label, variant } = SELL_STATUS_BADGE[order.status] ?? {
     label: order.status,
-    variant: "secondary" as const,
+    variant: "soft" as const,
   };
   return {
     id: `sell-${order.id}`,
@@ -153,32 +153,6 @@ export function mapSellOrderToActivityItem(order: SellOrder): ActivityItem {
       transactionId: order.id,
     },
   };
-}
-
-// The bot payment that took a sale's sats ("Bitcoin Deepa sale: ..." memo, set
-// by the backend's collect request). The sale is already listed, so it shows
-// once. A refunded sale keeps its payment, so it nets out with the refund.
-// Each sale hides at most one payment: same sats, made after the sale started.
-const SALE_MEMO = /^Bitcoin Deepa sale:/;
-
-export function withoutSalePayments(
-  transfers: BotTransaction[],
-  sales: SellOrder[]
-): BotTransaction[] {
-  const unmatched = sales.filter((sale) => sale.status !== "REFUNDED");
-  if (unmatched.length === 0) return transfers;
-  return transfers.filter((tx) => {
-    if (tx.direction !== "outgoing" || !tx.success || !SALE_MEMO.test(tx.memo ?? "")) {
-      return true;
-    }
-    const sentAt = new Date(tx.time).getTime();
-    const i = unmatched.findIndex(
-      (sale) => sale.sats === tx.amount && sentAt >= new Date(sale.createdAt).getTime()
-    );
-    if (i === -1) return true;
-    unmatched.splice(i, 1);
-    return false;
-  });
 }
 
 // A bot-relayed sats transfer to/from another Telegram user maps onto the

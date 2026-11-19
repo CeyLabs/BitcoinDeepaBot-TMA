@@ -1,6 +1,13 @@
 "use client";
 
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import {
+  queryOptions,
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useSession } from "@/hooks/useSession";
 import fetchy from "@/lib/fetchy";
 import { queryKeys } from "@/lib/query-keys";
@@ -134,6 +141,31 @@ export function useSellOrders(enabled = true) {
 export function useSellOrder(id: string) {
   const isAuthed = useAuthed();
   return useQuery({ ...sellOrderOptions(id), enabled: isAuthed && !!id });
+}
+
+/**
+ * Follows the history's sales that are still moving, each with its own order
+ * query (it polls only while the sale moves), instead of re-polling the whole
+ * history. When one settles, the history and the wallet refresh once.
+ */
+export function useRefreshWhenSalesSettle(sales: SellOrder[]) {
+  const isAuthed = useAuthed();
+  const queryClient = useQueryClient();
+  const moving = sales.filter((sale) => sellOrderPollInterval(sale.status) !== false);
+  const settled = useQueries({
+    queries: moving.map((sale) => ({ ...sellOrderOptions(sale.id), enabled: isAuthed })),
+    combine: (results) =>
+      results
+        .filter((q) => q.data && sellOrderPollInterval(q.data.status) === false)
+        .map((q) => q.data?.id)
+        .join(","),
+  });
+
+  useEffect(() => {
+    if (!settled) return;
+    void queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.walletSummary });
+  }, [settled, queryClient]);
 }
 
 export function useSellQuote() {

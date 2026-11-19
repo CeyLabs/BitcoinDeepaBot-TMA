@@ -11,13 +11,13 @@ import { Button } from "@/components/ui/button";
 import { haptic } from "@/platform";
 import { useTransactionHistory } from "@/hooks/query/useTransactionHistory";
 import { useBotTransactionHistory } from "@/hooks/query/useBotTransactionHistory";
+import { useRefreshWhenSalesSettle } from "@/hooks/query/useSell";
 import {
   ACTIVITY_TITLE,
   getActivityCategory,
   mapBotTransactionToActivityItem,
   mapDcaTransactionToActivityItem,
   mapSellOrderToActivityItem,
-  withoutSalePayments,
   type ActivityCategory,
 } from "@/lib/activity";
 import { useBalanceVisible } from "@/hooks/useBalanceVisible";
@@ -41,18 +41,18 @@ export default function ActivityPage() {
   // Only fetch the sources the current tab actually shows.
   const dca = useTransactionHistory({ enabled: showDca });
   const botHistory = useBotTransactionHistory({ enabled: showBotHistory });
+  // A sale still moving is followed on its own; the history reloads once it settles
+  useRefreshWhenSalesSettle(dca.sales);
 
   const activity = useMemo(
     () => [
       ...dca.transactions.map(mapDcaTransactionToActivityItem),
       ...dca.sales.map(mapSellOrderToActivityItem),
-      // A purchase's sats arrive as a bot transfer too: the backend marks
-      // that transfer, so the purchase shows once. A sale's sats leave as a
-      // bot payment: matched to the listed sale, so it shows once too
-      ...withoutSalePayments(
-        botHistory.transactions.filter((tx) => !tx.purchase_settlement),
-        dca.sales
-      ).map(mapBotTransactionToActivityItem),
+      // A purchase's sats arrive as a bot transfer, and a sale's leave as a
+      // bot payment: the backend marks both, so each shows once
+      ...botHistory.transactions
+        .filter((tx) => !tx.purchase_settlement && !tx.sale_payment)
+        .map(mapBotTransactionToActivityItem),
     ],
     [dca.transactions, dca.sales, botHistory.transactions]
   );
