@@ -45,6 +45,8 @@ export function createWebPlatform(kind: Platform["kind"] = "web"): Platform {
     share: shareOrCopy,
     // In-app sheet rather than the browser's native confirm() box
     confirm: requestConfirm,
+    // The web login already asks for it (data-request-access="write")
+    requestWriteAccess: async () => false,
     close: () => {},
     getColorScheme: () => null,
     onColorSchemeChange: () => null,

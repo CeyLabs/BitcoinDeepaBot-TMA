@@ -66,6 +66,12 @@ export interface Platform {
   /** Share a link: Telegram's share sheet, the native share sheet, or copy. */
   share(input: ShareInput): Promise<ShareResult>;
   confirm(options: ConfirmOptions): Promise<boolean>;
+  /**
+   * Ask the user to let the bot message them (Telegram only). true when
+   * allowed; false when refused, unsupported, or on the web (where the login
+   * itself asks).
+   */
+  requestWriteAccess(): Promise<boolean>;
   /** Close the Mini App (Telegram only; no-op on the web). */
   close(): void;
   /**

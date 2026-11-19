@@ -10,6 +10,8 @@ interface ShowToastOptions {
   title: React.ReactNode;
   description?: React.ReactNode;
   type?: ToastType;
+  /** ms before it hides (default 4000) */
+  timeout?: number;
 }
 
 /**

@@ -7,6 +7,7 @@ import {
   openTelegramLink,
   popup,
   postEvent,
+  requestWriteAccess,
   retrieveLaunchParams,
   retrieveRawInitData,
   shareStory,
@@ -166,6 +167,14 @@ export function createTelegramPlatform(launch: TelegramLaunch | null = readLaunc
       } catch {
         // Popup API unsupported on this client — fall back to the in-app sheet.
         return requestConfirm(options);
+      }
+    },
+    requestWriteAccess: async () => {
+      try {
+        return (await requestWriteAccess()) === "allowed";
+      } catch {
+        // Unsupported client (Mini Apps < 6.9) or the request failed
+        return false;
       }
     },
     close: () =>
