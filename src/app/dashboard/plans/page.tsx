@@ -1,6 +1,7 @@
 "use client";
 
 import { PlanHeroCard } from "@/components/dashboard/plans/PlanHeroCard";
+import { ChoosePlanView } from "@/components/dashboard/plans/ChoosePlanView";
 import { GiftPlansComingSoon } from "@/components/dashboard/plans/GiftPlansComingSoon";
 import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotice";
 import { useToast } from "@/components/ui/toast";
@@ -42,7 +43,7 @@ export default function PlansPage() {
     haptic.impact("rigid");
 
     try {
-      // Invalidates the current subscription, so this page falls back to "No active plan".
+      // Invalidates the current subscription, so this page switches to the plan picker.
       await cancelSubscription.mutateAsync();
       haptic.notify("success");
       toast({
@@ -62,6 +63,9 @@ export default function PlansPage() {
 
   if (kycLoading) return <PlansLoading />;
   if (kyc?.status !== "APPROVED") return <KycRequiredNotice />;
+  if (subscriptionLoading) return <PlansLoading />;
+  // No plan yet (or just cancelled): go straight to the plan picker.
+  if (!subscription) return <ChoosePlanView asTab />;
 
   return (
     <div className="stagger flex w-full flex-col gap-5">

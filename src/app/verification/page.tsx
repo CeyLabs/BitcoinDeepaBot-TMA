@@ -98,7 +98,7 @@ export default function VerificationIntroPage() {
   useEffect(() => {
     if (status === "APPROVED") {
       haptic.notify("success");
-      const timeout = setTimeout(() => router.push("/plans/choose"), 2000);
+      const timeout = setTimeout(() => router.push("/dashboard/plans"), 2000);
       return () => clearTimeout(timeout);
     }
   }, [status, router]);
@@ -139,7 +139,7 @@ export default function VerificationIntroPage() {
       <Button
         onClick={() => {
           haptic.impact("medium");
-          router.push("/plans/choose");
+          router.push("/dashboard/plans");
         }}
       >
         Continue to plans

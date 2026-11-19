@@ -7,9 +7,10 @@ import { usePlatform } from "./PlatformProvider";
 /**
  * Shows the native Telegram back chevron and wires it to `onBack` for the
  * page's lifetime. No-op outside Telegram (or on clients without one), where
- * pages render their own back button instead.
+ * pages render their own back button instead. Pass `enabled: false` to skip it
+ * (e.g. a view that is sometimes a tab root, where there's nowhere to go back to).
  */
-export function useBackButton(onBack: () => void) {
+export function useBackButton(onBack: () => void, enabled = true) {
   const inTelegram = usePlatform().kind === "telegram";
 
   // Callers typically pass an inline arrow function, which is a new reference
@@ -21,7 +22,7 @@ export function useBackButton(onBack: () => void) {
   });
 
   useEffect(() => {
-    if (!inTelegram) return;
+    if (!inTelegram || !enabled) return;
     try {
       if (!backButton.isSupported()) return;
       if (!backButton.isMounted()) backButton.mount();
@@ -34,5 +35,5 @@ export function useBackButton(onBack: () => void) {
     } catch {
       // SDK not initialized / unsupported client — no native back button.
     }
-  }, [inTelegram]);
+  }, [inTelegram, enabled]);
 }

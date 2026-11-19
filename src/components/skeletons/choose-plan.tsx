@@ -1,4 +1,5 @@
 import { Bone, BoneCard } from "@/components/ui/bone";
+import { PLAN_CTA_BAR } from "@/components/dashboard/plans/plan-cta-bar";
 
 // Mirrors the plan picker (back row, title, weekly/monthly toggle, plan cards,
 // bottom bar) so the page fills in place instead of flashing a spinner.
@@ -28,7 +29,8 @@ export function ChoosePlanSkeleton() {
           </BoneCard>
         ))}
       </div>
-      <div className="from-background fixed bottom-0 left-1/2 z-30 w-[min(440px,100vw)] -translate-x-1/2 bg-linear-to-t from-[74%] to-transparent px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))]">
+      <div aria-hidden className="h-[62px] shrink-0" />
+      <div className={PLAN_CTA_BAR}>
         <Bone className="h-[50px] w-full rounded-xl" />
       </div>
     </>

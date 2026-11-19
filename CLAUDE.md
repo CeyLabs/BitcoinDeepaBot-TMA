@@ -50,7 +50,8 @@ There is no test suite configured. Always run `bun run format` and `bun run buil
 ### Routing / pages (App Router)
 
 - `src/app/dashboard/` — main authenticated app (activity, news, plans, tasks; guarded by `useAuthGuard`).
-- `src/app/plans/choose/` and `src/app/verification/` (+ `verification/details`) — onboarding/plan-selection and KYC flows, outside the dashboard guard.
+- Plan picker: `ChoosePlanView` (`src/components/dashboard/plans/`) renders as the Plans tab when there's no active plan, and as the pushed `/dashboard/plans/choose` page (change plan) — both inside the dashboard layout, so the tab bar stays visible. `/plans/choose` only redirects there, for old links.
+- `src/app/verification/` (+ `verification/details`) — KYC flow, outside the dashboard guard.
 - `src/app/error.tsx` / `src/app/not-found.tsx` — App Router error/404 boundaries.
 - Route-level `loading.tsx` files provide skeleton states (e.g. `src/app/dashboard/news/loading.tsx`).
 
