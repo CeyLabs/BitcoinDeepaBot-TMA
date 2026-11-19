@@ -89,4 +89,3 @@ There is no test suite configured. Always run `bun run format` and `bun run buil
 ### Deployment
 
 - Vercel (Next.js preset). `bun run build` also stamps the service worker with the commit sha (`VERCEL_GIT_COMMIT_SHA`).
-
