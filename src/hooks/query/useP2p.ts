@@ -7,6 +7,8 @@ import fetchy, { FetchyError } from "@/lib/fetchy";
 import { queryKeys } from "@/lib/query-keys";
 import { p2pPollInterval, type P2pMe, type P2pRecipient, type P2pTransfer } from "@/lib/p2p";
 import { usePlatform } from "@/platform";
+import { useDebounced } from "@/hooks/useDebounced";
+import { normalizeUsername, USERNAME_RE } from "@/lib/username";
 
 export interface P2pSendInput {
   to_telegram_id: number;
@@ -71,11 +73,24 @@ export function useP2pTransfer(id: string) {
   return query;
 }
 
-export function useResolveRecipient() {
-  const headers = useP2pHeaders();
-  return useMutation({
-    mutationFn: (to: string) => fetchy.post<P2pRecipient>("/p2p/resolve", { to }, { headers }),
+/**
+ * Finds a member by their Bitcoin Deepa @username (the backend's own DB, no
+ * Telegram credential needed). Looks up once typing pauses, and only names
+ * that pass the format check; a 404 means no one has it.
+ */
+export function useRecipient(input: string) {
+  const isAuthed = useSession().status === "authenticated";
+  const username = useDebounced(normalizeUsername(input));
+  const valid = USERNAME_RE.test(username);
+  const query = useQuery({
+    queryKey: queryKeys.p2pRecipient(username),
+    queryFn: () => fetchy.post<P2pRecipient>("/p2p/resolve", { to: username }),
+    enabled: isAuthed && valid,
+    staleTime: 60_000,
+    retry: false,
   });
+  const settled = username === normalizeUsername(input);
+  return { username, valid, settled, ...query };
 }
 
 export function useP2pSend() {
