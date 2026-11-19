@@ -100,3 +100,11 @@ export function recipientLabel(r: P2pRecipient | undefined): string {
   if (r.name && r.username && r.name !== `@${r.username}`) return `${r.name} (@${r.username})`;
   return r.name || (r.username ? `@${r.username}` : String(r.telegram_id));
 }
+
+/** POST /init: the user's bot wallet, created if they never pressed Start in the bot */
+export type BotWalletInit = Omit<P2pMe, "credential"> & {
+  /** This call created the wallet */
+  created: boolean;
+  /** New wallets only: false = the bot can't message the user yet */
+  can_message?: boolean;
+};

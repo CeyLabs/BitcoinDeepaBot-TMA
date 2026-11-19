@@ -9,6 +9,9 @@ import { ToastProvider } from "@/components/ui/toast";
 import { ConfirmHost } from "@/components/ui/confirm-dialog";
 import { OfflineBanner } from "@/components/offline-banner";
 import { SwipeClickGuard } from "@/components/swipe-click-guard";
+import { useBotWalletInit } from "@/hooks/useBotWalletInit";
+import { useToast } from "@/components/ui/toast";
+import { TELEGRAM_BOT_URL } from "@/lib/constants";
 import ThemeProvider from "./theme";
 
 // Registers/refreshes the Telegram user on launch (and after the session
@@ -17,6 +20,29 @@ function RegisterUserOnLaunch() {
   const launch = usePlatform().launch;
   useRegisterUser();
   useRegisterTelegramUser(launch?.initData, launch?.raw);
+  return null;
+}
+
+// Creates the bot wallet in the background for users who never started the
+// bot. Needs the toast provider (the "Open the bot" nudge).
+function BotWalletOnLaunch() {
+  const toast = useToast();
+  const platform = usePlatform();
+  useBotWalletInit(() =>
+    toast({
+      title: "Get updates from the bot",
+      description: (
+        <button
+          type="button"
+          className="text-primary font-semibold underline"
+          onClick={() => platform.openTelegramLink(TELEGRAM_BOT_URL)}
+        >
+          Open the bot and press Start
+        </button>
+      ),
+      timeout: 15_000,
+    })
+  );
   return null;
 }
 
@@ -49,6 +75,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           {/* Needs the query client (useSession). */}
           <RegisterUserOnLaunch />
           <ToastProvider>
+            <BotWalletOnLaunch />
             <OfflineBanner />
             {children}
             <ConfirmHost />
