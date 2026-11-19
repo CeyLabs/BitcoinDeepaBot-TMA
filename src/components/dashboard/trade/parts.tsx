@@ -156,6 +156,8 @@ export function HoldButton({
       type="button"
       disabled={disabled || loading}
       aria-busy={loading || undefined}
+      // A finger that wobbles while holding must not drag the sheet down.
+      data-base-ui-swipe-ignore=""
       onPointerDown={start}
       onPointerUp={end}
       onPointerLeave={end}
