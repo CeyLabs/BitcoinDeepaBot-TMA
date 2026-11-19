@@ -24,11 +24,14 @@ export function FreshCredentialPrompt({
   open,
   onOpenChange,
   onRenewed,
+  action = "send",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** Web only: called once a fresh login is in place */
   onRenewed: () => void;
+  /** What the user is doing, for the copy: "send" or "pay" */
+  action?: "send" | "pay";
 }) {
   const platform = usePlatform();
   const queryClient = useQueryClient();
@@ -68,13 +71,13 @@ export function FreshCredentialPrompt({
     <Sheet
       open={open}
       onOpenChange={onOpenChange}
-      title={inTelegram ? "Reopen to send" : "Log in to send"}
+      title={inTelegram ? `Reopen to ${action}` : `Log in to ${action}`}
     >
       <div className="flex flex-col gap-4 px-5 pb-6 text-center">
         <p className="text-[14px] text-[#64748b] dark:text-[#94a3b8]">
           {inTelegram
-            ? "For your security, sending needs a fresh Telegram session. Close the app, then open it again from the bot and send again."
-            : "For your security, sending needs a recent Telegram login. Log in again to continue this payment."}
+            ? `For your security, ${action === "pay" ? "paying" : "sending"} needs a fresh Telegram session. Close the app, then open it again from the bot and ${action} again.`
+            : `For your security, ${action === "pay" ? "paying" : "sending"} needs a recent Telegram login. Log in again to continue this payment.`}
         </p>
         {inTelegram ? (
           <Button size="lg" className="w-full rounded-[12px]" onClick={() => platform.close()}>

@@ -20,7 +20,7 @@ export interface P2pSendInput {
  * The Telegram credential the backend forwards: in the Mini App its launch
  * initData; on the web nothing (the backend keeps the latest login).
  */
-function useP2pHeaders(): Record<string, string> | undefined {
+export function useP2pHeaders(): Record<string, string> | undefined {
   const initDataRaw = usePlatform().launch?.initDataRaw;
   return initDataRaw ? { "X-Telegram-Init-Data": initDataRaw } : undefined;
 }

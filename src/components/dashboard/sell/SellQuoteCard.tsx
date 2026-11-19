@@ -1,22 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import type { BankAccount } from "@/hooks/query/useBankAccounts";
 import { useConfirmSell, type SellOrder } from "@/hooks/query/useSell";
 import { FetchyError } from "@/lib/fetchy";
 import { fmtLkrExact, fmtSats } from "@/lib/formatters";
+import { useSecondsLeft } from "@/hooks/useSecondsLeft";
 import { haptic, usePlatform } from "@/platform";
-
-function useSecondsLeft(expiresAt: string) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(id);
-  }, []);
-  return Math.max(0, Math.ceil((new Date(expiresAt).getTime() - now) / 1000));
-}
 
 function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
@@ -52,7 +43,7 @@ export function SellQuoteCard({
   const onSell = async () => {
     const ok = await platform.confirm({
       title: "Sell sats",
-      message: `Sell ${fmtSats(quote.sats)} sats for ${fmtLkrExact(quote.amountLkr)} to ${account.bankName} ${account.accountNumber}? This can't be undone.`,
+      message: `Sell ${fmtSats(quote.sats)} sats for ${fmtLkrExact(quote.amountLkr)} to ${account.bankName} ${account.accountNumber}? You'll approve the payment from your wallet next.`,
       confirmText: "Sell",
     });
     if (!ok) return;

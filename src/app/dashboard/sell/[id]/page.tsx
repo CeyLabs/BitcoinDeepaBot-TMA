@@ -8,6 +8,7 @@ import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { Bone, BoneCard } from "@/components/ui/bone";
 import { useSellOrder, type SellOrder } from "@/hooks/query/useSell";
+import { collectView, SellApproval } from "@/components/dashboard/sell/SellApproval";
 import { celebrate } from "@/lib/celebrate";
 import { fmtActivityDateTime, fmtLkrExact, fmtSats } from "@/lib/formatters";
 
@@ -23,9 +24,10 @@ const STATE: Record<
     spinner: true,
   },
   EXPIRED: {
-    title: "Quote expired",
+    title: "Nothing sold",
     text: (o) => o.failureReason ?? "Nothing was sold. Get a new quote to sell.",
   },
+  // Replaced by collectView while the user approves the payment
   COLLECTING: {
     title: "Selling your sats",
     text: () => "Taking the sats from your wallet. This only takes a moment.",
@@ -119,7 +121,11 @@ export default function SellOrderPage({ params }: { params: Promise<{ id: string
     );
   }
 
-  const state = STATE[order.status];
+  const base = STATE[order.status];
+  const state =
+    order.status === "COLLECTING" && order.collect
+      ? { ...base, ...collectView(order), text: () => collectView(order).text }
+      : base;
 
   return (
     <div className="flex w-full flex-col gap-5">
@@ -138,6 +144,8 @@ export default function SellOrderPage({ params }: { params: Promise<{ id: string
           {state.text(order)}
         </p>
       </div>
+
+      {order.status === "COLLECTING" && <SellApproval order={order} />}
 
       <div className="bg-card flex flex-col gap-3 rounded-2xl p-5">
         <Row label="Amount" value={fmtLkrExact(order.amountLkr)} />
