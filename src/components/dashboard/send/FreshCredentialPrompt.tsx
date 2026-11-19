@@ -4,7 +4,8 @@ import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
-import TelegramLoginButton from "@/components/auth/TelegramLoginButton";
+import { BigEmoji } from "@/components/dashboard/trade/parts";
+import TelegramLoginButton, { TG_PRIMARY_BUTTON } from "@/components/auth/TelegramLoginButton";
 import {
   authenticateWithTelegramOidc,
   getUserFromToken,
@@ -77,30 +78,41 @@ export function FreshCredentialPrompt({
   const handleAuth = useCallback((data: TelegramOidcAuthData) => void onAuth(data), [onAuth]);
 
   const inTelegram = platform.kind === "telegram";
+  const doing = action === "pay" ? "paying" : "sending";
 
   return (
     <Sheet
       open={open}
       onOpenChange={onOpenChange}
       title={inTelegram ? `Reopen to ${action}` : `Log in to ${action}`}
+      footer={
+        <div className="flex flex-col gap-2">
+          {inTelegram ? (
+            <Button onClick={() => platform.close()}>Close the app</Button>
+          ) : (
+            <TelegramLoginButton
+              onAuth={handleAuth}
+              className={
+                busy ? `${TG_PRIMARY_BUTTON} pointer-events-none opacity-50` : TG_PRIMARY_BUTTON
+              }
+            />
+          )}
+          {error && (
+            <p role="alert" className="text-loss text-center text-[13px] font-semibold">
+              {error}
+            </p>
+          )}
+        </div>
+      }
     >
-      <div className="flex flex-col gap-4 px-5 pb-6 text-center">
-        <p className="text-[14px] text-[#64748b] dark:text-[#94a3b8]">
+      <div className="flex flex-col items-center gap-2 px-6 pb-4 text-center">
+        <BigEmoji src="/emoji/animated/id-card.webp" size={84} />
+        <h2 className="text-[22px] leading-7">For your security</h2>
+        <p className="text-ink2 text-[14px] leading-5">
           {inTelegram
-            ? `For your security, ${action === "pay" ? "paying" : "sending"} needs a fresh Telegram session. Close the app, then open it again from the bot and ${action} again.`
-            : `For your security, ${action === "pay" ? "paying" : "sending"} needs a recent Telegram login. Log in again to continue this payment.`}
+            ? `${doing[0].toUpperCase()}${doing.slice(1)} needs a fresh Telegram session. Close the app, open it again from the bot, and ${action} again.`
+            : `${doing[0].toUpperCase()}${doing.slice(1)} needs a recent Telegram login. Log in again to continue this payment.`}
         </p>
-        {inTelegram ? (
-          <Button size="lg" className="w-full rounded-[12px]" onClick={() => platform.close()}>
-            Close the app
-          </Button>
-        ) : (
-          <TelegramLoginButton
-            onAuth={handleAuth}
-            className={busy ? "pointer-events-none opacity-50" : "flex justify-center"}
-          />
-        )}
-        {error && <p className="text-[13px] text-[#f13131]">{error}</p>}
       </div>
     </Sheet>
   );
