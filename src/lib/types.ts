@@ -181,4 +181,7 @@ export interface BotTransaction {
   purchase_settlement?: boolean;
   /** The payment that took one of the user's sales' sats (already listed as the sale) */
   sale_payment?: boolean;
+  /** The other party's Bitcoin Deepa @username and avatar seed (null if they have none) */
+  counterparty_username?: string | null;
+  counterparty_avatar_seed?: string | null;
 }

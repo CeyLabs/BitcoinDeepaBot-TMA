@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "cn";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { useAvatarSeed } from "@/hooks/query/useUserMe";
+import { useAvatarSeed, useUserMe } from "@/hooks/query/useUserMe";
+import { UsernameSheet } from "./UsernameSheet";
 import { AvatarPickerSheet } from "./AvatarPickerSheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,8 @@ const IDENTITY_TEXT: Partial<Record<KycStatus, string>> = {
 };
 
 function ProfileRow() {
-  const { displayName, username, kycStatus } = useUser();
+  const { displayName, kycStatus } = useUser();
+  const ourUsername = useUserMe().data?.username;
   const avatarSeed = useAvatarSeed();
   const [picking, setPicking] = useState(false);
   return (
@@ -77,16 +79,48 @@ function ProfileRow() {
       <div className="flex min-w-0 flex-col gap-0.5">
         <p className="truncate text-[18px] leading-[22px] font-bold">{displayName}</p>
         <p className="text-ink3 truncate text-[13px] leading-4">
-          {kycStatus === undefined
-            ? username
-              ? `@${username}`
-              : " "
-            : kycStatus === "APPROVED"
-              ? "Verified member"
-              : "Not verified yet"}
+          {[
+            ourUsername ? `@${ourUsername}` : null,
+            kycStatus === undefined
+              ? null
+              : kycStatus === "APPROVED"
+                ? "Verified member"
+                : "Not verified yet",
+          ]
+            .filter(Boolean)
+            .join(" · ") || " "}
         </p>
       </div>
     </div>
+  );
+}
+
+function UsernameRow() {
+  const { data: me } = useUserMe();
+  const [open, setOpen] = useState(false);
+  const username = me?.username;
+  return (
+    <>
+      <ListRow
+        icon={<span className="text-ink2 text-[18px] font-extrabold">@</span>}
+        title="Username"
+        subtitle={username ? `@${username}` : "So others can send you sats"}
+        after={
+          me && !username ? (
+            <Button
+              size="sm"
+              onClick={() => {
+                haptic.impact("light");
+                setOpen(true);
+              }}
+            >
+              Set up
+            </Button>
+          ) : null
+        }
+      />
+      <UsernameSheet open={open} onOpenChange={setOpen} />
+    </>
   );
 }
 
@@ -155,6 +189,7 @@ export function SettingsContent({
       <Section title="Account">
         <List>
           <IdentityRow onVerify={() => go("/verification")} />
+          <UsernameRow />
           <ListRow
             icon={<Icon name="eye" className="text-ink2" />}
             title="Hide balances"

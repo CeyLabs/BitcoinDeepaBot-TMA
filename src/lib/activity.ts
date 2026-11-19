@@ -167,7 +167,8 @@ function parseLkr(value: string | number | null | undefined): number {
 
 export function mapBotTransactionToActivityItem(tx: BotTransaction): ActivityEntry {
   const isOutgoing = tx.direction === "outgoing";
-  const counterpartyRaw = isOutgoing ? tx.to_user : tx.from_user;
+  // Our @username when they have one, else the Telegram username the bot sends
+  const counterpartyRaw = tx.counterparty_username ?? (isOutgoing ? tx.to_user : tx.from_user);
   const counterparty =
     counterpartyRaw?.replace(/^@/, "") ?? String(isOutgoing ? tx.to_id : tx.from_id);
   const lkr = parseLkr(tx.amount_lkr);

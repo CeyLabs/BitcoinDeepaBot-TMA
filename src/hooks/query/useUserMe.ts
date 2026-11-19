@@ -4,6 +4,8 @@ import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/r
 import { useSession } from "@/hooks/useSession";
 import fetchy from "@/lib/fetchy";
 import { queryKeys } from "@/lib/query-keys";
+import { normalizeUsername, USERNAME_RE } from "@/lib/username";
+import { useDebounced } from "@/hooks/useDebounced";
 
 /** GET /user/me — the backend's user row (only the fields we show). */
 export interface UserMe {
@@ -18,6 +20,8 @@ export interface UserMe {
   is_profile_complete: boolean;
   /** Seed of the DiceBear avatar; null until the user picks one */
   avatar_seed?: string | null;
+  /** The member's Bitcoin Deepa @username (not Telegram's); null until claimed, then permanent */
+  username?: string | null;
 }
 
 export const userMeOptions = () =>
@@ -49,4 +53,42 @@ export function useAvatarSeed(): string | null {
   const { data } = useUserMe();
   if (session.status !== "authenticated") return null;
   return data?.avatar_seed || session.user?.id || null;
+}
+
+export interface UsernameAvailability {
+  username: string;
+  available: boolean;
+  reason: string | null;
+}
+
+/**
+ * Whether a username can be claimed, for the hint while typing. Checks the
+ * format locally first (no request for an invalid name), then asks the
+ * backend once typing pauses.
+ */
+export function useUsernameAvailability(input: string) {
+  const isAuthed = useSession().status === "authenticated";
+  const username = useDebounced(normalizeUsername(input));
+  const valid = USERNAME_RE.test(username);
+  const query = useQuery({
+    queryKey: queryKeys.usernameAvailability(username),
+    queryFn: () =>
+      fetchy.get<UsernameAvailability>(
+        `/user/username/availability?username=${encodeURIComponent(username)}`
+      ),
+    enabled: isAuthed && valid,
+    staleTime: 30_000,
+  });
+  // Still typing (the debounced value is behind) counts as checking
+  const settled = username === normalizeUsername(input);
+  return { username, valid, settled, ...query };
+}
+
+/** Claim the user's username: once, it can't be changed afterwards. */
+export function useClaimUsername() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (username: string) => fetchy.post<UserMe>("/user/username", { username }),
+    onSuccess: (me) => queryClient.setQueryData(queryKeys.userMe, me),
+  });
 }

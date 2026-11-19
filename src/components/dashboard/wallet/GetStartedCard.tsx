@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "cn";
 import { Card } from "@/components/ui/card";
@@ -8,9 +9,16 @@ import { Section } from "@/components/ui/section";
 import { useSheets } from "@/components/dashboard/sheets";
 import { useBankAccounts } from "@/hooks/query/useBankAccounts";
 import { useUser } from "@/hooks/useUser";
+import { useUserMe } from "@/hooks/query/useUserMe";
+import { UsernameSheet } from "@/components/dashboard/settings/UsernameSheet";
 import { haptic } from "@/platform";
 
-const TITLES = ["Three steps to get set up", "Nice start, 2 to go", "Almost there, 1 to go"];
+const TITLES = [
+  "Four steps to get set up",
+  "Nice start, 3 to go",
+  "Halfway there, 2 to go",
+  "Almost there, 1 to go",
+];
 const RING = 113.1; // 2πr for r = 18
 
 /** Onboarding checklist on the wallet; hidden once every step is done. */
@@ -19,9 +27,11 @@ export function GetStartedCard({ hasSats }: { hasSats: boolean }) {
   const { openTrade, openSettings } = useSheets();
   const { kycStatus } = useUser();
   const { current: bankAccount, isLoading: bankLoading } = useBankAccounts();
+  const { data: me, isLoading: meLoading } = useUserMe();
+  const [claiming, setClaiming] = useState(false);
 
   // Don't flash the card for members who are already set up.
-  if (kycStatus === undefined || bankLoading) return null;
+  if (kycStatus === undefined || bankLoading || meLoading) return null;
 
   const steps = [
     {
@@ -44,6 +54,13 @@ export function GetStartedCard({ hasSats }: { hasSats: boolean }) {
       img: "/emoji/wallet.webp",
       done: !!bankAccount,
       go: openSettings,
+    },
+    {
+      label: "Set up your username",
+      sub: "So others can send you sats",
+      img: "/emoji/community.webp",
+      done: !!me?.username,
+      go: () => setClaiming(true),
     },
   ];
   const doneCount = steps.filter((s) => s.done).length;
@@ -129,6 +146,7 @@ export function GetStartedCard({ hasSats }: { hasSats: boolean }) {
           </button>
         ))}
       </Card>
+      <UsernameSheet open={claiming} onOpenChange={setClaiming} />
     </Section>
   );
 }

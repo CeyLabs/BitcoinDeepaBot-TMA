@@ -20,13 +20,18 @@ import {
 import { ErrorRow, HoldButton, InfoRow, ReviewHeader } from "@/components/dashboard/trade/parts";
 import { FreshCredentialPrompt } from "./FreshCredentialPrompt";
 import { isTransferInProgress, SendTransferStatus } from "./SendTransferStatus";
-import { useP2pMe, useP2pSend, useP2pTransfer, useResolveRecipient } from "@/hooks/query/useP2p";
+import { useP2pMe, useP2pSend, useP2pTransfer, useRecipient } from "@/hooks/query/useP2p";
+import { useUserMe } from "@/hooks/query/useUserMe";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { Spinner } from "@/components/ui/button";
+import { useSheets } from "@/components/dashboard/sheets";
 import { useBotTransactionHistory } from "@/hooks/query/useBotTransactionHistory";
 import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
 import { FetchyError } from "@/lib/fetchy";
 import { fmtLkrCurrency, fmtSats, LKR_SYMBOL } from "@/lib/formatters";
 import { isCredentialError, miniAppCanSend, recipientLabel, type P2pRecipient } from "@/lib/p2p";
-import { sendAmountSchema, sendMemoSchema, sendRecipientSchema } from "@/lib/validations";
+import { sendAmountSchema, sendMemoSchema } from "@/lib/validations";
+import { normalizeUsername, USERNAME_RULE } from "@/lib/username";
 import { haptic, usePlatform } from "@/platform";
 
 type Step = "to" | "amount" | "review";
@@ -35,15 +40,6 @@ const STEPS: Step[] = ["to", "amount", "review"];
 const STEP_LABELS = ["To", "Amount", "Review"];
 
 const newPaymentKey = () => crypto.randomUUID();
-
-const initials = (r: { name?: string; username?: string }) =>
-  (r.name || r.username || "?")
-    .replace(/^@/, "")
-    .split(/\s+/)
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
 
 /**
  * Send sats to another Bitcoin Deepa user (P2P): who → how much → review and
@@ -62,7 +58,6 @@ export default function SendSheet({
   const platform = usePlatform();
   const toast = useToast();
   const me = useP2pMe(open);
-  const resolve = useResolveRecipient();
   const send = useP2pSend();
   const { currentBtcPrice } = useWalletMetrics();
   const { transactions: botTxs } = useBotTransactionHistory({ enabled: open });
@@ -70,7 +65,6 @@ export default function SendSheet({
   const [step, setStep] = useState<Step>("to");
   const [dir, setDir] = useState<"fwd" | "back">("fwd");
   const [to, setTo] = useState("");
-  const [toError, setToError] = useState<string>();
   const [recipient, setRecipient] = useState<P2pRecipient | null>(null);
   const [unit, setUnit] = useState<Unit>("sats");
   const [flipped, setFlipped] = useState(false);
@@ -79,6 +73,9 @@ export default function SendSheet({
   const [sendError, setSendError] = useState<string>();
   const [transferId, setTransferId] = useState<string | null>(null);
   const [renewOpen, setRenewOpen] = useState(false);
+  const lookup = useRecipient(to);
+  const { data: myProfile } = useUserMe();
+  const { openSettings } = useSheets();
   const { data: transfer } = useP2pTransfer(transferId ?? "");
 
   // What to retry after a fresh login: finding the recipient or sending
@@ -112,9 +109,13 @@ export default function SendSheet({
     const out: P2pRecipient[] = [];
     for (let i = botTxs.length - 1; i >= 0 && out.length < 6; i--) {
       const tx = botTxs[i];
-      if (tx.direction !== "outgoing" || !tx.to_user || seen.has(tx.to_id)) continue;
+      if (tx.direction !== "outgoing" || !tx.counterparty_username || seen.has(tx.to_id)) continue;
       seen.add(tx.to_id);
-      out.push({ telegram_id: tx.to_id, username: tx.to_user.replace(/^@/, "") });
+      out.push({
+        telegram_id: tx.to_id,
+        username: tx.counterparty_username,
+        avatar_seed: tx.counterparty_avatar_seed,
+      });
     }
     return out;
   }, [botTxs]);
@@ -125,28 +126,13 @@ export default function SendSheet({
   };
   const close = () => onOpenChange(false);
 
-  const findRecipient = (value = to) => {
-    const parsedTo = sendRecipientSchema.safeParse(value);
-    if (!parsedTo.success) {
-      setToError(parsedTo.error.issues[0]?.message);
-      haptic.notify("error");
-      return;
-    }
-    setToError(undefined);
-    resolve.mutate(parsedTo.data, {
-      onSuccess: (found) => {
-        haptic.impact("light");
-        setRecipient(found);
-        go("amount", "fwd");
-      },
-      onError: (err) => {
-        haptic.notify("error");
-        if (err instanceof FetchyError && isCredentialError(err.code)) {
-          askRenew(() => findRecipient(value));
-        }
-        setToError(err.message);
-      },
-    });
+  // The member the To field resolved to, once the lookup for what's typed is in
+  const found = lookup.settled && lookup.valid ? lookup.data : undefined;
+  const pickFound = () => {
+    if (!found) return;
+    haptic.impact("light");
+    setRecipient(found);
+    go("amount", "fwd");
   };
 
   const toReview = () => {
@@ -259,6 +245,23 @@ export default function SendSheet({
       </div>
     );
   } else if (step === "to") {
+    const typed = normalizeUsername(to);
+    let note: React.ReactNode = "Their Bitcoin Deepa @username";
+    let bad = false;
+    if (typed && !lookup.valid && lookup.settled) {
+      note = USERNAME_RULE;
+      bad = true;
+    } else if (lookup.valid && (!lookup.settled || lookup.isFetching) && !found) {
+      note = (
+        <span className="inline-flex items-center gap-1.5">
+          <Spinner className="size-3" /> Looking up @{typed}…
+        </span>
+      );
+    } else if (lookup.valid && lookup.error) {
+      note = lookup.error.message;
+      bad = true;
+    }
+
     body = (
       <div className="flex flex-col gap-4 pt-1">
         <div>
@@ -271,31 +274,56 @@ export default function SendSheet({
             </span>
             <input
               aria-labelledby="send-to-label"
+              aria-describedby="send-to-note"
               autoComplete="off"
               autoCapitalize="none"
               spellCheck={false}
-              maxLength={64}
-              placeholder="username or Telegram ID"
-              value={to.replace(/^@/, "")}
-              onChange={(e) => {
-                setTo(e.target.value);
-                setToError(undefined);
-              }}
+              maxLength={21}
+              placeholder="username"
+              value={to.replace(/^@+/, "").toLowerCase()}
+              onChange={(e) => setTo(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") findRecipient();
+                if (e.key === "Enter") pickFound();
               }}
               className="text-foreground placeholder:text-ink3 h-full min-w-0 grow border-0 bg-transparent p-0 text-[17px] font-semibold outline-none placeholder:font-medium"
             />
           </div>
-          <p
-            aria-live="polite"
-            className={cn(
-              "mt-1.5 text-[12px] leading-4 font-semibold",
-              toError ? "text-loss" : "text-ink3"
-            )}
-          >
-            {toError ?? "They need to have started the Bitcoin Deepa bot."}
-          </p>
+          {found ? (
+            <div className="bg-chip mt-2 flex items-center gap-3 rounded-xl p-2.5 pr-3.5">
+              <UserAvatar seed={found.avatar_seed || String(found.telegram_id)} size={40} />
+              <span className="min-w-0 grow">
+                <span className="block truncate text-[15px] leading-[18px] font-bold">
+                  {found.name || `@${found.username}`}
+                </span>
+                <span className="text-ink3 block truncate text-[13px] leading-4">
+                  @{found.username}
+                </span>
+              </span>
+              <svg
+                className="text-success size-5 shrink-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M5 12.5l4.5 4.5L19 7.5" />
+              </svg>
+            </div>
+          ) : (
+            <p
+              id="send-to-note"
+              aria-live="polite"
+              className={cn(
+                "mt-1.5 text-[12px] leading-4 font-semibold",
+                bad ? "text-loss" : "text-ink3"
+              )}
+            >
+              {note}
+            </p>
+          )}
         </div>
         {recents.length > 0 && (
           <div>
@@ -305,21 +333,17 @@ export default function SendSheet({
                 <button
                   key={r.telegram_id}
                   type="button"
-                  disabled={resolve.isPending}
+                  aria-pressed={typed === r.username}
                   onClick={() => {
                     haptic.select();
-                    const v = `@${r.username}`;
-                    setTo(v);
-                    findRecipient(v);
+                    setTo(r.username ?? "");
                   }}
-                  className="press bg-chip flex h-[52px] shrink-0 items-center gap-2 rounded-xl border-0 py-0 pr-3.5 pl-2 text-left"
+                  className={cn(
+                    "press flex h-[52px] shrink-0 items-center gap-2 rounded-xl border-0 py-0 pr-3.5 pl-2 text-left",
+                    typed === r.username ? "bg-nav-sel" : "bg-chip"
+                  )}
                 >
-                  <span
-                    aria-hidden
-                    className="bg-primary flex size-9 shrink-0 items-center justify-center rounded-full text-[12px] font-extrabold text-white"
-                  >
-                    {initials(r)}
-                  </span>
+                  <UserAvatar seed={r.avatar_seed || String(r.telegram_id)} size={36} />
                   <span className="text-[13px] leading-4 font-bold whitespace-nowrap">
                     @{r.username}
                   </span>
@@ -328,10 +352,24 @@ export default function SendSheet({
             </div>
           </div>
         )}
+        {myProfile && !myProfile.username && (
+          <button
+            type="button"
+            onClick={() => {
+              haptic.select();
+              close();
+              // Let this sheet slide away before the settings sheet comes up
+              window.setTimeout(openSettings, 260);
+            }}
+            className="press text-link self-start border-0 bg-transparent p-0 text-left text-[13px] font-semibold"
+          >
+            Claim your own @username so others can send to you ›
+          </button>
+        )}
       </div>
     );
     footer = (
-      <Button disabled={!to.trim()} loading={resolve.isPending} onClick={() => findRecipient()}>
+      <Button disabled={!found} onClick={pickFound}>
         Continue
       </Button>
     );
@@ -350,12 +388,7 @@ export default function SendSheet({
     body = (
       <>
         <div className="bg-chip mt-1 flex items-center gap-2.5 rounded-xl p-2 pr-3.5">
-          <span
-            aria-hidden
-            className="bg-primary flex size-9 shrink-0 items-center justify-center rounded-full text-[12px] font-extrabold text-white"
-          >
-            {initials(recipient)}
-          </span>
+          <UserAvatar seed={recipient.avatar_seed || String(recipient.telegram_id)} size={36} />
           <span className="min-w-0 grow">
             <span className="text-ink3 block text-[11px] leading-[14px] font-semibold">
               Sending to

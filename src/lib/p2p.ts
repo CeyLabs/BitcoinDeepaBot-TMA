@@ -9,10 +9,15 @@ export type P2pTransferStatus =
   | "cancelled"
   | "expired";
 
+/**
+ * A member found by their Bitcoin Deepa @username (our DB). `name` is
+ * masked ("Nimal S."); the send goes to `telegram_id`.
+ */
 export interface P2pRecipient {
   telegram_id: number;
   username?: string;
-  name?: string;
+  name?: string | null;
+  avatar_seed?: string | null;
 }
 
 export interface P2pMe {
