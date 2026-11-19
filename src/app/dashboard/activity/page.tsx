@@ -40,7 +40,11 @@ export default function ActivityPage() {
   const activity = useMemo(
     () => [
       ...dca.transactions.map(mapDcaTransactionToActivityItem),
-      ...botHistory.transactions.map(mapBotTransactionToActivityItem),
+      // A purchase's sats arrive as a bot transfer too: the backend marks
+      // that transfer, so the purchase shows once
+      ...botHistory.transactions
+        .filter((tx) => !tx.purchase_settlement)
+        .map(mapBotTransactionToActivityItem),
     ],
     [dca.transactions, botHistory.transactions]
   );
