@@ -68,13 +68,20 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
           after={
             <div className="flex items-center gap-0.5">
               <div className="flex flex-col items-end gap-0.5">
-                <p
-                  className={`text-right text-[14px] leading-4 ${
-                    isOutgoing ? "text-[#F45A5A]" : "text-[#218A54]"
-                  }`}
-                >
-                  {mask(`${isOutgoing ? "-" : "+"}${fmtLkr(Math.abs(item.sats))} sats`)}
-                </p>
+                {item.notCredited ? (
+                  // Never credited: no sign, struck through, so it can't pass for a reward
+                  <p className="text-right text-[14px] leading-4 text-[#94A3B8] line-through">
+                    {mask(`${fmtLkr(Math.abs(item.sats))} sats`)}
+                  </p>
+                ) : (
+                  <p
+                    className={`text-right text-[14px] leading-4 ${
+                      isOutgoing ? "text-[#F45A5A]" : "text-[#218A54]"
+                    }`}
+                  >
+                    {mask(`${isOutgoing ? "-" : "+"}${fmtLkr(Math.abs(item.sats))} sats`)}
+                  </p>
+                )}
                 <p className="text-right text-xs leading-4 text-[#475569] dark:text-[#94A3B8]">
                   {mask(`≈ ${fmtLkrCurrency(item.lkr)}`)}
                 </p>

@@ -29,6 +29,8 @@ export function useWalletMetrics({
       )
     : 0;
   const totalSats = summary?.total_balance ?? 0;
+  // total_* are placeholder zeros when the wallet balance couldn't be fetched
+  const balanceAvailable = summary?.balance_available !== false;
   const dcaSpent = summary?.dca.spent ?? 0;
   const dcaFees = summary?.dca.fees ?? 0;
   const dcaSats = summary?.dca.balance ?? 0;
@@ -53,6 +55,7 @@ export function useWalletMetrics({
     isLoading: isSummaryLoading || (loadTransactions && isTransactionsLoading),
     totalLkr,
     totalSats,
+    balanceAvailable,
     dcaSpent,
     dcaFees,
     dcaSats,

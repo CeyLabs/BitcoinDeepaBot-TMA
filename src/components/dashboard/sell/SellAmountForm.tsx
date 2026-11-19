@@ -21,7 +21,7 @@ export function SellAmountForm({
 }) {
   const [value, setValue] = useState("");
   const [error, setError] = useState<string>();
-  const { totalSats, isLoading: balanceLoading } = useWalletMetrics();
+  const { totalSats, balanceAvailable, isLoading: balanceLoading } = useWalletMetrics();
   const { data: price } = useSellPrice();
   const quote = useSellQuote();
 
@@ -54,7 +54,7 @@ export function SellAmountForm({
         <div className="flex items-center justify-between text-[13px] text-[#64748b] dark:text-[#94a3b8]">
           <span>Available</span>
           <span className="font-semibold">
-            {balanceLoading ? "…" : `${fmtSats(totalSats)} sats`}
+            {balanceLoading ? "…" : balanceAvailable ? `${fmtSats(totalSats)} sats` : "unavailable"}
           </span>
         </div>
 

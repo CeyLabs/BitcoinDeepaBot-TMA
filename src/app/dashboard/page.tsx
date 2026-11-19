@@ -20,6 +20,7 @@ export default function WalletPage() {
     isLoading: isSummaryLoading,
     totalLkr,
     totalSats,
+    balanceAvailable,
     dcaSpent,
     dcaFees,
     dcaSats,
@@ -39,6 +40,7 @@ export default function WalletPage() {
       <TotalValueCard
         totalLkr={totalLkr}
         totalSats={totalSats}
+        balanceAvailable={balanceAvailable}
         changePercent={change24h}
         changeLkr={changeLkr}
         visible={balanceVisible}
