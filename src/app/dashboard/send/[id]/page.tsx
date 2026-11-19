@@ -119,7 +119,8 @@ export default function SendStatusPage({ params }: { params: Promise<{ id: strin
     );
   }
 
-  const state = STATE[transfer.status];
+  // A status the bot adds later: show it as still going, not crash
+  const state = STATE[transfer.status] ?? STATE.processing;
 
   return (
     <div className="flex w-full flex-col gap-5">

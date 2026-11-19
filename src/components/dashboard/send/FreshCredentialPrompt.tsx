@@ -7,7 +7,9 @@ import { Sheet } from "@/components/ui/sheet";
 import TelegramLoginButton from "@/components/auth/TelegramLoginButton";
 import {
   authenticateWithTelegramOidc,
+  getUserFromToken,
   saveAuthToStorage,
+  tokenUserId,
   type TelegramOidcAuthData,
 } from "@/lib/auth";
 import { queryKeys } from "@/lib/query-keys";
@@ -48,8 +50,17 @@ export function FreshCredentialPrompt({
       }
       setBusy(true);
       try {
+        const current = getUserFromToken()?.id;
         const result = await authenticateWithTelegramOidc(data.id_token);
         if (!result.token) throw new Error("No token returned");
+        // Another Telegram account would make the pending payment its own:
+        // keep the current session and don't continue
+        if (current && tokenUserId(result.token) !== current) {
+          setError(
+            "That's a different Telegram account. Log in with the account you're paying from."
+          );
+          return;
+        }
         saveAuthToStorage(result.token);
         await queryClient.invalidateQueries({ queryKey: queryKeys.p2pMe });
         onOpenChange(false);

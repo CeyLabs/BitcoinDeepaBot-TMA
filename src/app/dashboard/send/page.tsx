@@ -51,6 +51,12 @@ export default function SendPage() {
   const [memo, setMemo] = useState("");
   const [error, setError] = useState<string>();
   const [renewOpen, setRenewOpen] = useState(false);
+  // What to retry after a fresh web login: finding the recipient or sending
+  const afterRenew = useRef<(() => void) | null>(null);
+  const askRenew = (retry: () => void) => {
+    afterRenew.current = retry;
+    setRenewOpen(true);
+  };
   // One key per payment, reused on every retry of it: the bot never sends twice
   const paymentKey = useRef(newPaymentKey());
 
@@ -69,6 +75,10 @@ export default function SendPage() {
 
   const onFindRecipient = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    findRecipient();
+  };
+
+  const findRecipient = () => {
     const parsed = sendRecipientSchema.safeParse(to);
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message);
@@ -84,7 +94,7 @@ export default function SendPage() {
       },
       onError: (err) => {
         haptic.notify("error");
-        if (err instanceof FetchyError && isCredentialError(err.code)) setRenewOpen(true);
+        if (err instanceof FetchyError && isCredentialError(err.code)) askRenew(findRecipient);
         setError(err.message);
       },
     });
@@ -135,10 +145,8 @@ export default function SendPage() {
       router.push(`/dashboard/send/${transfer.id}`);
     } catch (err) {
       haptic.notify("error");
-      if (err instanceof FetchyError && isCredentialError(err.code)) {
-        setRenewOpen(true);
-        return;
-      }
+      // The caller asks for a fresh login, then confirms again
+      if (err instanceof FetchyError && isCredentialError(err.code)) return "renew";
       // No answer, or it may have gone through: sending again with the same
       // key is safe (the bot returns this payment instead of sending twice)
       const unknown =
@@ -153,23 +161,30 @@ export default function SendPage() {
     }
   }, [memo, recipient, router, sats, send]);
 
-  // Stable: the web login button re-injects Telegram's script when it changes
+  // Stable (the web login button re-injects Telegram's script when it
+  // changes): runs whatever asked for the login
   const onRenewed = useCallback(() => {
-    toast({ title: "Logged in", description: "Sending your payment now." });
-    void doSend();
-  }, [doSend, toast]);
+    toast({ title: "Logged in", description: "You can continue now." });
+    afterRenew.current?.();
+    afterRenew.current = null;
+  }, [toast]);
 
-  const onSend = async () => {
+  const onSend = () => {
     if (!credentialFresh()) {
-      setRenewOpen(true);
+      // After the login the confirm is shown again before anything is sent
+      askRenew(() => void confirmAndSend());
       return;
     }
+    void confirmAndSend();
+  };
+
+  const confirmAndSend = async () => {
     const ok = await platform.confirm({
       title: "Send sats",
       message: `Send ${fmtSats(sats)} sats to ${recipientLabel(recipient ?? undefined)}? This can't be undone.`,
       confirmText: "Send",
     });
-    if (ok) await doSend();
+    if (ok && (await doSend()) === "renew") askRenew(() => void confirmAndSend());
   };
 
   let content: React.ReactNode;
