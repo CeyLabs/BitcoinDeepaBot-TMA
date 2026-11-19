@@ -134,3 +134,15 @@ export function mapBotTransactionToActivityItem(tx: BotTransaction): ActivityIte
     },
   };
 }
+
+// Settlement sends a purchase's sats through the bot with the memo
+// "... (Ref: <payment id>)", so the bot history has a "Received" row for
+// every purchase already listed. Only drop it when the ref is one of the
+// user's own payments: memos are free text, a P2P sender can copy the format.
+const SETTLEMENT_REF = /\(Ref: ([^)]+)\)$/;
+
+export function isPurchaseSettlement(tx: BotTransaction, purchaseIds: Set<string>): boolean {
+  if (tx.direction !== "incoming" || !tx.memo) return false;
+  const ref = SETTLEMENT_REF.exec(tx.memo)?.[1];
+  return ref !== undefined && purchaseIds.has(ref);
+}
