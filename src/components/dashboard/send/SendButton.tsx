@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import { Send } from "lucide-react";
-import { P2P_ENABLED } from "@/lib/constants";
 import { haptic } from "@/platform";
 
-/** "Send" pill on the wallet's total value card (hidden while P2P is off). */
+/** "Send" pill on the wallet's total value card. */
 export function SendButton() {
-  if (!P2P_ENABLED) return null;
   return (
     <Link
       href="/dashboard/send"

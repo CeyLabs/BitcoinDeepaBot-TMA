@@ -3,9 +3,6 @@ export const TELEGRAM_BOT_USERNAME =
 
 export const TELEGRAM_BOT_URL = `https://t.me/${TELEGRAM_BOT_USERNAME}`;
 
-/** Sending sats to other users (the backend's P2P_ENABLED must be on too) */
-export const P2P_ENABLED = process.env.NEXT_PUBLIC_P2P_ENABLED === "true";
-
 /** Personal invite link: opens the Mini App with the inviter's id as start param. */
 export const getInviteUrl = (userId: string) =>
   `${TELEGRAM_BOT_URL}/private_invite?startapp=${encodeURIComponent(userId)}`;
