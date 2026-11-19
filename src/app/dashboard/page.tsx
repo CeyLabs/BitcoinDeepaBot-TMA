@@ -7,6 +7,7 @@ import { PerformanceGrid } from "@/components/dashboard/wallet/PerformanceGrid";
 import { PortfolioChart } from "@/components/dashboard/wallet/PortfolioChart";
 import { SellButton } from "@/components/dashboard/sell/SellButton";
 import { BuyButton } from "@/components/dashboard/buy/BuyButton";
+import { SendButton } from "@/components/dashboard/send/SendButton";
 import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
 import { useUser } from "@/hooks/useUser";
 import { useBalanceVisible } from "@/hooks/useBalanceVisible";
@@ -49,6 +50,7 @@ export default function WalletPage() {
           <div className="flex items-center gap-2">
             <BuyButton />
             <SellButton />
+            <SendButton />
           </div>
         }
       />

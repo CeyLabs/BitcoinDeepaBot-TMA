@@ -23,7 +23,11 @@ type FetchOptions = Omit<RequestInit, "headers" | "body"> & {
 export class FetchyError extends Error {
   constructor(
     message: string,
-    public status: number
+    public status: number,
+    /** The backend's error code, when it sends one (e.g. "credential_stale") */
+    public code?: string,
+    /** The parsed error body */
+    public data?: unknown
   ) {
     super(message);
     this.name = "FetchyError";
@@ -78,11 +82,14 @@ async function request<T>(
   }
 
   if (!response.ok) {
-    const raw = (data as { message?: string | string[] } | undefined)?.message;
+    const body = data as { message?: string | string[]; code?: unknown } | undefined;
+    const raw = body?.message;
     const message = Array.isArray(raw) ? raw.join(", ") : raw;
     throw new FetchyError(
       message || `Request failed with status ${response.status}`,
-      response.status
+      response.status,
+      typeof body?.code === "string" ? body.code : undefined,
+      data
     );
   }
 
