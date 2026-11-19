@@ -71,8 +71,9 @@ export function p2pPollInterval(status: P2pTransferStatus | undefined): number |
 }
 
 /**
- * The bot hasn't linked this user to our session (401 relogin_required): a
- * new login links them (reopen the Mini App / log in again on the web).
+ * 403 relogin_required: the bot hasn't linked this user to our session (or
+ * it's a pre-update login). A new login links them (reopen the Mini App /
+ * log in again on the web). The session itself is still valid.
  */
 export const isReloginError = (code: string | undefined) => code === "relogin_required";
 

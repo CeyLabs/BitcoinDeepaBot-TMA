@@ -45,6 +45,7 @@ export function useSession() {
     return () => document.removeEventListener("visibilitychange", onVisible);
   }, [kind, session.status]);
 
+  /** Throws when the backend didn't confirm it (the session is still on) */
   const logout = useCallback(
     async (everywhere = false) => {
       await logoutSession(everywhere);

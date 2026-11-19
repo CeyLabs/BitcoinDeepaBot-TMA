@@ -210,18 +210,23 @@ export function onUnauthorized(sentToken: string | null): void {
   clearSession();
 }
 
-/** Revoke this session on the backend, then forget it */
+/**
+ * Revoke this session (or every session) on the backend, then forget it.
+ * Throws when the backend didn't confirm it (offline, or e.g. 403 Invalid
+ * origin): the HttpOnly cookie and the server session would still be alive,
+ * so pretending we logged out would be wrong - the caller tells the user.
+ * A 401 means the session was already gone.
+ */
 export async function logoutSession(all = false): Promise<void> {
   const token = miniAppToken;
-  try {
-    await fetch(`${API_BASE_URL}/auth/${all ? "logout-all" : "logout"}`, {
-      method: "POST",
-      cache: "no-store",
-      credentials: "include",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-  } catch {
-    // Offline: the session still ends here; the backend expires it
+  const response = await fetch(`${API_BASE_URL}/auth/${all ? "logout-all" : "logout"}`, {
+    method: "POST",
+    cache: "no-store",
+    credentials: "include",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!response.ok && response.status !== 401) {
+    throw new Error(`Logout failed (${response.status})`);
   }
   clearSession();
 }
@@ -250,6 +255,8 @@ export function loginErrorMessage(code: string | null): string | null {
       return "Telegram didn't share your account ID. Please try again.";
     case "not_configured":
       return "Telegram login isn't available right now.";
+    case "rate_limited":
+      return "Too many attempts. Please wait a minute and try again.";
     default:
       return "Couldn't sign you in with Telegram. Please try again.";
   }

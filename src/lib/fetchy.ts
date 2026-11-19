@@ -78,9 +78,13 @@ async function request<T>(
     data = text;
   }
 
-  // Ends only the session this request used — a new one may have started
-  // while it was in flight.
-  if (backend && response.status === 401) onUnauthorized(token);
+  // A 401 means our session is gone (403 relogin_required is not, but guard
+  // the code anyway: it must never sign the user out). Ends only the session
+  // this request used — a new one may have started while it was in flight.
+  const code = (data as { code?: unknown } | undefined)?.code;
+  if (backend && response.status === 401 && code !== "relogin_required") {
+    onUnauthorized(token);
+  }
 
   if (!response.ok) {
     const body = data as { message?: string | string[]; code?: unknown } | undefined;

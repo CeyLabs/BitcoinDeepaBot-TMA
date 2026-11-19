@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme, type ThemePreference } from "@/app/context/theme";
 import { useBalanceVisible } from "@/hooks/useBalanceVisible";
 import { useSession } from "@/hooks/useSession";
+import { useToast } from "@/components/ui/toast";
 import { useUser } from "@/hooks/useUser";
 import type { User } from "@/lib/types";
 import { haptic, usePlatform } from "@/platform";
@@ -164,6 +165,19 @@ export function SettingsContent({
   const router = useRouter();
   const { kind } = usePlatform();
   const { logout } = useSession();
+  const toast = useToast();
+  const logOut = (everywhere: boolean) => {
+    haptic.impact("medium");
+    onNavigate?.();
+    logout(everywhere).catch(() => {
+      haptic.notify("error");
+      toast({
+        type: "error",
+        title: "Couldn't log out",
+        description: "Check your connection and try again. You're still logged in.",
+      });
+    });
+  };
   const { preference, setPreference } = useTheme();
   const { visible, toggle } = useBalanceVisible();
 
@@ -211,21 +225,13 @@ export function SettingsContent({
       <List>
         {kind === "web" && (
           <ListRow
-            onClick={() => {
-              haptic.impact("medium");
-              onNavigate?.();
-              void logout();
-            }}
+            onClick={() => logOut(false)}
             icon={<Icon name="logout" className="text-loss" />}
             title={<span className="text-loss">Log out</span>}
           />
         )}
         <ListRow
-          onClick={() => {
-            haptic.impact("medium");
-            onNavigate?.();
-            void logout(true);
-          }}
+          onClick={() => logOut(true)}
           icon={<Icon name="logout" className="text-loss" />}
           title={<span className="text-loss">Log out of all devices</span>}
           subtitle="Ends every session, on every phone and browser"
