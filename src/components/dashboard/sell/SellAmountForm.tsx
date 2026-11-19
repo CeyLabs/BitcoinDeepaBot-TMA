@@ -97,7 +97,7 @@ export function SellAmountForm({
             <div className="flex justify-between text-[12px] text-[#94a3b8]">
               <span>
                 Fee {(price.feeBasisPoints / 100).toFixed(2)}%
-                {estimate && sats > 0 ? ` (${fmtSats(estimate.feeSats)} sats)` : ""}
+                {estimate && sats > 0 ? ` (${fmtLkrExact(estimate.feeLkr)})` : ""}
               </span>
               <span>1 BTC = {fmtLkrExact(price.btcLkrRate)}</span>
             </div>

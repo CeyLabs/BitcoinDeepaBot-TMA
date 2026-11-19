@@ -67,6 +67,9 @@ const STATE: Record<
 // The sats left the wallet for good only in these states
 const SOLD_STATUSES: SellOrder["status"][] = ["SATS_COLLECTED", "PAYOUT_PENDING", "COMPLETED"];
 
+// Nothing was sold (quote expired) or everything was returned: no fee taken
+const NO_FEE_STATUSES: SellOrder["status"][] = ["EXPIRED", "REFUNDED"];
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4 text-[14px]">
@@ -142,7 +145,10 @@ export default function SellOrderPage({ params }: { params: Promise<{ id: string
           label={SOLD_STATUSES.includes(order.status) ? "Sats sold" : "Sats"}
           value={`${fmtSats(order.sats)} sats`}
         />
-        <Row label="Fee" value={`${fmtSats(order.feeSats)} sats`} />
+        <Row label="Value" value={fmtLkrExact(order.grossLkr)} />
+        {!NO_FEE_STATUSES.includes(order.status) && (
+          <Row label="Fee" value={`− ${fmtLkrExact(order.feeLkr)}`} />
+        )}
         <Row label="Rate" value={`1 BTC = ${fmtLkrExact(order.btcLkrRate)}`} />
         {order.bankRef && <Row label="Bank reference" value={order.bankRef} />}
         <Row label="Date" value={fmtActivityDateTime(order.createdAt)} />
