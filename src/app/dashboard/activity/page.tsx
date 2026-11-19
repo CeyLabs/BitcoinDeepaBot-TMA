@@ -16,6 +16,8 @@ import {
   getActivityCategory,
   mapBotTransactionToActivityItem,
   mapDcaTransactionToActivityItem,
+  mapSellOrderToActivityItem,
+  withoutSalePayments,
   type ActivityCategory,
 } from "@/lib/activity";
 import { useBalanceVisible } from "@/hooks/useBalanceVisible";
@@ -31,8 +33,8 @@ export default function ActivityPage() {
   const deferredSearch = useDeferredValue(search);
   const [category, setCategory] = useState<ActivityCategory>("all");
 
-  // Plan charges show on Plans, one-time buys on Transactions: both come
-  // from the purchase history
+  // Plan charges show on Plans, one-time buys and sales on Transactions: all
+  // come from the member's history
   const showDca = category !== "tasks";
   const showBotHistory = category === "all" || category === "transactions";
 
@@ -43,13 +45,16 @@ export default function ActivityPage() {
   const activity = useMemo(
     () => [
       ...dca.transactions.map(mapDcaTransactionToActivityItem),
+      ...dca.sales.map(mapSellOrderToActivityItem),
       // A purchase's sats arrive as a bot transfer too: the backend marks
-      // that transfer, so the purchase shows once
-      ...botHistory.transactions
-        .filter((tx) => !tx.purchase_settlement)
-        .map(mapBotTransactionToActivityItem),
+      // that transfer, so the purchase shows once. A sale's sats leave as a
+      // bot payment: matched to the listed sale, so it shows once too
+      ...withoutSalePayments(
+        botHistory.transactions.filter((tx) => !tx.purchase_settlement),
+        dca.sales
+      ).map(mapBotTransactionToActivityItem),
     ],
-    [dca.transactions, botHistory.transactions]
+    [dca.transactions, dca.sales, botHistory.transactions]
   );
 
   const dcaLoading = showDca && dca.isLoading;
@@ -61,7 +66,7 @@ export default function ActivityPage() {
   // Names the source(s) that failed, for the notice shown above whatever
   // activity did load.
   const failedLabel =
-    dcaFailed && botFailed ? "activity" : dcaFailed ? "purchase history" : "transfers";
+    dcaFailed && botFailed ? "activity" : dcaFailed ? "purchases and sales" : "transfers";
   const refetch = () => {
     if (showDca && dca.isError) dca.refetch();
     if (showBotHistory && botHistory.isError) botHistory.refetch();

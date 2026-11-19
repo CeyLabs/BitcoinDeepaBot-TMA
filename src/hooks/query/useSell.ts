@@ -149,6 +149,8 @@ function useInvalidateAfterSale() {
     if (order) queryClient.setQueryData(queryKeys.sellOrder(order.id), order);
     void queryClient.invalidateQueries({ queryKey: queryKeys.walletSummary });
     void queryClient.invalidateQueries({ queryKey: ["bot-transactions"] });
+    // The sale is in the member's history (/transaction/list)
+    void queryClient.invalidateQueries({ queryKey: ["transactions"] });
     void queryClient.invalidateQueries({ queryKey: queryKeys.sellOrders });
   };
 }
@@ -188,6 +190,7 @@ export function useConfirmSell() {
       // Sats left the wallet (or not): refresh balance, history and orders
       void queryClient.invalidateQueries({ queryKey: queryKeys.walletSummary });
       void queryClient.invalidateQueries({ queryKey: ["bot-transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
       void queryClient.invalidateQueries({ queryKey: queryKeys.sellOrders });
     },
   });
