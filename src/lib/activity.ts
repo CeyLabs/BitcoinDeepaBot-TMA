@@ -1,5 +1,7 @@
 import type { ActivityItem, ActivityType, BotTransaction } from "@/lib/types";
 import type { DcaTransaction } from "@/hooks/query/useTransactionHistory";
+import type { SellOrder } from "@/hooks/query/useSell";
+import { SELL_STATUS_BADGE } from "@/components/dashboard/sell/sell-status";
 
 type StatusDot = NonNullable<ActivityItem["statusDot"]>;
 
@@ -28,6 +30,7 @@ export const ACTIVITY_ICON: Record<ActivityType, string> = {
   tasks_reward: "/emoji/tasks_reward.webp",
   membership_reward: "/emoji/membership_reward.webp",
   bitcoin_purchase: "/emoji/bitcoin.webp",
+  bitcoin_sale: "/emoji/coins.webp",
 };
 
 export const ACTIVITY_TITLE: Record<ActivityType, string> = {
@@ -42,6 +45,7 @@ export const ACTIVITY_TITLE: Record<ActivityType, string> = {
   tasks_reward: "Tasks Reward",
   membership_reward: "Membership Reward",
   bitcoin_purchase: "Bitcoin Purchase",
+  bitcoin_sale: "Bitcoin Sale",
 };
 
 export type ActivityCategory = "all" | "transactions" | "tasks" | "plans";
@@ -57,6 +61,7 @@ const TRANSACTION_TYPES: ActivityType[] = [
   "gift_received",
   // One-time buys aren't part of a plan
   "bitcoin_purchase",
+  "bitcoin_sale",
 ];
 
 export function getActivityCategory(type: ActivityType): ActivityCategory {
@@ -98,6 +103,69 @@ export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityIte
       transactionId: tx.id,
     },
   };
+}
+
+const SELL_BADGE_DOT: Record<
+  (typeof SELL_STATUS_BADGE)[keyof typeof SELL_STATUS_BADGE]["variant"],
+  StatusDot
+> = {
+  active: "green",
+  pending: "orange",
+  negative: "red",
+  secondary: "gray",
+};
+
+// A sale from the member's history: sats out of the wallet, LKR to their
+// bank. A refunded sale's sats came back (that transfer is listed on its own),
+// so it reads as not taken.
+export function mapSellOrderToActivityItem(order: SellOrder): ActivityItem {
+  const { label, variant } = SELL_STATUS_BADGE[order.status] ?? {
+    label: order.status,
+    variant: "secondary" as const,
+  };
+  return {
+    id: `sell-${order.id}`,
+    type: "bitcoin_sale",
+    detailLabel: "Sold to bank",
+    timestamp: order.createdAt,
+    sats: -order.sats,
+    lkr: order.amountLkr,
+    statusDot: SELL_BADGE_DOT[variant],
+    notCredited: order.status === "REFUNDED",
+    settlement: {
+      status: label,
+      settledOn: order.completedAt ?? order.createdAt,
+      btcSats: order.sats,
+      btcPriceLkr: order.btcLkrRate,
+      transactionId: order.id,
+    },
+  };
+}
+
+// The bot payment that took a sale's sats ("Bitcoin Deepa sale: ..." memo, set
+// by the backend's collect request). The sale is already listed, so it shows
+// once. A refunded sale keeps its payment, so it nets out with the refund.
+// Each sale hides at most one payment: same sats, made after the sale started.
+const SALE_MEMO = /^Bitcoin Deepa sale:/;
+
+export function withoutSalePayments(
+  transfers: BotTransaction[],
+  sales: SellOrder[]
+): BotTransaction[] {
+  const unmatched = sales.filter((sale) => sale.status !== "REFUNDED");
+  if (unmatched.length === 0) return transfers;
+  return transfers.filter((tx) => {
+    if (tx.direction !== "outgoing" || !tx.success || !SALE_MEMO.test(tx.memo ?? "")) {
+      return true;
+    }
+    const sentAt = new Date(tx.time).getTime();
+    const i = unmatched.findIndex(
+      (sale) => sale.sats === tx.amount && sentAt >= new Date(sale.createdAt).getTime()
+    );
+    if (i === -1) return true;
+    unmatched.splice(i, 1);
+    return false;
+  });
 }
 
 // A bot-relayed sats transfer to/from another Telegram user maps onto the
