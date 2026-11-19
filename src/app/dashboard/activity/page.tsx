@@ -6,6 +6,9 @@ import { ActivitySearchBar } from "@/components/dashboard/activity/ActivitySearc
 import { ActivityTabs } from "@/components/dashboard/activity/ActivityTabs";
 import { ActivityGroup } from "@/components/dashboard/activity/ActivityGroup";
 import { ActivitySkeleton } from "@/components/dashboard/activity/ActivitySkeleton";
+import { ActivityEmpty } from "@/components/dashboard/activity/ActivityEmpty";
+import { Button } from "@/components/ui/button";
+import { haptic } from "@/platform";
 import { useTransactionHistory } from "@/hooks/query/useTransactionHistory";
 import { useBotTransactionHistory } from "@/hooks/query/useBotTransactionHistory";
 import {
@@ -110,6 +113,15 @@ export default function ActivityPage() {
   // its full 10s timeout) must not hide purchases that are already here.
   const isLoading = stillLoading && groups.length === 0;
 
+  const canClear = search.trim() !== "" || category !== "all";
+  const clearFilters = () => {
+    haptic.select();
+    setSearch("");
+    setCategory("all");
+  };
+  // Nothing at all came back (not just filtered out): the first-run copy.
+  const nothingYet = activity.length === 0 && !stillLoading && !canClear;
+
   return (
     <div className="flex w-full flex-col gap-5">
       <ActivitySearchBar
@@ -124,36 +136,50 @@ export default function ActivityPage() {
       {isLoading ? (
         <ActivitySkeleton />
       ) : comingSoon ? (
-        <p className="py-8 text-center text-[14px] text-[#64748b]">Coming soon.</p>
+        <ActivityEmpty
+          title="Task rewards are coming soon"
+          body="Sats you earn from tasks will show up here."
+          actionLabel="Show all activity"
+          onAction={clearFilters}
+        />
       ) : isError && groups.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 py-8">
-          <p className="text-center text-[14px] text-[#64748b]">Couldn&apos;t load activity.</p>
-          <button
-            onClick={refetch}
-            className="cursor-pointer text-[14px] font-semibold text-[#fa7119]"
-          >
-            Try again
-          </button>
-        </div>
+        <ActivityEmpty
+          title="Couldn't load activity"
+          body="Check your connection and try again."
+          actionLabel="Try again"
+          onAction={refetch}
+        />
       ) : groups.length === 0 ? (
-        <p className="py-8 text-center text-[14px] text-[#64748b]">No activity found.</p>
+        nothingYet ? (
+          <ActivityEmpty
+            title="No activity yet"
+            body="Your purchases, rewards and transfers will show up here."
+          />
+        ) : (
+          <ActivityEmpty
+            title="No matches"
+            body="Try another search or filter."
+            actionLabel={canClear ? "Clear filters" : undefined}
+            onAction={clearFilters}
+          />
+        )
       ) : (
         <>
           {isError && (
-            <div className="flex items-center justify-between gap-3 rounded-[12px] bg-[#fef2f2] px-4 py-3 dark:bg-[#2a1515]">
-              <p className="text-[13px] text-[#b91c1c] dark:text-[#fca5a5]">
+            <div
+              role="alert"
+              className="bg-loss-bg flex items-center justify-between gap-3 rounded-xl py-1 pr-1 pl-4"
+            >
+              <p className="text-loss text-[13px] font-semibold">
                 Couldn&apos;t load {failedLabel}. Showing what loaded.
               </p>
-              <button
-                onClick={refetch}
-                className="shrink-0 cursor-pointer text-[13px] font-semibold text-[#fa7119]"
-              >
+              <Button variant="text" size="text" onClick={refetch} className="shrink-0">
                 Try again
-              </button>
+              </Button>
             </div>
           )}
           {stillLoading && (
-            <p className="text-center text-[13px] text-[#64748b]">
+            <p className="text-ink3 animate-pulse-soft text-center text-[13px]">
               Loading {dcaLoading ? "purchases" : "transfers"}…
             </p>
           )}
@@ -168,13 +194,15 @@ export default function ActivityPage() {
           ))}
 
           {hasNextPage && (
-            <button
+            <Button
+              variant="secondary"
+              size="default"
               onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
-              className="cursor-pointer py-3 text-center text-[14px] font-semibold text-[#fa7119] disabled:cursor-not-allowed disabled:opacity-50"
+              loading={isFetchingNextPage}
+              className="self-center"
             >
-              {isFetchingNextPage ? "Loading..." : "Load more"}
-            </button>
+              Load more
+            </Button>
           )}
         </>
       )}

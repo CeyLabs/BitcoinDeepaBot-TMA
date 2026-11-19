@@ -1,57 +1,39 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { BackButton } from "@/components/ui/back-button";
-import { PageTitle } from "@/components/ui/page-title";
-import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotice";
-import { BankAccountRequiredNotice } from "@/components/dashboard/sell/BankAccountRequiredNotice";
+import { PushHeader } from "@/components/ui/back-button";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Emoji } from "@/components/ui/emoji";
+import { useSheets } from "@/components/dashboard/sheets";
 import { RecentSales } from "@/components/dashboard/sell/RecentSales";
-import { SellAmountForm } from "@/components/dashboard/sell/SellAmountForm";
-import { SellQuoteCard } from "@/components/dashboard/sell/SellQuoteCard";
-import { useBankAccounts } from "@/hooks/query/useBankAccounts";
-import { useKycStatus } from "@/hooks/query/useKyc";
-import type { SellOrder } from "@/hooks/query/useSell";
-import { SellSkeleton } from "@/components/dashboard/sell/SellSkeleton";
+import { haptic } from "@/platform";
 
+/** Sell: start a sale (the Sell sheet) and see recent sales. */
 export default function SellPage() {
   const router = useRouter();
-  const [quote, setQuote] = useState<SellOrder | null>(null);
-  const { data: kyc, isLoading: kycLoading } = useKycStatus();
-  const { current, verified, isLoading: bankLoading } = useBankAccounts();
-
-  const back = () => (quote ? setQuote(null) : router.push("/dashboard"));
-
-  let content: React.ReactNode;
-  if (kycLoading || bankLoading) {
-    content = <SellSkeleton bare />;
-  } else if (kyc?.status !== "APPROVED") {
-    content = <KycRequiredNotice message="Complete identity verification to sell sats for LKR." />;
-  } else if (!verified) {
-    content = <BankAccountRequiredNotice account={current} />;
-  } else if (quote) {
-    content = (
-      <SellQuoteCard
-        quote={quote}
-        account={verified}
-        onBack={() => setQuote(null)}
-        onConfirmed={(order) => router.push(`/dashboard/sell/${order.id}`)}
-      />
-    );
-  } else {
-    content = (
-      <>
-        <SellAmountForm account={verified} onQuoted={setQuote} />
-        <RecentSales />
-      </>
-    );
-  }
+  const { openTrade } = useSheets();
 
   return (
-    <div className="flex w-full flex-col gap-5">
-      <BackButton onBack={back} />
-      <PageTitle title="Sell sats" subtitle="Get LKR in your bank account" />
-      {content}
+    <div className="flex flex-col gap-5">
+      <PushHeader title="Sell sats" onBack={() => router.push("/dashboard")} />
+      <Card className="flex flex-col items-center gap-2 px-5 py-6 text-center">
+        <Emoji src="/emoji/sent.webp" size={72} priority />
+        <h2 className="text-[22px] leading-7">Sell sats for LKR</h2>
+        <p className="text-ink2 text-[14px] leading-5">
+          Get a locked rate, then the rupees go to your verified bank account.
+        </p>
+        <Button
+          className="mt-2"
+          onClick={() => {
+            haptic.impact("light");
+            openTrade("sell");
+          }}
+        >
+          Sell sats
+        </Button>
+      </Card>
+      <RecentSales />
     </div>
   );
 }

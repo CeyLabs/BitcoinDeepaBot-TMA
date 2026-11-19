@@ -1,0 +1,521 @@
+"use client";
+
+import { useCallback, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { cn } from "cn";
+import { Button } from "@/components/ui/button";
+import { KeyValueList, SectionLabel } from "@/components/ui/section";
+import { Sheet, SheetStepper } from "@/components/ui/sheet";
+import { useToast } from "@/components/ui/toast";
+import {
+  AmountBlock,
+  AmountDisplay,
+  AmountHint,
+  applyKey,
+  Keypad,
+  Presets,
+  PriceFooter,
+  SwapUnitPill,
+} from "@/components/dashboard/trade/keypad";
+import { ErrorRow, HoldButton, InfoRow, ReviewHeader } from "@/components/dashboard/trade/parts";
+import { FreshCredentialPrompt } from "./FreshCredentialPrompt";
+import { isTransferInProgress, SendTransferStatus } from "./SendTransferStatus";
+import { useP2pMe, useP2pSend, useP2pTransfer, useResolveRecipient } from "@/hooks/query/useP2p";
+import { useBotTransactionHistory } from "@/hooks/query/useBotTransactionHistory";
+import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
+import { FetchyError } from "@/lib/fetchy";
+import { fmtLkrCurrency, fmtSats, LKR_SYMBOL } from "@/lib/formatters";
+import { isCredentialError, miniAppCanSend, recipientLabel, type P2pRecipient } from "@/lib/p2p";
+import { sendAmountSchema, sendMemoSchema, sendRecipientSchema } from "@/lib/validations";
+import { haptic, usePlatform } from "@/platform";
+
+type Step = "to" | "amount" | "review";
+type Unit = "sats" | "lkr";
+const STEPS: Step[] = ["to", "amount", "review"];
+const STEP_LABELS = ["To", "Amount", "Review"];
+
+const newPaymentKey = () => crypto.randomUUID();
+
+const initials = (r: { name?: string; username?: string }) =>
+  (r.name || r.username || "?")
+    .replace(/^@/, "")
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+/**
+ * Send sats to another Bitcoin Deepa user (P2P): who → how much → review and
+ * press-and-hold to send → the transfer's status, polled until it's final.
+ * Sending needs a Telegram session under 10 minutes old (reopen the Mini App,
+ * or log in again on the web); big amounts are confirmed in the bot chat.
+ */
+export default function SendSheet({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const router = useRouter();
+  const platform = usePlatform();
+  const toast = useToast();
+  const me = useP2pMe(open);
+  const resolve = useResolveRecipient();
+  const send = useP2pSend();
+  const { currentBtcPrice } = useWalletMetrics();
+  const { transactions: botTxs } = useBotTransactionHistory({ enabled: open });
+
+  const [step, setStep] = useState<Step>("to");
+  const [dir, setDir] = useState<"fwd" | "back">("fwd");
+  const [to, setTo] = useState("");
+  const [toError, setToError] = useState<string>();
+  const [recipient, setRecipient] = useState<P2pRecipient | null>(null);
+  const [unit, setUnit] = useState<Unit>("sats");
+  const [flipped, setFlipped] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [memo, setMemo] = useState("");
+  const [sendError, setSendError] = useState<string>();
+  const [transferId, setTransferId] = useState<string | null>(null);
+  const [renewOpen, setRenewOpen] = useState(false);
+  const { data: transfer } = useP2pTransfer(transferId ?? "");
+
+  // What to retry after a fresh login: finding the recipient or sending
+  const afterRenew = useRef<(() => void) | null>(null);
+  const askRenew = (retry: () => void) => {
+    afterRenew.current = retry;
+    setRenewOpen(true);
+  };
+  // One key per payment, reused on every retry of it: the bot never sends twice
+  const paymentKey = useRef(newPaymentKey());
+
+  const limits = me.data?.limits;
+  const balance = me.data?.balance ?? 0;
+  const maxSendable = limits ? Math.min(balance, limits.max_amount, limits.daily_remaining) : 0;
+  const raw = Number(amount) || 0;
+  const rate = currentBtcPrice || 0; // LKR per BTC
+  const sats = unit === "sats" ? raw : rate > 0 ? Math.floor((raw / rate) * 1e8) : 0;
+  const lkrFor = (s: number) => (rate > 0 ? (s / 1e8) * rate : 0);
+  const parsed =
+    raw > 0 && limits
+      ? sendAmountSchema(balance, limits.max_amount, limits.daily_remaining).safeParse(sats)
+      : null;
+  const amountError = parsed && !parsed.success ? parsed.error.issues[0]?.message : undefined;
+  const amountOk = !!parsed?.success;
+  const needsConfirm = !!limits && sats > limits.unconfirmed_remaining;
+  const busy = send.isPending;
+
+  // People you've sent to before (newest first), from the transfer history
+  const recents = useMemo(() => {
+    const seen = new Set<number>();
+    const out: P2pRecipient[] = [];
+    for (let i = botTxs.length - 1; i >= 0 && out.length < 6; i--) {
+      const tx = botTxs[i];
+      if (tx.direction !== "outgoing" || !tx.to_user || seen.has(tx.to_id)) continue;
+      seen.add(tx.to_id);
+      out.push({ telegram_id: tx.to_id, username: tx.to_user.replace(/^@/, "") });
+    }
+    return out;
+  }, [botTxs]);
+
+  const go = (next: Step, d: "fwd" | "back") => {
+    setDir(d);
+    setStep(next);
+  };
+  const close = () => onOpenChange(false);
+
+  const findRecipient = (value = to) => {
+    const parsedTo = sendRecipientSchema.safeParse(value);
+    if (!parsedTo.success) {
+      setToError(parsedTo.error.issues[0]?.message);
+      haptic.notify("error");
+      return;
+    }
+    setToError(undefined);
+    resolve.mutate(parsedTo.data, {
+      onSuccess: (found) => {
+        haptic.impact("light");
+        setRecipient(found);
+        go("amount", "fwd");
+      },
+      onError: (err) => {
+        haptic.notify("error");
+        if (err instanceof FetchyError && isCredentialError(err.code)) {
+          askRenew(() => findRecipient(value));
+        }
+        setToError(err.message);
+      },
+    });
+  };
+
+  const toReview = () => {
+    if (!amountOk) return;
+    const memoCheck = sendMemoSchema.safeParse(memo);
+    if (!memoCheck.success) return;
+    haptic.impact("light");
+    // A new payment: a new key (changing the amount or recipient is a new payment)
+    paymentKey.current = newPaymentKey();
+    setSendError(undefined);
+    go("review", "fwd");
+  };
+
+  /** Fresh enough to send? Otherwise ask for a fresh session/login first. */
+  const credentialFresh = () =>
+    platform.kind === "telegram"
+      ? miniAppCanSend(platform.launch?.initDataRaw)
+      : !!me.data && Date.now() < new Date(me.data.credential.spend_fresh_until).getTime();
+
+  const doSend = useCallback(async (): Promise<"renew" | void> => {
+    if (!recipient) return;
+    haptic.impact("heavy");
+    setSendError(undefined);
+    try {
+      const t = await send.mutateAsync({
+        to_telegram_id: recipient.telegram_id,
+        amount: sats,
+        ...(memo.trim() ? { memo: memo.trim() } : {}),
+        idempotency_key: paymentKey.current,
+      });
+      haptic.notify(t.status === "failed" ? "error" : "success");
+      setTransferId(t.id);
+    } catch (err) {
+      haptic.notify("error");
+      // The caller asks for a fresh login, then the user holds to send again
+      if (err instanceof FetchyError && isCredentialError(err.code)) return "renew";
+      // No answer, or it may have gone through: sending again with the same
+      // key is safe (the bot returns this payment instead of sending twice)
+      const unknown =
+        !(err instanceof FetchyError) ||
+        err.code === "outcome_unknown" ||
+        err.code === "in_progress";
+      setSendError(
+        unknown
+          ? "We couldn't confirm this payment yet. Hold Send again to check: it won't send twice."
+          : err.message
+      );
+    }
+  }, [memo, recipient, sats, send]);
+
+  const onSend = async () => {
+    if (!credentialFresh()) {
+      askRenew(() => void onSend());
+      return;
+    }
+    if ((await doSend()) === "renew") askRenew(() => void onSend());
+  };
+
+  // Stable (the web login button re-injects Telegram's script when it changes)
+  const onRenewed = useCallback(() => {
+    toast({ title: "Logged in", description: "You can continue now." });
+    afterRenew.current?.();
+    afterRenew.current = null;
+  }, [toast]);
+
+  const swapUnit = () => {
+    const nu: Unit = unit === "sats" ? "lkr" : "sats";
+    let next = "";
+    if (raw > 0 && rate > 0) {
+      const v = nu === "sats" ? sats : Math.floor(lkrFor(sats));
+      next = v > 0 ? String(v) : "";
+    }
+    setUnit(nu);
+    setAmount(next);
+    setFlipped((f) => !f);
+  };
+
+  const index = STEPS.indexOf(step);
+  let title = "Send sats";
+  let body: React.ReactNode;
+  let footer: React.ReactNode;
+
+  if (transferId) {
+    const inProgress = isTransferInProgress(transfer);
+    title = transfer?.status === "completed" ? "Sent" : inProgress ? "Send sats" : "Payment";
+    body = transfer ? (
+      <SendTransferStatus transfer={transfer} />
+    ) : (
+      <div className="flex flex-col items-center gap-1 py-6 text-center">
+        <h2 className="text-[22px] leading-7">Sending</h2>
+        <p className="text-ink2 text-[14px] font-semibold">One moment…</p>
+      </div>
+    );
+    footer = (
+      <div className="flex flex-col gap-1">
+        <Button variant={inProgress ? "secondary" : "default"} onClick={close}>
+          {inProgress ? "Close" : "Done"}
+        </Button>
+        <Button
+          variant="text"
+          size="text"
+          className="w-full"
+          onClick={() => {
+            close();
+            router.push(`/dashboard/send/${transferId}`);
+          }}
+        >
+          {inProgress ? "We'll keep going. Track this payment" : "View payment"}
+        </Button>
+      </div>
+    );
+  } else if (step === "to") {
+    body = (
+      <div className="flex flex-col gap-4 pt-1">
+        <div>
+          <SectionLabel as="label" className="mb-2 block">
+            <span id="send-to-label">To</span>
+          </SectionLabel>
+          <div className="bg-chip flex h-[52px] items-center gap-1.5 rounded-xl px-3.5 focus-within:shadow-[0_0_0_2px_var(--ring)]">
+            <span aria-hidden className="text-ink3 text-[18px] font-bold">
+              @
+            </span>
+            <input
+              aria-labelledby="send-to-label"
+              autoComplete="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              maxLength={64}
+              placeholder="username or Telegram ID"
+              value={to.replace(/^@/, "")}
+              onChange={(e) => {
+                setTo(e.target.value);
+                setToError(undefined);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") findRecipient();
+              }}
+              className="text-foreground placeholder:text-ink3 h-full min-w-0 grow border-0 bg-transparent p-0 text-[17px] font-semibold outline-none placeholder:font-medium"
+            />
+          </div>
+          <p
+            aria-live="polite"
+            className={cn(
+              "mt-1.5 text-[12px] leading-4 font-semibold",
+              toError ? "text-loss" : "text-ink3"
+            )}
+          >
+            {toError ?? "They need to have started the Bitcoin Deepa bot."}
+          </p>
+        </div>
+        {recents.length > 0 && (
+          <div>
+            <SectionLabel className="mb-2">Recent</SectionLabel>
+            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 py-0.5">
+              {recents.map((r) => (
+                <button
+                  key={r.telegram_id}
+                  type="button"
+                  disabled={resolve.isPending}
+                  onClick={() => {
+                    haptic.select();
+                    const v = `@${r.username}`;
+                    setTo(v);
+                    findRecipient(v);
+                  }}
+                  className="press bg-chip flex h-[52px] shrink-0 items-center gap-2 rounded-xl border-0 py-0 pr-3.5 pl-2 text-left"
+                >
+                  <span
+                    aria-hidden
+                    className="bg-primary flex size-9 shrink-0 items-center justify-center rounded-full text-[12px] font-extrabold text-white"
+                  >
+                    {initials(r)}
+                  </span>
+                  <span className="text-[13px] leading-4 font-bold whitespace-nowrap">
+                    @{r.username}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+    footer = (
+      <Button disabled={!to.trim()} loading={resolve.isPending} onClick={() => findRecipient()}>
+        Continue
+      </Button>
+    );
+  } else if (step === "amount" && recipient) {
+    let hint: React.ReactNode;
+    if (amountError) hint = amountError;
+    else if (raw > 0 && rate > 0)
+      hint =
+        unit === "sats"
+          ? `≈ ${fmtLkrCurrency(Math.round(lkrFor(sats)))}`
+          : `≈ ${fmtSats(sats)} sats`;
+    else if (me.isLoading) hint = "Checking your balance…";
+    else if (me.data) hint = `You have ${fmtSats(balance)} sats`;
+    else hint = "Your balance couldn't be loaded right now";
+
+    body = (
+      <>
+        <div className="bg-chip mt-1 flex items-center gap-2.5 rounded-xl p-2 pr-3.5">
+          <span
+            aria-hidden
+            className="bg-primary flex size-9 shrink-0 items-center justify-center rounded-full text-[12px] font-extrabold text-white"
+          >
+            {initials(recipient)}
+          </span>
+          <span className="min-w-0 grow">
+            <span className="text-ink3 block text-[11px] leading-[14px] font-semibold">
+              Sending to
+            </span>
+            <span className="block truncate text-[14px] leading-[18px] font-bold">
+              {recipientLabel(recipient)}
+            </span>
+          </span>
+        </div>
+        <AmountBlock>
+          <AmountDisplay
+            value={amount}
+            prefix={unit === "lkr" ? LKR_SYMBOL : undefined}
+            suffix={unit === "sats" ? "sats" : undefined}
+            invalid={!!amountError}
+          />
+          <AmountHint invalid={!!amountError || (!me.isLoading && !me.data)}>{hint}</AmountHint>
+          {rate > 0 && (
+            <SwapUnitPill
+              label={unit === "lkr" ? "Enter in sats" : "Enter in rupees"}
+              flipped={flipped}
+              onClick={swapUnit}
+            />
+          )}
+        </AmountBlock>
+        <Presets
+          items={[1000, 5000, 10000]
+            .map((v) => ({
+              label: `${fmtSats(v)} sats`,
+              on: unit === "sats" && raw === v,
+              disabled: !limits || v > maxSendable,
+              pick: () => {
+                setUnit("sats");
+                setAmount(String(v));
+              },
+            }))
+            .concat({
+              label: "Max",
+              on: unit === "sats" && maxSendable > 0 && raw === maxSendable,
+              disabled: maxSendable <= 0,
+              pick: () => {
+                setUnit("sats");
+                setAmount(String(maxSendable));
+              },
+            })}
+        />
+        <Keypad onKey={(k) => setAmount((a) => applyKey(a, k))} />
+        {me.error instanceof Error && (
+          <div className="pt-2">
+            <ErrorRow>{me.error.message}</ErrorRow>
+          </div>
+        )}
+        {limits && (
+          <PriceFooter>
+            Up to {fmtSats(limits.max_amount)} sats per send · {fmtSats(limits.daily_remaining)}{" "}
+            more today
+          </PriceFooter>
+        )}
+      </>
+    );
+    footer = (
+      <Button disabled={!amountOk} onClick={toReview}>
+        {amountOk ? `Review · ${fmtSats(sats)} sats` : "Review"}
+      </Button>
+    );
+  } else if (step === "review" && recipient) {
+    title = "Review";
+    const memoError = sendMemoSchema.safeParse(memo).success
+      ? undefined
+      : "Keep the note under 280 characters";
+    body = (
+      <>
+        <ReviewHeader
+          caption="You send"
+          big={`${fmtSats(sats)} sats`}
+          small={rate > 0 ? `≈ ${fmtLkrCurrency(Math.round(lkrFor(sats)))}` : undefined}
+        />
+        {needsConfirm && (
+          <InfoRow>You&apos;ll confirm this payment in the Bitcoin Deepa bot chat.</InfoRow>
+        )}
+        {sendError && <ErrorRow>{sendError}</ErrorRow>}
+        <KeyValueList
+          className="mb-3"
+          rows={[
+            { k: "To", v: recipientLabel(recipient) },
+            { k: "Amount", v: `${fmtSats(sats)} sats` },
+            ...(rate > 0
+              ? [{ k: "Value", v: `≈ ${fmtLkrCurrency(Math.round(lkrFor(sats)))}` }]
+              : []),
+            ...(limits
+              ? [
+                  {
+                    k: "Left today after this",
+                    v: `${fmtSats(Math.max(0, limits.daily_remaining - sats))} sats`,
+                  },
+                ]
+              : []),
+          ]}
+        />
+        <label className="text-ink2 mb-2 block text-[14px] leading-4 font-bold" htmlFor="send-memo">
+          Note <span className="text-ink3 font-normal">(optional)</span>
+        </label>
+        <input
+          id="send-memo"
+          autoComplete="off"
+          maxLength={280}
+          placeholder="What's it for?"
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+          className="bg-chip text-foreground placeholder:text-ink3 h-[52px] w-full rounded-xl border-0 px-3.5 text-[16px] font-semibold outline-none focus:shadow-[0_0_0_2px_var(--ring)]"
+        />
+        {memoError && <p className="text-loss mt-1.5 text-[12px] font-semibold">{memoError}</p>}
+      </>
+    );
+    footer = (
+      <>
+        <HoldButton
+          label={`Send ${fmtSats(sats)} sats`}
+          disabled={!!memoError}
+          loading={send.isPending}
+          onConfirm={() => void onSend()}
+        />
+        <p className="text-ink3 mt-2 text-center text-[12px] font-semibold">
+          Press and hold to send. This can&apos;t be undone.
+        </p>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Sheet
+        open={open}
+        onOpenChange={(next) => {
+          // Don't drop a send mid-flight
+          if (!next && busy) return;
+          onOpenChange(next);
+        }}
+        title={title}
+        onBack={
+          !transferId && index > 0 && !busy
+            ? () => {
+                haptic.select();
+                go(STEPS[index - 1], "back");
+              }
+            : undefined
+        }
+        hideClose={busy}
+        footer={footer}
+        flow
+      >
+        {!transferId && <SheetStepper steps={STEP_LABELS} current={index} />}
+        <div
+          key={transferId ? "status" : step}
+          className={cn("px-4", dir === "back" ? "animate-in-left" : "animate-in-right")}
+        >
+          {body}
+        </div>
+      </Sheet>
+      <FreshCredentialPrompt open={renewOpen} onOpenChange={setRenewOpen} onRenewed={onRenewed} />
+    </>
+  );
+}

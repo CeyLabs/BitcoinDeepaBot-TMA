@@ -1,6 +1,8 @@
 "use client";
 
 import BottomNavigation from "@/components/bottomNavigation";
+import { AppHeader } from "@/components/dashboard/AppHeader";
+import { SheetsProvider } from "@/components/dashboard/sheets";
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { PullToRefresh } from "@/components/pull-to-refresh";
@@ -40,35 +42,56 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return queryClient.refetchQueries({ type: "active" });
   };
 
+  // Pushed pages (news, an article, payment status) hide the tab bar.
+  const showNav = !PUSHED_PAGES.some((p) => pathname.startsWith(p));
+
   return (
-    // Phone-width column. On wider screens (desktop web) it's framed as a
-    // card so it doesn't look like a stray strip.
-    <div className="bg-background mx-auto flex min-h-screen max-w-md flex-col gap-5 px-5 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:my-6 md:min-h-[calc(100vh-3rem)] md:rounded-[24px] md:shadow-[0px_4px_24px_0px_rgba(0,0,0,0.08)] md:ring-1 md:ring-black/5 dark:md:ring-white/5">
-      {sessionExpired ? (
-        <SessionExpiredNotice />
-      ) : (status === "loading" || signingIn) &&
-        !RENDER_WITHOUT_SESSION.some((p) => pathname.startsWith(p)) ? (
-        // Server render / hydration (the localStorage token isn't known yet),
-        // or Telegram signing in again: show this tab's skeleton instead of
-        // the page with no data, which would flash "No Active Plan" and zeros.
-        <TabSkeleton pathname={pathname} />
-      ) : (
-        <PullToRefresh onRefresh={refresh} className="flex flex-1 flex-col gap-5">
-          {children}
-        </PullToRefresh>
-      )}
-      <BottomNavigation />
-    </div>
+    // Phone-width column, centered on a plain page on wider screens.
+    <SheetsProvider>
+      <div className="bg-background relative mx-auto flex min-h-screen w-full max-w-[440px] flex-col overflow-x-clip px-4 transition-colors duration-300">
+        <AppHeader />
+        <main
+          className={
+            showNav
+              ? "flex flex-1 flex-col gap-5 pt-3 pb-[calc(116px+env(safe-area-inset-bottom))]"
+              : "flex flex-1 flex-col gap-5 pt-3 pb-[calc(40px+env(safe-area-inset-bottom))]"
+          }
+        >
+          {sessionExpired ? (
+            <SessionExpiredNotice />
+          ) : (status === "loading" || signingIn) &&
+            !RENDER_WITHOUT_SESSION.some((p) => pathname.startsWith(p)) ? (
+            // Server render / hydration (the localStorage token isn't known yet),
+            // or Telegram signing in again: show this tab's skeleton instead of
+            // the page with no data, which would flash "No Active Plan" and zeros.
+            <TabSkeleton pathname={pathname} />
+          ) : (
+            <PullToRefresh onRefresh={refresh} className="flex flex-1 flex-col gap-5">
+              {children}
+            </PullToRefresh>
+          )}
+        </main>
+        {showNav && <BottomNavigation />}
+      </div>
+    </SheetsProvider>
   );
 }
+
+const PUSHED_PAGES = [
+  "/dashboard/news",
+  "/dashboard/buy",
+  "/dashboard/sell/",
+  "/dashboard/send",
+  "/dashboard/profile",
+];
 
 // Telegram only: the initData this Mini App was opened with is too old for the
 // backend to accept, so a fresh launch is the only way to sign in again.
 function SessionExpiredNotice() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
-      <p className="text-[18px] font-bold text-[#1b2027] dark:text-white">Session expired</p>
-      <p className="text-[14px] text-[#475569] dark:text-[#94a3b8]">
+      <p className="text-[18px] font-bold">Session expired</p>
+      <p className="text-ink2 text-[14px]">
         Close Bitcoin Deepa and open it again from the bot to continue.
       </p>
     </div>

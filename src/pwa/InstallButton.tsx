@@ -8,7 +8,7 @@ import { promptInstall, useInstallKind } from "./install";
 
 interface InstallButtonProps {
   /** "button": full-width outline button. "icon": round icon button (top bar). */
-  variant?: "button" | "icon";
+  variant?: "button" | "icon" | "cell";
   className?: string;
 }
 
@@ -37,18 +37,49 @@ export function InstallButton({ variant = "button", className }: InstallButtonPr
           aria-label="Install app"
           onClick={handleClick}
           className={cn(
-            "bg-card flex size-10 items-center justify-center rounded-full text-[#111821] dark:text-[#f1f5f9]",
+            "press bg-card text-foreground shadow-card flex size-10 items-center justify-center rounded-full",
             className
           )}
         >
           <Download size={18} strokeWidth={1.75} />
+        </button>
+      ) : variant === "cell" ? (
+        <button
+          type="button"
+          onClick={handleClick}
+          className={cn(
+            "press bg-card shadow-card flex min-h-16 w-full items-center gap-3 rounded-xl border-0 px-4 py-3 text-left",
+            className
+          )}
+        >
+          <span className="bg-chip text-link flex size-9 shrink-0 items-center justify-center rounded-[10px]">
+            <Download size={18} strokeWidth={2} />
+          </span>
+          <span className="flex min-w-0 grow flex-col gap-1 pl-0.5">
+            <span className="text-[16px] leading-[18px] font-semibold">Install the app</span>
+            <span className="text-ink3 truncate text-[13px] leading-4">
+              Add Bitcoin Deepa to your home screen
+            </span>
+          </span>
+          <svg
+            className="text-ink3 size-4 shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M9 18l6-6-6-6" />
+          </svg>
         </button>
       ) : (
         <button
           type="button"
           onClick={handleClick}
           className={cn(
-            "flex h-12 w-full items-center justify-center gap-2 rounded-[12px] border border-[#e2e8f0] text-[15px] font-semibold text-[#1b2027] dark:border-[#1e293b] dark:text-white",
+            "press bg-chip text-foreground flex h-12 w-full items-center justify-center gap-2 rounded-xl text-[15px] font-bold",
             className
           )}
         >
@@ -87,20 +118,17 @@ function IosInstallSheet({ onClose }: { onClose: () => void }) {
         aria-modal="true"
         aria-labelledby="ios-install-title"
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-md rounded-t-[24px] bg-white px-5 pt-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-left dark:bg-[#0b0f14]"
+        className="bg-card w-full max-w-md rounded-t-[20px] px-5 pt-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-left"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2
-            id="ios-install-title"
-            className="text-[18px] font-bold text-[#1b2027] dark:text-white"
-          >
+          <h2 id="ios-install-title" className="text-[18px] font-bold">
             Install Bitcoin Deepa
           </h2>
           <button
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="flex size-8 items-center justify-center rounded-full bg-[#f1f5f9] text-[#475569] dark:bg-[#1e293b] dark:text-[#94a3b8]"
+            className="bg-chip text-ink2 flex size-8 items-center justify-center rounded-full"
           >
             <X size={16} />
           </button>
@@ -109,16 +137,16 @@ function IosInstallSheet({ onClose }: { onClose: () => void }) {
         <ol className="flex flex-col gap-3">
           {IOS_STEPS.map(({ Icon, text }, index) => (
             <li key={text} className="flex items-center gap-3">
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#fa7119] text-[12px] font-bold text-white">
+              <span className="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-[12px] font-bold">
                 {index + 1}
               </span>
-              <span className="flex-1 text-[14px] text-[#475569] dark:text-[#94a3b8]">{text}</span>
-              {Icon && <Icon size={18} className="shrink-0 text-[#2e7cf6]" />}
+              <span className="text-ink2 flex-1 text-[14px]">{text}</span>
+              {Icon && <Icon size={18} className="text-link shrink-0" />}
             </li>
           ))}
         </ol>
 
-        <p className="mt-4 text-[12px] text-[#64748b]">
+        <p className="text-ink3 mt-4 text-[12px]">
           The installed app has its own storage, so you&apos;ll sign in with Telegram once more
           there.
         </p>

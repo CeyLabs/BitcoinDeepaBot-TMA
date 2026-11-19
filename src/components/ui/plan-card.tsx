@@ -1,145 +1,107 @@
 "use client";
 
-import { Check } from "lucide-react";
 import { cn } from "cn";
+import { Badge } from "@/components/ui/badge";
+import { Emoji } from "@/components/ui/emoji";
 import { haptic } from "@/platform";
 
-const RadioDefault = () => (
-  <div className="size-5 rounded-full border-2 border-[#e2e8f0] bg-white dark:border-[#334155] dark:bg-transparent" />
-);
-
-const RadioSelected = () => (
-  <div className="flex size-5 items-center justify-center rounded-full border-2 border-[#fa7119] bg-white dark:bg-transparent">
-    <div className="size-2.5 rounded-full bg-[#fa7119]" />
-  </div>
-);
-
-const CheckSelected = () => (
-  <div className="flex size-5 items-center justify-center rounded-full border-2 border-[#16a34a] bg-white dark:bg-transparent">
-    <Check className="size-3 text-[#16a34a]" strokeWidth={3} />
-  </div>
-);
-
 export interface PlanCardProps {
-  emoji: React.ReactNode;
+  emojiSrc: string;
   name: string;
   price: string;
+  /** e.g. "/week" */
   period: string;
-  description: string;
-  perMonth?: string;
-  perYear: string;
   selected?: boolean;
-  active?: boolean;
-  mostPopular?: boolean;
-  onSelect?: () => void;
+  /** The user's active plan: shows a "Current" badge. */
+  current?: boolean;
+  popular?: boolean;
+  /** Revealed under the row while selected (estimate, fee line). */
+  details?: React.ReactNode;
+  onSelect: () => void;
   className?: string;
 }
 
+/** Selectable plan row (radio, emoji, name, price) that expands when picked. */
 export function PlanCard({
-  emoji,
+  emojiSrc,
   name,
   price,
   period,
-  description,
-  perMonth,
-  perYear,
   selected = false,
-  active = false,
-  mostPopular = false,
+  current = false,
+  popular = false,
+  details,
   onSelect,
   className,
 }: PlanCardProps) {
-  const isHighlighted = selected || active;
-  const Component = active ? "div" : "button";
-
   return (
-    <Component
-      type={active ? undefined : "button"}
-      onClick={
-        active
-          ? undefined
-          : () => {
-              haptic.select();
-              onSelect?.();
-            }
-      }
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={() => {
+        if (selected) return;
+        haptic.select();
+        onSelect();
+      }}
       className={cn(
-        "relative w-full rounded-[12px] text-left",
-        "flex flex-col items-end pt-0",
-        "shadow-[-0.1px_-0.1px_10px_0px_rgba(203,213,225,0.3),3px_3px_7px_0px_rgba(203,213,225,0.3)] dark:shadow-none",
-        "transition-all duration-150",
-        active
-          ? "border border-[#16a34a] bg-white dark:bg-[#0b0f14]"
-          : isHighlighted
-            ? "border border-[#fa7119] bg-[#fff6ef] dark:bg-[#2a1c12]"
-            : "border border-transparent bg-white dark:border-[#1b2027] dark:bg-[#0b0f14]",
-        !active &&
-          "focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-hidden",
+        "press bg-card shadow-card relative block w-full rounded-xl border-0 px-4 py-[18px] text-left",
+        "transition-[box-shadow,background-color] duration-200",
+        selected && "shadow-[0_0_0_2px_var(--color-primary),0_6px_18px_rgba(248,147,26,0.18)]",
         className
       )}
     >
-      {/* Sits on the card's top border. */}
-      {mostPopular && !active && (
-        <div className="absolute -top-2 right-4 flex h-4 items-center justify-center rounded-full bg-[#fa7119] px-2.5">
-          <p className="text-[12px] leading-[16px] whitespace-nowrap text-white">Most Popular</p>
-        </div>
+      <span className="flex w-full items-center gap-2.5">
+        <span
+          aria-hidden
+          className={cn(
+            "bg-card flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-200",
+            selected ? "border-primary" : "border-line"
+          )}
+        >
+          <i
+            className={cn(
+              "bg-primary size-2.5 rounded-full transition-transform duration-[350ms] ease-(--ease-pop)",
+              selected ? "scale-100" : "scale-0"
+            )}
+          />
+        </span>
+        <Emoji
+          src={emojiSrc}
+          size={40}
+          className={cn(
+            "transition-transform duration-[450ms] ease-(--ease-pop)",
+            selected && "scale-[1.15] -rotate-[7deg]"
+          )}
+        />
+        <span className="flex min-w-0 grow items-center gap-2">
+          <span className="truncate text-[16px] font-semibold">{name}</span>
+          {current ? (
+            <Badge className="bg-success text-card h-5">Current</Badge>
+          ) : (
+            popular && (
+              <Badge variant="pending" className="h-5">
+                Popular
+              </Badge>
+            )
+          )}
+        </span>
+        <span className="flex shrink-0 items-baseline gap-0.5">
+          <span className="num text-link text-[16px] leading-[18px] font-bold">{price}</span>
+          <span className="text-ink3 text-[12px] leading-4">{period}</span>
+        </span>
+      </span>
+      {details && (
+        <span
+          className={cn(
+            "grid transition-[grid-template-rows] duration-[360ms] ease-(--ease-out-soft)",
+            selected ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          )}
+        >
+          <span className="block overflow-hidden" aria-hidden={!selected}>
+            <span className="flex flex-col gap-0.5 pt-2.5 pl-[30px]">{details}</span>
+          </span>
+        </span>
       )}
-      <div className="flex w-full flex-col items-start gap-0 px-4 py-3">
-        {/* Top row: radio + emoji + name + price */}
-        <div className="flex w-full items-center gap-2">
-          <div className="flex shrink-0 items-center gap-2">
-            {active ? <CheckSelected /> : isHighlighted ? <RadioSelected /> : <RadioDefault />}
-            <div className="flex size-8 items-center justify-center">{emoji}</div>
-          </div>
-          <div className="flex min-w-0 flex-1 items-center justify-between leading-[16px] tracking-normal whitespace-nowrap">
-            <p className="text-[16px] font-semibold text-[#1b2027] dark:text-white">{name}</p>
-            <div className="flex flex-col items-end gap-1">
-              {active && (
-                <div className="flex h-5 items-center justify-center rounded-full bg-[#16a34a] px-2.5">
-                  <p className="text-[12px] leading-[16px] whitespace-nowrap text-white">
-                    Current Plan
-                  </p>
-                </div>
-              )}
-              <div className="flex items-end gap-0.5 text-center">
-                <p
-                  className={cn(
-                    "text-[18px] font-bold",
-                    active ? "text-[#16a34a]" : "text-[#fa7119]"
-                  )}
-                >
-                  {price}
-                </p>
-                <p className="pb-0.5 text-[12px] font-normal text-[#94a3b8] dark:text-[#64748b]">
-                  {period}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom: description + pricing, revealed only once the plan is selected */}
-        {isHighlighted && (
-          <div className="mt-0.5 flex w-full flex-col items-start gap-0.5 pl-[31px]">
-            <p className="w-full text-[14px] leading-[16px] font-normal text-[#475569] dark:text-[#94a3b8]">
-              {description}
-            </p>
-            <div className="flex w-full items-center gap-2">
-              {perMonth && (
-                <>
-                  <p className="text-[12px] leading-[16px] font-normal whitespace-nowrap text-[#64748b] dark:text-[#64748b]">
-                    {perMonth}
-                  </p>
-                  <div className="h-3 w-px bg-[#e2e8f0] dark:bg-[#334155]" />
-                </>
-              )}
-              <p className="text-[12px] leading-[16px] font-normal whitespace-nowrap text-[#64748b] dark:text-[#64748b]">
-                {perYear}
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-    </Component>
+    </button>
   );
 }

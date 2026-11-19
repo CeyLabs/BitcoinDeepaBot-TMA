@@ -2,13 +2,26 @@
 
 import { useMemo, useState } from "react";
 import { useToast } from "@/components/ui/toast";
-import { TaskFilterTabs, type TaskFilter } from "@/components/dashboard/tasks/TaskFilterTabs";
+import { Segmented } from "@/components/ui/segmented";
+import { TaskHeroCard } from "@/components/dashboard/tasks/TaskHeroCard";
+import { ReferralProgressCard } from "@/components/dashboard/tasks/ReferralProgressCard";
 import { TaskListCard } from "@/components/dashboard/tasks/TaskListCard";
 import { haptic, usePlatform } from "@/platform";
 import { useUserCount } from "@/hooks/query/useUserCount";
 import { useUser } from "@/hooks/useUser";
 import { getInviteUrl, TELEGRAM_BOT_URL } from "@/lib/constants";
-import type { Task } from "@/lib/types";
+import type { Task, TaskFrequency } from "@/lib/types";
+
+type TaskFilter = "all" | TaskFrequency;
+
+const FILTERS = [
+  { value: "all", label: "All" },
+  { value: "one_time", label: "One-time" },
+  { value: "daily", label: "Daily" },
+] as const;
+
+/** Tasks that open something real. Anything else in the list shows "Soon". */
+const STARTABLE = new Set(["task-setup-wallet", "task-join-community", "task-share-story"]);
 
 export interface ManageTasksSectionProps {
   items: Task[];
@@ -30,7 +43,7 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
     return available.filter((item) => item.frequency === filter);
   }, [items, filter, platform.capabilities.stories]);
 
-  const handleTaskClick = (taskId: string) => {
+  const handleStart = (taskId: string) => {
     switch (taskId) {
       case "task-setup-wallet":
         haptic.impact("medium");
@@ -68,12 +81,16 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
   };
 
   return (
-    <div className="flex w-full flex-col gap-3">
-      <p className="text-[14px] leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">Tasks</p>
+    <div className="stagger flex w-full flex-col gap-5">
+      <h1 className="text-center text-[24px] leading-7">Tasks</h1>
 
-      <TaskFilterTabs value={filter} onChange={setFilter} />
+      <TaskHeroCard />
 
-      <TaskListCard items={filtered} onTaskClick={handleTaskClick} />
+      <ReferralProgressCard />
+
+      <Segmented label="Task type" options={FILTERS} value={filter} onChange={setFilter} />
+
+      <TaskListCard items={filtered} startable={STARTABLE} onStart={handleStart} />
     </div>
   );
 }

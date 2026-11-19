@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const SLOW_AFTER_MS = 8000;
 
@@ -19,15 +20,11 @@ export function SlowLoadNotice() {
   if (!slow) return null;
 
   return (
-    <div role="status" className="flex flex-col items-center gap-3">
-      <p className="text-[14px] text-[#64748b] dark:text-[#94a3b8]">Taking longer than usual…</p>
-      <button
-        type="button"
-        onClick={() => window.location.reload()}
-        className="text-primary text-[15px] font-semibold"
-      >
+    <div role="status" className="animate-rise flex flex-col items-center gap-1">
+      <p className="text-ink2 text-[14px] font-semibold">Taking longer than usual…</p>
+      <Button variant="text" size="text" onClick={() => window.location.reload()}>
         Retry
-      </button>
+      </Button>
     </div>
   );
 }

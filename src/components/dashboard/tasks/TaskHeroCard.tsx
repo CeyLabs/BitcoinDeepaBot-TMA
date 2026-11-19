@@ -1,83 +1,58 @@
-"use client";
+import { Badge } from "@/components/ui/badge";
+import { Hero } from "@/components/ui/hero";
 
-import { Card } from "@/components/ui/card";
-import { BtcSign } from "@/components/ui/btc-sign";
-import Image from "next/image";
-import { fmtLkrCurrency, fmtSatsCompact, maskDigits } from "@/lib/formatters";
+// Task completion and rewards aren't tracked by the backend yet, so the stats
+// show a dash instead of made-up numbers.
+const NO_DATA = "–";
 
-// Matches mock-wallet-data.ts's avg_btc_price so figures stay consistent across pages.
-const BTC_PRICE_LKR = 29_500_000;
-
-export interface TaskHeroCardStats {
-  completedTotal: number;
-  todayCompleted: number;
-  todayTotal: number;
-  totalEarnedSats: number;
-  todayEarningsSats: number;
-}
-
-export interface TaskHeroCardProps {
-  stats: TaskHeroCardStats;
-  visible: boolean;
-}
-
-function btcLkrLabel(sats: number): string {
-  const btc = sats / 1e8;
-  const lkr = btc * BTC_PRICE_LKR;
-  return `${btc.toFixed(5)} · ${fmtLkrCurrency(lkr)}`;
-}
-
-export function TaskHeroCard({ stats, visible }: TaskHeroCardProps) {
-  const mask = (v: string) => maskDigits(v, visible);
-
+function TopStat({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <Card className="relative hidden overflow-hidden rounded-[20px] bg-transparent p-0 shadow-none">
-      <Image src="/bg/note.webp" alt="" fill priority className="object-cover" />
+    <div className="flex min-w-0 flex-1 flex-col gap-1 p-3">
+      <p className="text-[14px] leading-[14px] font-medium">{label}</p>
+      {children}
+    </div>
+  );
+}
 
-      <div className="relative flex flex-col gap-4 p-4">
-        <div className="flex flex-col gap-1">
-          <p className="text-[18px] leading-5 font-bold text-white">Your Tasks Earnings</p>
-          <p className="text-[13px] leading-4 text-white/70">Complete Daily Tasks to earn more</p>
-        </div>
+function GlassCol({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex min-w-0 flex-1 flex-col items-center gap-2 py-3 text-center">
+      <p className="text-[14px] leading-[14px] font-medium">{label}</p>
+      <p className="num text-[16px] leading-4 font-semibold">{value}</p>
+    </div>
+  );
+}
 
-        <div className="flex items-stretch">
-          <div className="flex flex-1 flex-col gap-1">
-            <p className="text-[12px] leading-4 text-white/70">Task Completed</p>
-            <p className="text-[16px] leading-5 font-semibold text-white">
-              {mask(`${stats.completedTotal}`)}
-            </p>
-          </div>
-          <div className="w-px self-stretch bg-white/25" />
-          <div className="flex flex-1 flex-col items-end gap-1">
-            <p className="text-[12px] leading-4 text-white/70">Today&apos;s Tasks</p>
-            <p className="text-[16px] leading-5 font-semibold text-white">
-              {mask(`${stats.todayCompleted}/${stats.todayTotal}`)} completed
-            </p>
-          </div>
+export function TaskHeroCard() {
+  return (
+    <Hero src="/bg/hero-blue.webp" priority innerClassName="gap-2 px-4 py-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-col gap-[5px]">
+          <p className="font-display text-[24px] leading-[26px] font-bold">Your task earnings</p>
+          <p className="text-[14px] leading-4">Complete daily tasks to earn more</p>
         </div>
-
-        <div className="flex rounded-[12px] bg-white/15 p-3">
-          <div className="flex flex-1 flex-col gap-1">
-            <p className="text-[12px] leading-4 text-white/70">Total Earned</p>
-            <p className="text-[16px] leading-4 font-bold text-white">
-              {mask(`${fmtSatsCompact(stats.totalEarnedSats)} sats`)}
-            </p>
-            <p className="text-[12px] leading-4 text-white/70">
-              <BtcSign /> {mask(btcLkrLabel(stats.totalEarnedSats))}
-            </p>
-          </div>
-          <div className="w-px self-stretch bg-white/25" />
-          <div className="flex flex-1 flex-col items-end gap-1">
-            <p className="text-[12px] leading-4 text-white/70">Todays Earnings</p>
-            <p className="text-[16px] leading-4 font-bold text-white">
-              {mask(`${fmtSatsCompact(stats.todayEarningsSats)} sats`)}
-            </p>
-            <p className="text-[12px] leading-4 text-white/70">
-              <BtcSign /> {mask(btcLkrLabel(stats.todayEarningsSats))}
-            </p>
-          </div>
-        </div>
+        <Badge variant="onBrand" className="mt-0.5">
+          Soon
+        </Badge>
       </div>
-    </Card>
+
+      <div className="flex gap-2">
+        <TopStat label="Tasks completed">
+          <p className="num text-[16px] leading-4 font-semibold">{NO_DATA}</p>
+        </TopStat>
+        <TopStat label="Today’s tasks">
+          <p className="flex items-baseline gap-1">
+            <span className="num text-[16px] leading-4 font-semibold">{NO_DATA}</span>
+            <span className="text-[12px] leading-4">completed</span>
+          </p>
+        </TopStat>
+      </div>
+
+      <div className="flex items-center justify-between rounded-xl bg-white/30 px-3">
+        <GlassCol label="Total earned" value={NO_DATA} />
+        <span aria-hidden className="h-[67px] w-px shrink-0 bg-white/60" />
+        <GlassCol label="Today’s earnings" value={NO_DATA} />
+      </div>
+    </Hero>
   );
 }

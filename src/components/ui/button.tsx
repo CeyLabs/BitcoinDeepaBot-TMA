@@ -1,35 +1,43 @@
 "use client";
 
 import { cva, type VariantProps } from "class-variance-authority";
-import { Loader2 } from "lucide-react";
 import { cn } from "cn";
 
 const buttonVariants = cva(
   [
-    "relative isolate inline-flex max-w-full items-center justify-center overflow-hidden",
-    "font-semibold whitespace-nowrap select-none transition-opacity duration-150",
-    "cursor-pointer disabled:cursor-default disabled:opacity-35",
-    "focus-visible:ring-ring/50 focus-visible:ring-2 focus-visible:outline-none",
-    // Hover tint drawn above the background (Tailwind v4 hover: only applies
-    // on devices that can hover).
-    "after:pointer-events-none after:absolute after:inset-0 after:bg-white after:opacity-0 after:transition-opacity after:duration-150 dark:after:bg-[#212121]",
-    "enabled:hover:after:opacity-(--btn-hover-opacity)",
+    "press relative inline-flex max-w-full items-center justify-center gap-2 overflow-hidden border-0",
+    "font-bold whitespace-nowrap select-none",
   ],
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground [--btn-hover-opacity:0.15]",
-        outline:
-          "text-secondary-foreground bg-inherit shadow-[0_0_0_1px_var(--outline)] [--btn-hover-opacity:0.5]",
-        secondary: "bg-secondary text-secondary-foreground [--btn-hover-opacity:0.5]",
+        /** Orange primary (the main call to action). */
+        default:
+          "bg-primary text-primary-foreground disabled:bg-disabled disabled:text-on-disabled",
+        /** Dark ink fill (e.g. "Change plan" on the hero). */
+        inverse: "bg-inv text-on-inv disabled:bg-disabled disabled:text-on-disabled",
+        /** Neutral chip fill. */
+        secondary: "bg-chip text-foreground disabled:opacity-70",
+        /** Kept for older call sites; same as secondary. */
+        outline: "bg-chip text-foreground disabled:opacity-70",
+        /** White tile on a brand image. */
+        onBrand: "bg-onbrand-tile text-onbrand-tile-ink",
+        /** Red fill for destructive confirmations. */
+        destructive: "bg-destructive text-white dark:text-black",
+        /** Text-only link-coloured button. */
+        text: "text-link bg-transparent",
       },
       size: {
-        sm: "h-9 min-w-[34px] gap-1.5 rounded-[20px] px-3 py-2 text-[15px] leading-[22px]",
-        default: "h-[42px] min-w-[42px] gap-2 rounded-[8px] px-3.5 py-2 text-[15px] leading-[22px]",
-        lg: "h-[50px] min-w-20 gap-2.5 rounded-[8px] px-5 py-2.5 text-[17px] leading-[26px]",
+        /** Full-width 50px bar. */
+        lg: "h-[50px] w-full rounded-xl px-5 text-[16px]",
+        default: "h-11 rounded-xl px-4 text-[15px]",
+        /** Small 36px action ("Start", "Copy", "Verify"). */
+        sm: "hit h-9 min-w-16 rounded-lg px-3 text-[13px]",
+        /** Text buttons keep a 44px touch target. */
+        text: "min-h-11 rounded-xl px-2.5 text-[14px]",
       },
     },
-    defaultVariants: { variant: "default", size: "default" },
+    defaultVariants: { variant: "default", size: "lg" },
   }
 );
 
@@ -62,10 +70,23 @@ export function Button({
       <span className={cn("contents", loading && "invisible")}>{children}</span>
       {loading && (
         <span className="absolute inset-0 flex items-center justify-center">
-          <Loader2 className="size-5 animate-spin" aria-hidden />
+          <Spinner />
         </span>
       )}
     </button>
+  );
+}
+
+/** Small ring spinner in the current text colour. */
+export function Spinner({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "inline-block size-3.5 animate-spin rounded-full border-2 border-current border-r-transparent",
+        className
+      )}
+    />
   );
 }
 

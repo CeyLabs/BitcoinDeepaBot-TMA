@@ -1,16 +1,18 @@
 import { cn } from "cn";
 
-/** Rounded surface with a soft shadow. Style the background per use. */
+/** White (dark: slate) rounded surface with the soft card shadow. `flat` drops the shadow. */
 export function Card({
   className,
+  flat = false,
   ref,
   ...props
-}: React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLElement> }) {
+}: React.HTMLAttributes<HTMLDivElement> & { flat?: boolean; ref?: React.Ref<HTMLDivElement> }) {
   return (
-    <article
+    <div
       ref={ref}
       className={cn(
-        "bg-tertiary relative inline-block overflow-hidden rounded-[20px] shadow-[0_32px_64px_0_rgba(0,0,0,0.04),0_0_2px_1px_rgba(0,0,0,0.02)]",
+        "bg-card relative rounded-xl transition-[background-color,box-shadow] duration-300",
+        !flat && "shadow-card",
         className
       )}
       {...props}

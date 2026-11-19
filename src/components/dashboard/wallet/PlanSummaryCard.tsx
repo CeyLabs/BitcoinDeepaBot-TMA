@@ -1,10 +1,11 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
+import { Badge, BadgeDot } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Cell, CellChevron } from "@/components/ui/cell";
+import { Emoji } from "@/components/ui/emoji";
+import { Section } from "@/components/ui/section";
 import { ValueSkeleton } from "@/components/ui/value-skeleton";
 import { fmtLkrCurrency, fmtShortDate, fmtRelativeDays } from "@/lib/formatters";
 import type { Subscription } from "@/lib/types";
@@ -17,7 +18,7 @@ export const PLAN_ICONS: Record<string, string> = {
   "blue whale": "/emoji/bluewhale.webp",
 };
 
-function stripFrequencySuffix(name: string): string {
+export function stripFrequencySuffix(name: string): string {
   return name.replace(/\s*(weekly|monthly)\s*$/i, "").trim();
 }
 
@@ -26,137 +27,101 @@ export function getPlanIconSrc(name: string): string {
   return PLAN_ICONS[key] ?? "/emoji/bitcoin.webp";
 }
 
-function RewardCard({
-  label,
-  dateStr,
-  iconSrc,
-}: {
-  label: string;
-  dateStr?: string;
-  iconSrc: string;
-}) {
+function RewardCard({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
-    <Card className="bg-card flex flex-1 flex-col rounded-[12px] p-3">
-      <p className="pb-2 text-sm leading-4 text-[#1b2027] capitalize dark:text-[#f1f5f9]">
-        {label}
-      </p>
+    <Card flat className="flex min-w-0 flex-col gap-2 p-3">
+      <p className="text-[14px] leading-4">{label}</p>
       <div className="flex items-center gap-2">
-        <Image src={iconSrc} alt="" width={36} height={36} className="size-9" />
-        <div className="flex flex-col items-start">
-          <p className="text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-[#f1f5f9]">
-            {dateStr ? fmtShortDate(dateStr) : "-"}
-          </p>
-          {dateStr && (
-            <p className="text-[12px] leading-4 text-[#64748b]">{fmtRelativeDays(dateStr)}</p>
-          )}
+        <Emoji src="/emoji/calendar1.webp" />
+        <div className="min-w-0">
+          <p className="text-[16px] leading-[18px] font-semibold">{value}</p>
+          <p className="text-ink3 text-[12px] leading-4">{sub}</p>
         </div>
       </div>
     </Card>
   );
 }
 
-function PlanSummarySkeleton() {
-  return (
-    <div className="flex w-full flex-col gap-2">
-      <ValueSkeleton className="h-[72px] w-full rounded-xl" />
-      <div className="flex w-full items-start gap-2">
-        <ValueSkeleton className="h-[76px] flex-1 rounded-[12px]" />
-        <ValueSkeleton className="h-[76px] flex-1 rounded-[12px]" />
-      </div>
-    </div>
-  );
-}
-
 export interface PlanSummaryCardProps {
   subscription: Subscription | null | undefined;
+  /** Date of the latest successful plan charge (the last reward). */
+  lastRewardAt?: string;
   isLoading?: boolean;
 }
 
-export function PlanSummaryCard({ subscription, isLoading = false }: PlanSummaryCardProps) {
+export function PlanSummaryCard({
+  subscription,
+  lastRewardAt,
+  isLoading = false,
+}: PlanSummaryCardProps) {
+  const router = useRouter();
+
   return (
-    <div className="flex w-full flex-col items-end gap-3">
-      <div className="flex w-full items-center justify-between">
-        <p className="text-[14px] leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
-          My Plan
-        </p>
-      </div>
-
+    <Section title="My plan">
       {isLoading ? (
-        <PlanSummarySkeleton />
+        <>
+          <ValueSkeleton className="h-16 w-full rounded-xl" />
+          <div className="grid grid-cols-2 gap-2">
+            <ValueSkeleton className="h-[86px] rounded-xl" />
+            <ValueSkeleton className="h-[86px] rounded-xl" />
+          </div>
+        </>
       ) : (
-        <div className="flex w-full flex-col gap-2">
-          <Link href="/dashboard/plans" className="block">
-            <Cell
-              before={
-                subscription ? (
-                  <Image
-                    src={getPlanIconSrc(subscription.planName)}
-                    alt=""
-                    width={36}
-                    height={36}
-                    className="size-9"
-                  />
-                ) : (
-                  <Image
-                    src="/emoji/notepad.webp"
-                    alt=""
-                    width={36}
-                    height={36}
-                    className="size-9"
-                  />
-                )
-              }
-              after={
-                <div className="flex shrink-0 items-center gap-1">
-                  {subscription?.isActive && (
-                    <Badge variant="active">
-                      <span className="mr-1 inline-block size-1.5 rounded-full bg-[#25a761] align-middle" />
-                      Active
-                    </Badge>
-                  )}
-                  <CellChevron />
-                </div>
-              }
-              className="gap-2 rounded-xl border border-transparent bg-white px-4 shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 [--cell-py:12px] hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-none dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
-            >
-              <div className="flex min-w-0 flex-1 flex-col items-start gap-1 pl-1">
-                <p className="truncate text-[16px] leading-4 font-semibold text-[#1b2027] dark:text-white">
-                  {subscription ? subscription.planName : "No Active Plan"}
-                </p>
-                {subscription ? (
-                  <div className="flex items-end gap-0.5">
-                    <p className="text-[14px] leading-4 font-bold text-[#fa7119]">
-                      {fmtLkrCurrency(subscription.price)}
-                    </p>
-                    <p className="text-[12px] leading-4 text-[#64748b]">
-                      /{subscription.planType === "weekly" ? "week" : "month"}
-                    </p>
-                  </div>
-                ) : (
-                  <p className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">
-                    Choose a plan to start earning rewards
-                  </p>
+        <>
+          <Cell
+            as="button"
+            onClick={() => router.push(subscription ? "/dashboard/plans" : "/plans/choose")}
+            before={
+              <Emoji
+                src={subscription ? getPlanIconSrc(subscription.planName) : "/emoji/notepad.webp"}
+              />
+            }
+            after={
+              <>
+                {subscription && (
+                  <Badge variant={subscription.isActive ? "active" : "pending"}>
+                    <BadgeDot />
+                    {subscription.isActive ? "Active" : "Inactive"}
+                  </Badge>
                 )}
-              </div>
-            </Cell>
-          </Link>
-
+                <CellChevron />
+              </>
+            }
+            subtitle={
+              subscription ? (
+                <span className="flex items-baseline gap-0.5">
+                  <span className="text-link text-[14px] leading-4 font-bold">
+                    {fmtLkrCurrency(subscription.price)}
+                  </span>
+                  <span className="text-ink3 text-[12px] leading-4">
+                    /{subscription.planType === "weekly" ? "week" : "month"}
+                  </span>
+                </span>
+              ) : (
+                <span className="text-[14px]">Start a DCA plan to stack sats automatically</span>
+              )
+            }
+          >
+            {subscription ? stripFrequencySuffix(subscription.planName) : "No active DCA plan"}
+          </Cell>
           {subscription && (
-            <div className="flex w-full items-start gap-2">
-              <RewardCard
-                label="Subscribed Since"
-                dateStr={subscription.startDate}
-                iconSrc="/emoji/calendar1.webp"
-              />
-              <RewardCard
-                label="Next Reward"
-                dateStr={subscription.endDate}
-                iconSrc="/emoji/calendar2.webp"
-              />
-            </div>
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <RewardCard
+                  label="Last reward"
+                  value={lastRewardAt ? fmtShortDate(lastRewardAt) : "–"}
+                  sub={lastRewardAt ? fmtRelativeDays(lastRewardAt) : "None yet"}
+                />
+                <RewardCard
+                  label="Next reward"
+                  value={fmtShortDate(subscription.endDate)}
+                  sub={fmtRelativeDays(subscription.endDate)}
+                />
+              </div>
+            </>
           )}
-        </div>
+        </>
       )}
-    </div>
+    </Section>
   );
 }

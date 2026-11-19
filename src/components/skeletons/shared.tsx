@@ -10,10 +10,7 @@ export function HeroCard({
 }) {
   return (
     <div
-      className={cn(
-        "rounded-[20px] bg-[#fa7119]/15 p-4 [--bone:rgb(255_255_255/0.6)] dark:bg-[#fa7119]/10 dark:[--bone:rgb(255_255_255/0.08)]",
-        className
-      )}
+      className={cn("rounded-xl bg-[#f8931a] px-3 py-4 [--bone:rgb(255_255_255/0.28)]", className)}
     >
       {children}
     </div>

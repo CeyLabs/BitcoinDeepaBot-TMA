@@ -13,7 +13,7 @@ import { isCredentialError, miniAppCanSend } from "@/lib/p2p";
 import { haptic, usePlatform } from "@/platform";
 
 /** Title and text for a sale waiting on its payment, by the payment's state. */
-export function collectView(order: SellOrder): { title: string; text: string; spinner: boolean } {
+export function collectView(order: SellOrder): { title: string; text: string; waiting: boolean } {
   switch (order.collect?.state) {
     case "pending":
       return {
@@ -21,32 +21,31 @@ export function collectView(order: SellOrder): { title: string; text: string; sp
         text: order.collect.payInApp
           ? `Pay ${fmtSats(order.sats)} sats from your wallet to finish this sale. You can also tap ✅ Pay in the bot chat.`
           : `Tap ✅ Pay in the Bitcoin Deepa bot chat to send ${fmtSats(order.sats)} sats and finish this sale.`,
-        spinner: false,
+        waiting: true,
       };
     case "awaiting_confirmation":
       return {
         title: "Confirm in the bot chat",
         text: "This payment is above your daily allowance. Tap Confirm in the Bitcoin Deepa bot chat to finish the sale.",
-        spinner: false,
+        waiting: true,
       };
     case "requesting":
       return {
         title: "Starting your sale",
         text: "Setting up the payment. This only takes a moment.",
-        spinner: true,
+        waiting: false,
       };
     default:
       return {
         title: "Selling your sats",
         text: "Taking the sats from your wallet. This only takes a moment.",
-        spinner: true,
+        waiting: false,
       };
   }
 }
 
-function fmtCountdown(seconds: number) {
-  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-}
+const fmtCountdown = (seconds: number) =>
+  `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 
 /**
  * The actions of a sale waiting for the user: pay in the app (when the
@@ -77,7 +76,7 @@ export function SellApproval({ order }: { order: SellOrder }) {
         return;
       }
       if (!(err instanceof FetchyError) || err.status >= 500) {
-        // It may have gone through: the page keeps checking the order
+        // It may have gone through: the order keeps being checked
         toast({
           title: "Checking your payment",
           description: "We didn't get an answer in time. Checking whether it went through.",
@@ -113,18 +112,22 @@ export function SellApproval({ order }: { order: SellOrder }) {
   if (!collect) return null;
   const pending = collect.state === "pending";
   const inBot = pending || collect.state === "awaiting_confirmation";
+  if (!inBot) return null;
+  const payHere = pending && collect.payInApp;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       {pending && secondsLeft > 0 && (
-        <p className="text-center text-[13px] font-semibold text-[#64748b] dark:text-[#94a3b8]">
-          {fmtCountdown(secondsLeft)} left to pay
+        <p
+          aria-live="polite"
+          className="bg-chip text-ink2 num rounded-xl px-3.5 py-3 text-center text-[13px] font-semibold"
+        >
+          {fmtCountdown(secondsLeft)} left to approve. After that the sale is cancelled and nothing
+          is sold.
         </p>
       )}
-      {pending && collect.payInApp && (
+      {payHere && (
         <Button
-          size="lg"
-          className="w-full rounded-[12px]"
           loading={pay.isPending}
           disabled={pay.isPending || cancel.isPending || secondsLeft === 0}
           onClick={() => void onPay()}
@@ -132,20 +135,17 @@ export function SellApproval({ order }: { order: SellOrder }) {
           Pay {fmtSats(order.sats)} sats
         </Button>
       )}
-      {inBot && (
-        <Button
-          variant={pending && collect.payInApp ? "outline" : "default"}
-          size="lg"
-          className="w-full rounded-[12px]"
-          onClick={() => platform.openTelegramLink(TELEGRAM_BOT_URL)}
-        >
-          Open the bot
-        </Button>
-      )}
+      <Button
+        variant={payHere ? "secondary" : "default"}
+        onClick={() => platform.openTelegramLink(TELEGRAM_BOT_URL)}
+      >
+        Open the bot chat
+      </Button>
       {pending && (
         <Button
-          variant="outline"
-          className="w-full rounded-[12px]"
+          variant="text"
+          size="text"
+          className="text-loss w-full"
           loading={cancel.isPending}
           disabled={pay.isPending || cancel.isPending}
           onClick={() => void onCancel()}

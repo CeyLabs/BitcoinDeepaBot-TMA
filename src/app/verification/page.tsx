@@ -2,33 +2,33 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { Badge, BadgeDot } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { List, ListRow, SectionLabel } from "@/components/ui/section";
 import { Sheet } from "@/components/ui/sheet";
+import { BigEmoji, SuccessCheck } from "@/components/auth/StatusScreen";
+import { Icon } from "@/components/dashboard/settings/icons";
 import { useUser } from "@/hooks/useUser";
+import { useSession } from "@/hooks/useSession";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { haptic, usePlatform } from "@/platform";
-import { BackButton } from "@/components/ui/back-button";
+import { PushHeader } from "@/components/ui/back-button";
 import type { User } from "@/lib/types";
 
 type VerificationStatus = NonNullable<User["kycStatus"]> | null;
 
-const STEPS = [
+const STEPS: { mark: React.ReactNode; title: string; sub: string }[] = [
+  { mark: "1", title: "Your details", sub: "Name, contact details and address" },
   {
-    title: "Fill Your Details",
-    description: "Provide your basic personal information",
+    mark: "2",
+    title: "Your NIC, passport or driving licence",
+    sub: "A photo of the front and back",
   },
+  { mark: "3", title: "A quick selfie", sub: "Good light, no hats or sunglasses" },
   {
-    title: "Capture Your ID",
-    description: "National ID, Passport or Driving License",
-  },
-  {
-    title: "Take a Selfie",
-    description: "Use good lighting and remove hats or sunglasses.",
-  },
-  {
-    title: "Secure Verification Review",
-    description: "Your documents will be securely reviewed.",
+    mark: <Icon name="lock" className="text-success" />,
+    title: "Your data is encrypted and never shared",
+    sub: "Used only to verify you",
   },
 ];
 
@@ -38,45 +38,34 @@ const MOBILE_STEPS = [
   "Start the verification process from there",
 ];
 
-const STATUS_CONTENT: Record<
-  string,
-  { image: string; alt: string; title: string; description: string }
+/** Copy + art for each status that isn't the plain intro. */
+const STATUS_CONTENT: Partial<
+  Record<NonNullable<VerificationStatus>, { image: string; title: string; description: string }>
 > = {
-  APPROVED: {
-    image: "/emoji/animated/party-popper.webp",
-    alt: "Verification Success",
-    title: "Verification Complete!",
-    description: "Your identity has been successfully verified. Redirecting you now...",
-  },
   DECLINED: {
     image: "/emoji/animated/cross-mark.webp",
-    alt: "Verification Failed",
-    title: "Verification Declined",
-    description: "Identity verification was declined. Please contact support or try again.",
+    title: "Verification declined",
+    description: "We couldn't verify your identity. Please try again or contact support.",
   },
   EXPIRED: {
     image: "/emoji/animated/bomb.webp",
-    alt: "Verification Expired",
-    title: "Verification Expired",
-    description: "Your verification session has expired. Please start a new verification.",
+    title: "Verification expired",
+    description: "Your verification session expired. Please start a new one.",
   },
   ABANDONED: {
     image: "/emoji/animated/coffin.webp",
-    alt: "Verification Abandoned",
-    title: "Verification Abandoned",
-    description: "Verification process was abandoned. Please try again.",
+    title: "Verification not finished",
+    description: "You left before finishing. Start again whenever you're ready.",
   },
   KYC_EXPIRED: {
     image: "/emoji/animated/firecracker.webp",
-    alt: "Verification Expired",
-    title: "KYC Expired",
-    description: "Your KYC verification has expired. Please complete verification again.",
+    title: "Your verification expired",
+    description: "Your previous verification has expired. Please verify again to keep buying.",
   },
   IN_REVIEW: {
     image: "/emoji/animated/microscope.webp",
-    alt: "Under Review",
-    title: "Verification Under Review",
-    description: "You have completed the verification",
+    title: "We're reviewing your documents",
+    description: "This usually takes up to 24 hours. You'll get a notification once it's done.",
   },
 };
 
@@ -93,6 +82,9 @@ const SHOW_STEPS_FOR: VerificationStatus[] = [
 export default function VerificationIntroPage() {
   const router = useRouter();
   const { id: userId } = useUser();
+  // The id comes from the stored token, which the server can't read: wait for
+  // the session so the server and first client render agree (hydration).
+  const sessionReady = useSession().status !== "loading";
   const platform = usePlatform();
   // Camera-based KYC needs a phone: the Telegram iOS/Android app or a mobile browser.
   const isMobile = platform.isMobileDevice;
@@ -135,190 +127,156 @@ export default function VerificationIntroPage() {
 
   const content = status ? STATUS_CONTENT[status] : undefined;
   const showSteps = SHOW_STEPS_FOR.includes(status);
+  const isRetry =
+    status === "DECLINED" ||
+    status === "EXPIRED" ||
+    status === "ABANDONED" ||
+    status === "KYC_EXPIRED";
+
+  let action: React.ReactNode;
+  if (status === "APPROVED") {
+    action = (
+      <Button
+        onClick={() => {
+          haptic.impact("medium");
+          router.push("/plans/choose");
+        }}
+      >
+        Continue to plans
+      </Button>
+    );
+  } else if (status === "IN_PROGRESS") {
+    action = (
+      <Button
+        onClick={
+          verificationUrl
+            ? continueVerification
+            : () => {
+                haptic.impact("medium");
+                refetchKycStatus();
+              }
+        }
+      >
+        {verificationUrl ? "Continue verification" : "Check verification status"}
+      </Button>
+    );
+  } else if (status === "IN_REVIEW") {
+    action = (
+      <Button
+        variant="secondary"
+        onClick={() => {
+          haptic.impact("medium");
+          router.push("/dashboard");
+        }}
+      >
+        Back to home
+      </Button>
+    );
+  } else {
+    action = (
+      <Button disabled={showSteps && (!sessionReady || !userId)} onClick={initiateVerification}>
+        {isRetry ? "Start new verification" : "Start verification"}
+      </Button>
+    );
+  }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-[#f7f9fc] dark:bg-[#0b0f14]">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-8 pb-6">
-        <BackButton
-          onBack={() => router.push("/dashboard")}
-          className="bg-white text-[#1b2027] dark:bg-white/10 dark:text-white"
-        />
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-[24px] leading-7 font-bold text-[#1b2027] dark:text-white">
-            {content?.title ?? "Verify Your Identity"}
-          </h1>
-          <p className="text-[14px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">
-            {content?.description ?? "Complete verification to continue with Bitcoin දීප"}
-          </p>
-        </div>
+    <div className="bg-background flex min-h-screen w-full flex-col">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 pt-3">
+        <PushHeader title="Verify identity" onBack={() => router.push("/dashboard")} />
 
-        <div className="flex justify-center py-2">
-          <Image
-            src={content?.image ?? "/emoji/animated/id-card.webp"}
-            alt={content?.alt ?? "Identity verification"}
-            width={140}
-            height={140}
-            unoptimized
-          />
-        </div>
-
-        {showSteps && (
-          <div className="flex flex-col gap-3">
-            {STEPS.map((step, index) => (
-              <div key={step.title} className="rounded-2xl bg-white px-4 py-4 dark:bg-[#12161d]">
-                <p className="text-[13px] leading-4 font-semibold text-[#fa7119]">
-                  Step {String(index + 1).padStart(2, "0")}
-                </p>
-                <p className="mt-1 text-[16px] leading-5 font-bold text-[#1b2027] dark:text-white">
-                  {step.title}
-                </p>
-                <p className="mt-0.5 text-[13px] leading-4.25 text-[#64748b] dark:text-[#94a3b8]">
-                  {step.description}
-                </p>
-              </div>
-            ))}
+        {status === "APPROVED" ? (
+          <div className="stagger flex flex-col items-center gap-2 px-6 pt-6 text-center">
+            <SuccessCheck />
+            <h2 className="text-[24px] leading-7">You&apos;re verified</h2>
+            <p className="text-ink2 text-[14px]">Taking you to plans…</p>
           </div>
-        )}
-
-        {status === "KYC_EXPIRED" && (
-          <div className="rounded-2xl bg-[#fa7119]/10 px-4 py-4">
-            <p className="text-[13px] leading-4 font-semibold text-[#fa7119]">KYC Expired</p>
-            <p className="mt-1 text-[13px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">
-              Your previous verification has expired, please verify again.
+        ) : (
+          <div
+            key={status ?? "intro"}
+            className="stagger flex flex-col items-center gap-2 px-6 pb-2 text-center"
+          >
+            <BigEmoji src={content?.image ?? "/emoji/animated/id-card.webp"} />
+            <h2 className="mt-1 text-[24px] leading-7">
+              {content?.title ?? "Verify your identity"}
+            </h2>
+            <p className="text-ink2 text-[14px] leading-5">
+              {content?.description ?? "Complete verification to buy and sell bitcoin"}
             </p>
-          </div>
-        )}
-
-        {status === "IN_REVIEW" && (
-          <div className="flex flex-col items-center gap-2 rounded-2xl bg-white px-4 py-5 text-center dark:bg-[#12161d]">
-            <p className="text-[15px] leading-5 font-bold text-[#fa7119]">
-              We&apos;re reviewing your documents.
-            </p>
-            <p className="text-[16px] leading-5 font-bold text-[#1b2027] dark:text-white">
-              This usually takes up to 24 hours.
-            </p>
-            <p className="text-[13px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">
-              You&apos;ll receive a notification once approved.
-            </p>
+            {showSteps && (
+              <Badge variant="soft" className="mt-1">
+                <Icon name="clock" className="size-3.5" />
+                Takes less than 2 minutes
+              </Badge>
+            )}
+            {status === "IN_REVIEW" && (
+              <Badge variant="pending" className="mt-1">
+                <BadgeDot />
+                In review
+              </Badge>
+            )}
           </div>
         )}
 
         {showSteps && (
-          <p className="text-center text-sm font-medium text-[#1b2027] dark:text-white">
-            Your Data is Secured and never Shared
-          </p>
+          <div className="flex flex-col gap-2">
+            <List className="stagger">
+              {STEPS.map((step) => (
+                <ListRow
+                  key={step.title}
+                  icon={<span className="text-link text-[15px] font-bold">{step.mark}</span>}
+                  title={step.title}
+                  subtitle={step.sub}
+                />
+              ))}
+            </List>
+            <p className="text-ink3 px-1 text-[12px] leading-4">
+              After you submit, our review can take up to 24 hours. We&apos;ll notify you once
+              it&apos;s done.
+            </p>
+          </div>
         )}
 
-        <div className="mt-auto flex flex-col gap-3">
-          {showSteps && (
-            <p className="text-center text-[12px] text-[#64748b]">Takes less than 2 minutes</p>
-          )}
-
-          {status === "APPROVED" ? (
-            <Button
-              className="w-full rounded-[12px]"
-              size="lg"
-              onClick={() => {
-                haptic.impact("medium");
-                router.push("/plans/choose");
-              }}
-            >
-              Continue to Plans
-            </Button>
-          ) : status === "IN_PROGRESS" ? (
-            <Button
-              className="w-full rounded-[12px]"
-              size="lg"
-              onClick={
-                verificationUrl
-                  ? continueVerification
-                  : () => {
-                      haptic.impact("medium");
-                      refetchKycStatus();
-                    }
-              }
-            >
-              {verificationUrl ? "Continue Verification" : "Check Verification Status"}
-            </Button>
-          ) : status === "IN_REVIEW" ? (
-            <Button
-              variant="outline"
-              className="w-full rounded-[12px] text-[#fa7119] shadow-[0_0_0_1px_#fa7119]"
-              size="lg"
-              onClick={() => {
-                haptic.impact("medium");
-                router.push("/dashboard");
-              }}
-            >
-              Back to Home
-            </Button>
-          ) : (
-            <Button
-              className="w-full rounded-[12px]"
-              size="lg"
-              disabled={showSteps && !userId}
-              onClick={initiateVerification}
-            >
-              {status === "DECLINED" ||
-              status === "EXPIRED" ||
-              status === "ABANDONED" ||
-              status === "KYC_EXPIRED"
-                ? "Start New Verification"
-                : "Start Verification"}
-            </Button>
-          )}
+        <div className="bg-background sticky bottom-0 mt-auto pt-3 pb-[calc(16px+env(safe-area-inset-bottom))]">
+          {action}
         </div>
       </div>
 
       <Sheet
         open={showMobileWarning}
         onOpenChange={setShowMobileWarning}
-        title="Use Mobile Device"
-        className="bg-white text-[#1b2027] dark:bg-[#0b0f14] dark:text-white"
-      >
-        <div className="flex flex-col gap-5 px-5 pt-2 pb-6">
-          <div className="flex flex-col items-center gap-3 text-center">
-            <div className="flex size-44 items-center justify-center rounded-full">
-              <Image
-                src="/emoji/animated/exclamation-mark.webp"
-                alt="Warning"
-                width={120}
-                height={120}
-                unoptimized
-              />
-            </div>
-            <h2 className="text-[16px] leading-5 font-bold text-[#1b2027] dark:text-white">
-              Use Mobile Device
-            </h2>
-            <p className="text-[14px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">
-              Identity verification works best on mobile devices for security and camera access.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3 rounded-2xl bg-white px-4 py-4 dark:bg-[#12161d]">
-            <p className="text-[13px] leading-4 font-semibold text-[#1b2027] dark:text-white">
-              How to verify on mobile:
-            </p>
-            {MOBILE_STEPS.map((step, index) => (
-              <div key={step} className="flex items-start gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#fa7119] text-[12px] font-bold text-white">
-                  {index + 1}
-                </span>
-                <p className="text-[13px] leading-4.5 text-[#64748b] dark:text-[#94a3b8]">{step}</p>
-              </div>
-            ))}
-          </div>
-
+        title="Use your phone"
+        footer={
           <Button
-            className="w-full rounded-[12px]"
-            size="lg"
             onClick={() => {
               haptic.impact("medium");
               setShowMobileWarning(false);
             }}
           >
-            Got It
+            Got it
           </Button>
+        }
+      >
+        <div className="flex flex-col gap-5 px-4 pt-1 pb-2">
+          <div className="flex flex-col items-center gap-2 px-4 text-center">
+            <BigEmoji src="/emoji/animated/exclamation-mark.webp" />
+            <h2 className="mt-1 text-[20px] leading-6">Verify on your phone</h2>
+            <p className="text-ink2 text-[14px] leading-5">
+              Identity verification needs a phone camera, for your security.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <SectionLabel>How to verify on mobile</SectionLabel>
+            <List>
+              {MOBILE_STEPS.map((step, index) => (
+                <ListRow
+                  key={step}
+                  icon={<span className="text-link text-[15px] font-bold">{index + 1}</span>}
+                  title={<span className="text-[14px] leading-[18px] font-semibold">{step}</span>}
+                />
+              ))}
+            </List>
+          </div>
         </div>
       </Sheet>
     </div>

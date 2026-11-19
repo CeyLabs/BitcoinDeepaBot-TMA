@@ -1,76 +1,20 @@
-"use client";
+import { Suspense } from "react";
+import { WalletScreen } from "@/components/dashboard/wallet/WalletScreen";
+import { WalletNews } from "@/components/dashboard/wallet/WalletNews";
+import { NewsCarouselSkeleton } from "@/components/dashboard/wallet/NewsCarousel";
 
-import { DashboardTopBar } from "@/components/dashboard/wallet/DashboardTopBar";
-import { TotalValueCard } from "@/components/dashboard/wallet/TotalValueCard";
-import { PlanSummaryCard } from "@/components/dashboard/wallet/PlanSummaryCard";
-import { PerformanceGrid } from "@/components/dashboard/wallet/PerformanceGrid";
-import { PortfolioChart } from "@/components/dashboard/wallet/PortfolioChart";
-import { SellButton } from "@/components/dashboard/sell/SellButton";
-import { BuyButton } from "@/components/dashboard/buy/BuyButton";
-import { SendButton } from "@/components/dashboard/send/SendButton";
-import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
-import { useUser } from "@/hooks/useUser";
-import { useBalanceVisible } from "@/hooks/useBalanceVisible";
+// The news carousel is cached feed data (same as the News page).
+export const revalidate = 900;
 
 export default function WalletPage() {
-  const { visible: balanceVisible } = useBalanceVisible();
-  const { subscription, subscriptionLoading } = useUser();
-
-  const {
-    transactions,
-    isLoading: isSummaryLoading,
-    totalLkr,
-    totalSats,
-    balanceAvailable,
-    dcaSpent,
-    dcaFees,
-    dcaSats,
-    avgBtcPrice,
-    avgBtcPriceUsd,
-    changePercent: change24h,
-    changeLkr,
-    currentBtcPrice,
-    currentBtcPriceUsd,
-    currentValueLkr,
-  } = useWalletMetrics({ withTransactions: true });
-
   return (
-    <div className="flex w-full flex-col gap-5">
-      <DashboardTopBar />
-
-      <TotalValueCard
-        totalLkr={totalLkr}
-        totalSats={totalSats}
-        balanceAvailable={balanceAvailable}
-        changePercent={change24h}
-        changeLkr={changeLkr}
-        visible={balanceVisible}
-        isLoading={isSummaryLoading}
-        action={
-          <div className="flex items-center gap-2">
-            <BuyButton />
-            <SellButton />
-            <SendButton />
-          </div>
-        }
-      />
-
-      <PlanSummaryCard subscription={subscription} isLoading={subscriptionLoading} />
-
-      <PerformanceGrid
-        dcaSpent={dcaSpent}
-        dcaFees={dcaFees}
-        dcaSats={dcaSats}
-        totalLkr={currentValueLkr}
-        avgBtcPrice={avgBtcPrice}
-        avgBtcPriceUsd={avgBtcPriceUsd}
-        currentBtcPrice={currentBtcPrice}
-        currentBtcPriceUsd={currentBtcPriceUsd}
-        visible={balanceVisible}
-        isLoading={isSummaryLoading}
-      />
-
-      <PortfolioChart transactions={transactions ?? []} currentBtcPrice={currentBtcPrice} />
-    </div>
+    <WalletScreen
+      news={
+        // Streams in after the rest of the wallet, so a slow feed never holds up launch.
+        <Suspense fallback={<NewsCarouselSkeleton />}>
+          <WalletNews />
+        </Suspense>
+      }
+    />
   );
 }

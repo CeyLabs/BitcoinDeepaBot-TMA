@@ -1,13 +1,20 @@
 "use client";
 
-import { createContext, useCallback, use, useEffect, useState, useSyncExternalStore } from "react";
+import { createContext, useCallback, use, useEffect, useSyncExternalStore } from "react";
 import { usePlatform, type ColorScheme } from "@/platform";
+import { THEME_PREFERENCE_KEY } from "@/lib/theme-boot";
+
+/** The Appearance setting: follow Telegram/OS, or force one scheme. */
+export type ThemePreference = "auto" | ColorScheme;
 
 interface ThemeContextType {
   theme: ColorScheme;
   isDark: boolean;
   isLight: boolean;
-  /** Dev-only: force a theme regardless of Telegram/OS detection. Pass null to go back to auto. */
+  /** The saved Appearance setting ("auto" follows Telegram/OS). */
+  preference: ThemePreference;
+  setPreference: (preference: ThemePreference) => void;
+  /** Same as setPreference; null goes back to auto. */
   setThemeOverride: (theme: ColorScheme | null) => void;
 }
 
@@ -52,10 +59,59 @@ function useColorScheme(): ColorScheme {
   return useSyncExternalStore(subscribe, getSnapshot, () => "light");
 }
 
+// ─── Saved Appearance setting (localStorage, shared across tabs) ─────────────
+
+const listeners = new Set<() => void>();
+
+function readPreference(): ThemePreference {
+  try {
+    const saved = localStorage.getItem(THEME_PREFERENCE_KEY);
+    return saved === "light" || saved === "dark" ? saved : "auto";
+  } catch {
+    return "auto";
+  }
+}
+
+let preferenceCache: ThemePreference | null = null;
+
+function subscribePreference(onChange: () => void) {
+  listeners.add(onChange);
+  const onStorage = (e: StorageEvent) => {
+    if (e.key !== THEME_PREFERENCE_KEY) return;
+    preferenceCache = readPreference();
+    onChange();
+  };
+  window.addEventListener("storage", onStorage);
+  return () => {
+    listeners.delete(onChange);
+    window.removeEventListener("storage", onStorage);
+  };
+}
+
+function getPreference(): ThemePreference {
+  if (preferenceCache === null) preferenceCache = readPreference();
+  return preferenceCache;
+}
+
+function writePreference(next: ThemePreference) {
+  preferenceCache = next;
+  try {
+    if (next === "auto") localStorage.removeItem(THEME_PREFERENCE_KEY);
+    else localStorage.setItem(THEME_PREFERENCE_KEY, next);
+  } catch {
+    // Storage blocked: keep it for this session only.
+  }
+  listeners.forEach((notify) => notify());
+}
+
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const scheme = useColorScheme();
-  const [themeOverride, setThemeOverride] = useState<ColorScheme | null>(null);
-  const effectiveTheme = themeOverride ?? scheme;
+  const preference = useSyncExternalStore<ThemePreference>(
+    subscribePreference,
+    getPreference,
+    () => "auto"
+  );
+  const effectiveTheme = preference === "auto" ? scheme : preference;
 
   // Keep <html data-theme> (which drives every color token and the `dark:`
   // variant) in sync with the live scheme after the boot script's first guess.
@@ -69,7 +125,9 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     theme: effectiveTheme,
     isDark: effectiveTheme === "dark",
     isLight: effectiveTheme === "light",
-    setThemeOverride,
+    preference,
+    setPreference: writePreference,
+    setThemeOverride: (theme) => writePreference(theme ?? "auto"),
   };
 
   return <ThemeContext value={value}>{children}</ThemeContext>;

@@ -66,25 +66,11 @@ function TasksIcon({ className }: { className?: string }) {
   );
 }
 
-function NewsIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className={className}>
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M12.797 0.000872068C14.2114 0.000916182 15.3562 1.14506 15.3562 2.55865V5.57338H17.4408C18.8551 5.57344 20 6.71758 20 8.13116V16.9678C20 17.8233 19.637 18.6422 19.0044 19.2099C18.4812 19.6805 17.8108 19.955 17.1083 19.9878C17.0686 19.995 17.0278 19.9991 16.9862 19.9991H16.9748L16.9757 20C16.9425 20 16.9091 19.9998 16.8758 19.9991H4.42127C1.98246 19.9991 3.69427e-06 18.0178 0 15.5804V2.55777C0 1.14416 1.14481 0 2.55923 0L12.797 0.000872068ZM15.3562 16.8457C15.3562 17.7483 15.9984 18.5201 16.8178 18.5942C17.2828 18.6404 17.7296 18.4922 18.0839 18.1852C18.4285 17.8783 18.624 17.4413 18.624 16.9757V8.13901C18.624 7.49719 18.103 6.97657 17.4608 6.97654H15.3562V16.8457ZM3.95532 14.8836C3.57402 14.8836 3.25728 15.2001 3.25728 15.5812C3.25728 15.9623 3.57402 16.2789 3.95532 16.2789H11.4009C11.7822 16.2788 12.0989 15.9623 12.0989 15.5812C12.0989 15.2002 11.7822 14.8836 11.4009 14.8836H3.95532ZM3.95532 11.1625C3.57402 11.1625 3.25728 11.479 3.25728 11.8601C3.25728 12.2412 3.57403 12.5578 3.95532 12.5578H11.4009C11.7822 12.5577 12.0989 12.2412 12.0989 11.8601C12.0989 11.4791 11.7822 11.1625 11.4009 11.1625H3.95532ZM3.95532 7.44223C3.57402 7.44223 3.25728 7.75879 3.25728 8.13988C3.25728 8.52097 3.57402 8.83753 3.95532 8.83753H11.4009C11.7822 8.83749 12.0989 8.52094 12.0989 8.13988C12.0989 7.75882 11.7822 7.44227 11.4009 7.44223H3.95532ZM3.95532 3.72111C3.57402 3.72111 3.25728 4.03768 3.25728 4.41877C3.25728 4.79985 3.57402 5.11642 3.95532 5.11642H8.14362C8.52489 5.11638 8.84167 4.79983 8.84167 4.41877C8.84167 4.03771 8.52489 3.72115 8.14362 3.72111H3.95532Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
 const navItems = [
   { href: "/dashboard", Icon: WalletIcon, label: "Wallet" },
   { href: "/dashboard/activity", Icon: ActivityIcon, label: "Activity" },
   { href: "/dashboard/plans", Icon: PlansIcon, label: "Plans" },
   { href: "/dashboard/tasks", Icon: TasksIcon, label: "Tasks" },
-  { href: "/dashboard/news", Icon: NewsIcon, label: "News" },
 ];
 
 // "/dashboard" is a prefix of every other item's href, so it only matches exactly;
@@ -94,7 +80,7 @@ function isNavItemActive(href: string, activeHref: string) {
   return activeHref === href || activeHref.startsWith(`${href}/`);
 }
 
-// Fixed bottom pill; the wrapper does the positioning.
+// Fixed bottom pill; hidden on pushed pages (news, article) by the layout.
 export default function BottomNavigation() {
   const pathname = usePathname();
   const router = useRouter();
@@ -128,61 +114,43 @@ export default function BottomNavigation() {
   const activeIndex = navItems.findIndex((item) => isNavItemActive(item.href, activeHref));
 
   return (
-    <div className="fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-50 mx-auto max-w-100">
-      <nav
-        aria-label="Main"
-        className="bg-surface-glass flex w-full rounded-full p-1 shadow-[0px_4px_24px_0px_rgba(0,0,0,0.10)] backdrop-blur-md"
-      >
-        <div className="relative flex w-full">
-          {/* Active pill — slides between items. */}
-          {activeIndex >= 0 && (
-            <span
-              aria-hidden
-              className="absolute inset-y-0 left-0 rounded-[40px] bg-[#e2e8f0] transition-transform duration-150 dark:bg-[#334155]"
-              style={{
-                width: `${100 / navItems.length}%`,
-                transform: `translateX(${activeIndex * 100}%)`,
-              }}
-            />
-          )}
-          {navItems.map((item, index) => {
-            const isActive = index === activeIndex;
-
-            return (
-              <button
-                key={item.href}
-                type="button"
-                aria-current={isActive ? "page" : undefined}
-                onClick={() => {
-                  if (item.href === pathname) return;
-                  haptic.select();
-                  setPendingHref(item.href);
-                  router.push(item.href);
-                }}
-                className={cn(
-                  "relative z-10 flex h-14 min-w-0 flex-1 cursor-pointer items-center justify-center rounded-[20px]",
-                  "transition-colors duration-200",
-                  isActive
-                    ? "text-[#1b2027] dark:text-[#f1f5f9]"
-                    : "text-[#475569] dark:text-[#94a3b8]"
-                )}
-              >
-                <div className="flex flex-col items-center justify-center gap-1">
-                  <item.Icon className="size-5" />
-                  <span
-                    className={cn(
-                      "text-[14px] leading-3 tracking-normal",
-                      isActive ? "font-medium" : "font-normal"
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
-    </div>
+    <nav
+      aria-label="Main"
+      className="animate-nav-in bg-surface-glass shadow-nav fixed inset-x-4 bottom-[calc(16px+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-[398px] items-center justify-between overflow-hidden rounded-full p-1 backdrop-blur-[12px]"
+    >
+      {activeIndex >= 0 && (
+        <span
+          aria-hidden
+          className="bg-nav-sel absolute top-1 left-1 h-[calc(100%-8px)] rounded-[40px] transition-transform duration-[450ms] ease-(--ease-spring)"
+          style={{
+            width: `calc((100% - 8px) / ${navItems.length})`,
+            transform: `translateX(${activeIndex * 100}%)`,
+          }}
+        />
+      )}
+      {navItems.map((item, index) => {
+        const isActive = index === activeIndex;
+        return (
+          <button
+            key={item.href}
+            type="button"
+            aria-current={isActive ? "page" : undefined}
+            onClick={() => {
+              if (item.href === pathname) return;
+              haptic.select();
+              setPendingHref(item.href);
+              router.push(item.href);
+            }}
+            className={cn(
+              "press relative flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[40px] border-0 bg-transparent p-2 text-[11px] leading-[13px]",
+              isActive ? "text-foreground font-medium" : "text-ink2 font-normal"
+            )}
+          >
+            <item.Icon className="size-[22px]" />
+            <span>{item.label}</span>
+          </button>
+        );
+      })}
+    </nav>
   );
 }

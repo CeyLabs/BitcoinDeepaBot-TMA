@@ -1,10 +1,15 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
-import { ChevronLeft, FileText, Upload } from "lucide-react";
+import { useId, useMemo, useRef, useState } from "react";
+import { FileText, Upload } from "lucide-react";
+import { cn } from "cn";
+import { Badge } from "@/components/ui/badge";
+import { Bone } from "@/components/ui/bone";
 import { Button } from "@/components/ui/button";
-import { Cell, CellChevron } from "@/components/ui/cell";
+import { CellChevron } from "@/components/ui/cell";
+import { Emoji } from "@/components/ui/emoji";
 import { SearchField } from "@/components/ui/search-field";
+import { List, ListRow, SectionLabel } from "@/components/ui/section";
 import { Sheet } from "@/components/ui/sheet";
 import { TextField } from "@/components/ui/text-field";
 import { useToast } from "@/components/ui/toast";
@@ -48,6 +53,7 @@ export function AddBankAccountSheet({
   const [statement, setStatement] = useState<File | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const fileInput = useRef<HTMLInputElement>(null);
+  const formId = useId();
 
   const filteredBanks = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -117,20 +123,28 @@ export function AddBankAccountSheet({
       open={open}
       onOpenChange={close}
       title={picking ? "Choose your bank" : "Add bank account"}
+      onBack={picking ? () => setPicking(false) : undefined}
+      hideClose={addAccount.isPending}
+      flow
+      footer={
+        picking ? undefined : (
+          <div className="flex flex-col gap-2">
+            <Button type="submit" form={formId} loading={addAccount.isPending}>
+              Submit for review
+            </Button>
+            {addAccount.isPending && (
+              <p aria-live="polite" className="text-ink3 text-center text-[13px]">
+                {submitLabel}
+              </p>
+            )}
+          </div>
+        )
+      }
     >
       {picking ? (
         <div className="flex flex-col gap-3 pb-4">
-          <div className="flex items-center gap-2 px-4">
-            <button
-              type="button"
-              aria-label="Back"
-              onClick={() => setPicking(false)}
-              className="text-hint flex size-9 shrink-0 items-center justify-center rounded-full"
-            >
-              <ChevronLeft size={22} />
-            </button>
+          <div className="px-4">
             <SearchField
-              className="bg-card flex-1"
               placeholder="Search banks"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -138,62 +152,64 @@ export function AddBankAccountSheet({
             />
           </div>
           {banksLoading ? (
-            <p className="text-hint px-6 py-6 text-center text-sm">Loading banks…</p>
+            <div className="flex flex-col gap-3 px-4 py-2">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <Bone key={i} className="h-11 w-full rounded-xl" />
+              ))}
+            </div>
           ) : banksError ? (
-            <p className="px-6 py-6 text-center text-sm text-[#f13131]">
+            <p className="text-loss px-6 py-6 text-center text-sm">
               Couldn&apos;t load banks. Try again shortly.
             </p>
           ) : filteredBanks.length === 0 ? (
-            <p className="text-hint px-6 py-6 text-center text-sm">No banks match “{search}”</p>
+            <div className="flex flex-col items-center gap-1.5 px-6 py-7 text-center">
+              <Emoji src="/emoji/notepad.webp" size={60} className="animate-float" />
+              <p className="text-ink2 text-[14px] font-semibold">No banks match “{search}”</p>
+            </div>
           ) : (
-            <ul className="divide-border flex flex-col divide-y">
+            <List className="mx-4">
               {filteredBanks.map((b) => (
-                <li key={b.code}>
-                  <Cell
-                    as="button"
-                    className="[--cell-py:12px]"
-                    onClick={() => {
-                      haptic.select();
-                      setBank(b);
-                      setErrors((e) => ({ ...e, bankCode: undefined }));
-                      setPicking(false);
-                    }}
-                    after={
-                      bank?.code === b.code ? (
-                        <span className="text-primary text-sm font-semibold">Selected</span>
-                      ) : undefined
-                    }
-                  >
-                    {b.name}
-                  </Cell>
-                </li>
+                <ListRow
+                  key={b.code}
+                  className="min-h-12"
+                  onClick={() => {
+                    haptic.select();
+                    setBank(b);
+                    setErrors((e) => ({ ...e, bankCode: undefined }));
+                    setPicking(false);
+                  }}
+                  title={b.name}
+                  after={
+                    bank?.code === b.code ? <Badge variant="active">Selected</Badge> : undefined
+                  }
+                />
               ))}
-            </ul>
+            </List>
           )}
         </div>
       ) : (
         <form
+          id={formId}
           onSubmit={onSubmit}
           noValidate
-          className="flex flex-col gap-5 px-5 pt-1 pb-5 [--field-bg:var(--background)]"
+          className="flex flex-col gap-5 px-4 pt-1 pb-3 [--field-bg:var(--card)]"
         >
           <div className="flex flex-col gap-1">
+            <SectionLabel>Bank</SectionLabel>
             <button
               type="button"
               onClick={() => setPicking(true)}
-              className={
-                "flex w-full items-center justify-between rounded-[14px] px-4 py-3 text-left text-[16px] shadow-[0_0_0_2px_#e2e8f0] dark:shadow-[0_0_0_2px_var(--outline)] " +
-                (errors.bankCode ? "shadow-[0_0_0_2px_var(--destructive)]!" : "")
-              }
+              className={cn(
+                "press bg-chip mt-2 flex min-h-12 w-full items-center justify-between rounded-xl border-0 px-4 py-3 text-left text-[16px]",
+                errors.bankCode && "shadow-[0_0_0_2px_var(--destructive)]"
+              )}
             >
-              <span className={bank ? "text-foreground" : "text-[#a2acb0]"}>
+              <span className={bank ? "text-foreground font-semibold" : "text-ink3"}>
                 {bank?.name ?? "Choose your bank"}
               </span>
               <CellChevron />
             </button>
-            {errors.bankCode && (
-              <p className="pl-4 text-[12px] text-[#f13131]">{errors.bankCode}</p>
-            )}
+            {errors.bankCode && <p className="text-loss pl-4 text-[12px]">{errors.bankCode}</p>}
           </div>
 
           <TextField
@@ -232,7 +248,8 @@ export function AddBankAccountSheet({
           />
 
           <div className="flex flex-col gap-2">
-            <p className="text-[13px] leading-4 text-[#64748b] dark:text-[#94a3b8]">
+            <SectionLabel>Bank statement</SectionLabel>
+            <p className="text-ink3 text-[13px] leading-4">
               A recent bank statement or passbook page showing your name and this account number.
               PDF, JPEG or PNG, up to {STATEMENT_MAX_BYTES / 1024 / 1024} MB.
             </p>
@@ -254,51 +271,44 @@ export function AddBankAccountSheet({
               }}
             />
             {statement ? (
-              <div className="bg-card flex items-center gap-3 rounded-[14px] px-4 py-3">
-                <FileText size={20} className="text-hint shrink-0" />
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-[15px]">{statement.name}</span>
-                  <span className="text-hint text-[12px]">{fileSize(statement.size)}</span>
-                </div>
-                <button
-                  type="button"
-                  className="text-primary text-sm font-semibold"
-                  onClick={() => fileInput.current?.click()}
-                >
-                  Change
-                </button>
-              </div>
+              <List>
+                <ListRow
+                  icon={<FileText size={18} className="text-ink2" />}
+                  title={<span className="block truncate">{statement.name}</span>}
+                  subtitle={fileSize(statement.size)}
+                  after={
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="bg-card"
+                      onClick={() => fileInput.current?.click()}
+                    >
+                      Change
+                    </Button>
+                  }
+                />
+              </List>
             ) : (
               <Button
-                variant="outline"
-                className="w-full rounded-[14px]"
+                variant="secondary"
+                size="default"
+                className={cn(
+                  "w-full",
+                  errors.statement && "shadow-[0_0_0_2px_var(--destructive)]"
+                )}
                 onClick={() => fileInput.current?.click()}
               >
                 <Upload size={18} />
                 Upload statement
               </Button>
             )}
-            {errors.statement && (
-              <p className="pl-4 text-[12px] text-[#f13131]">{errors.statement}</p>
-            )}
+            {errors.statement && <p className="text-loss pl-4 text-[12px]">{errors.statement}</p>}
           </div>
 
           {addAccount.error instanceof Error && (
-            <div className="rounded-2xl bg-[#f13131]/10 px-4 py-3">
-              <p className="text-[13px] leading-4.5 text-[#f13131]">{addAccount.error.message}</p>
+            <div role="alert" className="bg-loss-bg rounded-xl px-4 py-3">
+              <p className="text-loss text-[13px] leading-4.5">{addAccount.error.message}</p>
             </div>
-          )}
-
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full rounded-[12px]"
-            loading={addAccount.isPending}
-          >
-            {submitLabel}
-          </Button>
-          {addAccount.isPending && (
-            <p className="text-hint -mt-3 text-center text-[13px]">{submitLabel}</p>
           )}
         </form>
       )}

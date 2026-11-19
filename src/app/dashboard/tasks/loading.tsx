@@ -1,37 +1,38 @@
-import { Fragment } from "react";
 import { Bone, BoneCard } from "@/components/ui/bone";
 
 // Route fallback while navigating here. Without it Next falls back to the
-// wallet's loading.tsx. Mirrors the tasks list: title, filter pills, rows.
+// wallet's loading.tsx. Mirrors the tasks tab: title, hero, invite pill,
+// filter, task rows.
 export default function TasksLoading() {
   return (
-    <div className="flex w-full flex-col gap-3">
-      <Bone className="h-4 w-12" />
-      <div className="flex h-9 gap-2">
-        {["w-24", "w-16", "w-24"].map((w, i) => (
-          <BoneCard key={i} className={`flex h-9 ${w} items-center justify-center rounded-[12px]`}>
-            <Bone className="h-3 w-2/3" />
-          </BoneCard>
-        ))}
+    <div className="flex w-full flex-col gap-5">
+      <Bone className="mx-auto h-7 w-20" />
+      <div className="flex h-[226px] flex-col gap-2 rounded-xl bg-[#3b7df5] px-4 py-3 [--bone:rgb(255_255_255/0.28)]">
+        <Bone className="h-6 w-48" />
+        <Bone className="h-3.5 w-52" />
+        <div className="flex gap-2">
+          <Bone className="h-[50px] flex-1 rounded-xl" />
+          <Bone className="h-[50px] flex-1 rounded-xl" />
+        </div>
+        <Bone className="w-full flex-1 rounded-xl" />
       </div>
-      <div className="w-full overflow-hidden rounded-[12px] bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] dark:bg-[#0B0F14]">
-        {Array.from({ length: 2 }).map((_, i) => (
-          <Fragment key={i}>
-            {i > 0 && <div className="h-px bg-[#e2e8f0] dark:bg-[#334155]" />}
-            <div className="flex h-20 items-center gap-2 px-3">
-              <Bone className="size-10 shrink-0 rounded-full" />
-              <div className="flex flex-1 flex-col gap-2">
-                <Bone className="h-4 w-36" />
-                <Bone className="h-3 w-48" />
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <Bone className="h-5 w-16 rounded-[20px]" />
-                <Bone className="h-3 w-14" />
-              </div>
+      <Bone className="h-[90px] w-full rounded-full" />
+      <Bone className="h-12 w-full rounded-full" />
+      <BoneCard className="py-1">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="flex h-[76px] items-center gap-3 px-3">
+            <Bone className="size-10 shrink-0 rounded-full" />
+            <div className="flex flex-1 flex-col gap-2">
+              <Bone className="h-4 w-36" />
+              <Bone className="h-3 w-44" />
             </div>
-          </Fragment>
+            <div className="flex flex-col items-end gap-1.5">
+              <Bone className="h-[22px] w-16 rounded-lg" />
+              <Bone className="h-9 w-16 rounded-lg" />
+            </div>
+          </div>
         ))}
-      </div>
+      </BoneCard>
     </div>
   );
 }

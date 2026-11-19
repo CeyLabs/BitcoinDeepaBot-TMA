@@ -1,8 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Emoji } from "@/components/ui/emoji";
 import { haptic } from "@/platform";
 
 export function KycRequiredNotice({
@@ -13,25 +14,20 @@ export function KycRequiredNotice({
   const router = useRouter();
 
   return (
-    <div className="flex flex-col items-center gap-3 rounded-xl bg-white px-6 py-10 text-center shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)]">
-      <Image src="/emoji/animated/id-card.webp" alt="" width={56} height={56} />
-
-      <div className="flex flex-col gap-1">
-        <p className="text-[16px] font-bold text-[#1b2027] dark:text-white">
-          Verification Required
-        </p>
-        <p className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">{message}</p>
-      </div>
-
+    <Card className="flex flex-col items-center gap-2 rounded-2xl px-4 py-6 text-center">
+      <Emoji src="/emoji/animated/id-card.webp" size={64} className="animate-float" />
+      <h3 className="text-[18px]">Verification required</h3>
+      <p className="text-ink3 max-w-[290px] text-[14px]">{message}</p>
       <Button
-        className="mt-1 rounded-full"
+        size="default"
+        className="mt-2 w-full"
         onClick={() => {
           haptic.impact("medium");
           router.push("/verification");
         }}
       >
-        Complete Verification
+        Complete verification
       </Button>
-    </div>
+    </Card>
   );
 }

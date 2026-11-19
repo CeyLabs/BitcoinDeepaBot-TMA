@@ -1,57 +1,77 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Emoji } from "@/components/ui/emoji";
+import { KeyValueList } from "@/components/ui/section";
+import { Segmented } from "@/components/ui/segmented";
+import { Sheet } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/toast";
+import { PageTitle } from "@/components/ui/page-title";
+import { PlanCard } from "@/components/ui/plan-card";
+import { ValueSkeleton } from "@/components/ui/value-skeleton";
+import { WebBackButton } from "@/components/ui/back-button";
+import { ChoosePlanSkeleton } from "@/components/skeletons/choose-plan";
+import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotice";
+import {
+  getPlanIconSrc,
+  stripFrequencySuffix,
+} from "@/components/dashboard/wallet/PlanSummaryCard";
 import fetchy, { FetchyError } from "@/lib/fetchy";
 import { usePayHereRedirect } from "@/lib/hooks";
+import { estimateBuy } from "@/lib/buy";
+import { fmtLkrCurrency, fmtSats } from "@/lib/formatters";
 import { usePackages } from "@/hooks/query/usePackages";
-import { useCancelSubscription } from "@/hooks/query/useCancelSubscription";
+import { useBuyPrice } from "@/hooks/query/useBuy";
 import { useUser } from "@/hooks/useUser";
 import { useOffline } from "@/hooks/useOffline";
 import { useSession } from "@/hooks/useSession";
 import { useKycStatus } from "@/hooks/query/useKyc";
-import { haptic, useBackButton, usePlatform } from "@/platform";
-import { WebBackButton } from "@/components/ui/back-button";
-import { ChoosePlanSkeleton } from "@/components/skeletons/choose-plan";
-import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotice";
-import { PageTitle } from "@/components/ui/page-title";
-import { TogglePlan, type PlanDuration } from "@/components/ui/toggle-plan";
-import { PlanCard } from "@/components/ui/plan-card";
-import { ValueSkeleton } from "@/components/ui/value-skeleton";
-import { getPlanIconSrc } from "@/components/dashboard/wallet/PlanSummaryCard";
-import { fmtLkrCurrency } from "@/lib/formatters";
+import { haptic, useBackButton } from "@/platform";
 import type { SubscriptionPlan } from "@/lib/types";
-import Link from "next/link";
 
-function perMonthAmount(plan: SubscriptionPlan) {
-  return plan.type === "weekly" ? plan.amount * 4 : plan.amount;
-}
+type PlanDuration = SubscriptionPlan["type"];
+
+const DURATIONS = [
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+] as const;
 
 const EMPTY_PLANS: SubscriptionPlan[] = [];
+
+const perLabel = (type: PlanDuration) => (type === "weekly" ? "week" : "month");
+
+const PAGE =
+  "bg-background mx-auto flex min-h-screen w-full max-w-[440px] flex-col gap-5 px-4 pt-3";
 
 export default function ChoosePlanPage() {
   const { data: kyc, isLoading: kycLoading } = useKycStatus();
   const router = useRouter();
   const redirectToPayHereViaPage = usePayHereRedirect();
-  const platform = usePlatform();
   const { status: sessionStatus } = useSession();
   const { subscription } = useUser();
   const offline = useOffline();
-  const cancelSubscription = useCancelSubscription();
 
-  const [duration, setDuration] = useState<PlanDuration>("weekly");
+  // null = not picked yet: follow the current plan's frequency (weekly otherwise).
+  const [pickedDuration, setPickedDuration] = useState<PlanDuration | null>(null);
   const [selectedId, setSelectedId] = useState<string | undefined>();
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [payhereLinkLoading, setPayhereLinkLoading] = useState(false);
   const toast = useToast();
 
   const { data: fetchedPackages, isLoading: packagesLoading } = usePackages();
   const packages = fetchedPackages ?? EMPTY_PLANS;
+  // Plan charges are priced like buys (same fees, same BTC price): used for the estimate.
+  const { data: price } = useBuyPrice();
+  const feeBps = price
+    ? price.paymentProcessorFeeBasisPoints + price.bitcoindeepaFeeBasisPoints
+    : undefined;
+  const feeText = feeBps !== undefined ? `${+(feeBps / 100).toFixed(2)}%` : undefined;
 
-  // Without an active plan, /dashboard/plans immediately redirects back here —
-  // going back there would loop, so fall back to the wallet page instead.
+  // Without an active plan, going back to /dashboard/plans would just show
+  // "No active plan" again, so fall back to the wallet page instead.
   const goBack = () => router.push(subscription?.isActive ? "/dashboard/plans" : "/dashboard");
   // Once, above the early returns, so the native button stays up while loading.
   useBackButton(goBack);
@@ -62,23 +82,42 @@ export default function ChoosePlanPage() {
     [packages, subscription]
   );
 
+  const duration: PlanDuration = pickedDuration ?? currentPlan?.type ?? "weekly";
+
   const filteredPlans = useMemo(
-    () => packages.filter((p) => p.type === duration && p.id !== currentPlan?.id),
-    [packages, duration, currentPlan]
+    () => packages.filter((p) => p.type === duration),
+    [packages, duration]
   );
 
   // Only set once the user explicitly taps a plan — details stay hidden until then.
-  const selectedPlanId = selectedId;
+  const selectedPlan = packages.find((p) => p.id === selectedId);
+  const isCurrentSelected = !!selectedPlan && selectedPlan.id === currentPlan?.id;
+
+  const estimateText = (plan: SubscriptionPlan) => {
+    if (!price || feeBps === undefined) return plan.features?.[0] ?? "Bitcoin membership rewards";
+    const { sats } = estimateBuy(
+      plan.amount,
+      price.paymentProcessorFeeBasisPoints,
+      price.bitcoindeepaFeeBasisPoints,
+      price.btcLkrPrice
+    );
+    return `≈ ${fmtSats(sats)} sats every ${perLabel(plan.type)} at today’s rate`;
+  };
 
   const handleDurationChange = (d: PlanDuration) => {
-    haptic.select();
-    setDuration(d);
+    setPickedDuration(d);
     setSelectedId(undefined);
   };
 
+  const handleContinue = () => {
+    if (!selectedPlan || isCurrentSelected) return;
+    haptic.impact("light");
+    setConfirmOpen(true);
+  };
+
   const handleSubscribe = async () => {
-    const plan = packages.find((p) => p.id === selectedPlanId);
-    if (!plan || sessionStatus !== "authenticated") return;
+    const plan = selectedPlan;
+    if (!plan || plan.id === currentPlan?.id || sessionStatus !== "authenticated") return;
 
     haptic.impact("medium");
 
@@ -111,173 +150,152 @@ export default function ChoosePlanPage() {
     }
   };
 
-  const handleCancel = async () => {
-    const confirmed = await platform.confirm({
-      title: "Cancel Plan",
-      message: "Your membership rewards will stop accruing immediately. This can't be undone.",
-      confirmText: "Cancel Plan",
-      cancelText: "Keep Plan",
-      destructive: true,
-    });
-    if (!confirmed) return;
-
-    haptic.impact("rigid");
-
-    try {
-      await cancelSubscription.mutateAsync();
-      haptic.notify("success");
-      toast({
-        type: "success",
-        title: "Plan Cancelled",
-        description: "Your membership has been cancelled successfully.",
-      });
-      setTimeout(() => router.push("/dashboard/plans"), 1500);
-    } catch (err) {
-      haptic.notify("error");
-      toast({
-        type: "error",
-        title: "Cancellation Failed",
-        description: err instanceof Error ? err.message : "Failed to cancel plan",
-      });
-    }
-  };
+  const header = (
+    <div className="relative flex min-h-11 items-center">
+      <WebBackButton onBack={goBack} className="-ml-2" />
+    </div>
+  );
 
   // "loading" session = server render / hydration: KYC hasn't been fetched
   // yet, so don't show "Verification Required" to a verified user.
   if (kycLoading || sessionStatus === "loading") {
     return (
-      <div className="bg-background mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
-        <WebBackButton onBack={goBack} />
+      <div className={`${PAGE} pb-[calc(110px+env(safe-area-inset-bottom))]`}>
+        {header}
         <ChoosePlanSkeleton />
       </div>
     );
   }
   if (kyc?.status !== "APPROVED") {
     return (
-      <div className="bg-background mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
-        <WebBackButton onBack={goBack} />
+      <div className={`${PAGE} pb-[calc(40px+env(safe-area-inset-bottom))]`}>
+        {header}
         <KycRequiredNotice />
       </div>
     );
   }
 
+  const ctaLabel = !selectedPlan
+    ? "Select a plan"
+    : isCurrentSelected
+      ? "This is your current plan"
+      : `${currentPlan ? "Switch to" : "Activate"} ${stripFrequencySuffix(selectedPlan.name)} · ${fmtLkrCurrency(selectedPlan.amount)}/${perLabel(selectedPlan.type)}`;
+
   return (
-    <div className="bg-background mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 pt-5 pb-4">
-      <WebBackButton onBack={goBack} />
-      {currentPlan ? (
-        <PageTitle title="Manage your Plan" subtitle="View or switch to another plan" />
-      ) : (
-        <PageTitle title="Choose Your Plan" subtitle="Get your bitcoin දීප membership" />
-      )}
+    <div className={`${PAGE} pb-[calc(110px+env(safe-area-inset-bottom))]`}>
+      {header}
 
-      {currentPlan && (
-        <div className="flex flex-col gap-3">
-          <p className="text-[14px] leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
-            Current Plan
-          </p>
-          <PlanCard
-            emoji={
-              <Image
-                src={getPlanIconSrc(currentPlan.name)}
-                alt=""
-                width={28}
-                height={28}
-                className="size-7"
-              />
-            }
-            name={currentPlan.name}
-            price={fmtLkrCurrency(currentPlan.amount)}
-            period={`/${currentPlan.type === "weekly" ? "week" : "month"}`}
-            description={currentPlan.features?.[0] ?? "Bitcoin membership rewards"}
-            perYear={`Per Year ${fmtLkrCurrency(perMonthAmount(currentPlan) * 12)}`}
-            active
-          />
-        </div>
-      )}
+      <PageTitle
+        title={currentPlan ? "Change your plan" : "Choose your plan"}
+        subtitle="Activate your Bitcoin දීප membership today, grow with the community, cancel anytime."
+      />
 
-      <p className="text-sm leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
-        {currentPlan ? "Choose a Different Plan" : "Select a Plan"}
-      </p>
-
-      <div className="flex justify-center">
-        <TogglePlan value={duration} onChange={handleDurationChange} />
-      </div>
+      <Segmented
+        label="Plan frequency"
+        options={DURATIONS}
+        value={duration}
+        onChange={handleDurationChange}
+      />
 
       {packagesLoading ? (
-        <div className="space-y-2">
+        <div className="flex flex-col gap-3">
           {[0, 1, 2].map((i) => (
-            <ValueSkeleton key={i} className="h-[62px] w-full rounded-[12px]" />
+            <ValueSkeleton key={i} className="h-[76px] w-full rounded-xl" />
           ))}
         </div>
       ) : filteredPlans.length === 0 ? (
-        <div className="py-8 text-center">
-          <p className="text-[14px] text-[#64748b]">No {duration} plans available</p>
-        </div>
+        <p className="text-ink3 py-8 text-center text-[14px]">No {duration} plans available</p>
       ) : (
-        <div className="space-y-3">
-          {filteredPlans.map((plan) => {
-            const perMonth = perMonthAmount(plan);
-            const perYear = perMonth * 12;
-            return (
-              <PlanCard
-                key={plan.id}
-                emoji={
-                  <Image
-                    src={getPlanIconSrc(plan.name)}
-                    alt=""
-                    width={22}
-                    height={22}
-                    className="size-[22px]"
-                  />
-                }
-                name={plan.name}
-                price={fmtLkrCurrency(plan.amount)}
-                period={`/${plan.type === "weekly" ? "week" : "month"}`}
-                description={plan.features?.[0] ?? "Bitcoin membership rewards"}
-                perMonth={`Per Month ${fmtLkrCurrency(perMonth)}`}
-                perYear={`Per Year ${fmtLkrCurrency(perYear)}`}
-                selected={selectedPlanId === plan.id}
-                mostPopular={plan.popular}
-                onSelect={() => setSelectedId(plan.id)}
-              />
-            );
-          })}
+        <div className="stagger flex flex-col gap-3">
+          {filteredPlans.map((plan) => (
+            <PlanCard
+              key={plan.id}
+              emojiSrc={getPlanIconSrc(plan.name)}
+              name={stripFrequencySuffix(plan.name)}
+              price={fmtLkrCurrency(plan.amount)}
+              period={`/${perLabel(plan.type)}`}
+              selected={selectedId === plan.id}
+              current={plan.id === currentPlan?.id}
+              popular={plan.popular}
+              onSelect={() => setSelectedId(plan.id)}
+              details={
+                <>
+                  <span className="text-ink2 text-[14px]">{estimateText(plan)}</span>
+                  <span className="text-ink3 text-[12px]">
+                    {feeText ? `${feeText} fee per payment` : "Fees apply per payment"} · cancel any
+                    time
+                  </span>
+                </>
+              }
+            />
+          ))}
         </div>
       )}
 
-      <div className="flex flex-col gap-3">
-        <Button
-          className="w-full rounded-[12px]"
-          size="lg"
-          loading={payhereLinkLoading}
-          disabled={!selectedPlanId || packagesLoading || offline}
-          onClick={handleSubscribe}
+      <p className="text-ink3 text-center text-[12px]">
+        Paid securely through PayHere with your card or bank.
+      </p>
+
+      {!currentPlan && (
+        <Link
+          href="/dashboard"
+          className="press text-link self-center rounded-xl px-2.5 py-2 text-[14px] font-bold"
         >
-          Continue with Selected Plan
+          Skip to wallet
+        </Link>
+      )}
+
+      <div className="from-background fixed bottom-0 left-1/2 z-30 w-[min(440px,100vw)] -translate-x-1/2 bg-linear-to-t from-[74%] to-transparent px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))]">
+        <Button
+          className="animate-rise"
+          disabled={!selectedPlan || isCurrentSelected || packagesLoading || offline}
+          onClick={handleContinue}
+        >
+          <span className="truncate">{ctaLabel}</span>
         </Button>
-
-        {currentPlan && (
-          <Button
-            variant="outline"
-            className="w-full rounded-[12px] text-[#F13131] shadow-[0_0_0_1px_#F13131]"
-            loading={cancelSubscription.isPending}
-            disabled={offline}
-            onClick={handleCancel}
-          >
-            Cancel Current Plan
-          </Button>
-        )}
-
-        <p className="px-2 text-center text-[12px] text-[#64748b]">
-          Activate your Bitcoin දීප Membership today, grow with the Community, cancel anytime.
-        </p>
-
-        {!currentPlan && (
-          <Link href="/dashboard" className="text-center text-[14px] font-semibold text-[#fa7119]">
-            Skip to Wallet
-          </Link>
-        )}
       </div>
+
+      <Sheet
+        open={confirmOpen}
+        onOpenChange={(open) => {
+          if (!payhereLinkLoading) setConfirmOpen(open);
+        }}
+        title={currentPlan ? "Switch plan" : "Confirm plan"}
+        hideClose={payhereLinkLoading}
+        footer={
+          <Button
+            loading={payhereLinkLoading}
+            disabled={offline || !selectedPlan}
+            onClick={handleSubscribe}
+          >
+            Continue to PayHere
+          </Button>
+        }
+      >
+        {selectedPlan && (
+          <div className="flex flex-col gap-4 px-4">
+            <div className="flex flex-col items-center gap-1 px-5 text-center">
+              <Emoji src={getPlanIconSrc(selectedPlan.name)} size={84} className="animate-pop" />
+              <h2 className="mt-1 text-[24px]">{stripFrequencySuffix(selectedPlan.name)}</h2>
+              <p className="flex items-baseline gap-0.5">
+                <span className="num text-link text-[18px] font-bold">
+                  {fmtLkrCurrency(selectedPlan.amount)}
+                </span>
+                <span className="text-ink3 text-[12px]">/{perLabel(selectedPlan.type)}</span>
+              </p>
+              <p className="text-ink2 text-[14px]">{estimateText(selectedPlan)}</p>
+            </div>
+            <KeyValueList
+              rows={[
+                { k: "Pays with", v: "PayHere · card or bank" },
+                { k: "Billed", v: selectedPlan.type === "weekly" ? "Every week" : "Every month" },
+                ...(feeText ? [{ k: "Fee", v: `${feeText} of each payment` }] : []),
+                { k: "Cancel", v: "Any time, in Plans" },
+              ]}
+            />
+          </div>
+        )}
+      </Sheet>
     </div>
   );
 }

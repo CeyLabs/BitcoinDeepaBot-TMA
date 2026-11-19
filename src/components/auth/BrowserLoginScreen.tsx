@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 import { Logo } from "@/components/ui/logo";
-import { Button } from "@/components/ui/button";
-import { Title } from "@/components/ui/title";
+import { CellChevron } from "@/components/ui/cell";
+import { Emoji } from "@/components/ui/emoji";
+import { Spinner } from "@/components/ui/button";
+import { LandingShell } from "@/components/auth/LandingShell";
+import { UserProgress } from "@/components/auth/UserProgress";
 import { authenticateWithTelegramOidc, saveAuthToStorage } from "@/lib/auth";
 import type { TelegramOidcAuthData } from "@/lib/auth";
 import { TELEGRAM_BOT_URL } from "@/lib/constants";
-import TelegramLoginButton from "@/components/auth/TelegramLoginButton";
+import TelegramLoginButton, { TG_PRIMARY_BUTTON } from "@/components/auth/TelegramLoginButton";
 import { InstallButton } from "@/pwa";
 
 /**
@@ -42,40 +45,58 @@ export default function BrowserLoginScreen() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-white px-5 text-center dark:bg-[#1b2027]">
-      <div className="relative mb-5 h-[150px] w-[220px]">
-        <Logo priority />
+    <LandingShell themeToggle aria-label="Sign in to Bitcoin Deepa">
+      <div className="flex flex-col items-center text-center">
+        <div className="animate-logo-in relative h-[230px] w-full max-w-[340px]">
+          <Logo priority />
+        </div>
+        <div className="stagger mt-6 flex w-full flex-col items-center gap-2">
+          <h1 className="max-w-[330px] text-[26px] leading-8">
+            Join Sri Lanka&rsquo;s Fastest Growing Bitcoin Community
+          </h1>
+          <div className="mt-4 w-full">
+            <UserProgress />
+          </div>
+        </div>
       </div>
 
-      <Title className="max-w-sm leading-snug">Sign In With Telegram</Title>
-
-      <p className="text-muted-foreground mt-2 max-w-sm text-[15px] dark:text-[#64748b]">
-        Sign in with your Telegram account to continue.
-      </p>
-
-      <div className="mt-8">
-        <TelegramLoginButton onAuth={handleAuth} />
+      <div className="stagger mt-8 flex w-full flex-col gap-3">
+        <TelegramLoginButton onAuth={handleAuth} className={TG_PRIMARY_BUTTON} />
+        {(isLoading || error) && (
+          <p
+            role={error ? "alert" : undefined}
+            aria-live="polite"
+            className={
+              error
+                ? "text-loss text-center text-[13px] font-semibold"
+                : "text-ink3 flex items-center justify-center gap-2 text-[13px] font-semibold"
+            }
+          >
+            {error ?? (
+              <>
+                <Spinner /> Signing you in…
+              </>
+            )}
+          </p>
+        )}
+        <a
+          href={TELEGRAM_BOT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="press bg-card shadow-card flex min-h-16 w-full items-center gap-3 rounded-xl px-4 py-3 text-left"
+        >
+          <Emoji src="/emoji/wallet.webp" />
+          <span className="flex min-w-0 grow flex-col gap-1 pl-0.5">
+            <span className="text-[16px] leading-[18px] font-semibold">Prefer Telegram?</span>
+            <span className="text-ink3 truncate text-[13px] leading-4">
+              Open the mini app in the Telegram app
+            </span>
+          </span>
+          <CellChevron />
+        </a>
+        <InstallButton variant="cell" />
+        <p className="text-ink3 mt-1 text-center text-[13px] font-semibold">@BitcoinDeepaBot</p>
       </div>
-
-      {isLoading && (
-        <p className="text-muted-foreground mt-4 text-[13px] dark:text-[#64748b]">
-          Signing you in…
-        </p>
-      )}
-      {error && <p className="mt-4 text-[13px] text-red-500">{error}</p>}
-
-      <InstallButton className="mt-8 max-w-xs" />
-
-      <a
-        href={TELEGRAM_BOT_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-3 block w-full max-w-xs"
-      >
-        <Button variant="outline" size="lg" className="w-full rounded-[12px]">
-          Open in Telegram Instead
-        </Button>
-      </a>
-    </main>
+    </LandingShell>
   );
 }

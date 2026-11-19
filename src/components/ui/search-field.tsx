@@ -1,12 +1,12 @@
 "use client";
 
-import { Search } from "lucide-react";
 import { cn } from "cn";
 
 export interface SearchFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   className?: string;
 }
 
+/** Search input on a raised card, with a leading magnifier. */
 export function SearchField({
   className,
   placeholder = "Search",
@@ -14,18 +14,24 @@ export function SearchField({
   ...props
 }: SearchFieldProps & { ref?: React.Ref<HTMLInputElement> }) {
   return (
-    <div
-      className={cn(
-        "flex h-9 items-center gap-1 rounded-2xl bg-white px-3 py-2 dark:bg-[#0B0F14]",
-        className
-      )}
-    >
-      <Search size={18} strokeWidth={1.75} className="shrink-0 text-[#64748b]" />
+    <div className={cn("relative grow", className)}>
+      <svg
+        className="text-ink3 pointer-events-none absolute top-[11px] left-3 size-[22px]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        aria-hidden
+      >
+        <circle cx="11" cy="11" r="7" />
+        <path d="M20 20l-3.5-3.5" />
+      </svg>
       <input
         ref={ref}
-        type="text"
+        type="search"
         placeholder={placeholder}
-        className="min-w-0 flex-1 bg-transparent text-sm leading-4 text-[#1b2027] outline-hidden placeholder:text-[#cbd5e1] dark:text-[#f1f5f9] dark:placeholder:text-[#475569]"
+        className="bg-card text-foreground shadow-card placeholder:text-ink3 h-11 w-full rounded-xl border-0 pr-3.5 pl-[42px] text-[16px] font-semibold outline-none focus:shadow-[0_0_0_2px_var(--ring)]"
         {...props}
       />
     </div>
