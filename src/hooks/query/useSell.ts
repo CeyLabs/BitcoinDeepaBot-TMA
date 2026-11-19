@@ -11,7 +11,6 @@ import {
 import { useSession } from "@/hooks/useSession";
 import fetchy from "@/lib/fetchy";
 import { queryKeys } from "@/lib/query-keys";
-import { useP2pHeaders } from "@/hooks/query/useP2p";
 
 export type SellStatus =
   | "QUOTED"
@@ -188,15 +187,13 @@ function useInvalidateAfterSale() {
 }
 
 /**
- * Pay a confirmed sale from the app, with the user's Telegram credential (the
- * Mini App's launch data; on the web the backend keeps the latest login).
- * 403 credential_stale / credential_rejected: reopen the app or log in again.
+ * Pay a confirmed sale from the app, as the signed-in user. 401
+ * relogin_required: the bot hasn't linked the user yet, so log in again.
  */
 export function usePaySell(id: string) {
-  const headers = useP2pHeaders();
   const refresh = useInvalidateAfterSale();
   return useMutation({
-    mutationFn: () => fetchy.post<SellOrder>(`/sell/orders/${id}/pay`, undefined, { headers }),
+    mutationFn: () => fetchy.post<SellOrder>(`/sell/orders/${id}/pay`),
     onSuccess: (order) => refresh(order),
     onError: () => refresh(),
   });

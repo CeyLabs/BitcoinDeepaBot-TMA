@@ -1,221 +1,277 @@
 import { API_BASE_URL } from "@/lib/constants";
 
-export interface TelegramAuthResponse {
-  token?: string;
-  user?: unknown;
-  isRegistered?: boolean;
-  message?: string;
+/**
+ * Client-side view of the backend session (BitcoinDeepa-DCA-BE user_session).
+ *
+ * - Web: the session is the backend's HttpOnly cookie, set by its
+ *   "Log In with Telegram" redirect (/auth/telegram/start) and sent with
+ *   credentials on our requests. JS never sees a token; GET /auth/me says
+ *   whether we're signed in.
+ * - Mini App: initData is exchanged once at launch (POST
+ *   /auth/telegram/miniapp) for a session token, kept in memory and
+ *   sessionStorage (never localStorage or a URL) and sent as a Bearer header.
+ *
+ * Telegram credentials are never stored here: after login the backend's own
+ * session names the user, also to the bot.
+ */
+
+export type SessionStatus = "loading" | "authenticated" | "unauthenticated";
+export type SessionKind = "web" | "miniapp";
+
+export interface SessionUser {
+  id: string;
+  /** The member's Bitcoin Deepa @username, when they have one */
+  username?: string;
 }
 
-/**
- * Payload Telegram's Login library (https://core.telegram.org/bots/telegram-login)
- * passes to the onauth callback — distinct from Mini App initData, this is
- * used for browser-based sign-in outside Telegram. id_token is a signed JWT
- * that must be verified server-side (JWKS) before the claims in `user` are trusted.
- */
-export interface TelegramOidcAuthData {
-  id_token?: string;
-  user?: {
-    id: number;
-    name?: string;
-    given_name?: string;
-    family_name?: string;
-    preferred_username?: string;
-    picture?: string;
-  };
-  error?: string;
+export interface SessionSnapshot {
+  status: SessionStatus;
+  kind: SessionKind | null;
+  user: SessionUser | null;
 }
 
-/**
- * Authenticate user with Telegram initData
- */
-export async function authenticateWithTelegram(initData: string): Promise<TelegramAuthResponse> {
+/** POST /auth/telegram/miniapp */
+export interface MiniAppLoginResponse {
+  token: string;
+  expiresAt: string;
+  absoluteExpiresAt: string;
+  user: { telegram_id: string };
+  isRegistered: boolean;
+  /** The bot linked the wallet at this login (false: bot unreachable) */
+  walletLinked: boolean;
+  /** New wallets only: false = the bot can't message the user yet */
+  canMessage: boolean | null;
+}
+
+const MINIAPP_SESSION_KEY = "bitcoin-deepa-session";
+/** Pre-session builds kept a 7-day JWT here: removed on load, never read */
+const LEGACY_TOKEN_KEY = "bitcoin-deepa-auth-token";
+const EXISTING_USER_KEY = "bitcoin-deepa-is-existing-user";
+
+// Fired on the window whenever the session changes (login, logout, a 401).
+export const AUTH_CHANGE_EVENT = "bitcoin-deepa-auth-change";
+
+const LOADING: SessionSnapshot = { status: "loading", kind: null, user: null };
+const SIGNED_OUT: SessionSnapshot = { status: "unauthenticated", kind: null, user: null };
+
+let snapshot: SessionSnapshot = LOADING;
+let miniAppToken: string | null = null;
+let webProbe: Promise<void> | null = null;
+
+function emit(next: SessionSnapshot) {
+  snapshot = next;
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
+}
+
+function safeStorage(kind: "local" | "session"): Storage | null {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/telegram`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        initData,
-      }),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      // If it's a 404 or 401, it might mean user is not registered
-      if (response.status === 404 || response.status === 401) {
-        return {
-          token: result.token || null,
-          isRegistered: false,
-          message: result.message || "User not found",
-        };
-      }
-      throw new Error(`Authentication failed: ${response.statusText}`);
-    }
-
-    return {
-      token: result.token,
-      user: result.user,
-      isRegistered: false,
-    };
-  } catch (error) {
-    console.error("Error during Telegram authentication:", error);
-    throw error;
-  }
-}
-
-/**
- * Authenticate a user via Telegram's Login (OIDC) library (browser flow, outside Telegram).
- * Sends the raw id_token — the backend verifies its signature against Telegram's
- * JWKS before trusting any claims in it.
- */
-export async function authenticateWithTelegramOidc(idToken: string): Promise<TelegramAuthResponse> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/telegram-oidc`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id_token: idToken }),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || result.message || "Telegram login failed");
-    }
-
-    return {
-      token: result.token,
-      user: result.user,
-      isRegistered: result.isRegistered ?? true,
-    };
-  } catch (error) {
-    console.error("Error during Telegram OIDC authentication:", error);
-    throw error;
-  }
-}
-
-/**
- * Utility functions for authentication using localStorage
- */
-
-const AUTH_TOKEN_KEY = "bitcoin-deepa-auth-token";
-
-// Treat a token as expired slightly early, so a request doesn't leave with a
-// token that dies in flight (and to absorb small client clock skew).
-const EXPIRY_SKEW_MS = 30_000;
-
-/** Decodes a JWT's payload without verifying it (the backend verifies). */
-function decodeTokenPayload(token: string): Record<string, unknown> | null {
-  try {
-    const payloadSegment = token.split(".")[1];
-    if (!payloadSegment) return null;
-
-    const base64 = payloadSegment.replace(/-/g, "+").replace(/_/g, "/");
-    const json = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0"))
-        .join("")
-    );
-    const payload = JSON.parse(json);
-    return payload && typeof payload === "object" ? payload : null;
+    return kind === "local" ? window.localStorage : window.sessionStorage;
   } catch {
     return null;
   }
 }
 
-/**
- * True when the token is malformed or past its `exp` (backend tokens last 7
- * days). A token without `exp` counts as valid — the backend is the judge,
- * and a 401 from it still signs the user out (see fetchy).
- */
-export const isTokenExpired = (token: string): boolean => {
-  const payload = decodeTokenPayload(token);
-  if (!payload) return true;
-  const exp = payload.exp;
-  if (typeof exp !== "number") return false;
-  return exp * 1000 - EXPIRY_SKEW_MS <= Date.now();
-};
+// On load: drop the legacy token, and pick up a Mini App session from this
+// tab (sessionStorage survives a reload, not a reopen).
+if (typeof window !== "undefined") {
+  safeStorage("local")?.removeItem(LEGACY_TOKEN_KEY);
+  try {
+    const raw = safeStorage("session")?.getItem(MINIAPP_SESSION_KEY);
+    const saved = raw ? (JSON.parse(raw) as { token?: unknown; user?: SessionUser }) : null;
+    if (saved && typeof saved.token === "string" && saved.user?.id) {
+      miniAppToken = saved.token;
+      snapshot = { status: "authenticated", kind: "miniapp", user: saved.user };
+    }
+  } catch {
+    // Corrupt entry: sign in again from initData
+  }
+}
+
+export const getSessionSnapshot = (): SessionSnapshot => snapshot;
+export const getServerSessionSnapshot = (): SessionSnapshot => LOADING;
+
+export function subscribeSession(onChange: () => void): () => void {
+  window.addEventListener(AUTH_CHANGE_EVENT, onChange);
+  return () => window.removeEventListener(AUTH_CHANGE_EVENT, onChange);
+}
+
+/** The Mini App's Bearer token (null on the web: the cookie is the session) */
+export const getMiniAppToken = (): string | null => miniAppToken;
 
 /**
- * The stored auth token, or null when there is none or it has expired. An
- * expired token is treated exactly like no token, so guards send the user to
- * sign in instead of letting every request fail with 401.
+ * Once the platform is known, settle "loading": the web asks the backend
+ * (GET /auth/me, cookie); the Mini App without a saved session is signed
+ * out until useRegisterUser exchanges its initData.
  */
-export const getAuthTokenFromStorage = (): string | null => {
-  if (typeof window === "undefined") return null;
-  const token = localStorage.getItem(AUTH_TOKEN_KEY);
-  return token && !isTokenExpired(token) ? token : null;
-};
+export function resolveSession(platform: "telegram" | "web"): void {
+  if (snapshot.status !== "loading") return;
+  if (platform === "telegram") {
+    emit(SIGNED_OUT);
+    return;
+  }
+  void refreshWebSession();
+}
 
-export const getIsExistingUserFromStorage = (): boolean => {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem("bitcoin-deepa-is-existing-user") === "true";
-};
+/** GET /auth/me with the cookie; deduplicated while one is running */
+export function refreshWebSession(): Promise<void> {
+  webProbe ??= (async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        cache: "no-store",
+        credentials: "include",
+      });
+      if (response.ok) {
+        const body = (await response.json()) as {
+          user?: { telegram_id?: string; username?: string | null };
+        };
+        const id = body.user?.telegram_id;
+        emit(
+          id
+            ? {
+                status: "authenticated",
+                kind: "web",
+                user: { id, username: body.user?.username ?? undefined },
+              }
+            : SIGNED_OUT
+        );
+      } else {
+        emit(SIGNED_OUT);
+      }
+    } catch {
+      emit(SIGNED_OUT);
+    } finally {
+      webProbe = null;
+    }
+  })();
+  return webProbe;
+}
+
+/** Mini App: exchange the raw launch initData (never initDataUnsafe) for a session */
+export async function loginWithMiniAppInitData(
+  initData: string,
+  referralCode?: string
+): Promise<MiniAppLoginResponse> {
+  const response = await fetch(`${API_BASE_URL}/auth/telegram/miniapp`, {
+    method: "POST",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(referralCode ? { initData, referral_code: referralCode } : { initData }),
+  });
+  const result = (await response.json().catch(() => ({}))) as Partial<MiniAppLoginResponse> & {
+    message?: string;
+  };
+  if (!response.ok || !result.token || !result.user?.telegram_id) {
+    throw new MiniAppLoginError(response.status, result.message);
+  }
+  const user = { id: result.user.telegram_id };
+  miniAppToken = result.token;
+  try {
+    safeStorage("session")?.setItem(
+      MINIAPP_SESSION_KEY,
+      JSON.stringify({ token: result.token, user })
+    );
+  } catch {
+    // Private mode: the session lasts until the tab closes
+  }
+  markIsExistingUserInStorage();
+  emit({ status: "authenticated", kind: "miniapp", user });
+  return result as MiniAppLoginResponse;
+}
+
+export class MiniAppLoginError extends Error {
+  constructor(
+    public status: number,
+    message?: string
+  ) {
+    super(message || `Mini App login failed (${status})`);
+    this.name = "MiniAppLoginError";
+  }
+  /** The backend refused the initData itself (too old / invalid): retrying can't help */
+  get rejected(): boolean {
+    return this.status === 401 || this.status === 400;
+  }
+}
+
+/** Forget the session locally (after a 401, or logout) */
+export function clearSession(): void {
+  miniAppToken = null;
+  safeStorage("session")?.removeItem(MINIAPP_SESSION_KEY);
+  emit(SIGNED_OUT);
+}
 
 /**
- * Persists the "returning user" flag on its own, independent of an auth
- * token — used by the /api/user existing-check (409 response), which never
- * hands back a token. Cached so future launches can skip the network round
- * trip entirely and redirect straight to the dashboard.
+ * A 401 for a request that carried `sentToken` (null = the web cookie).
+ * Only ends the session that request used: a new one may have started while
+ * it was in flight.
  */
+export function onUnauthorized(sentToken: string | null): void {
+  if (snapshot.status !== "authenticated") return;
+  if (sentToken !== miniAppToken) return;
+  clearSession();
+}
+
+/**
+ * Revoke this session (or every session) on the backend, then forget it.
+ * Throws when the backend didn't confirm it (offline, or e.g. 403 Invalid
+ * origin): the HttpOnly cookie and the server session would still be alive,
+ * so pretending we logged out would be wrong - the caller tells the user.
+ * A 401 means the session was already gone.
+ */
+export async function logoutSession(all = false): Promise<void> {
+  const token = miniAppToken;
+  const response = await fetch(`${API_BASE_URL}/auth/${all ? "logout-all" : "logout"}`, {
+    method: "POST",
+    cache: "no-store",
+    credentials: "include",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!response.ok && response.status !== 401) {
+    throw new Error(`Logout failed (${response.status})`);
+  }
+  clearSession();
+}
+
+/** Where the web login starts (a full-page redirect to Telegram and back) */
+export function webLoginUrl(returnTo?: string, referralCode?: string): string {
+  const params = new URLSearchParams();
+  if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) {
+    params.set("return_to", returnTo);
+  }
+  if (referralCode) params.set("ref", referralCode);
+  const query = params.toString();
+  return `${API_BASE_URL}/auth/telegram/start${query ? `?${query}` : ""}`;
+}
+
+/** The backend's ?login_error= codes, as user-facing text */
+export function loginErrorMessage(code: string | null): string | null {
+  if (!code) return null;
+  switch (code) {
+    case "cancelled":
+      return "Login was cancelled. Try again when you're ready.";
+    case "attempt_expired":
+    case "bad_state":
+      return "That login link expired. Please try again.";
+    case "missing_telegram_id":
+      return "Telegram didn't share your account ID. Please try again.";
+    case "not_configured":
+      return "Telegram login isn't available right now.";
+    case "rate_limited":
+      return "Too many attempts. Please wait a minute and try again.";
+    default:
+      return "Couldn't sign you in with Telegram. Please try again.";
+  }
+}
+
+// ---- "Returning user" flag (UX only, not a credential) ----
+// Read by LAUNCH_REDIRECT_SCRIPT to skip the landing page in the Mini App.
+
+export const getIsExistingUserFromStorage = (): boolean =>
+  safeStorage("local")?.getItem(EXISTING_USER_KEY) === "true";
+
 export const markIsExistingUserInStorage = () => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem("bitcoin-deepa-is-existing-user", "true");
+  safeStorage("local")?.setItem(EXISTING_USER_KEY, "true");
 };
 
-/**
- * Clears the returning-user flag — used when the server tells us the id we
- * thought was registered actually wasn't (a stale cache from a deleted
- * account or DB reset), so the next launch stops trusting it.
- */
 export const clearIsExistingUserInStorage = () => {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem("bitcoin-deepa-is-existing-user");
-};
-
-// Fired on the window whenever the stored auth token is set or cleared, so
-// components can react to a token that arrives after they've mounted (the
-// TMA mints it asynchronously in useRegisterUser).
-export const AUTH_CHANGE_EVENT = "bitcoin-deepa-auth-change";
-
-export const saveAuthToStorage = (token: string) => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(AUTH_TOKEN_KEY, token);
-  localStorage.setItem("bitcoin-deepa-is-existing-user", "true");
-  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
-};
-
-export const clearAuthFromStorage = () => {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(AUTH_TOKEN_KEY);
-  localStorage.removeItem("bitcoin-deepa-is-existing-user");
-  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
-};
-
-/**
- * Decodes the stored JWT's payload for identity ({ id, username }) without
- * verifying it — used as a fallback source of identity outside Telegram,
- * where there's no initData to read from. Both auth flows (initData and
- * the Login Widget) mint tokens with the same payload shape, so this works
- * regardless of which one signed the user in.
- */
-/** The Telegram user id a backend token was issued for */
-export const tokenUserId = (token: string): string | null => {
-  const id = decodeTokenPayload(token)?.id;
-  return typeof id === "string" ? id : null;
-};
-
-export const getUserFromToken = (): { id: string; username?: string } | null => {
-  const token = getAuthTokenFromStorage();
-  if (!token) return null;
-
-  const payload = decodeTokenPayload(token);
-  return typeof payload?.id === "string"
-    ? { id: payload.id, username: payload.username as string | undefined }
-    : null;
+  safeStorage("local")?.removeItem(EXISTING_USER_KEY);
 };

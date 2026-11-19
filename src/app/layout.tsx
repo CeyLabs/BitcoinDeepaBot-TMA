@@ -64,7 +64,8 @@ export default function RootLayout({
 }>) {
   // Open the backend connection (DNS + TLS) while the JS downloads, so the
   // first API call doesn't pay for it. React 19 puts this in <head>.
-  if (API_BASE_URL) preconnect(API_BASE_URL, { crossOrigin: "anonymous" });
+  // credentials: the session cookie goes along on these requests
+  if (API_BASE_URL) preconnect(API_BASE_URL, { crossOrigin: "use-credentials" });
 
   return (
     <html

@@ -3,14 +3,15 @@
 import { usePlatform, type TelegramUser } from "@/platform";
 import { useSubscriptionCurrent } from "@/hooks/query/useSubscriptionCurrent";
 import { useKycStatus } from "@/hooks/query/useKyc";
-import { getUserFromToken } from "@/lib/auth";
+import { useSession } from "@/hooks/useSession";
+import type { SessionUser } from "@/lib/auth";
 
 /**
  * Identity from Telegram's initData when available (in Telegram), falling
- * back to the id/username embedded in the stored auth token (outside
- * Telegram, e.g. a browser session signed in via the Login Widget).
+ * back to the backend session's user (outside Telegram, e.g. a browser
+ * signed in with "Log In with Telegram").
  */
-function getIdentity(telegramUser: TelegramUser | undefined) {
+function getIdentity(telegramUser: TelegramUser | undefined, sessionUser: SessionUser | null) {
   if (telegramUser) {
     return {
       id: telegramUser.id?.toString() ?? "",
@@ -21,10 +22,9 @@ function getIdentity(telegramUser: TelegramUser | undefined) {
     };
   }
 
-  const tokenUser = getUserFromToken();
   return {
-    id: tokenUser?.id ?? "",
-    username: tokenUser?.username,
+    id: sessionUser?.id ?? "",
+    username: sessionUser?.username,
     firstName: undefined as string | undefined,
     lastName: undefined as string | undefined,
     photoUrl: undefined as string | undefined,
@@ -36,7 +36,10 @@ function getIdentity(telegramUser: TelegramUser | undefined) {
  * KYC status) — so components don't each re-derive these.
  */
 export function useUser() {
-  const { id, username, firstName, lastName, photoUrl } = getIdentity(usePlatform().launch?.user);
+  const { id, username, firstName, lastName, photoUrl } = getIdentity(
+    usePlatform().launch?.user,
+    useSession().user
+  );
   const { data: subscription, isLoading: subscriptionLoading } = useSubscriptionCurrent();
   const { data: kycData } = useKycStatus();
 

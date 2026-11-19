@@ -1,57 +1,65 @@
 "use client";
 
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  AUTH_CHANGE_EVENT,
-  clearAuthFromStorage,
-  getAuthTokenFromStorage,
-  getUserFromToken,
+  getServerSessionSnapshot,
+  getSessionSnapshot,
+  logoutSession,
+  refreshWebSession,
+  resolveSession,
+  subscribeSession,
+  type SessionStatus,
 } from "@/lib/auth";
+import { usePlatform } from "@/platform";
 
-export type SessionStatus = "loading" | "authenticated" | "unauthenticated";
-
-function subscribe(onChange: () => void) {
-  window.addEventListener(AUTH_CHANGE_EVENT, onChange);
-  // Sign-in/out in another tab of the same origin.
-  window.addEventListener("storage", onChange);
-  // Re-check expiry when the app comes back to the foreground (PWA resume).
-  document.addEventListener("visibilitychange", onChange);
-  return () => {
-    window.removeEventListener(AUTH_CHANGE_EVENT, onChange);
-    window.removeEventListener("storage", onChange);
-    document.removeEventListener("visibilitychange", onChange);
-  };
-}
-
-// No storage on the server — report "loading" until the client takes over.
-const getServerSnapshot = () => undefined;
+export type { SessionStatus };
 
 /**
- * Single source of truth for auth state. Reactive: updates when the token is
- * saved or cleared (sign-in, sign-out, a 401 from the backend), changes in
- * another tab, or expires while the app was in the background.
+ * Single source of truth for auth state (see lib/auth.ts). Reactive: updates
+ * on login, logout and a 401 from the backend. On the web it asks the backend
+ * once the platform is known, and again when the app comes back to the
+ * foreground after being signed out elsewhere.
  */
 export function useSession() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const token = useSyncExternalStore(subscribe, getAuthTokenFromStorage, getServerSnapshot);
+  const { kind } = usePlatform();
+  const session = useSyncExternalStore(
+    subscribeSession,
+    getSessionSnapshot,
+    getServerSessionSnapshot
+  );
 
-  const status: SessionStatus =
-    token === undefined ? "loading" : token ? "authenticated" : "unauthenticated";
+  useEffect(() => {
+    if (kind) resolveSession(kind);
+  }, [kind]);
 
-  const logout = useCallback(() => {
-    clearAuthFromStorage();
-    // Drop every cached query so the next account starts clean.
-    queryClient.clear();
-    router.replace("/");
-  }, [queryClient, router]);
+  useEffect(() => {
+    if (kind !== "web" || session.status !== "authenticated") return;
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void refreshWebSession();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [kind, session.status]);
+
+  /** Throws when the backend didn't confirm it (the session is still on) */
+  const logout = useCallback(
+    async (everywhere = false) => {
+      await logoutSession(everywhere);
+      // Drop every cached query so the next account starts clean.
+      queryClient.clear();
+      router.replace("/");
+    },
+    [queryClient, router]
+  );
 
   return {
-    status,
-    token: token ?? null,
-    user: token ? getUserFromToken() : null,
+    status: session.status,
+    kind: session.kind,
+    user: session.user,
     logout,
   };
 }
