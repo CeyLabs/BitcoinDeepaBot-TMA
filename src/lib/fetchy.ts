@@ -117,6 +117,8 @@ const fetchy = {
     request<T>("POST", url, body, options),
   put: <T, B = unknown>(url: string, body?: B, options?: FetchOptions) =>
     request<T>("PUT", url, body, options),
+  patch: <T, B = unknown>(url: string, body?: B, options?: FetchOptions) =>
+    request<T>("PATCH", url, body, options),
   delete: <T>(url: string, options?: FetchOptions) => request<T>("DELETE", url, undefined, options),
   putRaw,
 };

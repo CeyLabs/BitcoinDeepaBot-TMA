@@ -1,6 +1,7 @@
 "use client";
 
-import { Avatar } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { useAvatarSeed } from "@/hooks/query/useUserMe";
 import { useUser } from "@/hooks/useUser";
 import { Wordmark } from "@/components/ui/wordmark";
 import { useSheets } from "./sheets";
@@ -10,7 +11,8 @@ import { InstallButton } from "@/pwa";
 
 /** Sticky top bar: wordmark, name + verification line, avatar (opens settings). */
 export function AppHeader() {
-  const { displayName, initials, photoUrl, kycStatus } = useUser();
+  const { displayName, kycStatus } = useUser();
+  const avatarSeed = useAvatarSeed();
   const { openSettings } = useSheets();
   const verified = kycStatus === "APPROVED";
   // Identity comes from the stored token / Telegram launch data, which the
@@ -44,12 +46,7 @@ export function AppHeader() {
             }}
             className="press flex size-11 shrink-0 items-center justify-center rounded-full border-0 bg-transparent p-0"
           >
-            <Avatar
-              src={ready ? (photoUrl ?? "/avatar/boy.png") : undefined}
-              acronym={ready ? initials : undefined}
-              size={44}
-              className="bg-[#ffb14c] text-white shadow-none"
-            />
+            <UserAvatar seed={ready ? avatarSeed : null} size={44} />
           </button>
         </div>
       </div>

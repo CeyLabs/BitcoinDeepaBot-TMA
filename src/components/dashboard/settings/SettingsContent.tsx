@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "cn";
-import { Avatar } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { useAvatarSeed } from "@/hooks/query/useUserMe";
+import { AvatarPickerSheet } from "./AvatarPickerSheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Emoji } from "@/components/ui/emoji";
@@ -38,15 +41,39 @@ const IDENTITY_TEXT: Partial<Record<KycStatus, string>> = {
 };
 
 function ProfileRow() {
-  const { displayName, initials, photoUrl, username, kycStatus } = useUser();
+  const { displayName, username, kycStatus } = useUser();
+  const avatarSeed = useAvatarSeed();
+  const [picking, setPicking] = useState(false);
   return (
     <div className="bg-chip flex items-center gap-3.5 rounded-xl p-3.5">
-      <Avatar
-        src={photoUrl ?? "/avatar/boy.png"}
-        acronym={initials}
-        size={56}
-        className="bg-[#ffb14c] text-white shadow-none"
-      />
+      <button
+        type="button"
+        aria-label="Change profile picture"
+        onClick={() => {
+          haptic.impact("light");
+          setPicking(true);
+        }}
+        className="press relative shrink-0 rounded-full border-0 bg-transparent p-0"
+      >
+        <UserAvatar seed={avatarSeed} size={56} />
+        <span
+          aria-hidden
+          className="bg-card text-link shadow-card absolute -right-0.5 -bottom-0.5 flex size-6 items-center justify-center rounded-full"
+        >
+          <svg
+            className="size-3.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+          </svg>
+        </span>
+      </button>
+      <AvatarPickerSheet open={picking} onOpenChange={setPicking} />
       <div className="flex min-w-0 flex-col gap-0.5">
         <p className="truncate text-[18px] leading-[22px] font-bold">{displayName}</p>
         <p className="text-ink3 truncate text-[13px] leading-4">
