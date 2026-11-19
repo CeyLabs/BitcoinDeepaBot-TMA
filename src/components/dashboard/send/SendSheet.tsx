@@ -6,7 +6,6 @@ import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { KeyValueList, SectionLabel } from "@/components/ui/section";
 import { Sheet, SheetStepper } from "@/components/ui/sheet";
-import { useToast } from "@/components/ui/toast";
 import {
   AmountBlock,
   AmountDisplay,
@@ -18,7 +17,7 @@ import {
   SwapUnitPill,
 } from "@/components/dashboard/trade/keypad";
 import { ErrorRow, HoldButton, InfoRow, ReviewHeader } from "@/components/dashboard/trade/parts";
-import { FreshCredentialPrompt } from "./FreshCredentialPrompt";
+import { ReloginPrompt } from "@/components/auth/ReloginPrompt";
 import { isTransferInProgress, SendTransferStatus } from "./SendTransferStatus";
 import { useP2pMe, useP2pSend, useP2pTransfer, useRecipient } from "@/hooks/query/useP2p";
 import { useUserMe } from "@/hooks/query/useUserMe";
@@ -29,10 +28,10 @@ import { useBotTransactionHistory } from "@/hooks/query/useBotTransactionHistory
 import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
 import { FetchyError } from "@/lib/fetchy";
 import { fmtLkrCurrency, fmtSats, LKR_SYMBOL } from "@/lib/formatters";
-import { isCredentialError, miniAppCanSend, recipientLabel, type P2pRecipient } from "@/lib/p2p";
+import { isReloginError, recipientLabel, type P2pRecipient } from "@/lib/p2p";
 import { sendAmountSchema, sendMemoSchema } from "@/lib/validations";
 import { normalizeUsername, USERNAME_RULE } from "@/lib/username";
-import { haptic, usePlatform } from "@/platform";
+import { haptic } from "@/platform";
 
 type Step = "to" | "amount" | "review";
 type Unit = "sats" | "lkr";
@@ -55,8 +54,6 @@ export default function SendSheet({
   onOpenChange: (open: boolean) => void;
 }) {
   const router = useRouter();
-  const platform = usePlatform();
-  const toast = useToast();
   const me = useP2pMe(open);
   const send = useP2pSend();
   const { currentBtcPrice } = useWalletMetrics();
@@ -78,12 +75,6 @@ export default function SendSheet({
   const { openSettings } = useSheets();
   const { data: transfer } = useP2pTransfer(transferId ?? "");
 
-  // What to retry after a fresh login: finding the recipient or sending
-  const afterRenew = useRef<(() => void) | null>(null);
-  const askRenew = (retry: () => void) => {
-    afterRenew.current = retry;
-    setRenewOpen(true);
-  };
   // One key per payment, reused on every retry of it: the bot never sends twice
   const paymentKey = useRef(newPaymentKey());
 
@@ -146,13 +137,7 @@ export default function SendSheet({
     go("review", "fwd");
   };
 
-  /** Fresh enough to send? Otherwise ask for a fresh session/login first. */
-  const credentialFresh = () =>
-    platform.kind === "telegram"
-      ? miniAppCanSend(platform.launch?.initDataRaw)
-      : !!me.data && Date.now() < new Date(me.data.credential.spend_fresh_until).getTime();
-
-  const doSend = useCallback(async (): Promise<"renew" | void> => {
+  const doSend = useCallback(async (): Promise<"relogin" | void> => {
     if (!recipient) return;
     haptic.impact("heavy");
     setSendError(undefined);
@@ -167,8 +152,9 @@ export default function SendSheet({
       setTransferId(t.id);
     } catch (err) {
       haptic.notify("error");
-      // The caller asks for a fresh login, then the user holds to send again
-      if (err instanceof FetchyError && isCredentialError(err.code)) return "renew";
+      // Not linked on the bot yet: a new login links the wallet, then the user
+      // sends again (same payment key, so it can't send twice)
+      if (err instanceof FetchyError && isReloginError(err.code)) return "relogin";
       // No answer, or it may have gone through: sending again with the same
       // key is safe (the bot returns this payment instead of sending twice)
       const unknown =
@@ -184,19 +170,8 @@ export default function SendSheet({
   }, [memo, recipient, sats, send]);
 
   const onSend = async () => {
-    if (!credentialFresh()) {
-      askRenew(() => void onSend());
-      return;
-    }
-    if ((await doSend()) === "renew") askRenew(() => void onSend());
+    if ((await doSend()) === "relogin") setRenewOpen(true);
   };
-
-  // Stable (the web login button re-injects Telegram's script when it changes)
-  const onRenewed = useCallback(() => {
-    toast({ title: "Logged in", description: "You can continue now." });
-    afterRenew.current?.();
-    afterRenew.current = null;
-  }, [toast]);
 
   const swapUnit = () => {
     const nu: Unit = unit === "sats" ? "lkr" : "sats";
@@ -548,7 +523,7 @@ export default function SendSheet({
           {body}
         </div>
       </Sheet>
-      <FreshCredentialPrompt open={renewOpen} onOpenChange={setRenewOpen} onRenewed={onRenewed} />
+      <ReloginPrompt open={renewOpen} onOpenChange={setRenewOpen} />
     </>
   );
 }

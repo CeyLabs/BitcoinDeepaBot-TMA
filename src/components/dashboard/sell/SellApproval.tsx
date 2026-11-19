@@ -3,13 +3,13 @@
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
-import { FreshCredentialPrompt } from "@/components/dashboard/send/FreshCredentialPrompt";
+import { ReloginPrompt } from "@/components/auth/ReloginPrompt";
 import { useCancelSell, usePaySell, type SellOrder } from "@/hooks/query/useSell";
 import { useSecondsLeft } from "@/hooks/useSecondsLeft";
 import { TELEGRAM_BOT_URL } from "@/lib/constants";
 import { FetchyError } from "@/lib/fetchy";
 import { fmtSats } from "@/lib/formatters";
-import { isCredentialError, miniAppCanSend } from "@/lib/p2p";
+import { isReloginError } from "@/lib/p2p";
 import { haptic, usePlatform } from "@/platform";
 
 /** Title and text for a sale waiting on its payment, by the payment's state. */
@@ -61,17 +61,12 @@ export function SellApproval({ order }: { order: SellOrder }) {
   const secondsLeft = useSecondsLeft(collect?.expiresAt);
 
   const onPay = useCallback(async () => {
-    // The Mini App's launch data is fixed: past 10 min it can't pay anymore
-    if (platform.kind === "telegram" && !miniAppCanSend(platform.launch?.initDataRaw)) {
-      setPrompt(true);
-      return;
-    }
     haptic.impact("medium");
     try {
       await pay.mutateAsync();
       haptic.notify("success");
     } catch (err) {
-      if (err instanceof FetchyError && isCredentialError(err.code)) {
+      if (err instanceof FetchyError && isReloginError(err.code)) {
         setPrompt(true);
         return;
       }
@@ -86,10 +81,7 @@ export function SellApproval({ order }: { order: SellOrder }) {
       haptic.notify("error");
       toast({ type: "error", title: "Payment failed", description: err.message });
     }
-  }, [platform, pay, toast]);
-
-  // Web: after logging in again, pay straight away
-  const onRenewed = useCallback(() => void onPay(), [onPay]);
+  }, [pay, toast]);
 
   const onCancel = async () => {
     const ok = await platform.confirm({
@@ -153,12 +145,7 @@ export function SellApproval({ order }: { order: SellOrder }) {
           Cancel sale
         </Button>
       )}
-      <FreshCredentialPrompt
-        open={prompt}
-        onOpenChange={setPrompt}
-        onRenewed={onRenewed}
-        action="pay"
-      />
+      <ReloginPrompt open={prompt} onOpenChange={setPrompt} action="pay" />
     </div>
   );
 }

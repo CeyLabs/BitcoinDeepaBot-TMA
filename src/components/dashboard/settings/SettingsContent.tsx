@@ -208,19 +208,29 @@ export function SettingsContent({
 
       <PersonalDetailsSection onCompleteProfile={() => go("/verification/details")} />
 
-      {kind === "web" && (
-        <List>
+      <List>
+        {kind === "web" && (
           <ListRow
             onClick={() => {
               haptic.impact("medium");
               onNavigate?.();
-              logout();
+              void logout();
             }}
             icon={<Icon name="logout" className="text-loss" />}
             title={<span className="text-loss">Log out</span>}
           />
-        </List>
-      )}
+        )}
+        <ListRow
+          onClick={() => {
+            haptic.impact("medium");
+            onNavigate?.();
+            void logout(true);
+          }}
+          icon={<Icon name="logout" className="text-loss" />}
+          title={<span className="text-loss">Log out of all devices</span>}
+          subtitle="Ends every session, on every phone and browser"
+        />
+      </List>
     </div>
   );
 }

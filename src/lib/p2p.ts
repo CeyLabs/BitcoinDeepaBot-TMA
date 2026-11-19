@@ -35,11 +35,6 @@ export interface P2pMe {
     confirm_threshold: number;
     unconfirmed_remaining: number;
   };
-  credential: {
-    platform: "mini_app" | "web";
-    /** After this, a send needs a fresh Telegram session/login */
-    spend_fresh_until: string;
-  };
 }
 
 /** Optional fields are left out by the bot when empty. */
@@ -75,26 +70,11 @@ export function p2pPollInterval(status: P2pTransferStatus | undefined): number |
   return status === "in_flight" ? 20_000 : 2_500;
 }
 
-/** The Mini App's initData auth_date (seconds), or null. */
-export function initDataAuthDate(initDataRaw: string | undefined): number | null {
-  if (!initDataRaw) return null;
-  const authDate = Number(new URLSearchParams(initDataRaw).get("auth_date"));
-  return Number.isFinite(authDate) && authDate > 0 ? authDate : null;
-}
-
 /**
- * Whether the Mini App's launch session is still fresh enough to send: the
- * bot wants it under 10 min old, and it never refreshes while the app is open
- * (reopening the Mini App renews it). 9.5 min, like the backend's margin.
+ * The bot hasn't linked this user to our session (401 relogin_required): a
+ * new login links them (reopen the Mini App / log in again on the web).
  */
-export function miniAppCanSend(initDataRaw: string | undefined, now = Date.now()): boolean {
-  const authDate = initDataAuthDate(initDataRaw);
-  return authDate !== null && now / 1000 - authDate <= 570;
-}
-
-/** Credential problems the user fixes by reopening the Mini App / logging in again. */
-export const isCredentialError = (code: string | undefined) =>
-  code === "credential_stale" || code === "credential_rejected";
+export const isReloginError = (code: string | undefined) => code === "relogin_required";
 
 /** @name, name or a numeric Telegram ID, as typed */
 export const normalizeRecipient = (input: string) => input.trim();
@@ -105,11 +85,3 @@ export function recipientLabel(r: P2pRecipient | undefined): string {
   if (r.name && r.username && r.name !== `@${r.username}`) return `${r.name} (@${r.username})`;
   return r.name || (r.username ? `@${r.username}` : String(r.telegram_id));
 }
-
-/** POST /init: the user's bot wallet, created if they never pressed Start in the bot */
-export type BotWalletInit = Omit<P2pMe, "credential"> & {
-  /** This call created the wallet */
-  created: boolean;
-  /** New wallets only: false = the bot can't message the user yet */
-  can_message?: boolean;
-};

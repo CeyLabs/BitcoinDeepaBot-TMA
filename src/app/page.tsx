@@ -10,7 +10,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Cell, CellChevron } from "@/components/ui/cell";
 import { Emoji } from "@/components/ui/emoji";
 import { LandingShell } from "@/components/auth/LandingShell";
-import { getAuthTokenFromStorage, getIsExistingUserFromStorage } from "@/lib/auth";
+import { getMiniAppToken, getIsExistingUserFromStorage } from "@/lib/auth";
 import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
 import { useRegisterTelegramUserResult } from "@/hooks/query/useRegisterTelegramUser";
 import { usePlatform } from "@/platform";
@@ -127,7 +127,7 @@ function TelegramHome() {
   // Whether a session existed when the app opened. The live token can't be
   // used for the copy: the launch sign-in issues one to brand-new users too,
   // which would flip "Join…" to "Welcome Back!" a moment after opening.
-  const [hadTokenAtLaunch] = useState(() => !!getAuthTokenFromStorage());
+  const [hadTokenAtLaunch] = useState(() => !!getMiniAppToken());
 
   // /api/user (Mongo-backed) already fires on every launch — read its
   // result instead of ignoring it. status 409 means this Telegram id was

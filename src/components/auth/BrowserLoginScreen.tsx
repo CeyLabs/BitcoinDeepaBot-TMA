@@ -1,48 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Logo } from "@/components/ui/logo";
 import { CellChevron } from "@/components/ui/cell";
 import { Emoji } from "@/components/ui/emoji";
-import { Spinner } from "@/components/ui/button";
 import { LandingShell } from "@/components/auth/LandingShell";
 import { UserProgress } from "@/components/auth/UserProgress";
-import { authenticateWithTelegramOidc, saveAuthToStorage } from "@/lib/auth";
-import type { TelegramOidcAuthData } from "@/lib/auth";
+import { loginErrorMessage } from "@/lib/auth";
 import { TELEGRAM_BOT_URL } from "@/lib/constants";
-import TelegramLoginButton, { TG_PRIMARY_BUTTON } from "@/components/auth/TelegramLoginButton";
+import TelegramLoginButton from "@/components/auth/TelegramLoginButton";
 import { InstallButton } from "@/pwa";
 
 /**
  * Shown when the app is opened outside Telegram (a plain browser tab).
- * Signs the user in via Telegram's Login Widget rather than Mini App
- * initData, since initData only exists inside the Telegram WebView.
- * Saving the token updates useSession, which moves the user on.
+ * "Log In with Telegram" is a redirect through the backend (OIDC), which
+ * comes back with a session cookie; useSession then moves the user on. A
+ * failed login comes back here with ?login_error=<code>.
  */
 export default function BrowserLoginScreen() {
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  // Only rendered on the client, once the platform is known
+  const [error] = useState(() =>
+    typeof window === "undefined"
+      ? null
+      : loginErrorMessage(new URL(window.location.href).searchParams.get("login_error"))
+  );
 
-  const handleAuth = async (data: TelegramOidcAuthData) => {
-    setError(null);
-
-    if (data.error || !data.id_token) {
-      setError("Couldn't sign you in with Telegram. Please try again.");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const result = await authenticateWithTelegramOidc(data.id_token);
-      if (!result.token) throw new Error("No token returned");
-      saveAuthToStorage(result.token);
-    } catch (err) {
-      console.error(err);
-      setError("Couldn't sign you in with Telegram. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Drop ?login_error= so a reload doesn't show it again
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("login_error")) return;
+    url.searchParams.delete("login_error");
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+  }, []);
 
   return (
     <LandingShell themeToggle aria-label="Sign in to Bitcoin Deepa">
@@ -61,22 +50,10 @@ export default function BrowserLoginScreen() {
       </div>
 
       <div className="stagger mt-8 flex w-full flex-col gap-3">
-        <TelegramLoginButton onAuth={handleAuth} className={TG_PRIMARY_BUTTON} />
-        {(isLoading || error) && (
-          <p
-            role={error ? "alert" : undefined}
-            aria-live="polite"
-            className={
-              error
-                ? "text-loss text-center text-[13px] font-semibold"
-                : "text-ink3 flex items-center justify-center gap-2 text-[13px] font-semibold"
-            }
-          >
-            {error ?? (
-              <>
-                <Spinner /> Signing you in…
-              </>
-            )}
+        <TelegramLoginButton className="w-full" />
+        {error && (
+          <p role="alert" className="text-loss text-center text-[13px] font-semibold">
+            {error}
           </p>
         )}
         <a

@@ -2,10 +2,12 @@
  * Thin fetch wrapper for client-side requests (used as TanStack Query's queryFn/mutationFn).
  *
  * - Paths not starting with "/api/" go to the backend (NEXT_PUBLIC_API_BASE_URL),
- *   e.g. fetchy.get("/package"). "/api/*" stays on this Next.js app.
- * - Backend requests automatically carry the stored auth token as a Bearer header.
- * - A 401 from the backend clears that token, which ends the session (useSession):
- *   web users go back to sign-in, Telegram re-authenticates from initData.
+ *   e.g. fetchy.get("/package"), with credentials (the web session cookie).
+ *   "/api/*" stays on this Next.js app.
+ * - Web: the HttpOnly session cookie goes along by itself. Mini App: the
+ *   session token is added as a Bearer header.
+ * - A 401 from the backend ends that session (useSession): web users go back
+ *   to sign-in, the Mini App signs in again from initData.
  * - Sends/parses JSON; empty responses (e.g. 204) resolve to undefined.
  * - Throws FetchyError (message + HTTP status) on non-OK responses, so TanStack
  *   Query sees them as errors.
@@ -14,7 +16,7 @@
  */
 
 import { API_BASE_URL } from "@/lib/constants";
-import { clearAuthFromStorage, getAuthTokenFromStorage } from "@/lib/auth";
+import { getMiniAppToken, onUnauthorized } from "@/lib/auth";
 
 type FetchOptions = Omit<RequestInit, "headers" | "body"> & {
   headers?: Record<string, string>;
@@ -24,7 +26,7 @@ export class FetchyError extends Error {
   constructor(
     message: string,
     public status: number,
-    /** The backend's error code, when it sends one (e.g. "credential_stale") */
+    /** The backend's error code, when it sends one (e.g. "relogin_required") */
     public code?: string,
     /** The parsed error body */
     public data?: unknown
@@ -53,10 +55,11 @@ async function request<T>(
   if (backend && !API_BASE_URL) {
     throw new Error("fetchy: NEXT_PUBLIC_API_BASE_URL is not set");
   }
-  const token = backend ? getAuthTokenFromStorage() : null;
+  const token = backend ? getMiniAppToken() : null;
 
   const response = await fetch(backend ? `${API_BASE_URL}${url}` : url, {
     cache: "no-store",
+    credentials: backend ? "include" : "same-origin",
     ...rest,
     method,
     headers: {
@@ -75,11 +78,9 @@ async function request<T>(
     data = text;
   }
 
-  // Only clear the token this request actually sent — a fresh one may have
-  // been saved while it was in flight.
-  if (response.status === 401 && token && getAuthTokenFromStorage() === token) {
-    clearAuthFromStorage();
-  }
+  // Ends only the session this request used — a new one may have started
+  // while it was in flight.
+  if (backend && response.status === 401) onUnauthorized(token);
 
   if (!response.ok) {
     const body = data as { message?: string | string[]; code?: unknown } | undefined;
