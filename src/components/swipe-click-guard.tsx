@@ -7,7 +7,7 @@ import { useEffect } from "react";
  *
  * WebKit synthesises a `click` on release whenever a touch sequence was not consumed by a native
  * gesture, however far the finger travelled. Anything that calls `preventDefault()` on `touchmove`
- * takes the gesture away from the native scroller and so gets that click: Base UI's Dialog sheets
+ * takes the gesture away from the native scroller and so gets that click: Base UI's Drawer sheets
  * and our pull-to-refresh both do. Chrome and Android never synthesise it, so this only
  * matters on iOS, but the guard is harmless elsewhere: it just never fires.
  *
