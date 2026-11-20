@@ -35,8 +35,8 @@ export default function TradeSheet({
   const close = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   // Both flows stay mounted so switching keeps each one's amount and prices.
-  const buy = useBuyFlow({ kyc, close });
-  const sell = useSellFlow({ kyc, close });
+  const buy = useBuyFlow({ kyc, close, open });
+  const sell = useSellFlow({ kyc, close, open });
   const flow = kind === "buy" ? buy : sell;
 
   return (
@@ -51,7 +51,6 @@ export default function TradeSheet({
       onBack={flow.onBack}
       hideClose={flow.busy}
       footer={flow.footer}
-      form
     >
       {flow.showKindToggle && (
         <div className="px-4">

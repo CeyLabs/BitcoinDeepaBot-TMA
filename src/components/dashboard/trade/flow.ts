@@ -26,6 +26,8 @@ export interface FlowView {
 
 export interface FlowArgs {
   kyc: KycInfo;
+  /** The sheet is open: live prices only poll while it is. */
+  open: boolean;
   /** Closes the sheet. */
   close: () => void;
 }

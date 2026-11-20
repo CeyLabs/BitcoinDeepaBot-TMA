@@ -72,7 +72,6 @@ export function UsernameSheet({
         onOpenChange(next);
       }}
       title="Your username"
-      form
       hideClose={claim.isPending}
       footer={
         <Button loading={claim.isPending} disabled={!available} onClick={confirm}>

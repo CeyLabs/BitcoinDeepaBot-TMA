@@ -77,7 +77,10 @@ export function ListRow({
       onClick={onClick}
       className={cn(
         "relative flex min-h-14 w-full items-center gap-3 border-0 bg-transparent px-3.5 py-3 text-left",
-        "after:bg-line after:absolute after:right-0 after:bottom-0 after:left-[62px] after:h-px last:after:hidden",
+        // The divider starts under the text, past the icon and to the edge (iOS style).
+        // Without an icon it's inset on both sides, like the key/value lists.
+        "after:bg-line after:absolute after:bottom-0 after:h-px last:after:hidden",
+        icon ? "after:right-0 after:left-[62px]" : "after:inset-x-3.5",
         Component === "button" && "press",
         className
       )}

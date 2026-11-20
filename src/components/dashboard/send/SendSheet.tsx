@@ -5,17 +5,14 @@ import { useRouter } from "next/navigation";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { KeyValueList, SectionLabel } from "@/components/ui/section";
-import { Sheet, SheetStepper } from "@/components/ui/sheet";
+import { Sheet } from "@/components/ui/sheet";
 import {
-  AmountBlock,
-  AmountDisplay,
-  AmountHint,
-  applyKey,
-  Keypad,
+  DualAmount,
+  DualHint,
   Presets,
   PriceFooter,
-  SwapUnitPill,
-} from "@/components/dashboard/trade/keypad";
+  useDualAmount,
+} from "@/components/dashboard/trade/DualAmount";
 import { ErrorRow, HoldButton, InfoRow, ReviewHeader } from "@/components/dashboard/trade/parts";
 import { ReloginPrompt } from "@/components/auth/ReloginPrompt";
 import { isTransferInProgress, SendTransferStatus } from "./SendTransferStatus";
@@ -27,22 +24,29 @@ import { useSheets } from "@/components/dashboard/sheets";
 import { useBotTransactionHistory } from "@/hooks/query/useBotTransactionHistory";
 import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
 import { FetchyError } from "@/lib/fetchy";
-import { fmtLkrCurrency, fmtSats, LKR_SYMBOL } from "@/lib/formatters";
+import { fmtLkrCurrency, fmtSats } from "@/lib/formatters";
 import { isReloginError, recipientLabel, type P2pRecipient } from "@/lib/p2p";
 import { sendAmountSchema, sendMemoSchema } from "@/lib/validations";
 import { normalizeUsername, USERNAME_RULE } from "@/lib/username";
 import { haptic } from "@/platform";
 
-type Step = "to" | "amount" | "review";
-type Unit = "sats" | "lkr";
-const STEPS: Step[] = ["to", "amount", "review"];
-const STEP_LABELS = ["To", "Amount", "Review"];
+/** Who and how much on one screen (like Buy/Sell) → review. */
+type Step = "form" | "review";
 
-const newPaymentKey = () => crypto.randomUUID();
+// randomUUID only exists in secure contexts (https, localhost): a LAN dev URL
+// is plain http, so fall back to a v4 UUID from getRandomValues there.
+const newPaymentKey = (): string => {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6]! & 0x0f) | 0x40;
+  b[8] = (b[8]! & 0x3f) | 0x80;
+  const h = Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+};
 
 /**
- * Send sats to another Bitcoin Deepa user (P2P): who → how much → review and
- * press-and-hold to send → the transfer's status, polled until it's final.
+ * Send sats to another Bitcoin Deepa user (P2P): who and how much (typed, in
+ * sats or rupees) → review and press-and-hold to send → the transfer's status, polled until it's final.
  * Sending needs a Telegram session under 10 minutes old (reopen the Mini App,
  * or log in again on the web); big amounts are confirmed in the bot chat.
  */
@@ -59,13 +63,10 @@ export default function SendSheet({
   const { currentBtcPrice } = useWalletMetrics();
   const { transactions: botTxs } = useBotTransactionHistory({ enabled: open });
 
-  const [step, setStep] = useState<Step>("to");
+  const [step, setStep] = useState<Step>("form");
   const [dir, setDir] = useState<"fwd" | "back">("fwd");
   const [to, setTo] = useState("");
   const [recipient, setRecipient] = useState<P2pRecipient | null>(null);
-  const [unit, setUnit] = useState<Unit>("sats");
-  const [flipped, setFlipped] = useState(false);
-  const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
   const [sendError, setSendError] = useState<string>();
   const [transferId, setTransferId] = useState<string | null>(null);
@@ -81,12 +82,16 @@ export default function SendSheet({
   const limits = me.data?.limits;
   const balance = me.data?.balance ?? 0;
   const maxSendable = limits ? Math.min(balance, limits.max_amount, limits.daily_remaining) : 0;
-  const raw = Number(amount) || 0;
   const rate = currentBtcPrice || 0; // LKR per BTC
-  const sats = unit === "sats" ? raw : rate > 0 ? Math.floor((raw / rate) * 1e8) : 0;
   const lkrFor = (s: number) => (rate > 0 ? (s / 1e8) * rate : 0);
+  const d = useDualAmount({
+    initial: "sats",
+    toSats: (lkr) => (rate > 0 ? Math.floor((lkr / rate) * 1e8) : 0),
+    toLkr: (s) => Math.floor(lkrFor(s)),
+  });
+  const sats = d.sats;
   const parsed =
-    raw > 0 && limits
+    d.hasValue && limits
       ? sendAmountSchema(balance, limits.max_amount, limits.daily_remaining).safeParse(sats)
       : null;
   const amountError = parsed && !parsed.success ? parsed.error.issues[0]?.message : undefined;
@@ -119,18 +124,12 @@ export default function SendSheet({
 
   // The member the To field resolved to, once the lookup for what's typed is in
   const found = lookup.settled && lookup.valid ? lookup.data : undefined;
-  const pickFound = () => {
-    if (!found) return;
-    haptic.impact("light");
-    setRecipient(found);
-    go("amount", "fwd");
-  };
-
   const toReview = () => {
-    if (!amountOk) return;
+    if (!found || !amountOk) return;
     const memoCheck = sendMemoSchema.safeParse(memo);
     if (!memoCheck.success) return;
     haptic.impact("light");
+    setRecipient(found);
     // A new payment: a new key (changing the amount or recipient is a new payment)
     paymentKey.current = newPaymentKey();
     setSendError(undefined);
@@ -173,19 +172,6 @@ export default function SendSheet({
     if ((await doSend()) === "relogin") setRenewOpen(true);
   };
 
-  const swapUnit = () => {
-    const nu: Unit = unit === "sats" ? "lkr" : "sats";
-    let next = "";
-    if (raw > 0 && rate > 0) {
-      const v = nu === "sats" ? sats : Math.floor(lkrFor(sats));
-      next = v > 0 ? String(v) : "";
-    }
-    setUnit(nu);
-    setAmount(next);
-    setFlipped((f) => !f);
-  };
-
-  const index = STEPS.indexOf(step);
   let title = "Send sats";
   let body: React.ReactNode;
   let footer: React.ReactNode;
@@ -194,7 +180,7 @@ export default function SendSheet({
     const inProgress = isTransferInProgress(transfer);
     title = transfer?.status === "completed" ? "Sent" : inProgress ? "Send sats" : "Payment";
     body = transfer ? (
-      <SendTransferStatus transfer={transfer} />
+      <SendTransferStatus transfer={transfer} celebrateOnArrival />
     ) : (
       <div className="flex flex-col items-center gap-1 py-6 text-center">
         <h2 className="text-[22px] leading-7">Sending</h2>
@@ -219,9 +205,16 @@ export default function SendSheet({
         </Button>
       </div>
     );
-  } else if (step === "to") {
+  } else if (step === "form") {
+    let amountHint: React.ReactNode;
+    if (amountError) amountHint = amountError;
+    else if (me.isLoading) amountHint = "Checking your balance…";
+    else if (me.data) amountHint = `You have ${fmtSats(balance)} sats`;
+    else amountHint = "Your balance couldn't be loaded right now";
+
     const typed = normalizeUsername(to);
-    let note: React.ReactNode = "Their Bitcoin Deepa @username";
+    // Only real messages (lookup, not found, bad format): the placeholder says what to type.
+    let note: React.ReactNode = null;
     let bad = false;
     if (typed && !lookup.valid && lookup.settled) {
       note = USERNAME_RULE;
@@ -249,17 +242,14 @@ export default function SendSheet({
             </span>
             <input
               aria-labelledby="send-to-label"
-              aria-describedby="send-to-note"
+              aria-describedby={note ? "send-to-note" : undefined}
               autoComplete="off"
               autoCapitalize="none"
               spellCheck={false}
               maxLength={21}
-              placeholder="username"
+              placeholder="BitcoinDeepa username"
               value={to.replace(/^@+/, "").toLowerCase()}
               onChange={(e) => setTo(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") pickFound();
-              }}
               className="text-foreground placeholder:text-ink3 h-full min-w-0 grow border-0 bg-transparent p-0 text-[17px] font-semibold outline-none placeholder:font-medium"
             />
           </div>
@@ -288,19 +278,22 @@ export default function SendSheet({
               </svg>
             </div>
           ) : (
-            <p
-              id="send-to-note"
-              aria-live="polite"
-              className={cn(
-                "mt-1.5 text-[12px] leading-4 font-semibold",
-                bad ? "text-loss" : "text-ink3"
-              )}
-            >
-              {note}
-            </p>
+            note && (
+              <p
+                id="send-to-note"
+                aria-live="polite"
+                className={cn(
+                  "mt-1.5 text-[12px] leading-4 font-semibold",
+                  bad ? "text-loss" : "text-ink3"
+                )}
+              >
+                {note}
+              </p>
+            )
           )}
         </div>
-        {recents.length > 0 && (
+        {/* Picked: the recipient card says who, so the row would only make the sheet scroll. */}
+        {recents.length > 0 && !found && (
           <div>
             <SectionLabel className="mb-2">Recent</SectionLabel>
             <div className="-mx-4 flex gap-2 overflow-x-auto px-4 py-0.5">
@@ -327,6 +320,43 @@ export default function SendSheet({
             </div>
           </div>
         )}
+        <div>
+          <DualAmount
+            id="send"
+            d={d}
+            top={{ unit: "sats", label: "You send" }}
+            bottom={{ unit: "lkr", label: "Worth" }}
+            onSubmit={toReview}
+            invalid={!!amountError}
+          />
+          <DualHint invalid={!!amountError || (!me.isLoading && !me.data)}>{amountHint}</DualHint>
+          <Presets
+            items={[1000, 5000, 10000]
+              .map((v) => ({
+                label: `${fmtSats(v)} sats`,
+                on: d.active === "sats" && sats === v,
+                disabled: !limits || v > maxSendable,
+                pick: () => d.set("sats", v),
+              }))
+              .concat({
+                label: "Max",
+                on: d.active === "sats" && maxSendable > 0 && sats === maxSendable,
+                disabled: maxSendable <= 0,
+                pick: () => d.set("sats", maxSendable),
+              })}
+          />
+          {me.error instanceof Error && (
+            <div className="pt-2">
+              <ErrorRow>{me.error.message}</ErrorRow>
+            </div>
+          )}
+          {limits && (
+            <PriceFooter>
+              Up to {fmtSats(limits.max_amount)} sats per send · {fmtSats(limits.daily_remaining)}{" "}
+              more today
+            </PriceFooter>
+          )}
+        </div>
         {myProfile && !myProfile.username && (
           <button
             type="button"
@@ -344,89 +374,8 @@ export default function SendSheet({
       </div>
     );
     footer = (
-      <Button disabled={!found} onClick={pickFound}>
-        Continue
-      </Button>
-    );
-  } else if (step === "amount" && recipient) {
-    let hint: React.ReactNode;
-    if (amountError) hint = amountError;
-    else if (raw > 0 && rate > 0)
-      hint =
-        unit === "sats"
-          ? `≈ ${fmtLkrCurrency(Math.round(lkrFor(sats)))}`
-          : `≈ ${fmtSats(sats)} sats`;
-    else if (me.isLoading) hint = "Checking your balance…";
-    else if (me.data) hint = `You have ${fmtSats(balance)} sats`;
-    else hint = "Your balance couldn't be loaded right now";
-
-    body = (
-      <>
-        <div className="bg-chip mt-1 flex items-center gap-2.5 rounded-xl p-2 pr-3.5">
-          <UserAvatar seed={recipient.avatar_seed || String(recipient.telegram_id)} size={36} />
-          <span className="min-w-0 grow">
-            <span className="text-ink3 block text-[11px] leading-[14px] font-semibold">
-              Sending to
-            </span>
-            <span className="block truncate text-[14px] leading-[18px] font-bold">
-              {recipientLabel(recipient)}
-            </span>
-          </span>
-        </div>
-        <AmountBlock>
-          <AmountDisplay
-            value={amount}
-            prefix={unit === "lkr" ? LKR_SYMBOL : undefined}
-            suffix={unit === "sats" ? "sats" : undefined}
-            invalid={!!amountError}
-          />
-          <AmountHint invalid={!!amountError || (!me.isLoading && !me.data)}>{hint}</AmountHint>
-          {rate > 0 && (
-            <SwapUnitPill
-              label={unit === "lkr" ? "Enter in sats" : "Enter in rupees"}
-              flipped={flipped}
-              onClick={swapUnit}
-            />
-          )}
-        </AmountBlock>
-        <Presets
-          items={[1000, 5000, 10000]
-            .map((v) => ({
-              label: `${fmtSats(v)} sats`,
-              on: unit === "sats" && raw === v,
-              disabled: !limits || v > maxSendable,
-              pick: () => {
-                setUnit("sats");
-                setAmount(String(v));
-              },
-            }))
-            .concat({
-              label: "Max",
-              on: unit === "sats" && maxSendable > 0 && raw === maxSendable,
-              disabled: maxSendable <= 0,
-              pick: () => {
-                setUnit("sats");
-                setAmount(String(maxSendable));
-              },
-            })}
-        />
-        <Keypad onKey={(k) => setAmount((a) => applyKey(a, k))} />
-        {me.error instanceof Error && (
-          <div className="pt-2">
-            <ErrorRow>{me.error.message}</ErrorRow>
-          </div>
-        )}
-        {limits && (
-          <PriceFooter>
-            Up to {fmtSats(limits.max_amount)} sats per send · {fmtSats(limits.daily_remaining)}{" "}
-            more today
-          </PriceFooter>
-        )}
-      </>
-    );
-    footer = (
-      <Button disabled={!amountOk} onClick={toReview}>
-        {amountOk ? `Review · ${fmtSats(sats)} sats` : "Review"}
+      <Button disabled={!found || !amountOk} onClick={toReview}>
+        {found && amountOk ? `Review · ${fmtSats(sats)} sats` : "Review"}
       </Button>
     );
   } else if (step === "review" && recipient) {
@@ -503,20 +452,17 @@ export default function SendSheet({
           onOpenChange(next);
         }}
         title={title}
-        form
         onBack={
-          !transferId && index > 0 && !busy
+          !transferId && step === "review" && !busy
             ? () => {
                 haptic.select();
-                go(STEPS[index - 1], "back");
+                go("form", "back");
               }
             : undefined
         }
         hideClose={busy}
         footer={footer}
-        flow
       >
-        {!transferId && <SheetStepper steps={STEP_LABELS} current={index} />}
         <div
           key={transferId ? "status" : step}
           className={cn("px-4", dir === "back" ? "animate-in-left" : "animate-in-right")}

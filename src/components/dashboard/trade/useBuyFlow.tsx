@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { KeyValueList } from "@/components/ui/section";
@@ -12,9 +12,15 @@ import { usePayHereRedirect } from "@/lib/hooks";
 import { buyAmountSchema } from "@/lib/validations";
 import { haptic } from "@/platform";
 import type { FlowArgs, FlowStep, FlowView } from "./flow";
-import { DualAmount, DualHint, GateNotice, useDualAmount } from "./DualAmount";
-import { Presets, PriceFooter } from "./keypad";
-import { ErrorRow, InfoRow, ReviewHeader } from "./parts";
+import {
+  DualAmount,
+  DualHint,
+  GateNotice,
+  Presets,
+  PriceFooter,
+  useDualAmount,
+} from "./DualAmount";
+import { ErrorRow, ReviewHeader, WarningRow } from "./parts";
 import { verifyCopy } from "./verify-copy";
 
 const PRESETS = [1_000, 2_500, 5_000, 10_000];
@@ -22,12 +28,12 @@ const PRESETS = [1_000, 2_500, 5_000, 10_000];
 export const fmtFeePercent = (bps: number) => `${Number((bps / 100).toFixed(2))}%`;
 
 /**
- * Buy: amount (type rupees or sats) → review → PayHere checkout. Until KYC is
+ * Buy: amount (rupees only; sats shown as an estimate) → review → PayHere checkout. Until KYC is
  * approved the amount screen shows a verify notice and can't continue. The sats are
  * priced when PayHere confirms the payment, so the review shows an estimate
  * (no rate lock). The return lands on /payment/success (BuyOrderStatus).
  */
-export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
+export function useBuyFlow({ kyc, close, open }: FlowArgs): FlowView {
   const router = useRouter();
   const [step, setStep] = useState<FlowStep>("amount");
   const [dir, setDir] = useState<"fwd" | "back">("fwd");
@@ -37,20 +43,29 @@ export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
     isError: priceFailed,
     refetch: refetchPrice,
     isFetching: priceFetching,
-  } = useBuyPrice();
+  } = useBuyPrice(open);
   const createLink = useCreateBuyLink();
   const { reset: resetCreateLink } = createLink;
   const redirectToPayHere = usePayHereRedirect();
 
-  // Back from PayHere can restore the page from the browser's cache with the
-  // button still loading: make it usable again
+  // Back from PayHere can restore this page from the browser's cache (Safari
+  // does even with no-store), sheet and all. Once a checkout was opened, close
+  // the sheet and show that purchase's status (paid, pending or not paid)
+  // instead of leaving the sheet over it; otherwise make Pay usable again.
+  const checkoutOrderId = useRef<string | null>(null);
   useEffect(() => {
     const onPageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) resetCreateLink();
+      if (!event.persisted) return;
+      resetCreateLink();
+      const orderId = checkoutOrderId.current;
+      if (!orderId) return;
+      checkoutOrderId.current = null;
+      close();
+      router.replace(`/dashboard/buy?buy_order=${encodeURIComponent(orderId)}`);
     };
     window.addEventListener("pageshow", onPageShow);
     return () => window.removeEventListener("pageshow", onPageShow);
-  }, [resetCreateLink]);
+  }, [resetCreateLink, close, router]);
 
   const feeBps = price
     ? price.paymentProcessorFeeBasisPoints + price.bitcoindeepaFeeBasisPoints
@@ -66,9 +81,6 @@ export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
             price.btcLkrPrice
           ).sats
         : 0,
-    // The whole rupees that buy at least this many sats after fees.
-    toLkr: (sats) =>
-      price ? Math.ceil(((sats / 1e8) * price.btcLkrPrice) / (1 - feeBps / 10_000)) : 0,
   });
   const lkr = d.lkr;
   const estimate = price
@@ -93,14 +105,22 @@ export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
     setStep(to);
   };
 
+  const toReview = () => {
+    if (!amountOk || !kyc.approved) return;
+    haptic.impact("light");
+    setRedirectFailed(false);
+    go("review", "fwd");
+  };
+
   const pay = () => {
     // The user must see the fee, estimate and limits before paying
     if (!price || !parsed?.success) return;
     setRedirectFailed(false);
     haptic.impact("medium");
     createLink.mutate(parsed.data, {
-      onSuccess: ({ link }) => {
+      onSuccess: ({ link, order_id }) => {
         if (redirectToPayHere(link)) {
+          checkoutOrderId.current = order_id;
           haptic.notify("success");
           return;
         }
@@ -157,7 +177,10 @@ export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
           id="buy"
           d={d}
           top={{ unit: "lkr", label: "You pay" }}
-          bottom={{ unit: "sats", label: "You get (estimate)" }}
+          bottom={{ unit: "sats", label: "You get" }}
+          // Only rupees: the sats are priced when PayHere confirms the payment.
+          only="lkr"
+          onSubmit={toReview}
           invalid={!!error}
         />
         <DualHint invalid={!!error || (priceFailed && !price)}>{hint}</DualHint>
@@ -189,11 +212,7 @@ export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
         <Button
           disabled={!amountOk || !kyc.approved}
           loading={kyc.loading && amountOk}
-          onClick={() => {
-            haptic.impact("light");
-            setRedirectFailed(false);
-            go("review", "fwd");
-          }}
+          onClick={toReview}
         >
           Review
         </Button>
@@ -211,7 +230,10 @@ export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
             big={`≈ ${fmtSats(estimate.sats)} sats`}
             small={`for ${fmtLkrCurrency(lkr)}`}
           />
-          <InfoRow>An estimate: your sats are priced when PayHere confirms the payment.</InfoRow>
+          <WarningRow title="This is an estimate">
+            The BTC price is set when PayHere confirms your payment, so you may get a few more or
+            fewer sats than shown.
+          </WarningRow>
           {redirectFailed && <ErrorRow>Couldn&apos;t open PayHere. Please try again.</ErrorRow>}
           {showError && <ErrorRow>{(createLink.error as Error).message}</ErrorRow>}
           <KeyValueList

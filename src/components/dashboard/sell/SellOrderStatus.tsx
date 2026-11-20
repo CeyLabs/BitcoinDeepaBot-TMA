@@ -143,19 +143,24 @@ export function SellOrderStatus({
   order,
   bankLabel = "your bank",
   showRows = true,
+  celebrateOnArrival = false,
 }: {
   order: SellOrder;
   bankLabel?: string;
   showRows?: boolean;
+  /** Also celebrate if it's already completed when first shown (the sell flow, right after confirming). */
+  celebrateOnArrival?: boolean;
 }) {
-  // Confetti once, when the payout lands while this is open or on arrival
+  // Confetti once, when the payout lands while this is open, not when opening
+  // a sale that finished earlier (e.g. from Activity).
   const celebrated = useRef(false);
+  const firstStatus = useRef(order.status);
   useEffect(() => {
-    if (order.status === "COMPLETED" && !celebrated.current) {
-      celebrated.current = true;
-      void celebrate();
-    }
-  }, [order.status]);
+    if (order.status !== "COMPLETED" || celebrated.current) return;
+    if (firstStatus.current === "COMPLETED" && !celebrateOnArrival) return;
+    celebrated.current = true;
+    void celebrate();
+  }, [order.status, celebrateOnArrival]);
 
   const base = STATE[order.status] ?? {
     title: "Sale status unknown",
