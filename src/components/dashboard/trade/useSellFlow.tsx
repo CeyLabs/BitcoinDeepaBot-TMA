@@ -71,10 +71,14 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
 
   const d = useDualAmount({
     initial: "sats",
-    toSats: (lkr) => (price ? satsForLkr(lkr, price.feeBasisPoints, price.btcLkrRate) : 0),
+    toSats: (lkr) =>
+      price ? satsForLkr(lkr, price.feeBasisPoints, price.btcLkrRate, price.bankChargeLkr ?? 0) : 0,
     toLkr: (sats) =>
       price
-        ? Math.floor(estimateSellLkr(sats, price.feeBasisPoints, price.btcLkrRate).amountLkr)
+        ? Math.floor(
+            estimateSellLkr(sats, price.feeBasisPoints, price.btcLkrRate, price.bankChargeLkr ?? 0)
+              .amountLkr
+          )
         : 0,
   });
   const sats = d.sats;
@@ -260,6 +264,7 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
         {price && (
           <PriceFooter>
             1 BTC ≈ {fmtLkrCurrency(price.btcLkrRate)} · {fmtFeePercent(price.feeBasisPoints)} fee
+            {price.bankChargeLkr ? ` + ${fmtLkrExact(price.bankChargeLkr)} bank charge` : ""}
           </PriceFooter>
         )}
       </div>
@@ -299,6 +304,9 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
               k: `Fee (${fmtFeePercent(quote.feeBasisPoints)})`,
               v: `− ${fmtLkrExact(quote.feeLkr)}`,
             },
+            ...(quote.bankChargeLkr > 0
+              ? [{ k: "Bank charge", v: `− ${fmtLkrExact(quote.bankChargeLkr)}` }]
+              : []),
             { k: "Rate", v: `${fmtLkrExact(quote.btcLkrRate)} / BTC` },
             { k: "Paid to", v: bankLabel },
           ]}
