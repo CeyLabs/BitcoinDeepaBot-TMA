@@ -18,6 +18,7 @@ import {
   mapBotTransactionToActivityItem,
   mapDcaTransactionToActivityItem,
   mapSellOrderToActivityItem,
+  cleanBotMemo,
   type ActivityCategory,
 } from "@/lib/activity";
 import { useBalanceVisible } from "@/hooks/useBalanceVisible";
@@ -36,7 +37,7 @@ export default function ActivityPage() {
   const deferredSearch = useDeferredValue(search);
   const [category, setCategory] = useState<ActivityCategory>("all");
 
-  // Plan charges show on Plans, one-time buys and sales on Transactions: all
+  // Plan charges show on Subscriptions, one-time buys and sales on Transactions: all
   // come from the member's history
   const showDca = category !== "tasks";
   const showBotHistory = category === "all" || category === "transactions";
@@ -51,8 +52,8 @@ export default function ActivityPage() {
     // The bot transfer that paid a sale is hidden below; its memo goes on the sale
     const saleMemos = new Map(
       botHistory.transactions
-        .filter((tx) => tx.sale_payment && tx.sale_order_id && tx.memo)
-        .map((tx) => [tx.sale_order_id!, tx.memo!])
+        .filter((tx) => tx.sale_payment && tx.sale_order_id && cleanBotMemo(tx.memo))
+        .map((tx) => [tx.sale_order_id!, cleanBotMemo(tx.memo)!])
     );
     return [
       ...dca.transactions.map(mapDcaTransactionToActivityItem),
