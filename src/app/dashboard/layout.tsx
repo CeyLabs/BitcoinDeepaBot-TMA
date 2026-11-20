@@ -19,6 +19,8 @@ import SellLoading from "./sell/loading";
 import { kycStatusOptions } from "@/hooks/query/useKyc";
 import { bankAccountsOptions } from "@/hooks/query/useBankAccounts";
 import { subscriptionCurrentOptions } from "@/hooks/query/useSubscriptionCurrent";
+import { preloadEmoji } from "@/components/ui/emoji";
+import { PLAN_ICONS } from "@/components/dashboard/wallet/PlanSummaryCard";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { sessionExpired, signingIn } = useAuthGuard();
@@ -38,6 +40,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // not after the screen mounts (one round trip less on cold load).
     queryClient.prefetchQuery(bankAccountsOptions());
   }, [status, queryClient]);
+
+  // Plan creatures (Plans tab cards at 40px, the confirm sheet at 84px; the 40px set also covers
+  // the 36px hero/summary icons). Fetched once the first screen is idle, so opening Plans
+  // doesn't pop them in after the cards render.
+  useEffect(() => {
+    const warm = () => {
+      for (const src of Object.values(PLAN_ICONS)) {
+        preloadEmoji(src, 40);
+        preloadEmoji(src, 84);
+      }
+    };
+    if ("requestIdleCallback" in window) {
+      const id = requestIdleCallback(warm, { timeout: 2000 });
+      return () => cancelIdleCallback(id);
+    }
+    const id = setTimeout(warm, 500);
+    return () => clearTimeout(id);
+  }, []);
 
   // Pull down from the top of any tab: refetch what's on screen, and re-render
   // the server parts (news is fetched on the server).
