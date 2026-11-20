@@ -119,7 +119,12 @@ export function sellOrderRows(order: SellOrder) {
     { k: "Value", v: fmtLkrExact(order.grossLkr) },
     ...(NO_FEE_STATUSES.includes(order.status)
       ? []
-      : [{ k: "Fee", v: `− ${fmtLkrExact(order.feeLkr)}` }]),
+      : [
+          { k: "Fee", v: `− ${fmtLkrExact(order.feeLkr)}` },
+          ...(order.bankChargeLkr > 0
+            ? [{ k: "Bank charge", v: `− ${fmtLkrExact(order.bankChargeLkr)}` }]
+            : []),
+        ]),
     { k: "Rate", v: `${fmtLkrExact(order.btcLkrRate)} / BTC` },
     ...(order.bankRef ? [{ k: "Bank reference", v: order.bankRef }] : []),
     { k: "Date", v: fmtActivityDateTime(order.createdAt) },
