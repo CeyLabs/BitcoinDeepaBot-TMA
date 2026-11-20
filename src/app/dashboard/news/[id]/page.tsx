@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { Emoji } from "@/components/ui/emoji";
 import { Section } from "@/components/ui/section";
-import { NewsHeader } from "@/components/dashboard/news/NewsHeader";
+import { NewsBack } from "@/components/dashboard/news/NewsHeader";
+import { NewsMeta } from "@/components/dashboard/news/NewsMeta";
 import { NewsImage } from "@/components/dashboard/news/NewsImage";
 import { NewsArticleCard } from "@/components/dashboard/news/NewsArticleCard";
 import { fmtShortDate } from "@/lib/formatters";
@@ -50,7 +50,7 @@ export default async function NewsArticleDetailPage({
 
   return (
     <article aria-label={article.title} className="flex w-full flex-col gap-5">
-      <NewsHeader backTo="/dashboard/news" />
+      <NewsBack backTo="/dashboard/news" />
 
       <div className="bg-primary flex h-[170px] items-center justify-center overflow-hidden rounded-xl">
         {article.thumbnailUrl ? (
@@ -66,13 +66,14 @@ export default async function NewsArticleDetailPage({
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge>{article.category}</Badge>
-          <span className="text-ink3 text-[13px] font-semibold">
-            {article.readTimeMinutes} min read · {fmtShortDate(article.publishedAt)}
-          </span>
-        </div>
         <h1 className="text-[26px] leading-8">{article.title}</h1>
+        <NewsMeta
+          parts={[
+            `${article.readTimeMinutes} min read`,
+            article.category,
+            fmtShortDate(article.publishedAt),
+          ]}
+        />
         <div className={BODY_CLASS} dangerouslySetInnerHTML={{ __html: article.content }} />
       </div>
 

@@ -165,6 +165,17 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
           cornerRadius: 12,
           padding: 10,
           callbacks: {
+            // The axis keeps "25 Jan" to fit; the tooltip says which year.
+            title: (items: TooltipItem<"line">[]) => {
+              const point = points[items[0]?.dataIndex ?? -1];
+              return point
+                ? new Date(point.date).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "";
+            },
             label: (context: TooltipItem<"line">) =>
               `${context.dataset.label}: ${fmtLkrCurrency(Math.round(context.parsed.y ?? 0))}`,
           },
@@ -201,7 +212,7 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
       },
       interaction: { mode: "index" as const, intersect: false },
     }),
-    [colors]
+    [colors, points]
   );
 
   return (

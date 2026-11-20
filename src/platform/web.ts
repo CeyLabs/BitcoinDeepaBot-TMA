@@ -1,5 +1,6 @@
 import type { Platform, ShareInput, ShareResult } from "./types";
 import { requestConfirm } from "./confirm";
+import { copyText } from "@/lib/clipboard";
 
 function isMobileBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
@@ -26,7 +27,7 @@ async function shareOrCopy({ url, text }: ShareInput): Promise<ShareResult> {
       // Other failures (e.g. not allowed here) — fall back to copying.
     }
   }
-  await navigator.clipboard.writeText(text ? `${text}\n${url}` : url);
+  await copyText(text ? `${text}\n${url}` : url);
   return "copied";
 }
 

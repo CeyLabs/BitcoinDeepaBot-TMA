@@ -38,8 +38,8 @@ export function TotalValueCard({
   usdRate,
   isLoading = false,
 }: TotalValueCardProps) {
-  // Tap the balance to swap the big number between fiat and sats.
-  const [primary, setPrimary] = useState<"fiat" | "sats">("fiat");
+  // Tap the balance to swap the big number between sats (default) and fiat.
+  const [primary, setPrimary] = useState<"fiat" | "sats">("sats");
   const [flipKey, setFlipKey] = useState(0);
   const mask = (v: string) => maskDigits(v, visible);
   const isUsd = currency === "USD" && usdRate !== undefined;
@@ -69,6 +69,11 @@ export function TotalValueCard({
             onClick={() => {
               haptic.select();
               onToggleCurrency();
+              // Picking a currency means "show me that": bring fiat to the big number.
+              if (primary === "sats") {
+                setPrimary("fiat");
+                setFlipKey((k) => k + 1);
+              }
             }}
             disabled={usdRate === undefined}
             aria-label={`Show values in ${currency === "USD" ? "rupees" : "US dollars"}`}
@@ -118,21 +123,26 @@ export function TotalValueCard({
           >
             <span
               key={flipKey}
-              className="num inline-block animate-[flip_.45s_cubic-bezier(.2,.9,.3,1.2)] text-[36px] leading-12 font-bold tracking-[-0.015em]"
+              // Fixed height: sats, LKR, USD and the masked text all sit on the same 48px line,
+              // so the card doesn't grow or shrink when the unit flips.
+              className="num flex h-12 animate-[flip_.45s_cubic-bezier(.2,.9,.3,1.2)] items-center overflow-visible text-[36px] leading-12 font-bold tracking-[-0.015em]"
             >
-              {primary === "sats" ? (
-                mask(satsText)
-              ) : visible && !isUsd ? (
-                <NumberTicker value={totalLkr} prefix={`≈ ${LKR_SYMBOL} `} format={fmtLkr} />
+              {visible ? (
+                // One ticker for sats, LKR and USD: every switch rolls the digits.
+                <NumberTicker
+                  {...(primary === "sats"
+                    ? { value: totalSats, suffix: "\u00a0sats", format: fmtSats }
+                    : fiatTicker(totalLkr, isUsd ? usdRate : undefined))}
+                />
               ) : (
-                mask(`≈ ${fiat(totalLkr)}`)
+                mask(primary === "sats" ? satsText : `≈ ${fiat(totalLkr)}`)
               )}
             </span>
           </button>
           <p className="num flex items-center gap-2 text-[12px] leading-4 uppercase">
             {mask(`${fmtBtc(totalSats)} BTC`)}
             <span aria-hidden className="size-[2.2px] rounded-full bg-current" />
-            {mask(primary === "sats" ? fiat(totalLkr) : satsText)}
+            {mask(primary === "sats" ? `≈ ${fiat(totalLkr)}` : satsText)}
           </p>
           {totalSats > 0 ? (
             <span
@@ -154,9 +164,11 @@ export function TotalValueCard({
               >
                 <path d="M4 6L7.17977 10.0854L9.64154 6.76567L13.6419 12M11.0776 12H13.6419L14 9.096" />
               </svg>
+              {/* Only the amounts are masked: "Last 24h" isn't a balance. */}
               {mask(
-                `${fiat(Math.abs(changeLkr))}  (${isProfit ? "+" : "−"}${Math.abs(changePercent).toFixed(2)}%)  Last 24h`
-              )}
+                `${fiat(Math.abs(changeLkr))}  (${isProfit ? "+" : "−"}${Math.abs(changePercent).toFixed(2)}%)`
+              )}{" "}
+              Last 24h
             </span>
           ) : (
             <span className="self-start rounded-lg border border-white px-2 py-1 text-[12px] leading-4 font-semibold">
@@ -167,6 +179,18 @@ export function TotalValueCard({
       )}
     </Hero>
   );
+}
+
+/** Ticker props for a fiat amount. Under $100 it ticks in cents to keep them. */
+// The ticker lays its parts out as flex items, which drops plain edge spaces: use NBSPs.
+function fiatTicker(lkr: number, usdRate: number | undefined) {
+  if (usdRate === undefined) {
+    return { value: lkr, prefix: `≈ ${LKR_SYMBOL}\u00a0`, format: fmtLkr };
+  }
+  const usd = lkr * usdRate;
+  return usd < 100
+    ? { value: usd * 100, prefix: "≈\u00a0$", format: (c: number) => (c / 100).toFixed(2) }
+    : { value: usd, prefix: "≈\u00a0$", format: (n: number) => n.toLocaleString("en-US") };
 }
 
 function EyeIcon({ off }: { off: boolean }) {

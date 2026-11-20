@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Emoji } from "@/components/ui/emoji";
 import { NewsImage } from "@/components/dashboard/news/NewsImage";
+import { NewsMeta } from "@/components/dashboard/news/NewsMeta";
 import type { NewsArticle } from "@/lib/types";
 
 /**
@@ -41,15 +41,16 @@ export function NewsFeaturedCard({ article }: { article: NewsArticle }) {
             />
           </span>
         )}
-        <Badge variant="onBrand" className="self-start">
-          {article.category} · {article.readTimeMinutes} min read
-        </Badge>
         <span className="font-display line-clamp-3 text-[20px] leading-6 font-bold">
           {article.title}
         </span>
         {article.description && (
-          <span className="line-clamp-2 text-[14px] font-semibold">{article.description}</span>
+          <span className="line-clamp-2 text-[14px] text-white/85">{article.description}</span>
         )}
+        <NewsMeta
+          parts={[`${article.readTimeMinutes} min read`, article.category]}
+          className="mt-1.5 text-white/85"
+        />
       </span>
     </Link>
   );

@@ -6,8 +6,8 @@ import { NewsMeta } from "@/components/dashboard/news/NewsMeta";
 import type { NewsArticle } from "@/lib/types";
 
 /**
- * Article row: thumbnail tile | title, blurb, meta. `compact` is the smaller
- * related-articles variant (64px tile, no blurb).
+ * Article row: thumbnail tile | title and meta, centred beside the tile.
+ * `compact` is the smaller related-articles variant (64px tile).
  */
 export function NewsArticleCard({
   article,
@@ -21,7 +21,7 @@ export function NewsArticleCard({
   return (
     <Link
       href={`/dashboard/news/${article.id}`}
-      className="press bg-card shadow-card flex w-full items-start gap-3 rounded-xl p-3"
+      className="press bg-card shadow-card flex w-full items-center gap-3.5 rounded-xl p-3"
     >
       <span
         className={cn(
@@ -41,13 +41,15 @@ export function NewsArticleCard({
         )}
       </span>
 
-      <span className={cn("flex min-w-0 grow flex-col", compact ? "gap-1" : "gap-1.5")}>
-        <span className="line-clamp-3 text-[16px] leading-5 font-bold">{article.title}</span>
-        {!compact && article.description && (
-          <span className="text-ink3 line-clamp-2 text-[13px] leading-[18px]">
-            {article.description}
-          </span>
-        )}
+      <span className="flex min-w-0 grow flex-col gap-1.5">
+        <span
+          className={cn(
+            "font-bold",
+            compact ? "line-clamp-2 text-[15px] leading-5" : "line-clamp-3 text-[16px] leading-5"
+          )}
+        >
+          {article.title}
+        </span>
         <NewsMeta parts={[`${article.readTimeMinutes} min read`, article.category]} />
       </span>
     </Link>

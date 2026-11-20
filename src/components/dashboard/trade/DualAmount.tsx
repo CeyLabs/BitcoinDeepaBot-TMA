@@ -27,7 +27,8 @@ export function useDualAmount({
   /** The box that starts active (and on top). */
   initial: Unit;
   toSats: (lkr: number) => number;
-  toLkr: (sats: number) => number;
+  /** Not needed when only rupees can be typed (Buy). */
+  toLkr?: (sats: number) => number;
 }) {
   const [s, setS] = useState<{ active: Unit; raw: string; flipped: boolean }>({
     active: initial,
@@ -35,7 +36,7 @@ export function useDualAmount({
     flipped: false,
   });
   const n = Number(s.raw) || 0;
-  const lkr = s.active === "lkr" ? n : n ? toLkr(n) : 0;
+  const lkr = s.active === "lkr" ? n : n && toLkr ? toLkr(n) : 0;
   const sats = s.active === "sats" ? n : n ? toSats(n) : 0;
   const set = (unit: Unit, value: string | number) =>
     setS((p) => ({ ...p, active: unit, raw: clean(String(value)) }));
@@ -77,68 +78,123 @@ function Box({
   label,
   d,
   invalid,
+  readOnly,
+  onSubmit,
 }: {
   id: string;
   unit: Unit;
   label: string;
   d: DualAmountState;
   invalid?: boolean;
+  onSubmit?: () => void;
+  /** Shows the conversion only: can't be typed in. */
+  readOnly?: boolean;
 }) {
-  const active = d.active === unit && d.hasValue;
+  const active = !readOnly && d.active === unit && d.hasValue;
+  const amountClass = cn(
+    "num min-w-0 flex-1 border-0 bg-transparent p-0 text-[30px] leading-[1.2] font-bold tracking-[-0.02em] outline-none",
+    active ? "text-foreground" : "text-ink2",
+    invalid && "text-loss"
+  );
   return (
     <div
       className={cn(
         "rounded-[20px] px-4 pt-3 pb-3.5 transition-[background-color,box-shadow] duration-200",
-        active ? "bg-card" : "bg-chip focus-within:bg-card",
+        active ? "bg-card" : "bg-chip",
+        !readOnly && "focus-within:bg-card",
         invalid
           ? "shadow-[0_0_0_2px_var(--destructive)]"
           : active
             ? "shadow-[0_0_0_2px_var(--primary)]"
-            : "focus-within:shadow-[0_0_0_2px_var(--primary)]"
+            : !readOnly && "focus-within:shadow-[0_0_0_2px_var(--primary)]"
       )}
     >
-      <label htmlFor={id} className="text-ink2 block text-[12px] font-semibold">
-        {label}
-      </label>
+      {readOnly ? (
+        <span className="text-ink2 block text-[12px] font-semibold">{label}</span>
+      ) : (
+        <label htmlFor={id} className="text-ink2 block text-[12px] font-semibold">
+          {label}
+        </label>
+      )}
       <div className="mt-1 flex items-center gap-2.5">
-        <input
-          id={id}
-          inputMode="numeric"
-          pattern="[0-9]*"
-          autoComplete="off"
-          placeholder="0"
-          value={d.text(unit)}
-          onChange={(e) => d.set(unit, e.target.value)}
-          className={cn(
-            "num placeholder:text-ink3 min-w-0 flex-1 border-0 bg-transparent p-0 text-[30px] leading-[1.2] font-bold tracking-[-0.02em] outline-none",
-            active ? "text-foreground" : "text-ink2",
-            invalid && "text-loss"
-          )}
-        />
+        {readOnly ? (
+          <output aria-label={label} className={cn(amountClass, !d.hasValue && "text-ink3")}>
+            {d.text(unit) || "0"}
+          </output>
+        ) : (
+          <input
+            id={id}
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="off"
+            placeholder="0"
+            value={d.text(unit)}
+            onChange={(e) => d.set(unit, e.target.value)}
+            // The keyboard's Go key does what the (hidden behind it) main button does.
+            enterKeyHint={onSubmit ? "go" : undefined}
+            onKeyDown={(e) => {
+              if (e.key !== "Enter" || !onSubmit) return;
+              e.preventDefault();
+              e.currentTarget.blur();
+              onSubmit();
+            }}
+            className={cn(amountClass, "placeholder:text-ink3")}
+          />
+        )}
         <UnitPill unit={unit} />
       </div>
     </div>
   );
 }
 
-/** "You pay" / "You get" boxes with a swap button between them. */
+/**
+ * "You pay" / "You get" boxes. The box not being typed in is the estimate and
+ * says so. With `only`, just that unit can be typed (no swap): Buy takes
+ * rupees only, since the sats are priced when the payment lands.
+ */
 export function DualAmount({
   id,
   d,
   top,
   bottom,
+  only,
   invalid,
+  onSubmit,
 }: {
   id: string;
   d: DualAmountState;
   /** The box on top before any swap. */
   top: { unit: Unit; label: string };
   bottom: { unit: Unit; label: string };
+  /** The only unit that can be typed in. */
+  only?: Unit;
   invalid?: boolean;
+  /** Enter / the keyboard's Go key: continue (it should check the amount itself). */
+  onSubmit?: () => void;
 }) {
+  const typed: Unit = only ?? d.active;
+  const box = (side: { unit: Unit; label: string }) => (
+    <Box
+      id={`${id}-${side.unit}`}
+      unit={side.unit}
+      label={side.unit === typed ? side.label : `${side.label} (estimate)`}
+      d={d}
+      invalid={invalid}
+      readOnly={!!only && side.unit !== only}
+      onSubmit={onSubmit}
+    />
+  );
+  if (only) {
+    return (
+      <div className="flex flex-col gap-2">
+        {box(top)}
+        {box(bottom)}
+      </div>
+    );
+  }
   return (
     <div className={cn("relative flex", d.flipped ? "flex-col-reverse" : "flex-col")}>
-      <Box id={`${id}-${top.unit}`} unit={top.unit} label={top.label} d={d} invalid={invalid} />
+      {box(top)}
       <button
         type="button"
         aria-label="Swap which amount is on top"
@@ -146,7 +202,9 @@ export function DualAmount({
           haptic.select();
           d.toggleFlip();
         }}
-        className="press border-background bg-chip text-foreground relative z-[2] mx-auto -my-3 flex size-[42px] items-center justify-center rounded-full border-4"
+        // The ring is the sheet's own colour, so it cuts a notch between the boxes; the
+        // thin outline keeps the circle visible against them.
+        className="press border-card bg-chip text-foreground relative z-[2] mx-auto -my-3 flex size-[42px] items-center justify-center rounded-full border-4 shadow-[inset_0_0_0_1px_var(--line)]"
       >
         <svg
           className={cn(
@@ -164,13 +222,7 @@ export function DualAmount({
           <path d="M7 4v16M3 8l4-4 4 4M17 20V4M21 16l-4 4-4-4" />
         </svg>
       </button>
-      <Box
-        id={`${id}-${bottom.unit}`}
-        unit={bottom.unit}
-        label={bottom.label}
-        d={d}
-        invalid={invalid}
-      />
+      {box(bottom)}
     </div>
   );
 }
@@ -197,21 +249,66 @@ export function GateNotice({
   title,
   text,
   action,
+  className = "mb-3.5",
 }: {
   title: string;
   text: string;
-  action?: { label: string; onClick: () => void };
+  action?: { label: string; onClick: () => void; loading?: boolean; disabled?: boolean };
+  className?: string;
 }) {
   return (
-    <div className="bg-chip mb-3.5 flex items-center gap-3 rounded-xl px-3.5 py-3">
+    <div className={cn("bg-chip flex items-center gap-3 rounded-xl px-3.5 py-3", className)}>
       <p className="text-ink2 min-w-0 flex-1 text-[13px] leading-[18px]">
         <b className="text-foreground">{title}.</b> {text}
       </p>
       {action && (
-        <Button size="sm" className="shrink-0" onClick={action.onClick}>
+        <Button
+          size="sm"
+          className="shrink-0"
+          loading={action.loading}
+          disabled={action.disabled}
+          onClick={action.onClick}
+        >
           {action.label}
         </Button>
       )}
     </div>
   );
+}
+
+/** Row of quick amounts under the amount boxes. */
+export function Presets({
+  items,
+}: {
+  items: { label: string; on: boolean; disabled?: boolean; pick: () => void }[];
+}) {
+  if (items.length === 0) return null;
+  return (
+    // One row on any phone: the chips share the width instead of wrapping.
+    <div className="flex justify-center gap-1.5 pt-2.5">
+      {items.map((p) => (
+        <button
+          key={p.label}
+          type="button"
+          aria-pressed={p.on}
+          disabled={p.disabled}
+          onClick={() => {
+            haptic.select();
+            p.pick();
+          }}
+          className={cn(
+            "press hit h-9 max-w-[25%] min-w-0 flex-1 rounded-xl border-0 px-1.5 text-[13px] font-bold whitespace-nowrap transition-colors disabled:opacity-40",
+            p.on ? "bg-inv text-on-inv" : "bg-chip text-foreground"
+          )}
+        >
+          {p.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Small grey line under the amount ("1 BTC ≈ රු. … · 1.5% fee"). */
+export function PriceFooter({ children }: { children: React.ReactNode }) {
+  return <p className="text-ink3 num mt-1 text-center text-[12px] font-semibold">{children}</p>;
 }

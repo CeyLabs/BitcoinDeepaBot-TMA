@@ -21,7 +21,7 @@ function PlanPaymentSuccess() {
       title="Payment successful"
       actions={
         <Link href="/dashboard" className={buttonVariants()}>
-          Go to my wallet
+          Go to wallet
         </Link>
       }
     >

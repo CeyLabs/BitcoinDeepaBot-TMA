@@ -2,7 +2,12 @@
 
 import { cn } from "cn";
 
-/** Horizontally scrolling row of filter chips; bleeds to the screen edge. */
+/**
+ * Horizontally scrolling row of filter chips; bleeds to the screen edge.
+ * Sideways only: the padding holds each chip's 6px `hit` area (the negative
+ * margin keeps the row's spacing), and overflow-y is hidden so it can't drift
+ * up and clip the chips.
+ */
 export function ChipRow({
   className,
   children,
@@ -16,7 +21,10 @@ export function ChipRow({
     <div
       role="group"
       aria-label={label}
-      className={cn("-mx-4 flex gap-2 overflow-x-auto px-4 py-0.5", className)}
+      className={cn(
+        "-mx-4 -my-1 flex gap-2 overflow-x-auto overflow-y-hidden overscroll-x-contain px-4 py-1.5",
+        className
+      )}
     >
       {children}
     </div>

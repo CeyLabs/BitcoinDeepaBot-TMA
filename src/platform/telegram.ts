@@ -16,6 +16,7 @@ import {
 } from "@tma.js/sdk";
 import type { ColorScheme, Platform, TelegramLaunch } from "./types";
 import { requestConfirm } from "./confirm";
+import { copyText } from "@/lib/clipboard";
 
 // "android_x" is Telegram X.
 const MOBILE_CLIENTS = ["ios", "android", "android_x"];
@@ -146,7 +147,7 @@ export function createTelegramPlatform(launch: TelegramLaunch | null = readLaunc
         return "shared";
       } catch {
         // Share sheet unsupported on this client — copy the link instead.
-        await navigator.clipboard.writeText(text ? `${text}\n${url}` : url);
+        await copyText(text ? `${text}\n${url}` : url);
         return "copied";
       }
     },

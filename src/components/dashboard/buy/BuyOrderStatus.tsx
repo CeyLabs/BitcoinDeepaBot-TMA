@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { cn } from "cn";
+import { ResultShell } from "@/components/auth/StatusScreen";
 import { PushHeader } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { KeyValueList } from "@/components/ui/section";
@@ -261,14 +261,9 @@ export function BuyOrderStatus({
   }
 
   return (
-    <main
-      className={cn(
-        "bg-background text-foreground mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4",
-        "pt-[calc(24px+env(safe-area-inset-top))] pb-[calc(24px+env(safe-area-inset-bottom))]"
-      )}
-    >
+    <ResultShell>
       <div className="flex flex-1 flex-col justify-center gap-5">{content}</div>
-    </main>
+    </ResultShell>
   );
 }
 

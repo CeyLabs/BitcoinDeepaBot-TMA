@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { cn } from "cn";
+import { CopyButton } from "@/components/ui/copy-button";
 import { Emoji } from "@/components/ui/emoji";
-import { useToast } from "@/components/ui/toast";
 import { haptic } from "@/platform";
 import { ACTIVITY_ICON, ACTIVITY_TITLE, type ActivityEntry } from "@/lib/activity";
 import {
@@ -68,23 +68,12 @@ export interface ActivityRowProps {
 
 export function ActivityRow({ item, visible }: ActivityRowProps) {
   const [expanded, setExpanded] = useState(false);
-  const toast = useToast();
   const isOutgoing = item.sats < 0;
   const mask = (v: string) => maskDigits(v, visible);
   const time = fmtActivityTime(item.timestamp);
   const { settlement } = item;
   const status = item.statusDot ?? "green";
   const panelId = `tx-${item.id}`;
-
-  const copyId = () => {
-    navigator.clipboard.writeText(settlement.transactionId).then(
-      () => {
-        haptic.notify("success");
-        toast({ title: "Transaction ID copied" });
-      },
-      () => toast({ title: "Couldn't copy", type: "error" })
-    );
-  };
 
   return (
     <div className="rounded-xl">
@@ -132,6 +121,11 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
             // Never credited: no sign, struck through, so it can't pass for a reward
             <span className="num text-ink3 text-right text-[14px] leading-4 font-bold whitespace-nowrap line-through">
               {mask(`${fmtSats(Math.abs(item.sats))} sats`)}
+            </span>
+          ) : item.sats === 0 ? (
+            // Paid but not priced yet (sats are worked out when the payment lands): not "+0 sats"
+            <span className="text-ink3 text-right text-[14px] leading-4 font-bold whitespace-nowrap">
+              {item.settlement?.status ?? "Pending"}
             </span>
           ) : (
             <span
@@ -195,6 +189,10 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
               <DetailCell label="Fee">
                 {settlement.feeLkr > 0 ? mask(fmtLkrExact(settlement.feeLkr)) : "No fee"}
               </DetailCell>
+            ) : settlement.feeSats !== undefined ? (
+              <DetailCell label="Network fee">
+                <span className="num">{mask(`${fmtSats(settlement.feeSats)} sats`)}</span>
+              </DetailCell>
             ) : (
               // Keeps the 2-col grid even; an empty half reads as a layout bug
               <span aria-hidden />
@@ -227,29 +225,7 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
             <DetailCell
               label="Transaction ID"
               wide
-              after={
-                <button
-                  type="button"
-                  onClick={copyId}
-                  aria-label="Copy transaction ID"
-                  className="press hit bg-card text-foreground relative inline-flex h-9 min-w-16 shrink-0 items-center justify-center gap-1.5 rounded-lg border-0 px-3 text-[13px] font-bold"
-                >
-                  <svg
-                    className="size-3.5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden
-                  >
-                    <rect x="9" y="9" width="11" height="11" rx="2" />
-                    <path d="M5 15V5a2 2 0 0 1 2-2h10" />
-                  </svg>
-                  Copy
-                </button>
-              }
+              after={<CopyButton value={settlement.transactionId} label="transaction ID" />}
             >
               <span className="num text-[13px]">{settlement.transactionId}</span>
             </DetailCell>
