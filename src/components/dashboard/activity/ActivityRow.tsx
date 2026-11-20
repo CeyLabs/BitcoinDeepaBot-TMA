@@ -97,14 +97,8 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
         aria-haspopup="dialog"
         onClick={() => {
           haptic.select();
-          if (mounted) {
-            setOpen(true);
-            return;
-          }
-          // First open: mount the sheet closed, then open it on the next frame. A drawer that's
-          // already open on its first render skips Base UI's enter transition (no slide-up).
           setMounted(true);
-          requestAnimationFrame(() => setOpen(true));
+          setOpen(true);
         }}
         className="press active:bg-chip flex w-full items-center gap-3 rounded-xl border-0 bg-transparent py-2.5 pr-3 pl-3 text-left active:transform-none!"
       >
