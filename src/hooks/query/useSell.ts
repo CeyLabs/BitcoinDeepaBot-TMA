@@ -31,6 +31,8 @@ export interface SellOrder {
   /** The whole sale at the rate, before the fee */
   grossLkr: number;
   feeLkr: number;
+  /** Flat bank transfer charge, taken after the fee */
+  bankChargeLkr: number;
   btcLkrRate: number;
   amountLkr: number;
   expiresAt: string;
@@ -71,6 +73,8 @@ export interface SellCollect {
 export interface SellPrice {
   btcLkrRate: number;
   feeBasisPoints: number;
+  /** Flat LKR bank charge per sale, taken after the fee */
+  bankChargeLkr?: number;
   /** Smallest and largest single sale the backend accepts */
   minSats?: number;
   maxSats?: number;
