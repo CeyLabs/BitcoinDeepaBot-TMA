@@ -186,6 +186,8 @@ export function HoldButton({
       aria-busy={loading || undefined}
       // A finger that wobbles while holding must not drag the sheet down.
       data-base-ui-swipe-ignore=""
+      // Its own haptics (a tick on press); the app-wide tap layer stays out
+      data-no-haptic=""
       onPointerDown={start}
       onPointerUp={end}
       onPointerLeave={end}
