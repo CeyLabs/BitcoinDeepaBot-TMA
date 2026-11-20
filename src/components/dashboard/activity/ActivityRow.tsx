@@ -189,6 +189,10 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
               <DetailCell label="Fee">
                 {settlement.feeLkr > 0 ? mask(fmtLkrExact(settlement.feeLkr)) : "No fee"}
               </DetailCell>
+            ) : settlement.feeSats !== undefined ? (
+              <DetailCell label="Network fee">
+                <span className="num">{mask(`${fmtSats(settlement.feeSats)} sats`)}</span>
+              </DetailCell>
             ) : (
               // Keeps the 2-col grid even; an empty half reads as a layout bug
               <span aria-hidden />
