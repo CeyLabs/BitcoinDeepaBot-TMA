@@ -76,10 +76,41 @@ function isNavItemActive(href: string, activeHref: string) {
   return activeHref === href || activeHref.startsWith(`${href}/`);
 }
 
-// Fixed bottom pill; hidden on pushed pages (an article, buy, send…) by the layout.
+/**
+ * True once the page scrolls down (past the first bit), false again as soon as
+ * it scrolls back up: the tab bar shrinks out of the way while reading.
+ */
+function useCompactOnScroll() {
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    let lastY = window.scrollY;
+    let frame = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const delta = y - lastY;
+        if (y < 40) setCompact(false);
+        else if (delta > 6) setCompact(true);
+        else if (delta < -6) setCompact(false);
+        if (Math.abs(delta) > 6 || y < 40) lastY = y;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+  return compact;
+}
+
+// Fixed bottom pill; hidden on pushed pages (buy, sell, send…) by the layout.
+// Shrinks to icons only while scrolling down.
 export default function BottomNavigation() {
   const pathname = usePathname();
   const router = useRouter();
+  const compact = useCompactOnScroll();
 
   // Router navigation resolves the destination route segment before the pathname
   // (and thus `isActive` below) updates, which made the pill lag behind the tap.
@@ -112,7 +143,12 @@ export default function BottomNavigation() {
   return (
     <nav
       aria-label="Main"
-      className="animate-nav-in bg-surface-glass shadow-nav fixed inset-x-4 bottom-[calc(16px+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-[398px] items-center justify-between overflow-hidden rounded-full p-1 backdrop-blur-[12px]"
+      data-compact={compact || undefined}
+      className={cn(
+        "animate-nav-in bg-surface-glass shadow-nav fixed inset-x-4 bottom-(--nav-bottom) z-40 mx-auto flex items-center justify-between overflow-hidden rounded-full p-1 backdrop-blur-[12px]",
+        "transition-[max-width] duration-300 ease-(--ease-spring)",
+        compact ? "max-w-[260px]" : "max-w-[398px]"
+      )}
     >
       {activeIndex >= 0 && (
         <span
@@ -138,12 +174,26 @@ export default function BottomNavigation() {
               router.push(item.href);
             }}
             className={cn(
-              "press relative flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[40px] border-0 bg-transparent p-2 text-[11px] leading-[13px]",
+              "press relative flex min-w-0 flex-1 flex-col items-center justify-center rounded-[40px] border-0 bg-transparent p-2 text-[11px] leading-[13px]",
+              "transition-[height,gap] duration-300 ease-(--ease-spring)",
+              compact ? "h-11 gap-0" : "h-14 gap-1",
               isActive ? "text-foreground font-medium" : "text-ink2 font-normal"
             )}
           >
-            <item.Icon className="size-[22px]" />
-            <span>{item.label}</span>
+            <item.Icon
+              className={cn(
+                "transition-[width,height] duration-300",
+                compact ? "size-5" : "size-[22px]"
+              )}
+            />
+            <span
+              className={cn(
+                "overflow-hidden transition-[max-height,opacity] duration-300",
+                compact ? "max-h-0 opacity-0" : "max-h-4 opacity-100"
+              )}
+            >
+              {item.label}
+            </span>
           </button>
         );
       })}
