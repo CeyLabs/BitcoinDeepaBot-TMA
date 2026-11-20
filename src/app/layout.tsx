@@ -36,8 +36,24 @@ export const metadata: Metadata = {
   title: "Bitcoin Deepa",
   description:
     "Bitcoin membership reward accrual with subscription management for Sri Lankan users.",
+  // Brand kit (bitcoindeepa.com/brand): the large-glyph දීප icon for tabs, on
+  // white or charcoal to match the browser theme; the standard one elsewhere.
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "16x16 32x32 48x48" },
+      {
+        url: "/icons/favicon-32.png",
+        type: "image/png",
+        sizes: "32x32",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/icons/favicon-dark-32.png",
+        type: "image/png",
+        sizes: "32x32",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
     apple: "/apple-touch-icon.png",
   },
   appleWebApp: {
