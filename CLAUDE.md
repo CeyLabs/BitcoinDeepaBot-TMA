@@ -1,75 +1,39 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Project Overview
-
-A Telegram Mini App (Next.js 16, App Router) for Bitcoin membership reward accrual with subscription management, built for Sri Lankan users. Users subscribe to weekly/monthly plans (paid via PayHere in LKR), accrue Bitcoin rewards, complete KYC verification, and track their wallet/transaction history — all inside a Telegram WebView.
+Telegram Mini App + web/PWA (Next.js 16 App Router) for Sri Lankan Bitcoin DCA: PayHere plans in LKR, KYC, wallet, P2P sends, sells. Backend: BitcoinDeepa-DCA-BE.
 
 ## Commands
 
-Package manager is **bun** (bun.lockb is committed; npm scripts also work).
+bun (`bun.lockb` committed). `bun dev` / `bun start` (port 3347), `bun run build`, `bun run lint`, `bun run format`, `bun run init-git-hooks` (pre-commit runs `prettier --check`). No test suite: run `format` and `build` before committing.
 
-```bash
-bun dev              # Start dev server on port 3347
-bun run build        # Production build
-bun start            # Start production server on port 3347
-bun run lint         # ESLint
-bun run format       # Prettier (writes changes)
-bun run init-git-hooks  # Point git at .githooks/ (runs prettier --check on pre-commit)
-```
+## API
 
-There is no test suite configured. Always run `bun run format` and `bun run build` before committing — the pre-commit hook already enforces prettier formatting.
+- All client HTTP goes through `fetchy` (`src/lib/fetchy.ts`), never raw `fetch`. Non-`/api/` paths go to `NEXT_PUBLIC_API_BASE_URL` with `credentials: "include"` (web session cookie) plus the Mini App's Bearer token: don't pass either by hand. No HTTP cache (TanStack owns caching); throws `FetchyError` (`.status`, `.code`).
+- The only Next API route is `src/app/api/user/route.ts` (Mongo user count/registration; loose `User` model in `src/db/schema.ts`, real shapes in `src/lib/types.ts`).
 
-## Architecture
+## Auth (`src/lib/auth.ts`, read via `useSession`)
 
-### API layer
+- Backend sessions. **Mini App:** `useRegisterUser` exchanges raw launch `initData` (never `initDataUnsafe`, max 15 min old) once via `POST /auth/telegram/miniapp`; the token lives in memory + `sessionStorage`, never `localStorage` or a URL. After a 401 it re-exchanges while it can, else `useAuthGuard` asks the user to reopen the app.
+- **Web:** "Log In with Telegram" is a full-page redirect to the backend's `/auth/telegram/start?return_to=` (OIDC), which returns with an HttpOnly cookie. JS never sees a token; `GET /auth/me` says who's signed in. Errors come back as `/?login_error=<code>` (`loginErrorMessage`). No Telegram login script on our pages.
+- Cookie across sites: prod app/API share `bitcoindeepa.com` (`SameSite=Lax`). Dev (vercel.app + railway.app) needs the backend's `APP_COOKIE_SAME_SITE=none`; Safari and the iOS WebView still block it, so test web login in Chrome.
+- Each login links the bot wallet (backend calls the bot's `/api/v1/init`). Wallet calls (`/p2p/*`, `/sell/orders/:id/pay`) send no Telegram credential. `403 relogin_required` opens `ReloginPrompt` and must never sign the user out (401 does).
+- Logout / "Log out of all devices" throw unless the backend confirms (settings shows a toast).
+- `bitcoin-deepa-is-existing-user` (localStorage) is only a UX flag for the launch redirect. The old `bitcoin-deepa-auth-token` is deleted on load.
+- Protected pages live under `src/app/dashboard/` (gated by `useAuthGuard` in its layout). `src/app/verification/` (KYC) is outside it.
 
-- All client-side HTTP calls MUST go through the `fetchy` wrapper (`src/lib/fetchy.ts`), not raw `fetch`. It sets JSON headers, parses JSON responses, and throws on non-OK responses.
-- API routes live in `src/app/api/**/route.ts` (auth, packages, subscription, transaction, user/kyc).
-- MongoDB connection via `src/db/connect.ts`; the only schema is a loosely-typed `User` model (`src/db/schema.ts`) with an `id`, `username`, and a free-form `data` object — most "shape" lives in TypeScript types (`src/lib/types.ts`), not the Mongoose schema.
+## State and structure
 
-### Auth flow
+- Providers (`src/app/context/providers.tsx`): Platform → Theme → QueryClient (60 s default `staleTime`) → Toast.
+- Server state: TanStack Query. Each `src/hooks/query/*` file exports a `queryOptions` factory plus a hook; keys in `src/lib/query-keys.ts`. Client state: small `useSyncExternalStore` hooks (`useSession`, `useBalanceVisible`), no global store. Forms: React state + Zod (`src/lib/validations.ts`).
+- Plan picker `ChoosePlanView` is both the Plans tab (no active plan) and `/dashboard/plans/choose`. `/plans/choose` only redirects.
+- UI: `src/components/ui/` shadcn-style (`cva`, `cn` from the `cn` package, Base UI for Dialog/Toast/Collapsible). Feature components in `src/components/dashboard/<feature>/`. Use semantic color tokens from `src/styles/theme.css`, not raw hex. Light/dark = `<html data-theme>`, set pre-paint by `src/lib/theme-boot.ts`.
+- Don't reintroduce `@telegram-apps/telegram-ui`. `@tma.js/sdk` is imported only in `src/platform/` (ESLint-enforced); `setupTelegram()` must run first.
+- React 19: `ref` as a prop, `<Context value>` + `use()`, server data via TanStack (not `use(promise)`/`useActionState`/`useOptimistic`). React Compiler is deliberately off (+7% JS, no gain).
 
-- Telegram-based auth: `initData` from the Telegram WebView is exchanged for a token via `POST /api/auth/telegram`, handled by helpers in `src/lib/auth.ts` (`authenticateWithTelegram`, `registerUser`, `completeAuthFlow`).
-- Token and registration flag are persisted in `localStorage` under `bitcoin-deepa-auth-token` / `bitcoin-deepa-is-existing-user` (see the `*FromStorage` helpers in `src/lib/auth.ts`).
-- `src/hooks/useAuthGuard.ts` is invoked from `src/app/dashboard/layout.tsx` to gate the whole dashboard section — protected pages must live under `src/app/dashboard/`.
+## Telegram / PWA gotchas
 
-### App shell / providers
-
-- `src/app/context/providers.tsx` composes, in order: Telegram SDK `SDKProvider` → TMA setup (`tma.tsx`, dynamic/no-SSR) → `ThemeProvider` (`theme.tsx`, dynamic/no-SSR) → TanStack Query `QueryClientProvider` → a `ThemedAppRoot` that syncs telegram-ui's `AppRoot` appearance with the app's own theme context.
-- TMA/theme providers are loaded with `next/dynamic({ ssr: false })` because they depend on browser/Telegram WebView APIs.
-
-### State management
-
-- Global UI state: Zustand (`src/lib/store.ts`).
-- Server state: TanStack Query, with query keys centralized in `src/lib/query-keys.ts` and query hooks under `src/hooks/query/*` (one hook per endpoint, e.g. `useSubscriptionCurrent`, `useWalletSummary`, `useKyc`).
-- Forms: React Hook Form + Zod, schemas in `src/lib/validations.ts`.
-
-### Routing / pages (App Router)
-
-- `src/app/dashboard/` — main authenticated app (activity, news, plans, tasks; guarded by `useAuthGuard`).
-- `src/app/plans/choose/` and `src/app/verification/` (+ `verification/details`) — onboarding/plan-selection and KYC flows, outside the dashboard guard.
-- `src/app/error.tsx` / `src/app/not-found.tsx` — App Router error/404 boundaries.
-- Route-level `loading.tsx` files provide skeleton states (e.g. `src/app/dashboard/news/loading.tsx`).
-
-### Components
-
-- `src/components/ui/` — hand-built UI primitives (`plan-card.tsx`, `toggle-plan.tsx`, etc.), styled directly with Tailwind. None use `cva()` or Radix; there's no component registry to regenerate from.
-- `src/components/dashboard/<feature>/` — feature-scoped components mirroring the dashboard route structure (activity, news, plans, tasks, wallet).
-
-### Dependency notes
-
-- `radix-ui` is used in exactly one place — `VisuallyHidden` in `src/app/verification/page.tsx`.
-- `class-variance-authority` and `framer-motion` are listed in `package.json` but not imported anywhere in `src/` — don't assume `cva()` or motion-based animation is available just because the package is installed.
-- `sharp` is only used by the build-time script `scripts/optimize-emoji-svgs.mjs`, not by the app at runtime.
-
-### Telegram-specific concerns
-
-- Mobile-first: content is constrained to `max-w-md` for a single-column mobile layout.
-- `next.config.mjs` forces `Cache-Control: no-store, must-revalidate` on all non-static routes — worked around a Telegram Desktop WebView bug where stale HTML gets cached; don't remove this without understanding that constraint.
-- `allowedDevOrigins` in `next.config.mjs` permits `*.sats.day` and `*.ngrok-free.app` tunnels for testing inside the real Telegram client.
-
-### Deployment
-
-- Railway (`railway.json`), Nixpacks builder, `bun install && bun run build` at build time, `bun run start` as the start command, restart-on-failure.
+- Mobile-first, `max-w-md` single column.
+- Fast launch (`src/lib/launch-redirect.ts`): a `<head>` script sends returning members straight to `/dashboard`; `web_app_ready` is sent from the end of `<body>`.
+- `next.config.mjs` forces `Cache-Control: no-store` on non-static routes (Telegram Desktop caches stale HTML): don't remove. `allowedDevOrigins` allows `*.sats.day` / `*.ngrok-free.app` tunnels.
+- Service worker: edit `src/sw.template.js`, never `public/sw.js` (generated by `scripts/stamp-sw.mjs` with the commit sha). It caches only `/_next/static/` and `/icons/`, never HTML or API. Registers in production builds only. Auto-update reloads are deferred on checkout/KYC/payment paths (`src/pwa/`).
+- Deploy: Vercel; the build stamps the worker with `VERCEL_GIT_COMMIT_SHA`.

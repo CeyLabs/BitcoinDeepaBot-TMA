@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import fetchy from "@/lib/fetchy";
 import type { SubscriptionPlan } from "@/lib/types";
@@ -29,16 +29,17 @@ function normalizePackage(pkg: RawPackage): SubscriptionPlan {
   };
 }
 
-export function usePackages() {
-  return useQuery<SubscriptionPlan[]>({
+export const packagesOptions = () =>
+  queryOptions({
     queryKey: queryKeys.packages,
-    queryFn: async () => {
-      const data = await fetchy.get<PackagesResponse>("/api/packages", {
-        shouldCache: false,
-      });
+    queryFn: async (): Promise<SubscriptionPlan[]> => {
+      const data = await fetchy.get<PackagesResponse>("/package");
       const raw = Array.isArray(data) ? data : (data.packages ?? []);
       return raw.map(normalizePackage);
     },
     staleTime: 1000 * 60 * 5,
   });
+
+export function usePackages() {
+  return useQuery(packagesOptions());
 }

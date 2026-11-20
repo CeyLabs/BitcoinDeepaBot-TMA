@@ -1,289 +1,272 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronRight } from "lucide-react";
-import { Card, Badge, Button, Cell, Navigation } from "@telegram-apps/telegram-ui";
+import { cn } from "cn";
+import { Badge, BadgeDot } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Cell, CellChevron } from "@/components/ui/cell";
+import { Emoji } from "@/components/ui/emoji";
+import { Hero, HeroDivider, HeroGlass } from "@/components/ui/hero";
+import { Section } from "@/components/ui/section";
+import { ValueSkeleton } from "@/components/ui/value-skeleton";
+import { EyeIcon } from "@/components/dashboard/wallet/TotalValueCard";
+import {
+  getPlanIconSrc,
+  stripFrequencySuffix,
+} from "@/components/dashboard/wallet/PlanSummaryCard";
 import {
   fmtLkrCurrency,
-  fmtSatsCompact,
-  fmtShortDate,
   fmtRelativeDays,
+  fmtSats,
+  fmtShortDate,
   maskDigits,
 } from "@/lib/formatters";
-import { getPlanIconSrc } from "@/components/dashboard/wallet/PlanSummaryCard";
-import { VisibleToggle } from "@/components/ui/visible-toggle";
-import { ValueSkeleton } from "@/components/ui/value-skeleton";
+import { haptic } from "@/platform";
 import type { Subscription } from "@/lib/types";
 
 export interface PlanHeroCardProps {
   subscription: Subscription | null | undefined;
   investedLkr: number;
+  /** Fees paid on top of investedLkr */
+  feesLkr?: number;
   investedSats: number;
   currentValueLkr: number;
   visible: boolean;
   onToggleVisible: () => void;
   subscriptionLoading?: boolean;
   summaryLoading?: boolean;
+  onCancel: () => void;
+  cancelling?: boolean;
+  offline?: boolean;
+}
+
+/** One label / value / sub-line column inside a HeroGlass. */
+function GlassStat({
+  label,
+  value,
+  sub,
+  align = "start",
+}: {
+  label: string;
+  value: React.ReactNode;
+  sub?: React.ReactNode;
+  align?: "start" | "end";
+}) {
+  return (
+    <div
+      className={cn(
+        "flex min-w-0 flex-1 flex-col gap-1",
+        align === "end" && "items-end text-right"
+      )}
+    >
+      <span className="text-[12px] leading-4 font-semibold text-white/88">{label}</span>
+      <span className="num text-[16px] leading-5 font-bold">{value}</span>
+      {sub}
+    </div>
+  );
 }
 
 export function PlanHeroCard({
   subscription,
   investedLkr,
+  feesLkr = 0,
   investedSats,
   currentValueLkr,
   visible,
   onToggleVisible,
   subscriptionLoading = false,
   summaryLoading = false,
+  onCancel,
+  cancelling = false,
+  offline = false,
 }: PlanHeroCardProps) {
   const router = useRouter();
   const mask = (v: string) => maskDigits(v, visible);
-  const profitLkr = currentValueLkr - investedLkr;
-  const profitPct = investedLkr > 0 ? (profitLkr / investedLkr) * 100 : 0;
+  // Profit is against what the user actually paid, fees included.
+  const totalCostLkr = investedLkr + feesLkr;
+  const profitLkr = currentValueLkr - totalCostLkr;
+  const profitPct = totalCostLkr > 0 ? (profitLkr / totalCostLkr) * 100 : 0;
   const isProfit = profitLkr >= 0;
+
+  const eyeToggle = subscription ? (
+    <button
+      type="button"
+      onClick={() => {
+        haptic.impact("medium");
+        onToggleVisible();
+      }}
+      aria-label={visible ? "Hide balances" : "Show balances"}
+      aria-pressed={!visible}
+      className="press hit text-ink2 flex size-7 items-center justify-center rounded-lg border-0 bg-transparent"
+    >
+      <EyeIcon off={!visible} />
+    </button>
+  ) : undefined;
 
   if (subscriptionLoading) {
     return (
-      <div className="flex w-full flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <p className="text-sm leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
-            Manage My Plan
-          </p>
-          <VisibleToggle visible={visible} onToggle={onToggleVisible} />
-        </div>
-
-        <Card
-          type="plain"
-          className="relative overflow-hidden rounded-[20px]! p-0! shadow-none!"
-          style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
-        >
-          <Image src="/bg/star.webp" alt="" fill priority className="object-cover" />
-          <div className="absolute inset-0 bg-black/18" />
-
-          <div className="relative flex flex-col gap-4 p-4">
-            <div className="flex items-center gap-2">
-              <ValueSkeleton tone="dark" className="size-15 shrink-0 rounded-full" />
-              <div className="flex min-w-0 flex-col items-start gap-2">
-                <ValueSkeleton tone="dark" className="h-5 w-32" />
-                <ValueSkeleton tone="dark" className="h-3.5 w-20" />
-              </div>
-            </div>
-
-            <div className="flex items-stretch">
-              <div className="flex flex-1 flex-col gap-1">
-                <p className="text-[12px] leading-4 text-white/70">Subscribed Since</p>
-                <ValueSkeleton tone="dark" className="h-3.5 w-16" />
-              </div>
-              <div className="w-px self-stretch bg-white/25" />
-              <div className="flex flex-1 flex-col items-end gap-1">
-                <p className="text-[12px] leading-4 text-white/70">Next Reward</p>
-                <ValueSkeleton tone="dark" className="h-3.5 w-16" />
-              </div>
-            </div>
-
-            <div className="flex rounded-[12px] bg-white/15 p-3">
-              <div className="flex flex-1 flex-col gap-1">
-                <p className="text-[12px] leading-4 text-white/70">You Invested</p>
-                <ValueSkeleton tone="dark" className="h-4 w-20" />
-              </div>
-              <div className="w-px self-stretch bg-white/25" />
-              <div className="flex flex-1 flex-col items-end gap-1">
-                <p className="text-[12px] leading-4 text-white/70">Current Value</p>
-                <ValueSkeleton tone="dark" className="h-4 w-20" />
-              </div>
+      <Section title="Manage my plan">
+        <Hero priority innerClassName="gap-3.5">
+          <div className="flex items-center gap-3">
+            <ValueSkeleton tone="translucent" className="size-[52px] shrink-0 rounded-full" />
+            <div className="flex grow flex-col gap-1.5">
+              <ValueSkeleton tone="translucent" className="h-5 w-28" />
+              <ValueSkeleton tone="translucent" className="h-3.5 w-20" />
             </div>
           </div>
-        </Card>
-      </div>
+          <ValueSkeleton tone="translucent" className="h-[68px] w-full rounded-xl" />
+          <ValueSkeleton tone="translucent" className="h-[68px] w-full rounded-xl" />
+          <div className="flex gap-2">
+            <ValueSkeleton tone="translucent" className="h-11 flex-1 rounded-xl" />
+            <ValueSkeleton tone="translucent" className="h-11 flex-1 rounded-xl" />
+          </div>
+        </Hero>
+      </Section>
     );
   }
 
   if (!subscription) {
     return (
-      <div className="flex w-full flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <p className="text-sm leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
-            Manage My Plan
-          </p>
-          <VisibleToggle visible={visible} onToggle={onToggleVisible} />
-        </div>
-
+      <Section title="Manage my plan">
         <Cell
-          before={
-            <Image src="/emoji/notepad.webp" alt="" width={36} height={36} className="size-9" />
+          as="button"
+          onClick={() => {
+            haptic.impact("light");
+            router.push("/dashboard/plans/choose");
+          }}
+          before={<Emoji src="/emoji/notepad.webp" />}
+          after={<CellChevron />}
+          subtitle={
+            <span className="text-[14px]">Start a DCA plan to stack sats automatically</span>
           }
-          after={<Navigation />}
-          style={{ "--tgui--cell--middle--padding": "12px 0" } as React.CSSProperties}
-          className="gap-2! rounded-xl border border-transparent bg-white px-4! shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] transition-shadow duration-150 hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.10)] focus-visible:ring-2 focus-visible:ring-[#fa7119]/50 focus-visible:outline-none dark:border-white/6 dark:bg-[#0B0F14] dark:shadow-[0px_2px_10px_0px_rgba(0,0,0,0.3)] dark:hover:shadow-[0px_4px_14px_0px_rgba(0,0,0,0.4)]"
-          onClick={() => router.push("/plans/choose")}
         >
-          <p className="flex flex-col items-start pl-1 font-semibold text-[#1b2027] dark:text-white">
-            No Active Plan
-            <span className="dark:text-muted-foreground text-sm font-normal text-[#64748b]">
-              Choose a plan to start earning rewards
-            </span>
-          </p>
+          No active DCA plan
         </Cell>
-      </div>
+      </Section>
     );
   }
 
+  const per = subscription.planType === "weekly" ? "week" : "month";
+
   return (
-    <div className="flex w-full flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">
-          Manage My Plan
-        </p>
-        <VisibleToggle visible={visible} onToggle={onToggleVisible} />
-      </div>
-
-      <Card
-        type="plain"
-        className="relative overflow-hidden rounded-[20px]! p-0! shadow-none!"
-        style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
-      >
-        <Image src="/bg/star.webp" alt="" fill priority className="object-cover" />
-        <div className="absolute inset-0 bg-black/18" />
-
-        <div className="relative flex flex-col gap-4 p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-2">
-              <Image
-                src={getPlanIconSrc(subscription.planName)}
-                alt=""
-                width={80}
-                height={80}
-                className="size-15 shrink-0"
-              />
-              <div className="flex min-w-0 flex-col items-start gap-1">
-                <p className="truncate text-[18px] leading-5 font-bold text-white">
-                  {subscription.planName}
-                </p>
-                <div className="flex items-end gap-0.5">
-                  <p className="text-[14px] leading-4 font-bold text-white">
-                    {fmtLkrCurrency(subscription.price)}
-                  </p>
-                  <p className="text-[12px] leading-4 text-white/70">
-                    /{subscription.planType === "weekly" ? "week" : "month"}
-                  </p>
-                </div>
-                {subscription.isActive && (
-                  <Badge
-                    type="number"
-                    mode="primary"
-                    className="m-0! w-fit! rounded-full! px-2.5! py-1! text-xs!"
-                    style={
-                      {
-                        "--tgui--button_color": "#25A761",
-                        "--tgui--button_text_color": "#fff",
-                      } as React.CSSProperties
-                    }
-                  >
-                    <span className="mr-1 inline-block size-1.5 rounded-full bg-white align-middle" />
-                    Active
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            <Button
-              mode="gray"
-              size="s"
-              className="shrink-0 overflow-hidden rounded-full! bg-white/20! px-3!"
-              style={
-                {
-                  "--tgui--plain_background": "rgba(255,255,255,0.2)",
-                  "--tgui--plain_foreground": "#fff",
-                  "--tgui--bg_color": "rgba(255,255,255,0.3)",
-                  "--tgui--button--hovered-opacity": 0.3,
-                } as React.CSSProperties
-              }
-              onClick={() => router.push("/plans/choose")}
-            >
-              <span className="flex items-center gap-1 text-[12px] font-medium whitespace-nowrap text-white">
-                Manage Plan
-                <ChevronRight size={14} />
-              </span>
-            </Button>
+    <Section title="Manage my plan" action={eyeToggle}>
+      <Hero priority innerClassName="gap-3.5">
+        <div className="flex items-center gap-3">
+          <span className="flex size-[52px] shrink-0 items-center justify-center rounded-full bg-white/60">
+            <Emoji src={getPlanIconSrc(subscription.planName)} className="animate-float" priority />
+          </span>
+          <div className="min-w-0 grow">
+            <p className="font-display truncate text-[20px] leading-6 font-bold">
+              {stripFrequencySuffix(subscription.planName)}
+            </p>
+            <p className="num text-[14px] font-bold">
+              {fmtLkrCurrency(subscription.price)}{" "}
+              <span className="font-sans text-[12px] font-normal">/{per}</span>
+            </p>
           </div>
-
-          <div className="flex items-stretch">
-            <div className="flex flex-1 flex-col gap-1">
-              <p className="text-[12px] leading-4 text-white/70">Subscribed Since</p>
-              <p className="text-[14px] leading-4 font-semibold text-white">
-                {fmtShortDate(subscription.startDate)}
-              </p>
-              <p className="text-[12px] leading-4 text-white/70">
-                {fmtRelativeDays(subscription.startDate)}
-              </p>
-            </div>
-            <div className="w-px self-stretch bg-white/25" />
-            <div className="flex flex-1 flex-col items-end gap-1">
-              <p className="text-[12px] leading-4 text-white/70">Next Reward</p>
-              <p className="text-[14px] leading-4 font-semibold text-white">
-                {subscription.endDate ? fmtShortDate(subscription.endDate) : "-"}
-              </p>
-              {subscription.endDate && (
-                <p className="text-[12px] leading-4 text-white/70">
-                  {fmtRelativeDays(subscription.endDate)}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="flex rounded-[12px] bg-white/15 p-3">
-            <div className="flex flex-1 flex-col gap-1">
-              <p className="text-[12px] leading-4 text-white/70">You Invested</p>
-              {summaryLoading ? (
-                <ValueSkeleton tone="dark" className="h-4 w-20" />
-              ) : (
-                <p className="text-[16px] leading-4 font-semibold text-white">
-                  {mask(fmtLkrCurrency(investedLkr))}
-                </p>
-              )}
-              {summaryLoading ? (
-                <ValueSkeleton tone="dark" className="h-3 w-28" />
-              ) : (
-                <p className="text-[12px] leading-4 text-white/70">
-                  {mask(
-                    `₿${(investedSats / 1e8).toFixed(5)} ·  ≈ 丰 ${fmtSatsCompact(investedSats)}`
-                  )}
-                </p>
-              )}
-            </div>
-            <div className="w-px self-stretch bg-white/25" />
-            <div className="flex flex-1 flex-col items-end gap-1">
-              <p className="text-[12px] leading-4 text-white/70">Current Value</p>
-              {summaryLoading ? (
-                <ValueSkeleton tone="dark" className="h-4 w-20" />
-              ) : (
-                <p className="text-[16px] leading-4 font-bold text-white">
-                  {mask(fmtLkrCurrency(currentValueLkr))}
-                </p>
-              )}
-              {summaryLoading ? (
-                <ValueSkeleton tone="dark" className="h-4.5 w-24 rounded-lg" />
-              ) : (
-                investedLkr > 0 && (
-                  <span
-                    className={`rounded-lg px-2 py-0.5 text-[11px] font-medium text-white ${
-                      isProfit ? "bg-[#25A761]" : "bg-[#F13131]"
-                    }`}
-                  >
-                    {mask(
-                      `${isProfit ? "+" : "-"}${Math.abs(profitPct).toFixed(0)}% · ${fmtLkrCurrency(
-                        Math.abs(profitLkr)
-                      )}`
-                    )}
-                  </span>
-                )
-              )}
-            </div>
-          </div>
+          <Badge variant="dark">
+            <BadgeDot />
+            {subscription.isActive ? "Active" : "Inactive"}
+          </Badge>
         </div>
-      </Card>
-    </div>
+
+        <HeroGlass>
+          <GlassStat
+            label="You invested"
+            value={
+              summaryLoading ? (
+                <ValueSkeleton tone="translucent" className="h-5 w-20" />
+              ) : (
+                mask(fmtLkrCurrency(investedLkr))
+              )
+            }
+            sub={
+              !summaryLoading && (
+                <span className="num text-[12px] leading-4 text-white/88">
+                  {mask(`${fmtSats(investedSats)} sats`)}
+                  {feesLkr > 0 && ` · + ${mask(fmtLkrCurrency(feesLkr))} fees`}
+                </span>
+              )
+            }
+          />
+          <HeroDivider />
+          <GlassStat
+            label="Current value"
+            align="end"
+            value={
+              summaryLoading ? (
+                <ValueSkeleton tone="translucent" className="h-5 w-20" />
+              ) : (
+                mask(fmtLkrCurrency(currentValueLkr))
+              )
+            }
+            sub={
+              !summaryLoading &&
+              investedLkr > 0 && (
+                <span
+                  className={cn(
+                    "num rounded-md px-1.5 py-0.5 text-[11px] leading-4 font-semibold text-white",
+                    isProfit ? "bg-gain-fill" : "bg-loss-fill"
+                  )}
+                >
+                  {mask(
+                    `${isProfit ? "+" : "−"}${fmtLkrCurrency(Math.abs(profitLkr))} (${Math.abs(
+                      profitPct
+                    ).toFixed(0)}%)`
+                  )}
+                </span>
+              )
+            }
+          />
+        </HeroGlass>
+
+        <HeroGlass>
+          <GlassStat
+            label="Next reward"
+            value={subscription.endDate ? fmtShortDate(subscription.endDate) : "–"}
+            sub={
+              subscription.endDate && (
+                <span className="text-[12px] leading-4 text-white/88">
+                  {fmtRelativeDays(subscription.endDate)}
+                </span>
+              )
+            }
+          />
+          <HeroDivider />
+          <GlassStat
+            label="Subscribed since"
+            align="end"
+            value={fmtShortDate(subscription.startDate)}
+            sub={
+              <span className="text-[12px] leading-4 text-white/88">
+                {fmtRelativeDays(subscription.startDate)}
+              </span>
+            }
+          />
+        </HeroGlass>
+
+        <div className="flex gap-2">
+          <Button
+            variant="inverse"
+            className="h-11 flex-1 rounded-xl text-[15px]"
+            onClick={() => {
+              haptic.impact("light");
+              router.push("/dashboard/plans/choose");
+            }}
+          >
+            Change plan
+          </Button>
+          <Button
+            variant="onBrand"
+            className="h-11 flex-1 rounded-xl text-[15px]"
+            loading={cancelling}
+            disabled={offline}
+            onClick={onCancel}
+          >
+            Cancel plan
+          </Button>
+        </div>
+      </Hero>
+    </Section>
   );
 }

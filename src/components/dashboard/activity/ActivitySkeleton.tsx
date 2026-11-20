@@ -1,15 +1,18 @@
+import { Bone, BoneCard } from "@/components/ui/bone";
+
 function SkeletonRow() {
   return (
-    <div className="flex items-center gap-2 px-3 py-2.5">
-      <div className="size-9 shrink-0 animate-pulse rounded-full bg-[#e2e8f0] dark:bg-[#1e293b]" />
+    <div className="flex h-[60px] items-center gap-3 pr-1.5 pl-3">
+      <Bone className="size-9 shrink-0 rounded-full" />
       <div className="flex flex-1 flex-col gap-1.5">
-        <div className="h-3.5 w-24 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
-        <div className="h-3 w-32 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
+        <Bone className="h-3.5 w-28" />
+        <Bone className="h-3 w-36" />
       </div>
       <div className="flex flex-col items-end gap-1.5">
-        <div className="h-3.5 w-16 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
-        <div className="h-3 w-20 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
+        <Bone className="h-3.5 w-16" />
+        <Bone className="h-3 w-20" />
       </div>
+      <Bone className="size-4 shrink-0 rounded" />
     </div>
   );
 }
@@ -17,20 +20,17 @@ function SkeletonRow() {
 function SkeletonGroup({ rows }: { rows: number }) {
   return (
     <div className="flex w-full flex-col gap-3">
-      <div className="h-3.5 w-20 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
-
-      <div className="w-full overflow-hidden rounded-[12px] bg-white shadow-[0px_2px_10px_0px_rgba(0,0,0,0.07)] dark:bg-[#0B0F14]">
+      <Bone className="h-4 w-20" />
+      <BoneCard className="shadow-card p-1">
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={i}>
-            {i > 0 && <div className="h-px bg-[#e2e8f0] dark:bg-[#334155]" />}
-            <SkeletonRow />
-          </div>
+          <SkeletonRow key={i} />
         ))}
-      </div>
+      </BoneCard>
     </div>
   );
 }
 
+/** Day groups placeholder, shared by the route loading state and the page. */
 export function ActivitySkeleton() {
   return (
     <div className="flex w-full flex-col gap-5">

@@ -1,22 +1,40 @@
+import { Bone, BoneCard } from "@/components/ui/bone";
+
+// Mirrors the news tab: featured card, category chips, article cards.
 export default function NewsLoading() {
   return (
     <div className="flex w-full flex-col gap-5">
-      <div className="h-56 w-full animate-pulse rounded-[20px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
-      <div className="flex gap-2">
-        <div className="h-9 w-16 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
-        <div className="h-9 w-20 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
-        <div className="h-9 w-20 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
+      <div className="flex flex-col gap-3">
+        <Bone className="h-4 w-16" />
+        <div className="bg-primary/80 flex flex-col gap-2 rounded-[20px] p-[18px] [--bone:rgba(255,255,255,0.35)]">
+          <Bone className="mb-1.5 h-40 w-full rounded-[14px]" />
+          <Bone className="h-6 w-32 rounded-lg" />
+          <Bone className="h-5 w-full" />
+          <Bone className="h-5 w-3/4" />
+          <Bone className="h-3.5 w-full" />
+        </div>
       </div>
-      <div className="flex w-full flex-col gap-3 overflow-hidden rounded-[12px] bg-white p-3 dark:bg-[#0B0F14]">
+
+      <div className="flex gap-2">
+        {["w-10", "w-20", "w-20", "w-16"].map((w, i) => (
+          <BoneCard key={i} className={`flex h-9 ${w} items-center justify-center rounded-xl`}>
+            <Bone className="h-3 w-2/3" />
+          </BoneCard>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <Bone className="h-4 w-48" />
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3">
-            <div className="size-16 shrink-0 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
-            <div className="flex flex-1 flex-col gap-2">
-              <div className="h-4 w-3/4 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
-              <div className="h-3 w-full animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
-              <div className="h-3 w-1/2 animate-pulse rounded bg-[#e2e8f0] dark:bg-[#1e293b]" />
+          <BoneCard key={i} className="shadow-card flex items-start gap-3 p-3">
+            <Bone className="size-20 shrink-0 rounded-xl" />
+            <div className="flex flex-1 flex-col gap-2 pt-1">
+              <Bone className="h-4 w-full" />
+              <Bone className="h-4 w-3/4" />
+              <Bone className="h-3 w-full" />
+              <Bone className="h-3 w-1/2" />
             </div>
-          </div>
+          </BoneCard>
         ))}
       </div>
     </div>

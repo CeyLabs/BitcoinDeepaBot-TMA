@@ -1,33 +1,49 @@
 "use client";
 
-import Image from "next/image";
+import { Suspense, useEffect } from "react";
 import Link from "next/link";
-import { Button, Title } from "@telegram-apps/telegram-ui";
+import { useSearchParams } from "next/navigation";
+import { BuyOrderStatus } from "@/components/dashboard/buy/BuyOrderStatus";
+import { StatusScreen, SuccessCheck } from "@/components/auth/StatusScreen";
+import { buttonVariants } from "@/components/ui/button";
+import { celebrate } from "@/lib/celebrate";
+import { haptic } from "@/platform";
+
+function PlanPaymentSuccess() {
+  useEffect(() => {
+    haptic.notify("success");
+    void celebrate();
+  }, []);
+
+  return (
+    <StatusScreen
+      art={<SuccessCheck />}
+      title="Payment successful"
+      actions={
+        <Link href="/dashboard" className={buttonVariants()}>
+          Go to my wallet
+        </Link>
+      }
+    >
+      Your plan is now active. Head back to your wallet to track your rewards.
+    </StatusScreen>
+  );
+}
+
+/** One-time buys come back with ?buy_order=<id> (set by the backend). */
+function Content() {
+  const buyOrder = useSearchParams().get("buy_order");
+  return buyOrder ? (
+    <BuyOrderStatus orderId={buyOrder} cancelled={false} />
+  ) : (
+    <PlanPaymentSuccess />
+  );
+}
 
 export default function PaymentSuccessPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-white px-5 text-center dark:bg-[#1b2027]">
-      <Image
-        src="/emoji/animated/party-popper.webp"
-        alt="Success"
-        width={96}
-        height={96}
-        unoptimized
-      />
-
-      <Title level="2" weight="2" className="mt-3 max-w-sm leading-snug">
-        Payment Successful
-      </Title>
-
-      <p className="text-muted-foreground mt-2 max-w-sm text-[15px] dark:text-[#64748b]">
-        Your subscription is now active. Head back to the dashboard to start tracking your rewards.
-      </p>
-
-      <Link href="/dashboard" className="mt-8 block w-full max-w-xs">
-        <Button mode="filled" size="l" stretched style={{ borderRadius: "12px" }}>
-          Go to Dashboard
-        </Button>
-      </Link>
-    </main>
+    <Suspense>
+      <Content />
+    </Suspense>
   );
 }

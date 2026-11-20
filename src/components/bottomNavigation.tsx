@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { SegmentedControl } from "@telegram-apps/telegram-ui";
-import { cn } from "@/lib/cn";
-import { haptic } from "@/lib/haptics";
-import { useTheme } from "@/app/context/theme";
+import { cn } from "cn";
+import { haptic } from "@/platform";
 
 // Icons are inlined (not next/image) so `fill="currentColor"` can pick up the
 // item's text color for the active/inactive + light/dark states below.
@@ -51,23 +49,6 @@ function PlansIcon({ className }: { className?: string }) {
   );
 }
 
-function TasksIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className={className}>
-      <path
-        d="M8.60394 3.5073e-06H7.35835C6.42084 0.00129474 5.66171 0.666316 5.66024 1.4876V2.80991C5.66171 3.6312 6.42084 4.29622 7.35835 4.29751H12.6414C13.5789 4.29622 14.338 3.6312 14.3395 2.80991V1.4876C14.338 0.666316 13.5789 0.00129276 12.6414 3.5073e-06H11.3958C11.3958 3.5073e-06 10.6569 0 10.0422 0C9.42752 0 8.60394 3.5073e-06 8.60394 3.5073e-06Z"
-        fill="currentColor"
-      />
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M3.96199 0.826502C4.29349 0.826502 4.5283 1.15616 4.5283 1.48766V2.80997C4.52834 4.17873 5.79602 5.2893 7.35849 5.2893H12.6415C14.2039 5.28922 15.4717 4.17868 15.4717 2.80997V1.48766C15.4717 1.15616 15.7065 0.826502 16.038 0.826502H17.5472C18.9003 0.829167 19.9971 1.78989 20 2.97526V17.8512C19.997 19.0366 18.9002 19.9973 17.5472 20H2.45283C1.09968 19.9974 0.00298378 19.0366 0 17.8512V2.97526C0.0029434 1.78984 1.09966 0.829084 2.45283 0.826502H3.96199ZM14.7402 9.37439C14.5195 9.18046 14.1612 9.17979 13.9398 9.37309L8.50162 14.1226L6.66237 11.8986C6.47898 11.6768 6.12507 11.6272 5.8719 11.7879C5.61885 11.9485 5.56216 12.2586 5.7455 12.4803L7.71448 14.8612C8.05462 15.2725 8.73406 15.3204 9.14468 14.9619L14.7391 10.0756C14.9604 9.88224 14.9608 9.56833 14.7402 9.37439Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
 function NewsIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 20 20" fill="none" className={className}>
@@ -85,7 +66,6 @@ const navItems = [
   { href: "/dashboard", Icon: WalletIcon, label: "Wallet" },
   { href: "/dashboard/activity", Icon: ActivityIcon, label: "Activity" },
   { href: "/dashboard/plans", Icon: PlansIcon, label: "Plans" },
-  { href: "/dashboard/tasks", Icon: TasksIcon, label: "Tasks" },
   { href: "/dashboard/news", Icon: NewsIcon, label: "News" },
 ];
 
@@ -96,12 +76,10 @@ function isNavItemActive(href: string, activeHref: string) {
   return activeHref === href || activeHref.startsWith(`${href}/`);
 }
 
-// SegmentedControl is a plain (non-fixed) element, unlike Tabbar which ships its own
-// FixedLayout — so the fixed bottom-pill positioning lives on this wrapper instead.
+// Fixed bottom pill; hidden on pushed pages (an article, buy, send…) by the layout.
 export default function BottomNavigation() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isDark } = useTheme();
 
   // Router navigation resolves the destination route segment before the pathname
   // (and thus `isActive` below) updates, which made the pill lag behind the tap.
@@ -116,63 +94,59 @@ export default function BottomNavigation() {
     setPendingHref(null);
   }
 
+  // Prefetch the other tabs once the browser is idle, so it doesn't compete
+  // with this page's own data on slow networks.
   useEffect(() => {
-    navItems.forEach((item) => router.prefetch(item.href));
+    const prefetchAll = () => navItems.forEach((item) => router.prefetch(item.href));
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(prefetchAll, { timeout: 3000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(prefetchAll, 1500);
+    return () => window.clearTimeout(id);
   }, [router]);
 
   const activeHref = pendingHref ?? pathname;
+  const activeIndex = navItems.findIndex((item) => isNavItemActive(item.href, activeHref));
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-100">
-      <SegmentedControl
-        className={cn(
-          "flex! h-auto! w-full! rounded-full! p-1!",
-          "shadow-[0px_4px_24px_0px_rgba(0,0,0,0.10)]! backdrop-blur-md",
-          "bg-surface-glass!"
-        )}
-        style={
-          {
-            "--tgui--tertiary_bg_color": "transparent",
-            "--tgui--segmented_control_active_bg": isDark ? "#334155" : "#e2e8f0",
-          } as React.CSSProperties
-        }
-      >
-        {navItems.map((item) => {
-          const isActive = isNavItemActive(item.href, activeHref);
-
-          return (
-            <SegmentedControl.Item
-              key={item.href}
-              selected={isActive}
-              onClick={() => {
-                if (item.href === pathname) return;
-                haptic.select();
-                setPendingHref(item.href);
-                router.push(item.href);
-              }}
-              className={cn(
-                "h-14! w-auto! rounded-[20px]! p-0! whitespace-normal!",
-                "transition-colors duration-200",
-                isActive
-                  ? "text-[#1b2027]! dark:text-[#f1f5f9]!"
-                  : "text-[#475569]! dark:text-[#94a3b8]!"
-              )}
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
-                <item.Icon className="size-5" />
-                <span
-                  className={cn(
-                    "text-[14px] leading-3 tracking-normal",
-                    isActive ? "font-medium" : "font-normal"
-                  )}
-                >
-                  {item.label}
-                </span>
-              </div>
-            </SegmentedControl.Item>
-          );
-        })}
-      </SegmentedControl>
-    </div>
+    <nav
+      aria-label="Main"
+      className="animate-nav-in bg-surface-glass shadow-nav fixed inset-x-4 bottom-[calc(16px+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-[398px] items-center justify-between overflow-hidden rounded-full p-1 backdrop-blur-[12px]"
+    >
+      {activeIndex >= 0 && (
+        <span
+          aria-hidden
+          className="bg-nav-sel absolute top-1 left-1 h-[calc(100%-8px)] rounded-[40px] transition-transform duration-[450ms] ease-(--ease-spring)"
+          style={{
+            width: `calc((100% - 8px) / ${navItems.length})`,
+            transform: `translateX(${activeIndex * 100}%)`,
+          }}
+        />
+      )}
+      {navItems.map((item, index) => {
+        const isActive = index === activeIndex;
+        return (
+          <button
+            key={item.href}
+            type="button"
+            aria-current={isActive ? "page" : undefined}
+            onClick={() => {
+              if (item.href === pathname) return;
+              haptic.select();
+              setPendingHref(item.href);
+              router.push(item.href);
+            }}
+            className={cn(
+              "press relative flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[40px] border-0 bg-transparent p-2 text-[11px] leading-[13px]",
+              isActive ? "text-foreground font-medium" : "text-ink2 font-normal"
+            )}
+          >
+            <item.Icon className="size-[22px]" />
+            <span>{item.label}</span>
+          </button>
+        );
+      })}
+    </nav>
   );
 }

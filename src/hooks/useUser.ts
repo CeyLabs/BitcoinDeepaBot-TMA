@@ -1,51 +1,30 @@
 "use client";
 
-import { retrieveLaunchParams } from "@telegram-apps/sdk-react";
-import { useStore } from "@/lib/store";
+import { usePlatform, type TelegramUser } from "@/platform";
 import { useSubscriptionCurrent } from "@/hooks/query/useSubscriptionCurrent";
 import { useKycStatus } from "@/hooks/query/useKyc";
-import { getUserFromToken } from "@/lib/auth";
+import { useSession } from "@/hooks/useSession";
+import { useUserMe } from "@/hooks/query/useUserMe";
+import type { SessionUser } from "@/lib/auth";
 
 /**
  * Identity from Telegram's initData when available (in Telegram), falling
- * back to the id/username embedded in the stored auth token (outside
- * Telegram, e.g. a browser session signed in via the Login Widget).
- * Uses the plain retrieveLaunchParams() function rather than the
- * useLaunchParams() hook, since the hook throws outside Telegram.
+ * back to the backend session's user (outside Telegram, e.g. a browser
+ * signed in with "Log In with Telegram"). Telegram's @username is never used:
+ * the app only shows the member's Bitcoin Deepa @username.
  */
-interface CamelCasedTelegramUser {
-  id?: number;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
-  photoUrl?: string;
-}
-
-function getIdentity() {
-  try {
-    // Cast around the same ambient-overload flakiness noted in
-    // useIsTelegramEnv.ts — TS sometimes only resolves the 0-arg signature.
-    const retrieveCamelCased = retrieveLaunchParams as unknown as (camelCase: true) => {
-      initData?: { user?: CamelCasedTelegramUser };
+function getIdentity(telegramUser: TelegramUser | undefined, sessionUser: SessionUser | null) {
+  if (telegramUser) {
+    return {
+      id: telegramUser.id?.toString() ?? "",
+      firstName: telegramUser.firstName,
+      lastName: telegramUser.lastName,
+      photoUrl: telegramUser.photoUrl,
     };
-    const telegramUser = retrieveCamelCased(true).initData?.user;
-    if (telegramUser) {
-      return {
-        id: telegramUser.id?.toString() ?? "",
-        username: telegramUser.username,
-        firstName: telegramUser.firstName,
-        lastName: telegramUser.lastName,
-        photoUrl: telegramUser.photoUrl,
-      };
-    }
-  } catch {
-    // Not running inside Telegram — fall through to the token-based identity.
   }
 
-  const tokenUser = getUserFromToken();
   return {
-    id: tokenUser?.id ?? "",
-    username: tokenUser?.username,
+    id: sessionUser?.id ?? "",
     firstName: undefined as string | undefined,
     lastName: undefined as string | undefined,
     photoUrl: undefined as string | undefined,
@@ -53,28 +32,34 @@ function getIdentity() {
 }
 
 /**
- * Single source of truth for user-related data: identity, registration
- * status (store, synced by useAuthGuard), and server state (subscription,
+ * Single source of truth for user-related data: identity, and server state (subscription,
  * KYC status) — so components don't each re-derive these.
  */
 export function useUser() {
-  const { id, username, firstName, lastName, photoUrl } = getIdentity();
-  const { isExistingUser } = useStore();
+  const sessionUser = useSession().user;
+  const { id, firstName, lastName, photoUrl } = getIdentity(
+    usePlatform().launch?.user,
+    sessionUser
+  );
+  const { data: me } = useUserMe();
   const { data: subscription, isLoading: subscriptionLoading } = useSubscriptionCurrent();
   const { data: kycData } = useKycStatus();
 
-  const displayName = username ?? "User";
-  const initials = username?.slice(0, 2).toUpperCase() ?? "BD";
+  // Our @username (claimed in settings), never Telegram's.
+  const username = me?.username ?? sessionUser?.username ?? undefined;
+  // Profile name first, then the Telegram first/last name, then a neutral fallback.
+  const fullName = (first?: string | null, last?: string | null) =>
+    [first, last].filter(Boolean).join(" ") || undefined;
+  const displayName =
+    fullName(me?.first_name, me?.last_name) ?? fullName(firstName, lastName) ?? "Member";
 
   return {
     id,
     username,
     firstName,
     lastName,
-    displayName: (firstName && lastName ? `${firstName} ${lastName}` : firstName) ?? displayName,
-    initials,
+    displayName,
     photoUrl,
-    isExistingUser,
     subscription: subscription ?? null,
     subscriptionLoading,
     kycStatus: kycData?.status,

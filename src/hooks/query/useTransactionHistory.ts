@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { infiniteQueryOptions, useInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
-import { getAuthTokenFromStorage } from "@/lib/auth";
-import fetchy from "@/lib/fetchy";
+import { useSession } from "@/hooks/useSession";
+import fetchy, { FetchyError } from "@/lib/fetchy";
+import type { SellOrder } from "@/hooks/query/useSell";
 
 export interface DcaTransaction {
   id: string;
@@ -13,7 +13,11 @@ export interface DcaTransaction {
   btc_price_at_purchase: number;
   package_amount: number;
   gross_amount: number;
+  /** Amount that bought BTC (gross minus fees); 0 on older rows */
+  net_amount: number;
   package_name?: string;
+  /** RECURRING = plan charge, ONE_TIME = one-time buy */
+  kind: "RECURRING" | "ONE_TIME";
   status: string;
   settled?: boolean;
 }
@@ -25,18 +29,24 @@ interface RawTransaction {
   btc_price_at_purchase?: string | number | null;
   package_amount?: string | number | null;
   gross_amount?: string | number | null;
+  net_amount?: string | number | null;
   package_name?: string;
+  kind?: "RECURRING" | "ONE_TIME";
   status: string;
   settled?: boolean;
 }
 
-interface PaginatedTransactions {
-  transactions: RawTransaction[];
-  has_more?: boolean;
-}
+/**
+ * One row of /transaction/list: a purchase (the transaction row, `type: "BUY"`)
+ * or a sale (`type: "SELL"`, the order as the sell endpoints show it). Older
+ * backends send purchases only, without `type`.
+ */
+type RawHistoryItem =
+  (RawTransaction & { type?: "BUY" }) | { type: "SELL"; created_at: string; sell_order: SellOrder };
 
-interface TransactionListResponse {
-  transactions: RawTransaction[] | PaginatedTransactions;
+interface PaginatedTransactions {
+  transactions: RawHistoryItem[];
+  has_more?: boolean;
 }
 
 const PAGE_SIZE = 20;
@@ -54,52 +64,83 @@ function normalize(tx: RawTransaction): DcaTransaction {
     btc_price_at_purchase: toNumber(tx.btc_price_at_purchase),
     package_amount: toNumber(tx.package_amount),
     gross_amount: toNumber(tx.gross_amount),
+    net_amount: toNumber(tx.net_amount),
     package_name: tx.package_name,
+    kind: tx.kind ?? "RECURRING",
     status: tx.status,
     settled: tx.settled,
   };
 }
 
-// All DCA purchase attempts (success, pending, cancelled, failed, chargeback),
-// paginated oldest page first via `has_more`, sorted oldest-first within the
-// flattened result with numeric fields normalized.
-export function useTransactionHistory() {
-  const authToken = getAuthTokenFromStorage();
+// The member's history: all DCA purchase attempts (success, pending,
+// cancelled, failed, chargeback) and sales, paginated newest page first via
+// `has_more` (a page is cut across both). Purchases come back sorted
+// oldest-first with numeric fields normalized; sales newest-first.
+type TransactionPage = { transactions: DcaTransaction[]; sales: SellOrder[]; hasMore: boolean };
+type TransactionHistory = { transactions: DcaTransaction[]; sales: SellOrder[] };
 
-  const query = useInfiniteQuery({
-    queryKey: queryKeys.transactions,
-    queryFn: async ({ pageParam }) => {
-      const data = await fetchy.get<TransactionListResponse>(
-        `/api/transaction/list?page=${pageParam}&limit=${PAGE_SIZE}`,
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-          shouldCache: false,
+const NO_TRANSACTIONS: DcaTransaction[] = [];
+const NO_SALES: SellOrder[] = [];
+
+const time = (iso: string) => new Date(iso).getTime();
+
+// Flattened and sorted (kept stable between renders by `select`).
+const flattenTransactions = (data: InfiniteData<TransactionPage>): TransactionHistory => ({
+  transactions: data.pages
+    .flatMap((page) => page.transactions)
+    .sort((a, b) => time(a.created_at) - time(b.created_at)),
+  sales: data.pages
+    .flatMap((page) => page.sales)
+    .sort((a, b) => time(b.createdAt) - time(a.createdAt)),
+});
+
+export const transactionsOptions = (userId: string) =>
+  infiniteQueryOptions({
+    queryKey: queryKeys.transactions(userId),
+    queryFn: async ({ pageParam }): Promise<TransactionPage> => {
+      let data: RawTransaction[] | PaginatedTransactions;
+      try {
+        data = await fetchy.get<RawTransaction[] | PaginatedTransactions>(
+          `/transaction/list?page=${pageParam}&limit=${PAGE_SIZE}`
+        );
+      } catch (error) {
+        if (error instanceof FetchyError && error.status === 404) {
+          return { transactions: [], sales: [], hasMore: false };
         }
-      );
+        throw error;
+      }
 
-      const nested = Array.isArray(data.transactions) ? null : data.transactions;
-      const raw = Array.isArray(data.transactions)
-        ? data.transactions
-        : (nested?.transactions ?? []);
+      const nested = Array.isArray(data) ? null : data;
+      const raw: RawHistoryItem[] = Array.isArray(data) ? data : (nested?.transactions ?? []);
+
+      const transactions: DcaTransaction[] = [];
+      const sales: SellOrder[] = [];
+      for (const item of raw) {
+        if (item.type === "SELL") sales.push(item.sell_order);
+        else transactions.push(normalize(item));
+      }
 
       return {
-        transactions: raw.map(normalize),
+        transactions,
+        sales,
         hasMore: nested?.has_more ?? raw.length === PAGE_SIZE,
       };
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => (lastPage.hasMore ? allPages.length + 1 : undefined),
-    enabled: !!authToken,
     staleTime: 1000 * 60 * 5,
+    select: flattenTransactions,
   });
 
-  const transactions = useMemo(
-    () =>
-      (query.data?.pages ?? [])
-        .flatMap((page) => page.transactions)
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
-    [query.data]
-  );
+export function useTransactionHistory({ enabled = true }: { enabled?: boolean } = {}) {
+  const session = useSession();
+  const isAuthed = session.status === "authenticated";
+  const userId = session.user?.id ?? "";
 
-  return { ...query, transactions };
+  const query = useInfiniteQuery({ ...transactionsOptions(userId), enabled: enabled && isAuthed });
+  return {
+    ...query,
+    transactions: query.data?.transactions ?? NO_TRANSACTIONS,
+    sales: query.data?.sales ?? NO_SALES,
+  };
 }

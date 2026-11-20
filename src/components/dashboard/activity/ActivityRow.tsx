@@ -1,163 +1,261 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import { ChevronDown } from "lucide-react";
-import { Accordion, Badge } from "@telegram-apps/telegram-ui";
-import { CopyField } from "@/components/ui/copy-field";
-import { ACTIVITY_ICON, ACTIVITY_TITLE } from "@/lib/activity";
+import { format } from "date-fns";
+import { cn } from "cn";
+import { Emoji } from "@/components/ui/emoji";
+import { useToast } from "@/components/ui/toast";
+import { haptic } from "@/platform";
+import { ACTIVITY_ICON, ACTIVITY_TITLE, type ActivityEntry } from "@/lib/activity";
 import {
   fmtActivityTime,
-  fmtLkr,
   fmtLkrCurrency,
+  fmtLkrExact,
   fmtPriceCompact,
-  fmtShortDate,
+  fmtSats,
   formatSatoshis,
+  LKR_SYMBOL,
   maskDigits,
 } from "@/lib/formatters";
-import type { ActivityItem } from "@/lib/types";
 
-const STATUS_COLOR: Record<NonNullable<ActivityItem["statusDot"]>, string> = {
-  green: "#25A761",
-  orange: "#FA7119",
-  red: "#F45A5A",
-  gray: "#94A3B8",
+type StatusDot = NonNullable<ActivityEntry["statusDot"]>;
+
+const STATUS_TEXT: Record<StatusDot, string> = {
+  green: "text-gain",
+  orange: "text-link",
+  red: "text-loss",
+  gray: "text-ink3",
 };
 
+const STATUS_DOT: Record<StatusDot, string> = {
+  green: "bg-gain-fill",
+  orange: "bg-primary",
+  red: "bg-loss-solid",
+  gray: "bg-ink3",
+};
+
+function DetailCell({
+  label,
+  wide,
+  after,
+  children,
+}: {
+  label: string;
+  wide?: boolean;
+  after?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "bg-chip flex min-w-0 flex-col gap-0.5 rounded-xl px-3 py-2",
+        wide && "col-span-2 flex-row items-center justify-between gap-2"
+      )}
+    >
+      <span className="flex min-w-0 flex-col gap-0.5">
+        <span className="text-ink2 text-[12px] leading-4">{label}</span>
+        <span className="truncate text-[14px] leading-[18px] font-semibold">{children}</span>
+      </span>
+      {after}
+    </div>
+  );
+}
+
 export interface ActivityRowProps {
-  item: ActivityItem;
+  item: ActivityEntry;
   visible: boolean;
 }
 
 export function ActivityRow({ item, visible }: ActivityRowProps) {
   const [expanded, setExpanded] = useState(false);
+  const toast = useToast();
   const isOutgoing = item.sats < 0;
   const mask = (v: string) => maskDigits(v, visible);
   const time = fmtActivityTime(item.timestamp);
+  const { settlement } = item;
+  const status = item.statusDot ?? "green";
+  const panelId = `tx-${item.id}`;
+
+  const copyId = () => {
+    navigator.clipboard.writeText(settlement.transactionId).then(
+      () => {
+        haptic.notify("success");
+        toast({ title: "Transaction ID copied" });
+      },
+      () => toast({ title: "Couldn't copy", type: "error" })
+    );
+  };
 
   return (
-    <Accordion expanded={expanded} onChange={setExpanded}>
-      <Accordion.Summary
-        className="mx-1! my-0.5! gap-2! rounded-xl! pr-1.5! pl-3! transition-colors duration-150 hover:bg-[#f1f5f9]! dark:hover:bg-[#1B2027]!"
-        before={
-          <div className="flex size-10 shrink-0 items-center justify-center">
-            <Image
-              src={ACTIVITY_ICON[item.type]}
-              alt=""
-              width={36}
-              height={36}
-              className="size-9"
-            />
-          </div>
-        }
-        subtitle={
-          <span className="text-xs text-[#64748B]">
+    <div className="rounded-xl">
+      <button
+        type="button"
+        aria-expanded={expanded}
+        aria-controls={panelId}
+        onClick={() => {
+          haptic.select();
+          setExpanded((v) => !v);
+        }}
+        className="press active:bg-chip flex w-full items-center gap-3 rounded-xl border-0 bg-transparent py-2.5 pr-1.5 pl-3 text-left active:transform-none!"
+      >
+        <Emoji src={ACTIVITY_ICON[item.type]} />
+
+        <span className="flex min-w-0 grow flex-col gap-0.5">
+          <span className="flex items-center gap-1.5 text-[16px] leading-5 font-semibold">
+            <span className="truncate">{ACTIVITY_TITLE[item.type]}</span>
+            {status !== "green" && (
+              <span
+                aria-hidden
+                className={cn("size-2 shrink-0 rounded-full", STATUS_DOT[status])}
+              />
+            )}
+          </span>
+          <span className="text-ink2 truncate text-[12px] leading-4">
             {item.detailLabel ? (
               `${item.detailLabel} at ${time}`
             ) : (
               <>
-                {isOutgoing ? "To" : "From"}{" "}
-                <span className="text-[#FA7119]">@{item.counterparty}</span> at {time}
+                {isOutgoing ? "To " : "From "}
+                {item.counterparty ? (
+                  <span className="text-link font-bold">@{item.counterparty}</span>
+                ) : (
+                  "a member"
+                )}{" "}
+                at {time}
               </>
             )}
           </span>
-        }
-        after={
-          <div className="flex items-center gap-0.5">
-            <div className="flex flex-col items-end gap-0.5">
-              <p
-                className={`text-right text-[14px] leading-4 ${
-                  isOutgoing ? "text-[#F45A5A]" : "text-[#218A54]"
-                }`}
-              >
-                {mask(`${isOutgoing ? "-" : "+"}${fmtLkr(Math.abs(item.sats))} sats`)}
-              </p>
-              <p className="text-right text-xs leading-4 text-[#475569] dark:text-[#94A3B8]">
-                {mask(`≈ ${fmtLkrCurrency(item.lkr)}`)}
-              </p>
-            </div>
-            <ChevronDown
-              size={16}
-              strokeWidth={2}
-              className={`shrink-0 text-[#64748b] transition-transform duration-150 ${
-                expanded ? "rotate-180" : ""
-              }`}
-            />
-          </div>
-        }
-      >
-        <span className="flex items-center gap-1.5 text-base leading-5 font-semibold whitespace-nowrap text-[#1b2027] dark:text-white">
-          {ACTIVITY_TITLE[item.type]}
-          {item.statusDot && (
+        </span>
+
+        <span className="flex shrink-0 flex-col items-end gap-0.5">
+          {item.notCredited ? (
+            // Never credited: no sign, struck through, so it can't pass for a reward
+            <span className="num text-ink3 text-right text-[14px] leading-4 font-bold whitespace-nowrap line-through">
+              {mask(`${fmtSats(Math.abs(item.sats))} sats`)}
+            </span>
+          ) : (
             <span
-              className="inline-block size-2 shrink-0 rounded-full"
-              style={{ backgroundColor: STATUS_COLOR[item.statusDot] }}
-            />
+              className={cn(
+                "num text-right text-[14px] leading-4 font-bold whitespace-nowrap",
+                isOutgoing ? "text-loss" : "text-gain"
+              )}
+            >
+              {mask(`${isOutgoing ? "−" : "+"}${fmtSats(Math.abs(item.sats))} sats`)}
+            </span>
+          )}
+          {item.lkr > 0 && (
+            <span className="text-ink2 text-right text-[12px] leading-4 whitespace-nowrap">
+              {mask(`≈ ${fmtLkrCurrency(item.lkr)}`)}
+            </span>
           )}
         </span>
-      </Accordion.Summary>
 
-      <Accordion.Content className="bg-white! dark:bg-[#0B0F14]!">
-        <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col items-start">
-              <p className="text-xs leading-4 text-[#475569]">Status</p>
-              <Badge
-                type="number"
-                mode="primary"
-                className="m-0! flex! min-w-0! items-center! justify-center! rounded-[8px]! px-2! py-1! text-sm! leading-3! whitespace-nowrap!"
-                style={
-                  {
-                    "--tgui--button_color": item.statusDot
-                      ? STATUS_COLOR[item.statusDot]
-                      : "#25A761",
-                    "--tgui--button_text_color": "#fff",
-                  } as React.CSSProperties
+        <svg
+          className={cn(
+            "text-ink3 size-4 shrink-0 transition-transform duration-[380ms] ease-(--ease-spring)",
+            expanded && "rotate-180"
+          )}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      <div
+        id={panelId}
+        inert={!expanded}
+        className={cn(
+          "grid transition-[grid-template-rows] duration-[380ms] ease-(--ease-out-soft)",
+          expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        )}
+      >
+        <div className="overflow-hidden">
+          <div
+            className={cn(
+              "grid grid-cols-2 gap-2 px-3 pt-0.5 pb-3.5 transition-[opacity,transform] duration-300",
+              expanded ? "translate-y-0 opacity-100 delay-75" : "-translate-y-1.5 opacity-0"
+            )}
+          >
+            <DetailCell label="Status">
+              <span className={STATUS_TEXT[status]}>{settlement.status}</span>
+            </DetailCell>
+            <DetailCell label="Date">
+              {format(new Date(settlement.settledOn), "d MMM yyyy, h:mm a")}
+            </DetailCell>
+            <DetailCell label={`BTC value ${isOutgoing ? "sent" : "received"}`}>
+              <span className="num">{mask(`${formatSatoshis(settlement.btcSats)} BTC`)}</span>
+            </DetailCell>
+            {settlement.feeLkr !== undefined ? (
+              <DetailCell label="Fee">
+                {settlement.feeLkr > 0 ? mask(fmtLkrExact(settlement.feeLkr)) : "No fee"}
+              </DetailCell>
+            ) : (
+              // Keeps the 2-col grid even; an empty half reads as a layout bug
+              <span aria-hidden />
+            )}
+
+            {settlement.btcPriceLkr !== undefined && settlement.btcPriceLkr > 0 && (
+              <DetailCell
+                label="BTC price at transaction time"
+                wide
+                after={
+                  settlement.btcPriceUsd !== undefined && (
+                    <span className="num text-ink2 shrink-0 text-[13px] font-semibold">
+                      USD {settlement.btcPriceUsd.toLocaleString("en-US")} / BTC
+                    </span>
+                  )
                 }
               >
-                {item.settlement.status}
-              </Badge>
-            </div>
+                <span className="num">
+                  {LKR_SYMBOL} {fmtPriceCompact(settlement.btcPriceLkr)} / BTC
+                </span>
+              </DetailCell>
+            )}
 
-            <div className="flex flex-col items-end text-right">
-              <p className="text-xs leading-4 text-[#475569]">Date</p>
-              <p className="text-sm leading-5 font-semibold">
-                {fmtShortDate(item.settlement.settledOn)}
-              </p>
-            </div>
-          </div>
+            {settlement.memo && (
+              <DetailCell label="Memo" wide>
+                <span className="whitespace-normal">{settlement.memo}</span>
+              </DetailCell>
+            )}
 
-          <div className="flex items-center justify-start gap-3">
-            <p className="text-xs leading-4 text-[#475569]">
-              BTC Value {isOutgoing ? "Sent" : "Received"}
-            </p>
-            <p className="text-base leading-5 font-semibold">
-              {mask(`${formatSatoshis(item.settlement.btcSats)} BTC`)}
-            </p>
-          </div>
-
-          <div className="flex flex-col items-center gap-1 rounded-[12px] bg-[#e8edfc] px-3 py-1 dark:bg-white/5">
-            <p className="text-xs leading-4 text-[#475569]">BTC price at transaction time</p>
-            <p className="text-sm leading-5">
-              {item.settlement.btcPriceUsd !== undefined && (
-                <>
-                  <span className="font-bold text-[#0088FF]">USD</span>{" "}
-                  <span className="font-bold">{item.settlement.btcPriceUsd.toFixed(2)}</span>
-                  <span className="text-[#64748b]"> / BTC · </span>
-                </>
-              )}
-              <span className="font-bold text-[#0088FF]">රු.</span>{" "}
-              <span className="font-bold">{fmtPriceCompact(item.settlement.btcPriceLkr)}</span>
-              <span className="text-[#64748b]"> / BTC</span>
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <p className="text-xs leading-4 text-[#475569]">Transaction ID</p>
-            <CopyField value={item.settlement.transactionId} />
+            <DetailCell
+              label="Transaction ID"
+              wide
+              after={
+                <button
+                  type="button"
+                  onClick={copyId}
+                  aria-label="Copy transaction ID"
+                  className="press hit bg-card text-foreground relative inline-flex h-9 min-w-16 shrink-0 items-center justify-center gap-1.5 rounded-lg border-0 px-3 text-[13px] font-bold"
+                >
+                  <svg
+                    className="size-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <rect x="9" y="9" width="11" height="11" rx="2" />
+                    <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+                  </svg>
+                  Copy
+                </button>
+              }
+            >
+              <span className="num text-[13px]">{settlement.transactionId}</span>
+            </DetailCell>
           </div>
         </div>
-      </Accordion.Content>
-    </Accordion>
+      </div>
+    </div>
   );
 }

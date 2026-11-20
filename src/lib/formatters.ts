@@ -1,33 +1,28 @@
 import { format, isToday, isYesterday } from "date-fns";
 
-// Format a date as YYYY/MM/DD
-export function formatDate(dateInput: string | Date): string {
-  const date = new Date(dateInput);
-  return format(date, "yyyy/MM/dd");
-}
-
 // Format satoshis to BTC
 export function formatSatoshis(satoshis: number): string {
   return (satoshis / 100_000_000).toFixed(8);
-}
-
-// Format large numbers for better readability (e.g., 1000000 -> 1.0M)
-export function formatLargeNumber(amount: number): string {
-  if (amount >= 1_000_000_000) {
-    return `${(amount / 1_000_000_000).toFixed(1)}B`;
-  } else if (amount >= 1_000_000) {
-    return `${(amount / 1_000_000).toFixed(1)}M`;
-  } else if (amount >= 1_000) {
-    return `${(amount / 1_000).toFixed(1)}K`;
-  } else {
-    return amount.toLocaleString();
-  }
 }
 
 // Format a whole-number LKR amount with thousands separators (e.g. 45700 -> "45,700")
 export function fmtLkr(value: number): string {
   if (!Number.isFinite(value)) return "0";
   return value.toLocaleString("en-US", { maximumFractionDigits: 0 });
+}
+
+// LKR with cents for payouts (e.g. 19800.5 -> "රු. 19,800.50")
+export function fmtLkrExact(value: number): string {
+  if (!Number.isFinite(value)) return `${LKR_SYMBOL} 0.00`;
+  return `${LKR_SYMBOL} ${value.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+// Whole sats with separators (e.g. 100000 -> "100,000")
+export function fmtSats(sats: number): string {
+  return Math.floor(sats).toLocaleString("en-US");
 }
 
 // Sri Lankan Rupee symbol used in place of the "LKR" code throughout the UI
@@ -97,4 +92,15 @@ export function fmtActivityDateTime(dateInput: string | Date): string {
 // visible, e.g. "රු. 32,000" -> "රු. ****" when the user hides their balance.
 export function maskDigits(value: string, visible: boolean): string {
   return visible ? value : value.replace(/[\d,.]+[KM]?/g, "****");
+}
+
+// US dollars, whole (e.g. 1234.5 -> "$1,235")
+export function fmtUsd(value: number): string {
+  if (!Number.isFinite(value)) return "$0";
+  return `$${value.toLocaleString("en-US", { maximumFractionDigits: value < 100 ? 2 : 0 })}`;
+}
+
+// BTC with the ₿ sign (e.g. 12345 sats -> "₿ 0.000123")
+export function fmtBtc(sats: number, digits = 6): string {
+  return `₿ ${(sats / 1e8).toFixed(digits)}`;
 }

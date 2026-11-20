@@ -1,12 +1,27 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { TaskFilterTabs, type TaskFilter } from "@/components/dashboard/tasks/TaskFilterTabs";
+import { useToast } from "@/components/ui/toast";
+import { Segmented } from "@/components/ui/segmented";
+import { TaskHeroCard } from "@/components/dashboard/tasks/TaskHeroCard";
+import { ReferralProgressCard } from "@/components/dashboard/tasks/ReferralProgressCard";
 import { TaskListCard } from "@/components/dashboard/tasks/TaskListCard";
-import { useTMA } from "@/lib/hooks";
-import { haptic } from "@/lib/haptics";
-import { useStore } from "@/lib/store";
-import type { Task } from "@/lib/types";
+import { haptic, usePlatform } from "@/platform";
+import { useUserCount } from "@/hooks/query/useUserCount";
+import { useUser } from "@/hooks/useUser";
+import { getInviteUrl, TELEGRAM_BOT_URL } from "@/lib/constants";
+import type { Task, TaskFrequency } from "@/lib/types";
+
+type TaskFilter = "all" | TaskFrequency;
+
+const FILTERS = [
+  { value: "all", label: "All" },
+  { value: "one_time", label: "One-time" },
+  { value: "daily", label: "Daily" },
+] as const;
+
+/** Tasks that open something real. Anything else in the list shows "Soon". */
+const STARTABLE = new Set(["task-setup-wallet", "task-join-community", "task-share-story"]);
 
 export interface ManageTasksSectionProps {
   items: Task[];
@@ -14,33 +29,50 @@ export interface ManageTasksSectionProps {
 
 export function ManageTasksSection({ items }: ManageTasksSectionProps) {
   const [filter, setFilter] = useState<TaskFilter>("all");
-  const { openTelegramLink, shareStory } = useTMA();
-  const { userID, count } = useStore();
+  const toast = useToast();
+  const platform = usePlatform();
+  const { count } = useUserCount();
+  const { id: userId } = useUser();
 
   const filtered = useMemo(() => {
-    if (filter === "all") return items;
-    return items.filter((item) => item.frequency === filter);
-  }, [items, filter]);
+    // Story sharing only exists inside Telegram — hide the task elsewhere.
+    const available = platform.capabilities.stories
+      ? items
+      : items.filter((item) => item.id !== "task-share-story");
+    if (filter === "all") return available;
+    return available.filter((item) => item.frequency === filter);
+  }, [items, filter, platform.capabilities.stories]);
 
-  const handleTaskClick = (taskId: string) => {
+  const handleStart = (taskId: string) => {
     switch (taskId) {
       case "task-setup-wallet":
         haptic.impact("medium");
-        openTelegramLink("https://t.me/BitcoinDeepaBot");
+        platform.openTelegramLink(TELEGRAM_BOT_URL);
         break;
       case "task-join-community":
         haptic.impact("medium");
-        openTelegramLink("https://t.me/+iiP-rX7ldYxjZWU1");
+        platform.openTelegramLink("https://t.me/+iiP-rX7ldYxjZWU1");
         break;
       case "task-share-story": {
-        haptic.impact("heavy");
-        shareStory("https://ceyloncash.com/bitcoindeepa/tma/story.mp4", {
-          text: `Proud OG Member of Bitcoin දීප. ${count} Citizens and Counting 🚀🔥\n\nhttps://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}\n\n#bitcoindeepa @bitcoindeepabot #viralstory`,
-          widget_link: {
-            url: `https://t.me/BitcoinDeepaBot/private_invite?startapp=${userID}`,
-            name: "Inner Circle Entry",
-          },
-        });
+        if (!platform.capabilities.stories) return;
+        // The WebApp API can throw on clients without story support.
+        try {
+          haptic.impact("heavy");
+          platform.shareStory("https://ceyloncash.com/bitcoindeepa/tma/story.mp4", {
+            text: `Proud OG Member of Bitcoin දීප. ${count} Citizens and Counting 🚀🔥\n\n${getInviteUrl(userId)}\n\n#bitcoindeepa @bitcoindeepabot #viralstory`,
+            widget_link: {
+              url: getInviteUrl(userId),
+              name: "Inner Circle Entry",
+            },
+          });
+        } catch (error) {
+          console.error("Failed to share story:", error);
+          toast({
+            type: "error",
+            title: "Not Available",
+            description: "Couldn't open story sharing. Please try again.",
+          });
+        }
         break;
       }
       default:
@@ -49,12 +81,16 @@ export function ManageTasksSection({ items }: ManageTasksSectionProps) {
   };
 
   return (
-    <div className="flex w-full flex-col gap-3">
-      <p className="text-[14px] leading-4 font-bold text-[#475569] dark:text-[#94a3b8]">Tasks</p>
+    <div className="stagger flex w-full flex-col gap-5">
+      <h1 className="text-center text-[24px] leading-7">Tasks</h1>
 
-      <TaskFilterTabs value={filter} onChange={setFilter} />
+      <TaskHeroCard />
 
-      <TaskListCard items={filtered} onTaskClick={handleTaskClick} />
+      <ReferralProgressCard />
+
+      <Segmented label="Task type" options={FILTERS} value={filter} onChange={setFilter} />
+
+      <TaskListCard items={filtered} startable={STARTABLE} onStart={handleStart} />
     </div>
   );
 }

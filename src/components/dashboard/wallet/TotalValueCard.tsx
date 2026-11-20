@@ -1,97 +1,196 @@
 "use client";
 
-import Image from "next/image";
-import { ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
-import { Card, Badge } from "@telegram-apps/telegram-ui";
+import { useState } from "react";
+import { cn } from "cn";
+import { Hero } from "@/components/ui/hero";
 import { ValueSkeleton } from "@/components/ui/value-skeleton";
-import { cn } from "@/lib/cn";
-import { fmtLkrCurrency, fmtSatsCompact, maskDigits } from "@/lib/formatters";
-
-// Card/Badge theme their background/color through --tgui-- CSS variables (same
-// convention as --tgui--cell--middle--padding on the homepage Cell) — override those
-// via style, and everything else (radius/shadow/padding/display) via `!` classNames.
+import { NumberTicker } from "@/components/motion/number-ticker";
+import { haptic } from "@/platform";
+import type { DisplayCurrency } from "@/hooks/useDisplayCurrency";
+import { fmtBtc, fmtLkr, fmtSats, fmtUsd, LKR_SYMBOL, maskDigits } from "@/lib/formatters";
 
 export interface TotalValueCardProps {
   totalLkr: number;
   totalSats: number;
+  /** False when the wallet balance couldn't be fetched: show that instead of a fake 0 */
+  balanceAvailable?: boolean;
   changePercent: number;
   changeLkr: number;
   visible: boolean;
+  onToggleVisible: () => void;
+  currency: DisplayCurrency;
+  onToggleCurrency: () => void;
+  /** LKR → USD multiplier (undefined while the USD price is unknown). */
+  usdRate?: number;
   isLoading?: boolean;
 }
 
 export function TotalValueCard({
   totalLkr,
   totalSats,
+  balanceAvailable = true,
   changePercent,
   changeLkr,
   visible,
+  onToggleVisible,
+  currency,
+  onToggleCurrency,
+  usdRate,
   isLoading = false,
 }: TotalValueCardProps) {
+  // Tap the balance to swap the big number between fiat and sats.
+  const [primary, setPrimary] = useState<"fiat" | "sats">("fiat");
+  const [flipKey, setFlipKey] = useState(0);
   const mask = (v: string) => maskDigits(v, visible);
+  const isUsd = currency === "USD" && usdRate !== undefined;
+  const fiat = (lkr: number) => (isUsd ? fmtUsd(lkr * usdRate) : `${LKR_SYMBOL} ${fmtLkr(lkr)}`);
   const isProfit = changePercent >= 0;
-  const TrendIcon = isProfit ? TrendingUp : TrendingDown;
+  const satsText = `${fmtSats(totalSats)} sats`;
 
   return (
-    <Card
-      type="plain"
-      style={{ "--tgui--tertiary_bg_color": "transparent" } as React.CSSProperties}
-    >
-      <Image src="/bg/wallet.webp" alt="" fill priority className="object-cover" />
-      <div className="absolute inset-0 bg-black/18" />
-      <div className="relative flex flex-col gap-2 p-4">
-        <div className="flex items-end justify-between">
-          <p className="text-[14px] leading-3 text-white capitalize">Total Value</p>
-          <div className="hidden items-center gap-1 rounded-[12px] border border-white py-1 pr-1 pl-2">
-            <p className="text-[12px] leading-4 text-white">රු.</p>
-            <ChevronDown size={14} strokeWidth={2} className="text-white" />
-          </div>
-        </div>
-
-        {isLoading ? (
-          <ValueSkeleton tone="translucent" className="h-9 w-40" />
-        ) : (
-          <p className="text-[36px] leading-12 font-bold text-white">
-            {mask(`≈ ${fmtLkrCurrency(totalLkr)}`)}
-          </p>
-        )}
-
-        <div className={cn("flex flex-col items-start gap-2", isLoading && "invisible")}>
-          <div className="flex items-center gap-2">
-            <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
-              <span>{mask(`₿ ${(totalSats / 1e8).toFixed(6)}`)}</span>
-              <span>BTC</span>
-            </div>
-            <div className="size-1 rounded-full bg-white" />
-            <div className="flex items-end gap-0.5 text-[12px] leading-4 text-white">
-              <span>{mask(`丰 ${fmtSatsCompact(totalSats)}`)}</span>
-            </div>
-          </div>
-
-          <Badge
-            type="number"
-            mode={isProfit ? "primary" : "critical"}
-            className="m-0! h-auto! rounded-[8px]! px-2! py-1!"
-            style={
-              {
-                "--tgui--button_color": "#158348",
-                "--tgui--destructive_text_color": "rgba(241,49,49,0.62)",
-                "--tgui--button_text_color": "#fff",
-              } as React.CSSProperties
-            }
+    <Hero priority>
+      <div className="flex items-center justify-between">
+        <p className="text-[14px] leading-[14px] font-medium">Total value</p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              haptic.impact("medium");
+              onToggleVisible();
+            }}
+            aria-label={visible ? "Hide balances" : "Show balances"}
+            aria-pressed={!visible}
+            className="press hit bg-onbrand-tile text-onbrand-tile-ink flex size-7 items-center justify-center rounded-lg border-0"
           >
-            <p className="flex items-center gap-1">
-              <TrendIcon size={14} strokeWidth={2} className="text-white" />
-              <span>
-                {" "}
-                {mask(fmtLkrCurrency(Math.abs(changeLkr)))}
-                {`  (${isProfit ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%)`}
-                {"  Last 24h"}
-              </span>
-            </p>
-          </Badge>
+            <EyeIcon off={!visible} />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              haptic.select();
+              onToggleCurrency();
+            }}
+            disabled={usdRate === undefined}
+            aria-label={`Show values in ${currency === "USD" ? "rupees" : "US dollars"}`}
+            className="press hit bg-onbrand-tile text-onbrand-tile-ink inline-flex h-7 items-center gap-1 rounded-lg border-0 pr-1.5 pl-2.5 text-[12px] leading-4 font-bold"
+          >
+            {currency}
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M5 7L8.84311 11L13 7" />
+            </svg>
+          </button>
         </div>
       </div>
-    </Card>
+
+      {isLoading ? (
+        <>
+          <ValueSkeleton tone="translucent" className="my-0.5 h-10 w-[200px]" />
+          <ValueSkeleton tone="translucent" className="h-3.5 w-[150px]" />
+          <ValueSkeleton tone="translucent" className="h-6 w-[180px]" />
+        </>
+      ) : !balanceAvailable ? (
+        <div className="flex flex-col gap-1 py-1">
+          <p className="num text-[22px] leading-8 font-bold">Balance unavailable</p>
+          <p className="text-[12px] leading-4 text-white/80">
+            Couldn&apos;t reach your wallet. Try again in a few minutes.
+          </p>
+        </div>
+      ) : (
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              haptic.select();
+              setPrimary((p) => (p === "fiat" ? "sats" : "fiat"));
+              setFlipKey((k) => k + 1);
+            }}
+            aria-label={`Balance ${primary === "fiat" ? fiat(totalLkr) : satsText}. Tap to switch units`}
+            className="press self-start rounded-[10px] border-0 bg-transparent p-0 text-left text-inherit [perspective:600px]"
+          >
+            <span
+              key={flipKey}
+              className="num inline-block animate-[flip_.45s_cubic-bezier(.2,.9,.3,1.2)] text-[36px] leading-12 font-bold tracking-[-0.015em]"
+            >
+              {primary === "sats" ? (
+                mask(satsText)
+              ) : visible && !isUsd ? (
+                <NumberTicker value={totalLkr} prefix={`≈ ${LKR_SYMBOL} `} format={fmtLkr} />
+              ) : (
+                mask(`≈ ${fiat(totalLkr)}`)
+              )}
+            </span>
+          </button>
+          <p className="num flex items-center gap-2 text-[12px] leading-4 uppercase">
+            {mask(`${fmtBtc(totalSats)} BTC`)}
+            <span aria-hidden className="size-[2.2px] rounded-full bg-current" />
+            {mask(primary === "sats" ? fiat(totalLkr) : satsText)}
+          </p>
+          {totalSats > 0 ? (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 self-start rounded-lg px-2 py-1 text-[12px] leading-4 font-semibold text-white",
+                isProfit ? "bg-gain-fill" : "bg-loss-fill"
+              )}
+            >
+              <svg
+                className={cn(isProfit && "-scale-y-100")}
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M4 6L7.17977 10.0854L9.64154 6.76567L13.6419 12M11.0776 12H13.6419L14 9.096" />
+              </svg>
+              {mask(
+                `${fiat(Math.abs(changeLkr))}  (${isProfit ? "+" : "−"}${Math.abs(changePercent).toFixed(2)}%)  Last 24h`
+              )}
+            </span>
+          ) : (
+            <span className="self-start rounded-lg border border-white px-2 py-1 text-[12px] leading-4 font-semibold">
+              Your first sats are one tap away
+            </span>
+          )}
+        </>
+      )}
+    </Hero>
   );
 }
+
+function EyeIcon({ off }: { off: boolean }) {
+  return (
+    <svg
+      className="size-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {off ? (
+        <path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1M6.6 6.6C3.9 8.3 2 12 2 12s3.5 7 10 7a9.8 9.8 0 0 0 5.4-1.6" />
+      ) : (
+        <>
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+          <circle cx="12" cy="12" r="3" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+export { EyeIcon };

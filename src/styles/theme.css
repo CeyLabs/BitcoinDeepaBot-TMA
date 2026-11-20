@@ -1,65 +1,385 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
+/*
+  Dark mode: inside the themed .dark wrapper, or anywhere under
+  <html data-theme="dark"> — the latter covers portals (toasts, sheets), which
+  render under <body>, outside the wrapper. ThemeProvider sets both.
+*/
+@custom-variant dark (&:is(.dark *, html[data-theme="dark"] *));
 
-@utility container {
-  margin-inline: auto;
-  padding-inline: 2rem;
-  @media (width >= --theme(--breakpoint-sm)) {
-    max-width: none;
-  }
-  @media (width >= 1400px) {
-    max-width: 1400px;
-  }
+/*
+  Semantic tokens (shadcn names, so components from the shadcn registry work
+  as-is). Values live on .light / .dark below; use these instead of raw hex in
+  new code, e.g. bg-card, text-muted-foreground, border-border.
+*/
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-tertiary: var(--tertiary);
+  --color-hint: var(--hint);
+  --color-outline: var(--outline);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-muted-foreground: var(--muted-foreground);
+  /* v3 design tokens (Bitcoin Deepa colour system) */
+  --color-page: var(--background);
+  --color-ink: var(--foreground);
+  --color-ink2: var(--ink2);
+  --color-ink3: var(--ink3);
+  --color-line: var(--border);
+  --color-chip: var(--chip);
+  --color-detail: var(--chip);
+  --color-link: var(--link);
+  --color-inv: var(--inv);
+  --color-on-inv: var(--on-inv);
+  --color-avatar: var(--avatar);
+  --color-tile: var(--tile);
+  --color-on-tile: var(--on-tile);
+  --color-nav-sel: var(--nav-sel);
+  --color-disabled: var(--disabled);
+  --color-on-disabled: var(--on-disabled);
+  --color-gain: var(--gain-text);
+  --color-gain-bg: var(--gain-bg);
+  --color-gain-fill: #158348;
+  --color-loss: var(--loss-text);
+  --color-loss-bg: var(--loss-bg);
+  --color-loss-fill: rgba(241, 49, 49, 0.62);
+  --color-loss-solid: #b42d2d;
+  --color-onbrand-tile: #ffffff;
+  --color-onbrand-tile-ink: #9a4c00;
+  --font-sans: var(--font-nunito), var(--font-sinhala), system-ui, sans-serif;
+  --font-display: var(--font-ubuntu), var(--font-sinhala), system-ui, sans-serif;
+  --shadow-card: var(--shadow-card);
+  --shadow-raised: var(--shadow-raised);
+  --shadow-nav: var(--shadow-nav);
+  /* App-specific */
+  --color-success: var(--gain-text);
+  --color-surface-gift: var(--surface-gift);
+  --color-surface-glass: var(--surface-glass);
 }
 
+/* Start screen: fade in after a short delay (fast loads never show it), then
+   a slow "breathing" logo. CSS-only, so it works before JS hydrates. */
 @theme {
-  --color-muted-foreground: var(--muted-foreground);
+  --animate-appear: appear 200ms ease-out 300ms both;
+  --animate-breathe: breathe 2.4s ease-in-out 500ms infinite;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.3, 1.3, 0.4, 1);
+  --ease-pop: cubic-bezier(0.3, 1.6, 0.5, 1);
+  --animate-rise: rise 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-tabin: rise 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-in-right: in-right 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-in-left: in-left 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pop: pop 0.55s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  --animate-float: float-emo 3s ease-in-out infinite;
+  --animate-pulse-soft: pulse-soft 1.6s ease-in-out infinite;
+  --animate-glow: glow 1.4s ease-in-out infinite;
+  --animate-floaty: floaty 1.05s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  --animate-sweep: sweep 2.2s ease-in-out infinite alternate;
+  --animate-ring-out: ring-out 1.4s ease-out infinite;
+  --animate-nav-in: nav-in 0.5s cubic-bezier(0.2, 0.9, 0.25, 1.1) both;
+  --animate-bar-in: bar-in 0.5s cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
+  --animate-logo-in: logo-in 0.9s cubic-bezier(0.2, 0.9, 0.25, 1.2) both;
+  --animate-draw-check: draw-check 0.45s 0.22s ease forwards;
 
-  --color-tma-text-primary: var(--text-primary);
-  --color-tma-text-secondary: var(--text-secondary);
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes in-right {
+    from {
+      opacity: 0;
+      transform: translateX(32px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes in-left {
+    from {
+      opacity: 0;
+      transform: translateX(-32px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes pop {
+    from {
+      transform: scale(0.4);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  @keyframes float-emo {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-7px);
+    }
+  }
+  @keyframes pulse-soft {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+  @keyframes glow {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(248, 147, 26, 0.55);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgba(248, 147, 26, 0);
+    }
+  }
+  @keyframes floaty {
+    0% {
+      opacity: 0;
+      transform: translateY(10px) scale(0.8);
+    }
+    20% {
+      opacity: 1;
+      transform: translateY(0) scale(1.12);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-34px);
+    }
+  }
+  @keyframes sweep {
+    to {
+      top: calc(100% - 30px);
+    }
+  }
+  @keyframes ring-out {
+    from {
+      opacity: 0.8;
+      transform: scale(0.92);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.3);
+    }
+  }
+  @keyframes nav-in {
+    from {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes bar-in {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes logo-in {
+    from {
+      opacity: 0;
+      transform: scale(0.85) translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes flip {
+    from {
+      transform: rotateX(80deg);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  @keyframes draw-check {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
 
-  --color-tma-bg-secondary: var(--bg-secondary);
-  --color-tma-bg-card: var(--card-bg);
+  @keyframes appear {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 
-  --color-tma-border-card: var(--card-border);
+  @keyframes shimmer {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
 
-  --color-tma-gradient-from: var(--card-gradient-from);
-  --color-tma-gradient-to: var(--card-gradient-to);
-
-  --color-tma-accent: var(--accent);
-  --color-tma-link: var(--link);
-
-  --color-surface-gift: var(--surface-gift);
-
-  /* dashboard page background — light default, overridden for .dark below */
-  --color-surface-main: #eeeff3;
-
-  /* telegram-ui card surface — light default, overridden for .dark below */
-  --color-surface-primary: #ffffff;
-
-  /* Success green — opacity applied at the call site via color-mix() */
-  --color-success: #25a761;
-
-  --color-surface-glass: #ffffff99;
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
 }
 
 /*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
+  Skeleton placeholder with a soft sweep. Fill comes from --bone (defaults to
+  the theme's skeleton grey); set [--bone:...] for bones on colored cards.
 */
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+@utility skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bone, var(--skeleton));
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, var(--skeleton-shine), transparent);
+    animation: var(--animate-shimmer);
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after {
+      animation: none;
+    }
+  }
+}
+
+/* Brand flame gradient ("yaka") used on progress bars and the stepper. */
+@utility bg-yaka {
+  background-image: linear-gradient(
+    90deg,
+    #f6921e,
+    #f58d1e 21%,
+    #f2801f 44%,
+    #ee6b21 67%,
+    #e94d24 91%,
+    #e74126
+  );
+}
+
+/* Tap feedback shared by every pressable surface. */
+@utility press {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.12s var(--ease-out-soft),
+    background-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  &:disabled {
+    cursor: default;
+  }
+}
+
+/* Display numbers: Ubuntu with tabular figures. */
+@utility num {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Children rise in one after another. */
+@utility stagger {
+  & > * {
+    animation: var(--animate-rise);
+  }
+  & > *:nth-child(2) {
+    animation-delay: 0.035s;
+  }
+  & > *:nth-child(3) {
+    animation-delay: 0.07s;
+  }
+  & > *:nth-child(4) {
+    animation-delay: 0.105s;
+  }
+  & > *:nth-child(5) {
+    animation-delay: 0.14s;
+  }
+  & > *:nth-child(n + 6) {
+    animation-delay: 0.175s;
+  }
+}
+
+/* A bigger hit area without changing layout (chips, small buttons). */
+@utility hit {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -6px -4px;
+  }
+}
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
   html {
     @apply font-sans;
   }
@@ -74,78 +394,125 @@
   }
 }
 
-/* Default theme variables - backgrounds handled by BotFather settings */
-:root {
-  --tg-theme-link-color: #62bcf9;
-  --tg-theme-section-bg-color: #18222d;
-  --tg-theme-button-color: #fa7119;
-  --tg-color-scheme: dark;
-  --tg-theme-destructive-text-color: #ef5b5b;
-  --tg-theme-hint-color: #b1c3d5;
-  --tg-theme-subtitle-text-color: #b1c3d5;
-  --tg-theme-section-header-text-color: #b1c3d5;
-  --tg-theme-secondary-bg-color: #131415;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-text-color: #ffffff;
-  --tg-theme-accent-text-color: #2ea6ff;
-  --tg-viewport-height: 100vh;
-  --tg-viewport-stable-height: 100vh;
-
-  /* Brand accent — always Bitcoin Deepa orange, never overridden by Telegram */
-  --brand-accent: #ff9900;
-
-  /* Dark slate surface used for selected/active pill states (e.g. Activity tab filters) */
-  --surface-gift: #1f2a36;
-
-  /* Custom theme-aware colors - only text and components */
-  --text-primary: var(--tg-theme-text-color, #ffffff);
-  --text-secondary: var(--tg-theme-hint-color, #b1c3d5);
-  --bg-secondary: var(--tg-theme-secondary-bg-color, #131415);
-  --accent: var(--tg-theme-button-color, #fa7119);
-  --link: var(--tg-theme-link-color, #fa7119);
-
-  /* Theme-aware card and border styles */
-  --card-bg: rgba(100, 100, 100, 0.2);
-  --card-border: rgb(75, 85, 99);
-  --card-gradient-from: rgba(75, 85, 99, 0.2);
-  --card-gradient-to: rgba(107, 114, 128, 0.2);
-
-  /* Muted/secondary text tone used across dark surfaces (#94a3b8) */
-  --muted-foreground: #94a3b8;
-
-  --text-muted: var(--muted-foreground);
-}
-
-/* Light theme overrides - only text colors, not backgrounds */
+/* Token values (see @theme inline above). Light is the default. */
+:root,
 .light {
-  --tg-color-scheme: light;
-  --text-primary: var(--tg-theme-text-color, #000000);
-  --text-secondary: var(--tg-theme-hint-color, #666666);
-  --bg-secondary: var(--tg-theme-secondary-bg-color, #f5f5f5);
-
-  /* Light theme card styles */
-  --card-bg: rgba(0, 0, 0, 0.05);
-  --card-border: rgb(209, 213, 219);
-  --card-gradient-from: rgba(229, 231, 235, 0.3);
-  --card-gradient-to: rgba(243, 244, 246, 0.3);
+  --background: #eeeff3;
+  --foreground: #000001;
+  /* Default text color for everything inside the themed wrapper */
+  --text-primary: #000001;
+  --card: #fffffe;
+  --card-foreground: #000001;
+  --muted: #f8f9fa;
+  --muted-foreground: #64748b;
+  --ink2: #475569;
+  --ink3: #64748b;
+  --chip: #f8f9fa;
+  --link: #9a4c00;
+  --inv: #1f2a36;
+  --on-inv: #fffffe;
+  /* Behind the sprout avatars: the opposite of the page. */
+  --avatar: #000001;
+  --tile: #fffffe;
+  --on-tile: #1f2a36;
+  --nav-sel: #e2e8f0;
+  --disabled: #e2e8f0;
+  --on-disabled: #64748b;
+  --gain-text: #1e7b4f;
+  --gain-bg: rgba(30, 123, 79, 0.1);
+  --loss-text: #d63b3b;
+  --loss-bg: rgba(214, 59, 59, 0.1);
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.05), 0 2px 10px rgba(15, 23, 42, 0.06);
+  --shadow-raised: 0 4px 14px rgba(15, 23, 42, 0.1);
+  --shadow-nav: 0 4px 24px rgba(15, 23, 42, 0.12);
+  /* Soft neutral fill/text (gray buttons, icon buttons, badges) */
+  --secondary: #f8f9fa;
+  --secondary-foreground: #1f2a36;
+  /* Card/cell hover surface */
+  --tertiary: #f1f5f9;
+  /* Secondary text in lists (cell subtitles, chevrons) */
+  --hint: #64748b;
+  /* Hairline ring (outline buttons, avatars) */
+  --outline: rgba(0, 0, 0, 0.05);
+  --primary: #f8931a;
+  --primary-foreground: #000001;
+  --destructive: #d63b3b;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #9a4c00;
+  --radius: 12px;
+  --surface-gift: #1f2a36;
+  /* Translucent blur surfaces (bottom nav) */
+  --surface-glass: rgba(255, 255, 255, 0.6);
+  --scrim: rgba(11, 15, 20, 0.45);
+  /* Skeleton bones and their shimmer */
+  --skeleton: rgba(15, 23, 42, 0.07);
+  --skeleton-shine: rgba(255, 255, 255, 0.7);
 }
 
+.dark,
+html[data-theme="dark"] {
+  --background: #0b0f14;
+  --foreground: #fffffe;
+  --text-primary: #fffffe;
+  --card: #1b2027;
+  --card-foreground: #fffffe;
+  --muted: #0b0d10;
+  --muted-foreground: #94a3b8;
+  --ink2: #94a3b8;
+  --ink3: #94a3b8;
+  --chip: #0b0d10;
+  --link: #f8931a;
+  --inv: #334155;
+  --on-inv: #f1f5f9;
+  --avatar: #fffcfa;
+  --tile: #1f2a36;
+  --on-tile: #f1f5f9;
+  --nav-sel: #334155;
+  --disabled: #334155;
+  --on-disabled: #94a3b8;
+  --gain-text: #3dbe7a;
+  --gain-bg: rgba(61, 190, 122, 0.14);
+  --loss-text: #f45a5a;
+  --loss-bg: rgba(244, 90, 90, 0.14);
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.4);
+  --shadow-raised: 0 4px 14px rgba(0, 0, 0, 0.5);
+  --shadow-nav: 0 4px 24px rgba(0, 0, 0, 0.5);
+  --secondary: #0b0d10;
+  --secondary-foreground: #f1f5f9;
+  --tertiary: #232a33;
+  --hint: #94a3b8;
+  --outline: rgba(255, 255, 255, 0.1);
+  --destructive: #f45a5a;
+  --border: #334155;
+  --input: #334155;
+  --ring: #f8931a;
+  --surface-glass: rgba(0, 0, 0, 0.6);
+  --scrim: rgba(0, 0, 0, 0.7);
+  --skeleton: rgba(255, 255, 255, 0.07);
+  --skeleton-shine: rgba(255, 255, 255, 0.06);
+}
+
+/* Base text color: the page (via <html data-theme>) and dark-only sections. */
+body,
+.light,
 .dark {
-  /* Override the Tailwind color tokens directly (single-level var), so
-       `bg-surface-main`/`bg-surface-primary` resolve to the dark value for
-       any .dark descendant. */
-  --color-surface-main: #1b2027;
-  --color-surface-primary: #0b0f14;
-  --color-surface-glass: #00000099;
-}
-
-body {
-  background-color: var(--tg-theme-bg-color, #212121);
-}
-
-#tg-ui-root {
-  /* Only set text color, background handled by BotFather */
   color: var(--text-primary);
-  --tg-theme-button-color: #fa7119;
-  --tg-theme-link-color: #fa7119;
+}
+
+/* <html data-theme> is set by ThemeProvider; body sits outside the themed wrapper. */
+body {
+  background-color: var(--background);
+}
+
+/*
+  The installed PWA draws edge to edge (viewport-fit=cover + iOS
+  black-translucent status bar), so keep content out from under the status
+  bar. Browsers and Telegram report a 0 top inset, so this only matters
+  standalone. The bottom inset is handled by the fixed bottom navigation.
+*/
+@media (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+  }
 }

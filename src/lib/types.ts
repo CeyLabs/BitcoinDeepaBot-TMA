@@ -58,31 +58,6 @@ export interface Subscription {
   payhereSubId?: string;
 }
 
-export interface Transaction {
-  id: string;
-  type: "subscription" | "wallet" | "gift" | "reward" | "referral";
-  amount: number;
-  currency: string;
-  date: string;
-  description: string;
-  status: "completed" | "pending" | "cancelled";
-  recipient?: string;
-  duration?: string;
-}
-
-export interface ApiTransaction {
-  payhere_pay_id: string;
-  payhere_sub_id?: string;
-  status: "SUCCESS" | "PENDING" | "CANCELLED" | "FAILED" | "CHARGEBACK";
-  btc_price_at_purchase?: number;
-  satoshis_purchased?: number;
-  package_amount?: number;
-  coingecko_timestamp?: string;
-  created_at: string;
-  updated_at: string;
-  settled?: boolean;
-}
-
 export type ActivityType =
   | "sent"
   | "received"
@@ -93,7 +68,9 @@ export type ActivityType =
   | "gift_sent"
   | "gift_received"
   | "tasks_reward"
-  | "membership_reward";
+  | "membership_reward"
+  | "bitcoin_purchase"
+  | "bitcoin_sale";
 
 export interface ActivityItem {
   id: string;
@@ -108,22 +85,19 @@ export interface ActivityItem {
   /** Absolute approx LKR value shown as "≈ LKR x" */
   lkr: number;
   statusDot?: "green" | "orange" | "red" | "gray";
+  /** Set when the sats never reached (or left) the wallet: a failed, cancelled or charged-back purchase */
+  notCredited?: boolean;
   settlement: {
     status: string;
     settledOn: string;
     btcSats: number;
     btcPriceUsd?: number;
-    btcPriceLkr: number;
+    /** Omit when there's no real price for this transaction (e.g. bot transfers) — show `memo` instead */
+    btcPriceLkr?: number;
+    /** Transfer note from the sender, shown in place of the price panel when there's no real price */
+    memo?: string;
     transactionId: string;
   };
-}
-
-export interface Wallet {
-  balance: number;
-  balanceUSD: number;
-  change24h: number;
-  changePercent: number;
-  assets: CryptoAsset[];
 }
 
 export interface CryptoAsset {
@@ -137,6 +111,14 @@ export interface CryptoAsset {
   icon: string;
 }
 
+export interface Wallet {
+  balance: number;
+  balanceUSD: number;
+  change24h: number;
+  changePercent: number;
+  assets: CryptoAsset[];
+}
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
@@ -145,11 +127,6 @@ export interface SubscriptionPlan {
   currency: string;
   features: string[];
   popular?: boolean;
-}
-
-export interface UserExistsResponse {
-  registered: boolean;
-  error?: string;
 }
 
 export interface NewsArticle {
@@ -168,15 +145,43 @@ export interface NewsArticle {
 export interface DCSummary {
   dca: {
     balance: number;
+    /** LKR that went into BTC, excluding fees */
     spent: number;
+    /** Payment processor + platform fees on those purchases (older backends omit it) */
+    fees?: number;
     avg_btc_price: number;
   };
   total_balance: number;
   total_lkr: string;
+  /** False when the backend couldn't reach the BitcoinDeepa wallet: total_* are 0, not real. Missing on older backends. */
+  balance_available?: boolean;
   currency: string;
   "24_hr_change": number;
   current_btc_price?: {
     usd: number;
     lkr: number;
   };
+}
+
+// Sats sent/received to other Telegram users via the bot (BitcoinDeepa API).
+export interface BotTransaction {
+  id: number;
+  time: string;
+  direction: "incoming" | "outgoing";
+  from_id: number;
+  to_id: number;
+  from_user?: string;
+  to_user?: string;
+  type: string;
+  amount: number;
+  amount_lkr: string | number | null;
+  memo?: string;
+  success: boolean;
+  /** The transfer that settled one of the user's successful purchases (already listed) */
+  purchase_settlement?: boolean;
+  /** The payment that took one of the user's sales' sats (already listed as the sale) */
+  sale_payment?: boolean;
+  /** The other party's Bitcoin Deepa @username and avatar seed (null if they have none) */
+  counterparty_username?: string | null;
+  counterparty_avatar_seed?: string | null;
 }

@@ -14,7 +14,7 @@ export const MOCK_TASKS: Task[] = [
   {
     id: "task-join-community",
     title: "Join the Community",
-    description: "Stay update and connect with members",
+    description: "Stay updated and connect with members",
     rewardSats: 200,
     frequency: "one_time",
     icon: "/emoji/community.webp",
@@ -36,17 +36,3 @@ export const MOCK_TASKS: Task[] = [
   //   icon: "/emoji/gift.webp",
   // },
 ];
-
-export const MOCK_TASK_STATS = {
-  completedTotal: 100,
-  todayCompleted: 2,
-  todayTotal: 5,
-  totalEarnedSats: 10000,
-  todayEarningsSats: 200,
-};
-
-export const MOCK_REFERRAL_PROGRESS = {
-  joined: 2,
-  target: 5,
-  rewardSats: 1000,
-};

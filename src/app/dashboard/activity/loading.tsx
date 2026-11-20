@@ -1,17 +1,25 @@
+import { Bone, BoneCard } from "@/components/ui/bone";
 import { ActivitySkeleton } from "@/components/dashboard/activity/ActivitySkeleton";
 
 export default function ActivityLoading() {
   return (
     <div className="flex w-full flex-col gap-5">
-      <div className="flex w-full items-center justify-between gap-2">
-        <div className="h-10 flex-1 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
-        <div className="size-10 shrink-0 animate-pulse rounded-full bg-[#e2e8f0] dark:bg-[#1e293b]" />
+      {/* Search + round eye button */}
+      <div className="flex w-full items-center gap-2">
+        <BoneCard className="shadow-card flex h-11 flex-1 items-center gap-2 px-3">
+          <Bone className="size-5 rounded-full" />
+          <Bone className="h-3.5 w-16" />
+        </BoneCard>
+        <BoneCard className="shadow-card size-11 shrink-0 rounded-full" />
       </div>
 
-      <div className="flex gap-2">
-        <div className="h-9 w-16 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
-        <div className="h-9 w-20 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
-        <div className="h-9 w-20 animate-pulse rounded-[12px] bg-[#e2e8f0] dark:bg-[#1e293b]" />
+      {/* Filter chips */}
+      <div className="-mt-2 flex gap-2">
+        {["w-10", "w-24", "w-14", "w-14"].map((w, i) => (
+          <BoneCard key={i} className={`flex h-9 ${w} items-center justify-center rounded-xl`}>
+            <Bone className="h-3 w-2/3" />
+          </BoneCard>
+        ))}
       </div>
 
       <ActivitySkeleton />

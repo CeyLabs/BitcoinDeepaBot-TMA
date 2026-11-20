@@ -1,32 +1,83 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { ActivitySearchBar } from "@/components/dashboard/activity/ActivitySearchBar";
 import { ActivityTabs } from "@/components/dashboard/activity/ActivityTabs";
 import { ActivityGroup } from "@/components/dashboard/activity/ActivityGroup";
 import { ActivitySkeleton } from "@/components/dashboard/activity/ActivitySkeleton";
+import { ActivityEmpty } from "@/components/dashboard/activity/ActivityEmpty";
+import { Button } from "@/components/ui/button";
+import { haptic } from "@/platform";
 import { useTransactionHistory } from "@/hooks/query/useTransactionHistory";
+import { useBotTransactionHistory } from "@/hooks/query/useBotTransactionHistory";
+import { useRefreshWhenSalesSettle } from "@/hooks/query/useSell";
 import {
   ACTIVITY_TITLE,
   getActivityCategory,
+  mapBotTransactionToActivityItem,
   mapDcaTransactionToActivityItem,
+  mapSellOrderToActivityItem,
   type ActivityCategory,
 } from "@/lib/activity";
-import { useStore } from "@/lib/store";
+import { useBalanceVisible } from "@/hooks/useBalanceVisible";
 
-// Only membership rewards (DCA purchases) are backed by real data today —
-// sent/received/tipjar/faucet/gift and tasks have no backend endpoint yet.
-const COMING_SOON_CATEGORIES: ActivityCategory[] = ["transactions", "tasks"];
+// Tipjar/faucet/gift and tasks have no backend endpoint yet.
+const COMING_SOON_CATEGORIES: ActivityCategory[] = ["tasks"];
 
 export default function ActivityPage() {
-  const { balanceVisible, toggleBalanceVisible } = useStore();
+  const { visible: balanceVisible, toggle: toggleBalanceVisible } = useBalanceVisible();
   const [search, setSearch] = useState("");
+  // The input updates on every key press; the (possibly long) list re-filters
+  // with the deferred value, so typing never waits on it.
+  const deferredSearch = useDeferredValue(search);
   const [category, setCategory] = useState<ActivityCategory>("all");
 
-  const { transactions, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    useTransactionHistory();
-  const activity = useMemo(() => transactions.map(mapDcaTransactionToActivityItem), [transactions]);
+  // Plan charges show on Plans, one-time buys and sales on Transactions: all
+  // come from the member's history
+  const showDca = category !== "tasks";
+  const showBotHistory = category === "all" || category === "transactions";
+
+  // Only fetch the sources the current tab actually shows.
+  const dca = useTransactionHistory({ enabled: showDca });
+  const botHistory = useBotTransactionHistory({ enabled: showBotHistory });
+  // A sale still moving is followed on its own; the history reloads once it settles
+  useRefreshWhenSalesSettle(dca.sales);
+
+  const activity = useMemo(
+    () => [
+      ...dca.transactions.map(mapDcaTransactionToActivityItem),
+      ...dca.sales.map(mapSellOrderToActivityItem),
+      // A purchase's sats arrive as a bot transfer, and a sale's leave as a
+      // bot payment: the backend marks both, so each shows once
+      ...botHistory.transactions
+        .filter((tx) => !tx.purchase_settlement && !tx.sale_payment)
+        .map(mapBotTransactionToActivityItem),
+    ],
+    [dca.transactions, dca.sales, botHistory.transactions]
+  );
+
+  const dcaLoading = showDca && dca.isLoading;
+  const botLoading = showBotHistory && botHistory.isLoading;
+  const stillLoading = dcaLoading || botLoading;
+  const dcaFailed = showDca && dca.isError;
+  const botFailed = showBotHistory && botHistory.isError;
+  const isError = dcaFailed || botFailed;
+  // Names the source(s) that failed, for the notice shown above whatever
+  // activity did load.
+  const failedLabel =
+    dcaFailed && botFailed ? "activity" : dcaFailed ? "purchases and sales" : "transfers";
+  const refetch = () => {
+    if (showDca && dca.isError) dca.refetch();
+    if (showBotHistory && botHistory.isError) botHistory.refetch();
+  };
+  const hasNextPage = (showDca && dca.hasNextPage) || (showBotHistory && botHistory.hasNextPage);
+  const isFetchingNextPage =
+    (showDca && dca.isFetchingNextPage) || (showBotHistory && botHistory.isFetchingNextPage);
+  const fetchNextPage = () => {
+    if (showDca && dca.hasNextPage) dca.fetchNextPage();
+    if (showBotHistory && botHistory.hasNextPage) botHistory.fetchNextPage();
+  };
 
   const comingSoon = COMING_SOON_CATEGORIES.includes(category);
 
@@ -34,10 +85,13 @@ export default function ActivityPage() {
     if (comingSoon) return [];
 
     const filtered = activity.filter((item) => {
-      if (category !== "all" && getActivityCategory(item.type) !== category) return false;
-      if (!search.trim()) return true;
+      const itemCategory = getActivityCategory(item.type);
+      if (category !== "all" && itemCategory !== category) {
+        return false;
+      }
+      if (!deferredSearch.trim()) return true;
 
-      const query = search.trim().toLowerCase();
+      const query = deferredSearch.trim().toLowerCase();
       return (
         ACTIVITY_TITLE[item.type].toLowerCase().includes(query) ||
         item.counterparty?.toLowerCase().includes(query) ||
@@ -58,7 +112,20 @@ export default function ActivityPage() {
     }
 
     return Array.from(byDay.entries());
-  }, [activity, comingSoon, search, category]);
+  }, [activity, comingSoon, deferredSearch, category]);
+
+  // Show whatever has loaded: a slow or failing source (the bot API can take
+  // its full 10s timeout) must not hide purchases that are already here.
+  const isLoading = stillLoading && groups.length === 0;
+
+  const canClear = search.trim() !== "" || category !== "all";
+  const clearFilters = () => {
+    haptic.select();
+    setSearch("");
+    setCategory("all");
+  };
+  // Nothing at all came back (not just filtered out): the first-run copy.
+  const nothingYet = activity.length === 0 && !stillLoading && !canClear;
 
   return (
     <div className="flex w-full flex-col gap-5">
@@ -74,11 +141,54 @@ export default function ActivityPage() {
       {isLoading ? (
         <ActivitySkeleton />
       ) : comingSoon ? (
-        <p className="py-8 text-center text-[14px] text-[#64748b]">Coming soon.</p>
+        <ActivityEmpty
+          title="Task rewards are coming soon"
+          body="Sats you earn from tasks will show up here."
+          actionLabel="Show all activity"
+          onAction={clearFilters}
+        />
+      ) : isError && groups.length === 0 ? (
+        <ActivityEmpty
+          title="Couldn't load activity"
+          body="Check your connection and try again."
+          actionLabel="Try again"
+          onAction={refetch}
+        />
       ) : groups.length === 0 ? (
-        <p className="py-8 text-center text-[14px] text-[#64748b]">No activity found.</p>
+        nothingYet ? (
+          <ActivityEmpty
+            title="No activity yet"
+            body="Your purchases, rewards and transfers will show up here."
+          />
+        ) : (
+          <ActivityEmpty
+            title="No matches"
+            body="Try another search or filter."
+            actionLabel={canClear ? "Clear filters" : undefined}
+            onAction={clearFilters}
+          />
+        )
       ) : (
         <>
+          {isError && (
+            <div
+              role="alert"
+              className="bg-loss-bg flex items-center justify-between gap-3 rounded-xl py-1 pr-1 pl-4"
+            >
+              <p className="text-loss text-[13px] font-semibold">
+                Couldn&apos;t load {failedLabel}. Showing what loaded.
+              </p>
+              <Button variant="text" size="text" onClick={refetch} className="shrink-0">
+                Try again
+              </Button>
+            </div>
+          )}
+          {stillLoading && (
+            <p className="text-ink3 animate-pulse-soft text-center text-[13px]">
+              Loading {dcaLoading ? "purchases" : "transfers"}…
+            </p>
+          )}
+
           {groups.map(([dayKey, items]) => (
             <ActivityGroup
               key={dayKey}
@@ -89,13 +199,15 @@ export default function ActivityPage() {
           ))}
 
           {hasNextPage && (
-            <button
+            <Button
+              variant="secondary"
+              size="default"
               onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
-              className="py-3 text-center text-[14px] font-semibold text-[#fa7119] disabled:opacity-50"
+              loading={isFetchingNextPage}
+              className="self-center"
             >
-              {isFetchingNextPage ? "Loading..." : "Load more"}
-            </button>
+              Load more
+            </Button>
           )}
         </>
       )}

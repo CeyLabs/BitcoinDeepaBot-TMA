@@ -1,78 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
 
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp?: any;
-    };
-  }
-}
-
-type storyParams = {
-  text: string;
-  widget_link: {
-    url: string;
-    name: string;
-  };
-};
-
-export function useTMA() {
-  const [webApp, setWebApp] = useState<any>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.Telegram?.WebApp) {
-      setWebApp(window.Telegram.WebApp);
-    }
-  }, []);
-
-  const shareStory = useCallback(
-    (mediaUrl: string, params: storyParams) => {
-      if (webApp) {
-        webApp.shareToStory(mediaUrl, params);
-      } else {
-        throw new Error("TMA not available");
-      }
-    },
-    [webApp]
-  );
-
-  const openLink = useCallback(
-    (url: string, tryInstantView = false) => {
-      if (webApp) {
-        webApp.openLink(url, tryInstantView);
-      } else {
-        throw new Error("TMA not available");
-      }
-    },
-    [webApp]
-  );
-
-  // For t.me links (bot deep links, channel invites, share intents) — keeps
-  // navigation inside the Telegram client instead of bouncing to a browser.
-  const openTelegramLink = useCallback(
-    (url: string) => {
-      if (webApp) {
-        webApp.openTelegramLink(url);
-      } else {
-        throw new Error("TMA not available");
-      }
-    },
-    [webApp]
-  );
-
-  const closeWebApp = useCallback(() => {
-    if (webApp) {
-      webApp.close();
-    } else {
-      throw new Error("TMA not available");
-    }
-  }, [webApp]);
-
-  return { webApp, closeWebApp, shareStory, openLink, openTelegramLink };
-}
-
-export function usePostRedirect() {
-  const redirectInPost = useCallback((fullUrl: string) => {
+function usePostRedirect() {
+  // true once the browser is navigating; false if the link couldn't be used
+  const redirectInPost = useCallback((fullUrl: string): boolean => {
     try {
       const url = new URL(fullUrl);
       const baseUrl = `${url.origin}${url.pathname}`;
@@ -93,8 +23,10 @@ export function usePostRedirect() {
       document.body.appendChild(form);
       form.submit();
       document.body.removeChild(form);
+      return true;
     } catch (error) {
       console.error("Failed to redirect:", error);
+      return false;
     }
   }, []);
 
@@ -105,10 +37,7 @@ export function usePayHereRedirect() {
   const postRedirect = usePostRedirect();
 
   const redirectToPayHereViaPost = useCallback(
-    (fullUrl: string) => {
-      // Pass the complete URL directly to postRedirect
-      postRedirect(fullUrl);
-    },
+    (fullUrl: string): boolean => postRedirect(fullUrl),
     [postRedirect]
   );
 

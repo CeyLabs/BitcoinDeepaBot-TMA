@@ -1,14 +1,26 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Input } from "@telegram-apps/telegram-ui";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/ui/text-field";
 import { useKycInitiate, useUpdateProfile } from "@/hooks/query/useKyc";
-import { useTelegramBackButton } from "@/hooks/useTgBackButton";
+import { haptic } from "@/platform";
+import { PushHeader } from "@/components/ui/back-button";
+import { SectionLabel } from "@/components/ui/section";
+import { Icon } from "@/components/dashboard/settings/icons";
 import { useUser } from "@/hooks/useUser";
-import { haptic } from "@/lib/haptics";
+import { useUserMe } from "@/hooks/query/useUserMe";
 import { createUserSchema, type CreateUserFormData } from "@/lib/validations";
+
+type FieldName = keyof CreateUserFormData;
+type FieldErrors = Partial<Record<FieldName, string>>;
+
+/** First zod message for one field, or undefined when it's valid. */
+function fieldError(name: FieldName, value: string) {
+  const result = createUserSchema.shape[name].safeParse(value);
+  return result.success ? undefined : result.error.issues[0]?.message;
+}
 
 const FIELDS: Array<{
   name: keyof CreateUserFormData;
@@ -16,10 +28,10 @@ const FIELDS: Array<{
   placeholder: string;
   type: string;
 }> = [
-  { name: "first_name", label: "First Name", placeholder: "Enter your first name", type: "text" },
-  { name: "last_name", label: "Last Name", placeholder: "Enter your last name", type: "text" },
+  { name: "first_name", label: "First name", placeholder: "Enter your first name", type: "text" },
+  { name: "last_name", label: "Last name", placeholder: "Enter your last name", type: "text" },
   { name: "email", label: "Email", placeholder: "e.g. example@gmail.com", type: "email" },
-  { name: "phone", label: "Phone", placeholder: "e.g. +94771234567", type: "tel" },
+  { name: "phone", label: "Phone", placeholder: "e.g. 0771234567", type: "tel" },
   { name: "address", label: "Address", placeholder: "Enter your address", type: "text" },
   { name: "city", label: "City", placeholder: "e.g. Colombo", type: "text" },
   { name: "country", label: "Country", placeholder: "e.g. Sri Lanka", type: "text" },
@@ -31,25 +43,41 @@ export default function VerificationDetailsPage() {
   const kycInitiate = useKycInitiate();
   const updateProfile = useUpdateProfile();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isValid },
-  } = useForm<CreateUserFormData>({
-    resolver: zodResolver(createUserSchema),
-    mode: "onChange",
-    defaultValues: {
-      first_name: firstName ?? "",
-      last_name: lastName ?? "",
-      email: "",
-      phone: "",
-      address: "",
-      city: "",
-      country: "Sri Lanka",
-    },
-  });
+  const [values, setValues] = useState<CreateUserFormData>(() => ({
+    first_name: firstName ?? "",
+    last_name: lastName ?? "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    country: "Sri Lanka",
+  }));
+  // Pre-fill what the member already saved (e.g. retrying a declined or
+  // expired verification) once /user/me arrives, without overwriting anything
+  // typed meanwhile. Adjusted during render, not in an effect.
+  const { data: me } = useUserMe();
+  const [prefilledFrom, setPrefilledFrom] = useState<typeof me>(undefined);
+  if (me && prefilledFrom !== me) {
+    setPrefilledFrom(me);
+    setValues((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(prev) as (keyof CreateUserFormData)[]) {
+        const saved = me[key];
+        const untouched = !prev[key] || (key === "country" && prev[key] === "Sri Lanka");
+        if (saved && untouched) next[key] = saved;
+      }
+      return next;
+    });
+  }
 
-  useTelegramBackButton(() => router.push("/verification"));
+  // Errors show for a field once it's been edited (or on submit), like before.
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const isValid = useMemo(() => createUserSchema.safeParse(values).success, [values]);
+
+  const onFieldChange = (name: FieldName, value: string) => {
+    setValues((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: fieldError(name, value) }));
+  };
 
   const error =
     updateProfile.error instanceof Error
@@ -58,7 +86,20 @@ export default function VerificationDetailsPage() {
         ? kycInitiate.error.message
         : null;
 
-  const onSubmit = (formData: CreateUserFormData) => {
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const parsed = createUserSchema.safeParse(values);
+    if (!parsed.success) {
+      const all: FieldErrors = {};
+      for (const issue of parsed.error.issues) {
+        const name = issue.path[0] as FieldName;
+        all[name] ??= issue.message;
+      }
+      setErrors(all);
+      haptic.notify("error");
+      return;
+    }
+    const formData = parsed.data;
     haptic.impact("medium");
     updateProfile.mutate(
       {
@@ -93,66 +134,55 @@ export default function VerificationDetailsPage() {
     );
   };
 
+  const submitting = updateProfile.isPending || kycInitiate.isPending;
+
   return (
-    <div className="bg-surface-primary flex min-h-screen w-full flex-col">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 pt-8 pb-6">
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-tma-text-primary text-[24px] leading-7 font-bold">Your Details</h1>
-          <p className="text-tma-text-secondary text-[14px] leading-4.5">
-            We need a few details before starting verification
+    <div className="bg-background flex min-h-screen w-full flex-col">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 pt-3">
+        <PushHeader title="Your details" onBack={() => router.push("/verification")} />
+        <div className="flex flex-col gap-1">
+          <SectionLabel as="h2">Before we start</SectionLabel>
+          <p className="text-ink3 text-[13px] leading-4">
+            We need a few details before starting verification. Use the name on your ID.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col gap-3">
-          <div
-            className="flex flex-col gap-3"
-            style={{ "--tgui--bg_color": "var(--color-surface-primary)" } as React.CSSProperties}
-          >
+        <form onSubmit={onSubmit} noValidate className="flex flex-1 flex-col gap-3">
+          <div className="stagger flex flex-col gap-5 [--field-bg:var(--background)]">
             {FIELDS.map((field) => (
-              <div key={field.name} className="w-full">
-                <Input
-                  type={field.type}
-                  status={errors[field.name] ? "error" : undefined}
-                  header={
-                    <span className="inline-flex items-center gap-1">
-                      {field.label}
-                      <span className="size-1 rounded-full bg-[#f13131]" />
-                    </span>
-                  }
-                  placeholder={field.placeholder}
-                  className="w-full p-0"
-                  {...register(field.name)}
-                />
-                {errors[field.name] && (
-                  <p className="pt-1 text-[12px] text-[#f13131]">{errors[field.name]?.message}</p>
-                )}
-              </div>
+              <TextField
+                key={field.name}
+                type={field.type}
+                label={
+                  <span className="inline-flex items-center gap-1">
+                    {field.label}
+                    <span aria-hidden className="bg-loss size-1 rounded-full" />
+                  </span>
+                }
+                placeholder={field.placeholder}
+                name={field.name}
+                value={values[field.name]}
+                onChange={(e) => onFieldChange(field.name, e.target.value)}
+                error={errors[field.name]}
+                required
+              />
             ))}
           </div>
 
           {error && (
-            <div className="rounded-2xl bg-[#f13131]/10 px-4 py-4">
-              <p className="text-[13px] leading-4 font-semibold text-[#f13131]">
-                Verification Error
-              </p>
-              <p className="text-tma-text-secondary mt-1 text-[13px] leading-4.5">{error}</p>
+            <div role="alert" className="bg-loss-bg rounded-xl px-4 py-3">
+              <p className="text-loss text-[13px] leading-4 font-bold">Verification error</p>
+              <p className="text-ink2 mt-1 text-[13px] leading-4.5">{error}</p>
             </div>
           )}
 
-          <div className="mt-auto flex flex-col gap-3 pt-4">
-            <Button
-              type="submit"
-              mode="filled"
-              size="l"
-              stretched
-              style={{ borderRadius: "12px" }}
-              loading={updateProfile.isPending || kycInitiate.isPending}
-              disabled={updateProfile.isPending || kycInitiate.isPending || !isValid}
-            >
-              Start Verification
+          <div className="bg-background sticky bottom-0 mt-auto flex flex-col gap-2 pt-4 pb-[calc(16px+env(safe-area-inset-bottom))]">
+            <Button type="submit" loading={submitting} disabled={submitting || !isValid}>
+              Start verification
             </Button>
-            <p className="text-muted text-center text-xs">
-              Your Data is Encrypted and never Shared
+            <p className="text-ink3 flex items-center justify-center gap-1.5 text-center text-[12px]">
+              <Icon name="lock" className="text-success size-3.5" />
+              Your data is encrypted and never shared
             </p>
           </div>
         </form>

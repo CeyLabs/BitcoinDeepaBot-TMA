@@ -1,89 +1,79 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Button, Title } from "@telegram-apps/telegram-ui";
-import { useTheme } from "@/app/context/theme";
-import { authenticateWithTelegramOidc, saveAuthToStorage } from "@/lib/auth";
-import type { TelegramOidcAuthData } from "@/lib/auth";
+import { useEffect, useState } from "react";
+import { Logo } from "@/components/ui/logo";
+import { CellChevron } from "@/components/ui/cell";
+import { Emoji } from "@/components/ui/emoji";
+import { LandingShell } from "@/components/auth/LandingShell";
+import { UserProgress } from "@/components/auth/UserProgress";
+import { loginErrorMessage } from "@/lib/auth";
 import { TELEGRAM_BOT_URL } from "@/lib/constants";
 import TelegramLoginButton from "@/components/auth/TelegramLoginButton";
-
-interface BrowserLoginScreenProps {
-  onLoggedIn: () => void;
-}
+import { InstallButton } from "@/pwa";
 
 /**
  * Shown when the app is opened outside Telegram (a plain browser tab).
- * Signs the user in via Telegram's Login Widget rather than Mini App
- * initData, since initData only exists inside the Telegram WebView.
+ * "Log In with Telegram" is a redirect through the backend (OIDC), which
+ * comes back with a session cookie; useSession then moves the user on. A
+ * failed login comes back here with ?login_error=<code>.
  */
-export default function BrowserLoginScreen({ onLoggedIn }: BrowserLoginScreenProps) {
-  const { isDark } = useTheme();
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+export default function BrowserLoginScreen() {
+  // Only rendered on the client, once the platform is known
+  const [error] = useState(() =>
+    typeof window === "undefined"
+      ? null
+      : loginErrorMessage(new URL(window.location.href).searchParams.get("login_error"))
+  );
 
-  const handleAuth = async (data: TelegramOidcAuthData) => {
-    setError(null);
-
-    if (data.error || !data.id_token) {
-      setError("Couldn't sign you in with Telegram. Please try again.");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const result = await authenticateWithTelegramOidc(data.id_token);
-      if (!result.token) throw new Error("No token returned");
-      saveAuthToStorage(result.token);
-      onLoggedIn();
-    } catch (err) {
-      console.error(err);
-      setError("Couldn't sign you in with Telegram. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Drop ?login_error= so a reload doesn't show it again
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("login_error")) return;
+    url.searchParams.delete("login_error");
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+  }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-white px-5 text-center dark:bg-[#1b2027]">
-      <div className="relative mb-5 h-[150px] w-[220px]">
-        <Image
-          src={isDark ? "/BDLogo_White.svg" : "/BDLogo_Black.svg"}
-          alt="Bitcoin Deepa"
-          fill
-          priority
-          sizes="220px"
-          className="object-contain"
-        />
+    <LandingShell themeToggle aria-label="Sign in to Bitcoin Deepa">
+      <div className="flex flex-col items-center text-center">
+        <div className="animate-logo-in relative h-[230px] w-full max-w-[340px]">
+          <Logo priority />
+        </div>
+        <div className="stagger mt-6 flex w-full flex-col items-center gap-2">
+          <h1 className="max-w-[330px] text-[26px] leading-8">
+            Join Sri Lanka&rsquo;s Fastest Growing Bitcoin Community
+          </h1>
+          <div className="mt-4 w-full">
+            <UserProgress />
+          </div>
+        </div>
       </div>
 
-      <Title level="2" weight="2" className="max-w-sm leading-snug">
-        Sign In With Telegram
-      </Title>
-
-      <p className="text-muted-foreground mt-2 max-w-sm text-[15px] dark:text-[#64748b]">
-        Bitcoin Deepa runs best inside Telegram. Sign in with your Telegram account to continue in
-        the browser.
-      </p>
-
-      <div className="mt-8">
-        <TelegramLoginButton onAuth={handleAuth} />
+      <div className="stagger mt-8 flex w-full flex-col gap-3">
+        <TelegramLoginButton className="w-full" />
+        {error && (
+          <p role="alert" className="text-loss text-center text-[13px] font-semibold">
+            {error}
+          </p>
+        )}
+        <a
+          href={TELEGRAM_BOT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="press bg-card shadow-card flex min-h-16 w-full items-center gap-3 rounded-xl px-4 py-3 text-left"
+        >
+          <Emoji src="/emoji/wallet.webp" />
+          <span className="flex min-w-0 grow flex-col gap-1 pl-0.5">
+            <span className="text-[16px] leading-[18px] font-semibold">Prefer Telegram?</span>
+            <span className="text-ink3 truncate text-[13px] leading-4">
+              Open the mini app in the Telegram app
+            </span>
+          </span>
+          <CellChevron />
+        </a>
+        <InstallButton variant="cell" />
+        <p className="text-ink3 mt-1 text-center text-[13px] font-semibold">@BitcoinDeepaBot</p>
       </div>
-
-      {isLoading && (
-        <p className="text-muted-foreground mt-4 text-[13px] dark:text-[#64748b]">
-          Signing you in…
-        </p>
-      )}
-      {error && <p className="mt-4 text-[13px] text-red-500">{error}</p>}
-
-      <Link href={TELEGRAM_BOT_URL} className="mt-8 block w-full max-w-xs">
-        <Button mode="outline" size="l" stretched style={{ borderRadius: "12px" }}>
-          Open in Telegram Instead
-        </Button>
-      </Link>
-    </main>
+    </LandingShell>
   );
 }
