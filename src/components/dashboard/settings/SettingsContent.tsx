@@ -9,7 +9,6 @@ import { UsernameSheet } from "./UsernameSheet";
 import { AvatarPickerSheet } from "./AvatarPickerSheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Emoji } from "@/components/ui/emoji";
 import { List, ListRow, Section } from "@/components/ui/section";
 import { Segmented } from "@/components/ui/segmented";
 import { Switch } from "@/components/ui/switch";
@@ -21,6 +20,7 @@ import { useUser } from "@/hooks/useUser";
 import type { User } from "@/lib/types";
 import { haptic, usePlatform } from "@/platform";
 import { Icon } from "./icons";
+import { InstallButton } from "@/pwa";
 import { PayoutAccountSection } from "./PayoutAccountSection";
 import { PersonalDetailsSection } from "./PersonalDetailsSection";
 
@@ -142,7 +142,7 @@ function IdentityRow({ onVerify }: { onVerify: () => void }) {
 
   return (
     <ListRow
-      icon={<Emoji src="/emoji/animated/id-card.webp" size={26} />}
+      icon={<Icon name="idCard" className="text-ink2" />}
       title="Identity"
       subtitle={IDENTITY_TEXT[status] ?? "Needed to buy plans and sell sats"}
       after={after}
@@ -202,6 +202,7 @@ export function SettingsContent({
 
       <Section title="Account">
         <List>
+          <InstallButton variant="row" />
           <IdentityRow onVerify={() => go("/verification")} />
           <UsernameRow />
           <ListRow

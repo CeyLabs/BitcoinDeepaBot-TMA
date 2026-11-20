@@ -41,6 +41,7 @@
   --color-link: var(--link);
   --color-inv: var(--inv);
   --color-on-inv: var(--on-inv);
+  --color-avatar: var(--avatar);
   --color-tile: var(--tile);
   --color-on-tile: var(--on-tile);
   --color-nav-sel: var(--nav-sel);
@@ -410,6 +411,8 @@
   --link: #9a4c00;
   --inv: #1f2a36;
   --on-inv: #fffffe;
+  /* Behind the sprout avatars: the opposite of the page. */
+  --avatar: #000001;
   --tile: #fffffe;
   --on-tile: #1f2a36;
   --nav-sel: #e2e8f0;
@@ -460,7 +463,9 @@ html[data-theme="dark"] {
   --ink3: #94a3b8;
   --chip: #0b0d10;
   --link: #f8931a;
+  --inv: #334155;
   --on-inv: #f1f5f9;
+  --avatar: #fffcfa;
   --tile: #1f2a36;
   --on-tile: #f1f5f9;
   --nav-sel: #334155;

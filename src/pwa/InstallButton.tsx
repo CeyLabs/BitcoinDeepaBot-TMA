@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Download, Share, SquarePlus, X } from "lucide-react";
+import { useState } from "react";
+import { Download, Share, SquarePlus } from "lucide-react";
 import { usePlatform } from "@/platform";
 import { cn } from "cn";
+import { ListRow } from "@/components/ui/section";
+import { Sheet } from "@/components/ui/sheet";
 import { promptInstall, useInstallKind } from "./install";
 
 interface InstallButtonProps {
-  /** "button": full-width outline button. "icon": round icon button (top bar). */
-  variant?: "button" | "icon" | "cell";
+  /** "button": full-width button. "cell": standalone card. "row": a row inside a settings `List`. */
+  variant?: "button" | "row" | "cell";
   className?: string;
 }
 
@@ -31,18 +33,14 @@ export function InstallButton({ variant = "button", className }: InstallButtonPr
 
   return (
     <>
-      {variant === "icon" ? (
-        <button
-          type="button"
-          aria-label="Install app"
+      {variant === "row" ? (
+        <ListRow
           onClick={handleClick}
-          className={cn(
-            "press bg-card text-foreground shadow-card flex size-10 items-center justify-center rounded-full",
-            className
-          )}
-        >
-          <Download size={18} strokeWidth={1.75} />
-        </button>
+          icon={<Download className="text-ink2 size-[18px]" strokeWidth={2.2} aria-hidden />}
+          title="Install the app"
+          subtitle="Add Bitcoin Deepa to your home screen"
+          className={className}
+        />
       ) : variant === "cell" ? (
         <button
           type="button"
@@ -88,7 +86,7 @@ export function InstallButton({ variant = "button", className }: InstallButtonPr
         </button>
       )}
 
-      {showIosSteps && <IosInstallSheet onClose={() => setShowIosSteps(false)} />}
+      <IosInstallSheet open={showIosSteps} onOpenChange={setShowIosSteps} />
     </>
   );
 }
@@ -99,41 +97,16 @@ const IOS_STEPS = [
   { Icon: null, text: "Tap “Add” in the top-right corner" },
 ];
 
-function IosInstallSheet({ onClose }: { onClose: () => void }) {
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
+function IosInstallSheet({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   return (
-    <div
-      className="fixed inset-0 z-200 flex items-end justify-center bg-black/50"
-      onClick={onClose}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="ios-install-title"
-        onClick={(event) => event.stopPropagation()}
-        className="bg-card w-full max-w-md rounded-t-[20px] px-5 pt-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-left"
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 id="ios-install-title" className="text-[18px] font-bold">
-            Install Bitcoin Deepa
-          </h2>
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={onClose}
-            className="bg-chip text-ink2 flex size-8 items-center justify-center rounded-full"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
+    <Sheet open={open} onOpenChange={onOpenChange} title="Install Bitcoin Deepa">
+      <div className="px-5 pt-2 pb-4">
         <ol className="flex flex-col gap-3">
           {IOS_STEPS.map(({ Icon, text }, index) => (
             <li key={text} className="flex items-center gap-3">
@@ -151,6 +124,6 @@ function IosInstallSheet({ onClose }: { onClose: () => void }) {
           there.
         </p>
       </div>
-    </div>
+    </Sheet>
   );
 }

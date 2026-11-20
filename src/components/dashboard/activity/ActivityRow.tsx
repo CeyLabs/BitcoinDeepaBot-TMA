@@ -116,7 +116,12 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
             ) : (
               <>
                 {isOutgoing ? "To " : "From "}
-                <span className="text-link font-bold">@{item.counterparty}</span> at {time}
+                {item.counterparty ? (
+                  <span className="text-link font-bold">@{item.counterparty}</span>
+                ) : (
+                  "a member"
+                )}{" "}
+                at {time}
               </>
             )}
           </span>
@@ -138,9 +143,11 @@ export function ActivityRow({ item, visible }: ActivityRowProps) {
               {mask(`${isOutgoing ? "−" : "+"}${fmtSats(Math.abs(item.sats))} sats`)}
             </span>
           )}
-          <span className="text-ink2 text-right text-[12px] leading-4 whitespace-nowrap">
-            {mask(`≈ ${fmtLkrCurrency(item.lkr)}`)}
-          </span>
+          {item.lkr > 0 && (
+            <span className="text-ink2 text-right text-[12px] leading-4 whitespace-nowrap">
+              {mask(`≈ ${fmtLkrCurrency(item.lkr)}`)}
+            </span>
+          )}
         </span>
 
         <svg

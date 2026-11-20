@@ -4,12 +4,15 @@ import sprouts from "@dicebear/styles/sprouts.json";
 /*
   Profile pictures: DiceBear "Sprouts" (CC0), drawn in the browser from a seed
   the backend keeps on the user (PATCH /user/avatar). The palette is the
-  brand's: cream or near-black ground, a Bitcoin-orange pot, a Lanka-teal
+  brand's: a Bitcoin-orange pot, a Lanka-teal
   plant and saffron / orange / maroon / flame blooms. DiceBear picks one of
   each list per seed, so a seed always draws the same sprout.
+  No background: UserAvatar paints the circle per theme (black on light,
+  cream on dark). DiceBear picks each part by its own key, so dropping the
+  background leaves every seed's sprout unchanged.
 */
 const PALETTE = {
-  backgroundColor: ["fffcfa", "000001"],
+  backgroundColor: [] as string[],
   bloomColor: ["ffbe2b", "ea7400", "8d183a", "e74126"],
   plantColor: ["00544f"],
   potColor: ["f8931a"],
