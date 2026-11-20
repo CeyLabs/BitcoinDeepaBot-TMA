@@ -49,7 +49,7 @@ export function AppHeader() {
               // Verified (KYC approved): a green check on the avatar's corner.
               <span
                 aria-hidden
-                className="bg-gain-fill border-background absolute -right-0.5 -bottom-0.5 flex size-[18px] items-center justify-center rounded-full border-2 text-white"
+                className="bg-gain-fill border-background absolute -top-0.5 -right-0.5 flex size-[18px] items-center justify-center rounded-full border-2 text-white"
               >
                 <svg
                   className="size-2.5"

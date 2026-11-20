@@ -3,7 +3,7 @@
 import BottomNavigation from "@/components/bottomNavigation";
 import { AppHeader } from "@/components/dashboard/AppHeader";
 import { SheetsProvider } from "@/components/dashboard/sheets";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { PullToRefresh } from "@/components/pull-to-refresh";
 import { useQueryClient } from "@tanstack/react-query";
@@ -46,6 +46,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.refresh();
     return queryClient.refetchQueries({ type: "active" });
   };
+
+  // A news article opens at the top. Next only scrolls when the new page isn't
+  // already in view, and with the sticky header it usually is, so an article
+  // opened from a scrolled list kept that offset.
+  useLayoutEffect(() => {
+    if (/^\/dashboard\/news\/[^/]+/.test(pathname)) window.scrollTo(0, 0);
+  }, [pathname]);
 
   // Pushed pages (buy, sell, send, profile) hide the tab bar; news articles keep it.
   const showNav = !PUSHED_PAGES.some((p) => pathname.startsWith(p));
