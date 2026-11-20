@@ -11,8 +11,8 @@ import { useUser } from "@/hooks/useUser";
 import { useBalanceVisible } from "@/hooks/useBalanceVisible";
 import { useDisplayCurrency } from "@/hooks/useDisplayCurrency";
 
-/** The Wallet tab. `news` is the server-rendered carousel slot. */
-export function WalletScreen({ news }: { news: React.ReactNode }) {
+/** The Wallet tab. `news` is the server-rendered carousel slot (off for now, see app/dashboard/page.tsx). */
+export function WalletScreen({ news }: { news?: React.ReactNode }) {
   const { visible, toggle: toggleVisible } = useBalanceVisible();
   const { currency, toggle: toggleCurrency } = useDisplayCurrency();
   const { subscription, subscriptionLoading } = useUser();

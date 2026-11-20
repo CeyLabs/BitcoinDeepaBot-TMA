@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "cn";
-import { BtcSign } from "@/components/ui/btc-sign";
+import { BtcCoin } from "@/components/ui/btc-coin";
 import { Button } from "@/components/ui/button";
 import { haptic } from "@/platform";
 
@@ -59,9 +59,7 @@ function UnitPill({ unit }: { unit: Unit }) {
   return (
     <span className="bg-card inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full pr-3 pl-1 text-[14px] font-bold">
       {unit === "sats" ? (
-        <span className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-full text-[15px]">
-          <BtcSign />
-        </span>
+        <BtcCoin className="size-7" />
       ) : (
         <span className="bg-inv text-on-inv flex size-7 items-center justify-center rounded-full text-[10px] font-bold">
           රු
@@ -78,8 +76,8 @@ function Box({
   label,
   d,
   invalid,
-  readOnly,
   onSubmit,
+  footer,
 }: {
   id: string;
   unit: Unit;
@@ -87,10 +85,10 @@ function Box({
   d: DualAmountState;
   invalid?: boolean;
   onSubmit?: () => void;
-  /** Shows the conversion only: can't be typed in. */
-  readOnly?: boolean;
+  /** A line under the amount, inside the box (Buy's sats estimate). */
+  footer?: React.ReactNode;
 }) {
-  const active = !readOnly && d.active === unit && d.hasValue;
+  const active = d.active === unit && d.hasValue;
   const amountClass = cn(
     "num min-w-0 flex-1 border-0 bg-transparent p-0 text-[30px] leading-[1.2] font-bold tracking-[-0.02em] outline-none",
     active ? "text-foreground" : "text-ink2",
@@ -100,49 +98,54 @@ function Box({
     <div
       className={cn(
         "rounded-[20px] px-4 pt-3 pb-3.5 transition-[background-color,box-shadow] duration-200",
-        active ? "bg-card" : "bg-chip",
-        !readOnly && "focus-within:bg-card",
+        active ? "bg-card" : "bg-chip focus-within:bg-card",
         invalid
           ? "shadow-[0_0_0_2px_var(--destructive)]"
           : active
             ? "shadow-[0_0_0_2px_var(--primary)]"
-            : !readOnly && "focus-within:shadow-[0_0_0_2px_var(--primary)]"
+            : "focus-within:shadow-[0_0_0_2px_var(--primary)]"
       )}
     >
-      {readOnly ? (
-        <span className="text-ink2 block text-[12px] font-semibold">{label}</span>
-      ) : (
-        <label htmlFor={id} className="text-ink2 block text-[12px] font-semibold">
-          {label}
-        </label>
-      )}
+      <label htmlFor={id} className="text-ink2 block text-[12px] font-semibold">
+        {label}
+      </label>
       <div className="mt-1 flex items-center gap-2.5">
-        {readOnly ? (
-          <output aria-label={label} className={cn(amountClass, !d.hasValue && "text-ink3")}>
-            {d.text(unit) || "0"}
-          </output>
-        ) : (
-          <input
-            id={id}
-            inputMode="numeric"
-            pattern="[0-9]*"
-            autoComplete="off"
-            placeholder="0"
-            value={d.text(unit)}
-            onChange={(e) => d.set(unit, e.target.value)}
-            // The keyboard's Go key does what the (hidden behind it) main button does.
-            enterKeyHint={onSubmit ? "go" : undefined}
-            onKeyDown={(e) => {
-              if (e.key !== "Enter" || !onSubmit) return;
-              e.preventDefault();
-              e.currentTarget.blur();
-              onSubmit();
-            }}
-            className={cn(amountClass, "placeholder:text-ink3")}
-          />
-        )}
+        <input
+          id={id}
+          inputMode="numeric"
+          pattern="[0-9]*"
+          autoComplete="off"
+          placeholder="0"
+          value={d.text(unit)}
+          onChange={(e) => d.set(unit, e.target.value)}
+          // The keyboard's Go key does what the (hidden behind it) main button does.
+          enterKeyHint={onSubmit ? "go" : undefined}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter" || !onSubmit) return;
+            e.preventDefault();
+            e.currentTarget.blur();
+            onSubmit();
+          }}
+          className={cn(amountClass, "placeholder:text-ink3")}
+        />
         <UnitPill unit={unit} />
       </div>
+      {footer}
+    </div>
+  );
+}
+
+/** The conversion, as the box's last line: "You get (estimate)  ≈ 12,345 sats". */
+function Estimate({ unit, label, d }: { unit: Unit; label: string; d: DualAmountState }) {
+  return (
+    <div className="border-line mt-3 flex items-center justify-between gap-3 border-t pt-2.5">
+      <span className="text-ink2 text-[13px] font-semibold">{label} (estimate)</span>
+      <output
+        aria-label={`${label} (estimate)`}
+        className={cn("num text-[17px] font-bold", d.hasValue ? "text-foreground" : "text-ink3")}
+      >
+        ≈ {d.text(unit) || "0"} {unit === "sats" ? "sats" : "LKR"}
+      </output>
     </div>
   );
 }
@@ -180,16 +183,23 @@ export function DualAmount({
       label={side.unit === typed ? side.label : `${side.label} (estimate)`}
       d={d}
       invalid={invalid}
-      readOnly={!!only && side.unit !== only}
       onSubmit={onSubmit}
     />
   );
   if (only) {
+    // The other side is just the conversion: a line inside the box, not a box
+    // of its own, so it doesn't look like it can be typed in.
+    const [input, shown] = top.unit === only ? [top, bottom] : [bottom, top];
     return (
-      <div className="flex flex-col gap-2">
-        {box(top)}
-        {box(bottom)}
-      </div>
+      <Box
+        id={`${id}-${input.unit}`}
+        unit={input.unit}
+        label={input.label}
+        d={d}
+        invalid={invalid}
+        onSubmit={onSubmit}
+        footer={<Estimate unit={shown.unit} label={shown.label} d={d} />}
+      />
     );
   }
   return (
@@ -310,5 +320,5 @@ export function Presets({
 
 /** Small grey line under the amount ("1 BTC ≈ රු. … · 1.5% fee"). */
 export function PriceFooter({ children }: { children: React.ReactNode }) {
-  return <p className="text-ink3 num mt-1 text-center text-[12px] font-semibold">{children}</p>;
+  return <p className="text-ink3 num mt-3 text-center text-[12px] font-semibold">{children}</p>;
 }

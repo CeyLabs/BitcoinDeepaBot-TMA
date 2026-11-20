@@ -50,6 +50,8 @@ export const ACTIVITY_TITLE: Record<ActivityType, string> = {
 
 /** An activity row plus display-only extras the shared ActivityItem type doesn't carry. */
 export type ActivityEntry = ActivityItem & {
+  /** A Lightning payment (not a transfer between bot users): a bolt on the icon */
+  lightning?: boolean;
   settlement: ActivityItem["settlement"] & {
     /** LKR taken as fees (gross minus the amount that bought BTC); only when the backend sent it */
     feeLkr?: number;
@@ -167,6 +169,20 @@ function parseLkr(value: string | number | null | undefined): number {
   return Number(value.replace(/,/g, "")) || 0;
 }
 
+/**
+ * The note from a bot transfer's memo, without the bot's wrapper, which names
+ * both people by their Telegram usernames (never shown in the app):
+ * "💸 P2P Send from @a to @b. Memo: lunch" → "lunch"; "💰 Collect by @w from
+ * @u." → none. A memo the bot didn't wrap (a Lightning payer's note) is kept.
+ */
+export function cleanBotMemo(memo: string | undefined): string | undefined {
+  if (!memo) return undefined;
+  const wrapped = /^[^\p{L}\p{N}\s]/u.test(memo) && /\b(?:Send|Collect)\b/.test(memo);
+  if (!wrapped) return memo;
+  const i = memo.indexOf(" Memo: ");
+  return i === -1 ? undefined : memo.slice(i + " Memo: ".length).trim() || undefined;
+}
+
 const BOT_STATUS: Record<"success" | "pending" | "failed", { dot: StatusDot; label: string }> = {
   success: { dot: "green", label: "Completed" },
   pending: { dot: "orange", label: "Pending" },
@@ -182,6 +198,7 @@ export function mapBotTransactionToActivityItem(tx: BotTransaction): ActivityEnt
     ? undefined
     : tx.counterparty_username?.replace(/^@/, "") || undefined;
   const lkr = parseLkr(tx.amount_lkr);
+  const memo = cleanBotMemo(tx.memo);
   // Lightning rows all have id 0: the payment hash is what tells them apart
   const ref = tx.id ? String(tx.id) : tx.payment_hash || `${tx.time}-${tx.amount}`;
   const status = BOT_STATUS[tx.status ?? (tx.success ? "success" : "failed")] ?? BOT_STATUS.failed;
@@ -190,7 +207,8 @@ export function mapBotTransactionToActivityItem(tx: BotTransaction): ActivityEnt
     id: `bot-${ref}`,
     type: isOutgoing ? "sent" : "received",
     counterparty,
-    detailLabel: isLightning ? (tx.memo ? `Lightning · ${tx.memo}` : "Lightning") : undefined,
+    detailLabel: isLightning ? (memo ? `Lightning · ${memo}` : "Lightning") : undefined,
+    lightning: isLightning,
     timestamp: tx.time,
     sats: isOutgoing ? -tx.amount : tx.amount,
     lkr,
@@ -202,7 +220,7 @@ export function mapBotTransactionToActivityItem(tx: BotTransaction): ActivityEnt
       settledOn: tx.time,
       btcSats: tx.amount,
       feeSats: isLightning && isOutgoing && (tx.fee ?? 0) > 0 ? tx.fee : undefined,
-      memo: tx.memo,
+      memo,
       transactionId: ref,
     },
   };

@@ -1,7 +1,7 @@
 "use client";
 
 import { environmentManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { PlatformProvider } from "@/platform";
+import { HapticsLayer, PlatformProvider } from "@/platform";
 import { useRegisterUser } from "@/hooks/useRegisterUser";
 import { useRegisterTelegramUser } from "@/hooks/query/useRegisterTelegramUser";
 import { usePlatform } from "@/platform";
@@ -70,6 +70,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <PlatformProvider>
       <SwipeClickGuard />
+      {/* A haptic for every tap: Telegram, Android vibration, iOS web via ios-haptics */}
+      <HapticsLayer />
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
           {/* Needs the query client (useSession). */}

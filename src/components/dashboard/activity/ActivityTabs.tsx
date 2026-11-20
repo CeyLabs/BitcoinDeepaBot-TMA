@@ -7,7 +7,7 @@ import type { ActivityCategory } from "@/lib/activity";
 const TABS: { value: ActivityCategory; label: string }[] = [
   { value: "all", label: "All" },
   { value: "transactions", label: "Transactions" },
-  { value: "plans", label: "Plans" },
+  { value: "plans", label: "Subscriptions" },
   // "tasks" comes back with the Tasks page
 ];
 

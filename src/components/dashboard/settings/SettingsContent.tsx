@@ -62,7 +62,7 @@ function ProfileRow() {
         <UserAvatar seed={avatarSeed} size={56} />
         <span
           aria-hidden
-          className="bg-card text-link shadow-card absolute -right-0.5 -bottom-0.5 flex size-6 items-center justify-center rounded-full"
+          className="bg-card text-link shadow-card absolute -top-0.5 -right-0.5 flex size-6 items-center justify-center rounded-full"
         >
           <svg
             className="size-3.5"
