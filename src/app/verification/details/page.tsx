@@ -10,6 +10,7 @@ import { PushHeader } from "@/components/ui/back-button";
 import { SectionLabel } from "@/components/ui/section";
 import { Icon } from "@/components/dashboard/settings/icons";
 import { useUser } from "@/hooks/useUser";
+import { useUserMe } from "@/hooks/query/useUserMe";
 import { createUserSchema, type CreateUserFormData } from "@/lib/validations";
 
 type FieldName = keyof CreateUserFormData;
@@ -30,7 +31,7 @@ const FIELDS: Array<{
   { name: "first_name", label: "First name", placeholder: "Enter your first name", type: "text" },
   { name: "last_name", label: "Last name", placeholder: "Enter your last name", type: "text" },
   { name: "email", label: "Email", placeholder: "e.g. example@gmail.com", type: "email" },
-  { name: "phone", label: "Phone", placeholder: "e.g. +94771234567", type: "tel" },
+  { name: "phone", label: "Phone", placeholder: "e.g. 0771234567", type: "tel" },
   { name: "address", label: "Address", placeholder: "Enter your address", type: "text" },
   { name: "city", label: "City", placeholder: "e.g. Colombo", type: "text" },
   { name: "country", label: "Country", placeholder: "e.g. Sri Lanka", type: "text" },
@@ -51,6 +52,24 @@ export default function VerificationDetailsPage() {
     city: "",
     country: "Sri Lanka",
   }));
+  // Pre-fill what the member already saved (e.g. retrying a declined or
+  // expired verification) once /user/me arrives, without overwriting anything
+  // typed meanwhile. Adjusted during render, not in an effect.
+  const { data: me } = useUserMe();
+  const [prefilledFrom, setPrefilledFrom] = useState<typeof me>(undefined);
+  if (me && prefilledFrom !== me) {
+    setPrefilledFrom(me);
+    setValues((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(prev) as (keyof CreateUserFormData)[]) {
+        const saved = me[key];
+        const untouched = !prev[key] || (key === "country" && prev[key] === "Sri Lanka");
+        if (saved && untouched) next[key] = saved;
+      }
+      return next;
+    });
+  }
+
   // Errors show for a field once it's been edited (or on submit), like before.
   const [errors, setErrors] = useState<FieldErrors>({});
   const isValid = useMemo(() => createUserSchema.safeParse(values).success, [values]);

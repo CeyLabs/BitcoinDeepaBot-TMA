@@ -1,5 +1,18 @@
 import { z } from "zod";
 
+/**
+ * A Sri Lankan mobile number as people type it ("077 123 4567", "0771234567",
+ * "94771234567", "+94 77 123 4567") in the +94771234567 form the backend
+ * expects. Anything else comes back as typed (and fails the check).
+ */
+export function normalizeLkPhone(input: string): string {
+  const v = input.replace(/[\s\-()]/g, "");
+  if (/^0\d{9}$/.test(v)) return `+94${v.slice(1)}`;
+  if (/^94\d{9}$/.test(v)) return `+${v}`;
+  if (/^7\d{8}$/.test(v)) return `+94${v}`;
+  return v;
+}
+
 // User registration validation schema matching backend CreateUserDto
 export const createUserSchema = z.object({
   first_name: z
@@ -17,9 +30,12 @@ export const createUserSchema = z.object({
   phone: z
     .string()
     .min(1, "Phone number is required")
-    .regex(/^\+94\d{9}$/, {
-      message: "Please provide a valid phone number (e.g., +94771234567)",
-    }),
+    .transform(normalizeLkPhone)
+    .pipe(
+      z.string().regex(/^\+94\d{9}$/, {
+        message: "Enter a Sri Lankan number, e.g. 0771234567",
+      })
+    ),
 
   address: z
     .string()
