@@ -43,7 +43,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return queryClient.refetchQueries({ type: "active" });
   };
 
-  // Pushed pages (news, an article, payment status) hide the tab bar.
+  // Pushed pages (an article, payment status) hide the tab bar.
   const showNav = !PUSHED_PAGES.some((p) => pathname.startsWith(p));
 
   return (
@@ -79,7 +79,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 }
 
 const PUSHED_PAGES = [
-  "/dashboard/news",
+  "/dashboard/news/",
   "/dashboard/buy",
   "/dashboard/sell/",
   "/dashboard/send",

@@ -1,16 +1,13 @@
 import { Bone, BoneCard } from "@/components/ui/bone";
 
-// Mirrors the news page: header, featured card, category chips, article cards.
+// Mirrors the news tab: featured card, category chips, article cards.
 export default function NewsLoading() {
   return (
     <div className="flex w-full flex-col gap-5">
-      <div className="flex min-h-11 items-center justify-center">
-        <Bone className="h-4 w-12" />
-      </div>
-
       <div className="flex flex-col gap-3">
         <Bone className="h-4 w-16" />
-        <div className="bg-primary/80 flex min-h-[150px] flex-col gap-2 rounded-[20px] py-[18px] pr-[124px] pl-[18px] [--bone:rgba(255,255,255,0.35)]">
+        <div className="bg-primary/80 flex flex-col gap-2 rounded-[20px] p-[18px] [--bone:rgba(255,255,255,0.35)]">
+          <Bone className="mb-1.5 h-40 w-full rounded-[14px]" />
           <Bone className="h-6 w-32 rounded-lg" />
           <Bone className="h-5 w-full" />
           <Bone className="h-5 w-3/4" />
