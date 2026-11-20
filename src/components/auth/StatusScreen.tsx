@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { cn } from "cn";
-import { LandingShell } from "./LandingShell";
 
 /** Green circle with a check that pops in and draws itself (success states). */
 export function SuccessCheck({ className }: { className?: string }) {
@@ -31,24 +30,65 @@ export function SuccessCheck({ className }: { className?: string }) {
   );
 }
 
-/** Large (100px) animated emoji for status screens. */
+/** Large (88px) animated emoji for status screens, the size the result screens use. */
 export function BigEmoji({ src, className }: { src: string; className?: string }) {
   return (
     <Image
       src={src}
       alt=""
-      width={100}
-      height={100}
+      width={88}
+      height={88}
       unoptimized
       priority
-      className={cn("mx-auto size-[100px] object-contain max-[720px]:size-[84px]", className)}
+      className={cn("mx-auto size-[88px] object-contain", className)}
     />
   );
 }
 
 /**
- * Centered result screen: an emoji (or <SuccessCheck />), title, message and
- * actions. Used by the error, not-found and payment result pages.
+ * Full-screen shell for results outside the dashboard (payment results, errors,
+ * 404): app background, content centred, actions pinned at the bottom above the
+ * home indicator. The top inset comes from the body (standalone PWA only). The same layout as the Buy/Sell/Send result screens.
+ */
+export function ResultShell({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="bg-background text-foreground mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4 pt-6 pb-[calc(24px+env(safe-area-inset-bottom))]">
+      {children}
+    </main>
+  );
+}
+
+/** Art, title and message, centred: the top half of every result screen. */
+export function StatusBody({
+  art,
+  title,
+  children,
+}: {
+  art: React.ReactNode;
+  title: React.ReactNode;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="stagger flex flex-1 flex-col items-center justify-center text-center">
+      {art}
+      <h1 className="mt-3 text-[22px] leading-7">{title}</h1>
+      {children && (
+        <p className="text-ink2 mt-1 max-w-sm px-2 text-[14px] leading-5 font-semibold">
+          {children}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** Result screen actions: full width, at the bottom. */
+export function StatusActions({ children }: { children: React.ReactNode }) {
+  return <div className="flex w-full flex-col gap-2">{children}</div>;
+}
+
+/**
+ * Result screen: an emoji (or <SuccessCheck />), title, message, and actions
+ * at the bottom. Used by the error, not-found and payment result pages.
  */
 export function StatusScreen({
   art,
@@ -62,13 +102,11 @@ export function StatusScreen({
   actions?: React.ReactNode;
 }) {
   return (
-    <LandingShell>
-      <div className="stagger flex flex-col items-center gap-2 text-center">
-        {art}
-        <h1 className="mt-2 max-w-[330px] text-[24px] leading-7">{title}</h1>
-        {children && <p className="text-ink2 max-w-[330px] text-[14px] leading-5">{children}</p>}
-      </div>
-      {actions && <div className="stagger mt-8 flex w-full flex-col gap-3">{actions}</div>}
-    </LandingShell>
+    <ResultShell>
+      <StatusBody art={art} title={title}>
+        {children}
+      </StatusBody>
+      {actions && <StatusActions>{actions}</StatusActions>}
+    </ResultShell>
   );
 }

@@ -34,7 +34,7 @@ export default function SendStatusPage({ params }: { params: Promise<{ id: strin
       ) : (
         <SendTransferStatus transfer={transfer} />
       )}
-      <Button onClick={back}>Back to wallet</Button>
+      <Button onClick={back}>Go to wallet</Button>
     </div>
   );
 }

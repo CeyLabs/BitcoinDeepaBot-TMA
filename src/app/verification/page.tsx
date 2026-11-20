@@ -181,7 +181,7 @@ export default function VerificationIntroPage() {
   }
 
   return (
-    <div className="bg-background flex min-h-screen w-full flex-col">
+    <div className="bg-background flex min-h-dvh w-full flex-col">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 pt-3">
         <PushHeader title="Verify identity" onBack={() => router.push("/dashboard")} />
 

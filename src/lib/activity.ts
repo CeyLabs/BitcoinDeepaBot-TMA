@@ -97,7 +97,7 @@ export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityEnt
         ? "One-time Buy"
         : tx.package_name
           ? `${tx.package_name} Plan`
-          : "Destributed",
+          : "Distributed",
     timestamp: tx.created_at,
     sats: tx.satoshis_purchased,
     lkr: tx.gross_amount,
@@ -131,7 +131,8 @@ const SELL_BADGE_DOT: Record<
 // A sale from the member's history: sats out of the wallet, LKR to their
 // bank. A refunded sale's sats came back (that transfer is listed on its own),
 // so it reads as not taken.
-export function mapSellOrderToActivityItem(order: SellOrder): ActivityItem {
+/** `memo`: the memo of the bot transfer that paid this sale (hidden from the list as a duplicate). */
+export function mapSellOrderToActivityItem(order: SellOrder, memo?: string): ActivityItem {
   const { label, variant } = SELL_STATUS_BADGE[order.status] ?? {
     label: order.status,
     variant: "soft" as const,
@@ -150,6 +151,7 @@ export function mapSellOrderToActivityItem(order: SellOrder): ActivityItem {
       settledOn: order.completedAt ?? order.createdAt,
       btcSats: order.sats,
       btcPriceLkr: order.btcLkrRate,
+      memo: memo || undefined,
       transactionId: order.id,
     },
   };

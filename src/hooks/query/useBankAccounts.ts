@@ -47,7 +47,9 @@ export const bankAccountsOptions = () =>
     queryKey: queryKeys.bankAccounts,
     queryFn: () => fetchy.get<BankAccount[]>("/bank-accounts"),
     // Verified by an admin outside the app: refetch whenever the user is back.
-    staleTime: 0,
+    // Fresh for 30s otherwise (not refetched by every screen that mounts it).
+    staleTime: 30_000,
+    refetchOnWindowFocus: "always",
   });
 
 export function useBanks(enabled = true) {

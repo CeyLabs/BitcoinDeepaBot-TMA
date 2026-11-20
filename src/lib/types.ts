@@ -94,7 +94,7 @@ export interface ActivityItem {
     btcPriceUsd?: number;
     /** Omit when there's no real price for this transaction (e.g. bot transfers) — show `memo` instead */
     btcPriceLkr?: number;
-    /** Transfer note from the sender, shown in place of the price panel when there's no real price */
+    /** Transfer note: a bot transfer's memo, or the memo of the transfer that paid a sale */
     memo?: string;
     transactionId: string;
   };
@@ -181,6 +181,8 @@ export interface BotTransaction {
   purchase_settlement?: boolean;
   /** The payment that took one of the user's sales' sats (already listed as the sale) */
   sale_payment?: boolean;
+  /** With sale_payment: which sale it paid, so the sale can show this transfer's memo */
+  sale_order_id?: string | null;
   /** The other party's Bitcoin Deepa @username and avatar seed (null if they have none) */
   counterparty_username?: string | null;
   counterparty_avatar_seed?: string | null;

@@ -18,7 +18,7 @@ function PlanPaymentCancelled() {
             Back to plans
           </Link>
           <Link href="/dashboard" className={buttonVariants({ variant: "secondary" })}>
-            Go to my wallet
+            Go to wallet
           </Link>
         </>
       }

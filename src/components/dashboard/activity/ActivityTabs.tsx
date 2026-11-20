@@ -8,7 +8,7 @@ const TABS: { value: ActivityCategory; label: string }[] = [
   { value: "all", label: "All" },
   { value: "transactions", label: "Transactions" },
   { value: "plans", label: "Plans" },
-  { value: "tasks", label: "Tasks" },
+  // "tasks" comes back with the Tasks page
 ];
 
 export interface ActivityTabsProps {

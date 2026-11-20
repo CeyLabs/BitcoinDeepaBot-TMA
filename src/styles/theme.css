@@ -384,6 +384,27 @@
     @apply font-sans;
   }
 
+  /* Floating tab bar's gap to the screen edge: 16px, or the home-indicator inset
+     where there is one (iPhone), not both stacked. */
+  :root {
+    --nav-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  /* App feel: no text selection or iOS callout on long press. Fields stay
+     editable; add `select-text` to anything that should be copyable. */
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+  }
+
   /* Scroll stays functional everywhere, the scrollbar itself is just never drawn. */
   * {
     scrollbar-width: none; /* Firefox */
@@ -514,5 +535,17 @@ body {
 @media (display-mode: standalone) {
   body {
     padding-top: env(safe-area-inset-top);
+  }
+  /* A strip in the page colour behind the status bar / Dynamic Island, so
+     content scrolling up doesn't show through around it. The sticky header
+     stops just below it (top: env(safe-area-inset-top)). */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 40;
+    height: env(safe-area-inset-top);
+    background: var(--background);
+    pointer-events: none;
   }
 }

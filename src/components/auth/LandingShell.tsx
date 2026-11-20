@@ -44,10 +44,10 @@ export function LandingShell({
 }) {
   return (
     // Plain page in the card colour; content in a centered phone-width column.
-    <div className="bg-card min-h-screen transition-colors duration-300">
+    <div className="bg-card min-h-dvh transition-colors duration-300">
       <main
         aria-label={ariaLabel}
-        className="relative mx-auto flex min-h-screen w-full max-w-[440px] flex-col"
+        className="relative mx-auto flex min-h-dvh w-full max-w-[440px] flex-col"
       >
         {themeToggle && <ThemeToggle className="absolute top-4 right-4 z-10" />}
         <div

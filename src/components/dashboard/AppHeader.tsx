@@ -19,7 +19,7 @@ export function AppHeader() {
   const ready = useSession().status !== "loading";
 
   return (
-    <header className="bg-background sticky top-0 z-35 -mx-4 px-4 pt-3 pb-2 transition-colors duration-300">
+    <header className="bg-background sticky top-[env(safe-area-inset-top)] z-35 -mx-4 px-4 pt-3 pb-2 transition-colors duration-300">
       <div className="flex min-h-11 items-center justify-between gap-2.5">
         <Wordmark className="text-foreground relative top-0.5 h-9 w-auto shrink-0" />
         <div className="flex min-w-0 items-center gap-2">
