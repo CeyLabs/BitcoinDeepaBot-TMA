@@ -20,6 +20,7 @@ import { useUser } from "@/hooks/useUser";
 import type { User } from "@/lib/types";
 import { haptic, usePlatform } from "@/platform";
 import { Icon } from "./icons";
+import { InstallButton } from "@/pwa";
 import { PayoutAccountSection } from "./PayoutAccountSection";
 import { PersonalDetailsSection } from "./PersonalDetailsSection";
 
@@ -201,6 +202,7 @@ export function SettingsContent({
 
       <Section title="Account">
         <List>
+          <InstallButton variant="row" />
           <IdentityRow onVerify={() => go("/verification")} />
           <UsernameRow />
           <ListRow

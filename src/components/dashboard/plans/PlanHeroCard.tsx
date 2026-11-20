@@ -267,21 +267,6 @@ export function PlanHeroCard({
           </Button>
         </div>
       </Hero>
-
-      <Cell
-        before={
-          <span className="bg-inv text-on-inv flex size-9 items-center justify-center rounded-full text-[11px] font-bold">
-            PH
-          </span>
-        }
-        subtitle={
-          subscription.endDate
-            ? `PayHere · card or bank · renews ${fmtShortDate(subscription.endDate)}`
-            : "PayHere · card or bank"
-        }
-      >
-        Payment method
-      </Cell>
     </Section>
   );
 }

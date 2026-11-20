@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "cn";
 import { Card } from "@/components/ui/card";
 import { Emoji } from "@/components/ui/emoji";
+import { Progress } from "@/components/ui/progress";
 import { Section } from "@/components/ui/section";
 import { useSheets } from "@/components/dashboard/sheets";
 import { useBankAccounts } from "@/hooks/query/useBankAccounts";
@@ -19,7 +20,6 @@ const TITLES = [
   "Halfway there, 2 to go",
   "Almost there, 1 to go",
 ];
-const RING = 113.1; // 2πr for r = 18
 
 /** Onboarding checklist on the wallet; hidden once every step is done. */
 export function GetStartedCard({ hasSats }: { hasSats: boolean }) {
@@ -69,35 +69,17 @@ export function GetStartedCard({ hasSats }: { hasSats: boolean }) {
   return (
     <Section title="Get started">
       <Card className="overflow-hidden">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <svg
-            className="shrink-0 -rotate-90"
-            width="36"
-            height="36"
-            viewBox="0 0 44 44"
-            aria-hidden
-          >
-            <circle cx="22" cy="22" r="18" fill="none" strokeWidth="4" className="stroke-chip" />
-            <circle
-              cx="22"
-              cy="22"
-              r="18"
-              fill="none"
-              strokeWidth="4"
-              strokeLinecap="round"
-              className="stroke-primary transition-[stroke-dashoffset] duration-800 ease-(--ease-spring)"
-              style={{
-                strokeDasharray: RING,
-                strokeDashoffset: RING * (1 - doneCount / steps.length),
-              }}
-            />
-          </svg>
-          <span className="flex min-w-0 grow flex-col gap-1 pl-0.5">
+        <div className="flex flex-col gap-2.5 px-4 pt-3.5 pb-3">
+          <div className="flex items-baseline justify-between gap-3">
             <span className="text-[16px] leading-[18px] font-semibold">{TITLES[doneCount]}</span>
-            <span className="text-ink3 text-[13px] leading-4">
+            <span className="text-ink3 shrink-0 text-[13px] leading-4">
               {doneCount} of {steps.length} done
             </span>
-          </span>
+          </div>
+          <Progress
+            value={(doneCount / steps.length) * 100}
+            label={`${doneCount} of ${steps.length} setup steps done`}
+          />
         </div>
         {steps.map((s) => (
           <button

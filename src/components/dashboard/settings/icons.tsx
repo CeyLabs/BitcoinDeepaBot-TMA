@@ -34,6 +34,13 @@ const PATHS = {
       <path d="M12 7v5l3 2" />
     </>
   ),
+  idCard: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <circle cx="9" cy="11" r="2" />
+      <path d="M6 16a3 3 0 0 1 6 0M15 10h3M15 14h3" />
+    </>
+  ),
   bank: <path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18" />,
   user: (
     <>

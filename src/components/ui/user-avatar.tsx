@@ -6,8 +6,9 @@ import { cn } from "cn";
 import { avatarUri, type AvatarMotion } from "@/lib/avatar";
 
 /**
- * A DiceBear Sprouts avatar from a seed. With no seed yet (the session is
- * still loading) it shows an empty circle, so server and client agree.
+ * A DiceBear Sprouts avatar from a seed, on a theme circle (black on light,
+ * cream on dark). With no seed yet (the session is still loading) it shows the
+ * empty circle, so server and client agree.
  */
 export function UserAvatar({
   seed,
@@ -25,7 +26,7 @@ export function UserAvatar({
     <span
       aria-hidden
       className={cn(
-        "bg-chip block shrink-0 overflow-hidden rounded-full shadow-[0_0_0_1px_var(--border)]",
+        "bg-avatar block shrink-0 overflow-hidden rounded-full shadow-[0_0_0_1px_var(--border)]",
         className
       )}
       style={{ width: size, height: size }}

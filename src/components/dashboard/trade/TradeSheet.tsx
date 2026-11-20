@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { cn } from "cn";
 import { Segmented } from "@/components/ui/segmented";
-import { Sheet, SheetStepper } from "@/components/ui/sheet";
+import { Sheet } from "@/components/ui/sheet";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import type { TradeKind } from "../sheets";
 import type { KycInfo } from "./flow";
@@ -15,7 +15,7 @@ const KINDS = [
   { value: "sell", label: "Sell" },
 ] as const;
 
-/** Buy / Sell keypad flow in a bottom sheet (wallet quick actions). */
+/** Buy / Sell in a bottom sheet (wallet quick actions): amount → review. */
 export default function TradeSheet({
   open,
   onOpenChange,
@@ -51,9 +51,8 @@ export default function TradeSheet({
       onBack={flow.onBack}
       hideClose={flow.busy}
       footer={flow.footer}
-      flow
+      form
     >
-      {flow.showStepper && <SheetStepper steps={flow.steps} current={flow.stepIndex} />}
       {flow.showKindToggle && (
         <div className="px-4">
           <Segmented options={KINDS} value={kind} onChange={setKind} label="Buy or sell" />

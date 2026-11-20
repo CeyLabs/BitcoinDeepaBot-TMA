@@ -117,7 +117,7 @@ export function AvatarPickerSheet({
               )}
             >
               <div
-                className="bg-chip relative w-full overflow-hidden rounded-full"
+                className="bg-avatar relative w-full overflow-hidden rounded-full"
                 style={{ aspectRatio: "1 / 1" }}
               >
                 <img

@@ -503,6 +503,7 @@ export default function SendSheet({
           onOpenChange(next);
         }}
         title={title}
+        form
         onBack={
           !transferId && index > 0 && !busy
             ? () => {

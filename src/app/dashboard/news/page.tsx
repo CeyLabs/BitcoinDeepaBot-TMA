@@ -1,5 +1,4 @@
 import { Section } from "@/components/ui/section";
-import { NewsHeader } from "@/components/dashboard/news/NewsHeader";
 import { NewsFeaturedCard } from "@/components/dashboard/news/NewsFeaturedCard";
 import { NewsListSection } from "@/components/dashboard/news/NewsListSection";
 import { getNewsArticles } from "@/lib/news";
@@ -12,8 +11,6 @@ export default async function NewsPage() {
 
   return (
     <div className="flex w-full flex-col gap-5">
-      <NewsHeader backTo="/dashboard" />
-
       {!featured ? (
         <p className="text-ink3 py-8 text-center text-[14px]">Unable to load news right now.</p>
       ) : (
