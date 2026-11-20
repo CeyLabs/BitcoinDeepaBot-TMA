@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "cn";
-import { BtcSign } from "@/components/ui/btc-sign";
+import { BtcCoin } from "@/components/ui/btc-coin";
 import { Button } from "@/components/ui/button";
 import { haptic } from "@/platform";
 
@@ -59,9 +59,7 @@ function UnitPill({ unit }: { unit: Unit }) {
   return (
     <span className="bg-card inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full pr-3 pl-1 text-[14px] font-bold">
       {unit === "sats" ? (
-        <span className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-full text-[15px]">
-          <BtcSign />
-        </span>
+        <BtcCoin className="size-7" />
       ) : (
         <span className="bg-inv text-on-inv flex size-7 items-center justify-center rounded-full text-[10px] font-bold">
           රු
