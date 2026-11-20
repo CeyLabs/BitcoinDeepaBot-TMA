@@ -323,7 +323,7 @@ export function useSellFlow({ kyc, close, open }: FlowArgs): FlowView {
     footer = (
       <>
         <HoldButton
-          label={`Sell for ${fmtLkrExact(quote.amountLkr)}`}
+          label="Press and Hold to Sell"
           disabled={expired || quoteM.isPending}
           loading={confirm.isPending}
           onConfirm={() => void onSell()}

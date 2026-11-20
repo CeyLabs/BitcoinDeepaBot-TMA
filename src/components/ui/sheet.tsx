@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Drawer } from "@base-ui/react/drawer";
 import { cn } from "cn";
 
@@ -55,6 +55,21 @@ interface SheetProps {
   children: React.ReactNode;
 }
 
+/**
+ * `open` as the drawer should see it. A sheet that mounts already open (every lazily-mounted
+ * sheet: trade, send, add bank, a transaction's details) would skip Base UI's enter transition,
+ * because there's no closed → open change to animate. So the first render is always closed, and
+ * the real value lands on the next frame: the slide-up plays on every open.
+ */
+function useAnimatedOpen(open: boolean) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  return open && ready;
+}
+
 const ROUND_BTN =
   "press hit bg-chip text-ink2 m-1 flex size-9 shrink-0 items-center justify-center rounded-full border-0";
 
@@ -79,9 +94,10 @@ export function Sheet({
   children,
 }: SheetProps) {
   const nativeFieldPress = useNativeFieldPress();
+  const animatedOpen = useAnimatedOpen(open);
   return (
     <Drawer.Root
-      open={open}
+      open={animatedOpen}
       onOpenChange={(next, details) => {
         // No close button means "can't leave right now" (e.g. a payment in flight): no swipe either.
         if (!next && hideClose && details.reason === "swipe") {
