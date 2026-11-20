@@ -166,7 +166,7 @@ export function Sheet({
                   // Pinned to the bottom, except while a field is focused: then the keyboard is
                   // up and a pinned button would sit on the very field being typed in (Base UI
                   // scrolls that field into view). It's then at the end of the form, like CeyFi.
-                  className="bg-card sticky bottom-0 z-[4] mt-auto px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))] group-has-[input:focus]/sheet:static group-has-[textarea:focus]/sheet:static"
+                  className="bg-card sticky bottom-0 z-[4] mt-auto px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))] group-has-[input:focus]/sheet:static group-has-[textarea:focus]/sheet:static"
                 >
                   {footer}
                 </div>
