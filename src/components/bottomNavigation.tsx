@@ -1,99 +1,140 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
 import { cn } from "cn";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
+import { Activity, Newspaper, Star, Wallet } from "lucide-react";
 import { haptic } from "@/platform";
 
-// Icons are inlined (not next/image) so `fill="currentColor"` can pick up the
-// item's text color for the active/inactive + light/dark states below.
-function WalletIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className={className}>
-      <path
-        d="M13.9346 0.0360742C14.1626 -0.0220537 14.4036 -0.0113635 14.6208 0.0785651C14.9044 0.195948 15.2999 0.375555 15.5305 0.548231C15.7528 0.714724 15.9647 0.981911 16.105 1.17993C16.2218 1.34493 16.2748 1.54412 16.2748 1.74591C16.2747 2.36872 15.7666 2.87333 15.1401 2.87333H10.8398C10.7378 2.87336 10.6362 2.88674 10.5377 2.91299L5.11641 4.35825C5.05074 4.37597 5.06364 4.47212 5.1318 4.47212H17.1765C17.2656 4.47212 17.3544 4.48244 17.4404 4.50555C17.7142 4.57917 18.3516 4.77168 18.6601 5.0415C18.9459 5.29157 19.1789 5.8087 19.2881 6.08225C19.335 6.19968 19.3554 6.32529 19.3554 6.45163V7.26859C19.3553 7.9093 18.8327 8.42882 18.1881 8.42888H14.6117C14.5886 8.4316 11.831 8.76358 11.831 12.1414C11.8311 15.1858 14.0712 15.8215 14.5302 15.9197C14.5851 15.9315 14.64 15.935 14.6961 15.935H18.3517C18.9963 15.9351 19.519 16.4545 19.519 17.0953V17.8562C19.519 18.0875 19.4504 18.3141 19.3087 18.4975C19.1054 18.7603 18.7835 19.1405 18.4743 19.3541C18.0895 19.6199 17.3956 19.8551 17.0859 19.9524C16.982 19.985 16.8739 20 16.765 20H2.57559C2.42312 20 2.27172 19.9706 2.13331 19.9071C1.80744 19.7574 1.18544 19.4447 0.8572 19.1071C0.522707 18.763 0.219433 18.1107 0.0803625 17.7842C0.0253108 17.655 6.33319e-06 17.5161 0 17.3758V5.32081C2.78832e-05 5.13717 0.0430209 4.95564 0.135647 4.79675C0.324421 4.47301 0.685954 3.9094 1.06295 3.61834C1.60729 3.1982 2.79027 2.87799 2.80756 2.87333L13.9346 0.0360742Z"
-        fill="currentColor"
-      />
-      <path
-        d="M18.8327 10.1194C19.4773 10.1194 19.9999 10.639 20 11.2797V12.9986C20 13.6394 19.4774 14.1589 18.8327 14.1589H15.0038C14.9043 14.1589 14.8048 14.1468 14.7137 14.1068C14.3886 13.9637 13.6103 13.4813 13.6103 12.1392C13.6104 10.797 14.3886 10.3146 14.7137 10.1716C14.8048 10.1315 14.9043 10.1194 15.0038 10.1194H18.8327Z"
-        fill="currentColor"
-      />
-    </svg>
+/*
+ * The floating tab bar, after CeyFi's (ceyfi-web-fe components/layout/nav.tsx): a glass pill of fixed-width icon
+ * tabs, the tapped tab's label opening under its icon, and a selection that a hold or a sideways drag lifts into a
+ * lens (as iOS 26's tab bar does, after Glisse, github.com/0kzh/glisse, MIT) and carries across the bar.
+ */
+
+const TABS = [
+  { href: "/dashboard", label: "Wallet", Icon: Wallet },
+  { href: "/dashboard/activity", label: "Activity", Icon: Activity },
+  { href: "/dashboard/plans", label: "Plans", Icon: Star },
+  { href: "/dashboard/news", label: "News", Icon: Newspaper },
+] as const;
+
+// "/dashboard" is a prefix of every other tab, so it only matches exactly; nested routes
+// (e.g. /dashboard/news/[id]) still light their parent tab.
+const tabIndex = (path: string) => {
+  const i = TABS.findIndex((t, n) =>
+    n === 0 ? path === t.href : path === t.href || path.startsWith(`${t.href}/`)
   );
-}
+  return i < 0 ? 0 : i;
+};
 
-function ActivityIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className={className}>
-      <path
-        d="M5.29383 9.33332L7.85841 4.11253C7.97925 3.86566 8.24175 3.71773 8.51465 3.74274C8.7886 3.7667 9.01985 3.95628 9.09695 4.22088L11.8647 13.7563L13.8532 9.70727C13.9657 9.47915 14.197 9.33436 14.4511 9.33436H19.9991V4.00104C19.9991 1.80104 18.1991 0.00104141 15.9991 0.00104141L4.00021 0C1.80021 0 0.000211588 1.8 0.000211588 4V9.33332L5.29383 9.33332Z"
-        fill="currentColor"
-      />
-      <path
-        d="M14.8677 10.6667L12.3031 15.8875C12.1906 16.1166 11.9573 16.2604 11.7052 16.2604C11.6854 16.2604 11.6666 16.2593 11.6468 16.2583C11.3729 16.2343 11.1416 16.0447 11.0645 15.7801L8.29682 6.24469L6.30725 10.2948C6.19474 10.5229 5.96349 10.6677 5.70933 10.6677L0 10.6667V16C0 18.2 1.8 20 3.99999 20H16C18.2 20 20 18.2 20 16V10.6667L14.8677 10.6667Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function PlansIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className={className}>
-      <path
-        d="M10 0.5C10.0331 0.5 10.0637 0.509987 10.0879 0.527344C10.1095 0.542843 10.1375 0.572544 10.1562 0.632812L12.0625 6.77148C12.2128 7.25538 12.6521 7.60742 13.1738 7.60742H19.332C19.3753 7.60742 19.4028 7.62047 19.4238 7.6377C19.4485 7.65798 19.4736 7.69319 19.4883 7.74121C19.5186 7.84033 19.4899 7.92849 19.4189 7.98242L14.4453 11.7637C14.036 12.0748 13.8772 12.6151 14.0273 13.0986L15.9287 19.2236C15.9626 19.3329 15.9235 19.4179 15.8613 19.4658C15.8296 19.4902 15.7981 19.4991 15.7744 19.5C15.7552 19.5007 15.726 19.4966 15.6855 19.4658L10.6924 15.6699C10.2808 15.3572 9.71921 15.3572 9.30762 15.6699L4.31445 19.4658C4.27402 19.4966 4.24483 19.5007 4.22559 19.5C4.20191 19.4991 4.17036 19.4902 4.13867 19.4658C4.07649 19.4179 4.03735 19.3329 4.07129 19.2236L5.97266 13.0986C6.12278 12.6151 5.96395 12.0748 5.55469 11.7637L0.581055 7.98242C0.51012 7.92849 0.481439 7.84033 0.511719 7.74121C0.526433 7.69319 0.551492 7.65798 0.576172 7.6377C0.597249 7.62047 0.624684 7.60742 0.667969 7.60742H6.82617C7.3479 7.60742 7.78724 7.25538 7.9375 6.77148L9.84375 0.632812C9.86246 0.572544 9.89049 0.542843 9.91211 0.527344C9.93632 0.509988 9.96693 0.5 10 0.5Z"
-        fill="currentColor"
-        stroke="currentColor"
-      />
-    </svg>
-  );
-}
-
-function NewsIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className={className}>
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M12.797 0.000872068C14.2114 0.000916182 15.3562 1.14506 15.3562 2.55865V5.57338H17.4408C18.8551 5.57344 20 6.71758 20 8.13116V16.9678C20 17.8233 19.637 18.6422 19.0044 19.2099C18.4812 19.6805 17.8108 19.955 17.1083 19.9878C17.0686 19.995 17.0278 19.9991 16.9862 19.9991H16.9748L16.9757 20C16.9425 20 16.9091 19.9998 16.8758 19.9991H4.42127C1.98246 19.9991 3.69427e-06 18.0178 0 15.5804V2.55777C0 1.14416 1.14481 0 2.55923 0L12.797 0.000872068ZM15.3562 16.8457C15.3562 17.7483 15.9984 18.5201 16.8178 18.5942C17.2828 18.6404 17.7296 18.4922 18.0839 18.1852C18.4285 17.8783 18.624 17.4413 18.624 16.9757V8.13901C18.624 7.49719 18.103 6.97657 17.4608 6.97654H15.3562V16.8457ZM3.95532 14.8836C3.57402 14.8836 3.25728 15.2001 3.25728 15.5812C3.25728 15.9623 3.57402 16.2789 3.95532 16.2789H11.4009C11.7822 16.2788 12.0989 15.9623 12.0989 15.5812C12.0989 15.2002 11.7822 14.8836 11.4009 14.8836H3.95532ZM3.95532 11.1625C3.57402 11.1625 3.25728 11.479 3.25728 11.8601C3.25728 12.2412 3.57403 12.5578 3.95532 12.5578H11.4009C11.7822 12.5577 12.0989 12.2412 12.0989 11.8601C12.0989 11.4791 11.7822 11.1625 11.4009 11.1625H3.95532ZM3.95532 7.44223C3.57402 7.44223 3.25728 7.75879 3.25728 8.13988C3.25728 8.52097 3.57402 8.83753 3.95532 8.83753H11.4009C11.7822 8.83749 12.0989 8.52094 12.0989 8.13988C12.0989 7.75882 11.7822 7.44227 11.4009 7.44223H3.95532ZM3.95532 3.72111C3.57402 3.72111 3.25728 4.03768 3.25728 4.41877C3.25728 4.79985 3.57402 5.11642 3.95532 5.11642H8.14362C8.52489 5.11638 8.84167 4.79983 8.84167 4.41877C8.84167 4.03771 8.52489 3.72115 8.14362 3.72111H3.95532Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-const navItems = [
-  { href: "/dashboard", Icon: WalletIcon, label: "Wallet" },
-  { href: "/dashboard/activity", Icon: ActivityIcon, label: "Activity" },
-  { href: "/dashboard/plans", Icon: PlansIcon, label: "Plans" },
-  { href: "/dashboard/news", Icon: NewsIcon, label: "News" },
-];
-
-// "/dashboard" is a prefix of every other item's href, so it only matches exactly;
-// nested routes (e.g. /dashboard/news/[id]) should still highlight their parent tab.
-function isNavItemActive(href: string, activeHref: string) {
-  if (href === "/dashboard") return activeHref === href;
-  return activeHref === href || activeHref.startsWith(`${href}/`);
-}
+const reducedMotion = () =>
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /**
- * True once the page scrolls down (past the first bit), false again as soon as
- * it scrolls back up: the tab bar shrinks out of the way while reading.
+ * A tab's (and the selection's) corners: 16px, except the bar's outer sides, which stay fully round (half the 56px
+ * height) so the first and last selections follow the bar's own curved ends: squared-off in the middle, round only
+ * where it meets the bar's ends.
  */
-function useCompactOnScroll() {
+function tabRadius(i: number, count: number) {
+  if (i === 0) return "28px 16px 16px 28px";
+  if (i === count - 1) return "16px 28px 28px 16px";
+  return "16px";
+}
+
+/** How far the icon rises (px) when its label opens under it: the 56px tab, centring a 21px icon over the label. */
+const LABEL_LIFT = 7;
+/** The end tabs' 3px inward nudge, toward the selection's visual middle (its outer side is rounder). */
+const nudge = (i: number) => (i === 0 ? 3 : i === TABS.length - 1 ? -3 : 0);
+
+// Same spring the selection uses, so the label and the selection move as one.
+const SPRING = "cubic-bezier(.3,1.25,.4,1)";
+
+/** How much bigger than a tab the lifted lens is, in px. */
+const GROW_X = 24;
+const GROW_Y = 16;
+/** Past this many px sideways a press becomes a drag. */
+const DRAG_SLOP = 6;
+/** A press held this long (ms) lifts the lens; anything shorter is a plain tap. */
+const HOLD_MS = 200;
+
+type Motion = "rest" | "drag" | "none";
+
+/**
+ * Writes the lens's place and lift straight onto the selection element (no React render per move). Every move is a
+ * CSS transition on `translate` / `scale` (see .tab-lens in theme.css), so it runs on the compositor and keeps its
+ * frame rate while the main thread renders the page a tap goes to.
+ */
+function createLens() {
+  const at = { i: 0, x: 0, up: false, w: 64, h: 56 };
+  let el: HTMLElement | null = null;
+  const paint = (motion: Motion) => {
+    if (!el) return;
+    el.dataset.motion = motion;
+    el.style.translate = `${at.x}px 0`;
+    el.style.scale = at.up ? `${1 + GROW_X / at.w} ${1 + GROW_Y / at.h}` : "1";
+    // The corners belong to the tab the lens is heading for, set with the place so they can't disagree on quick taps.
+    el.style.borderRadius = tabRadius(at.i, TABS.length);
+  };
+  return {
+    /** Sends the lens to tab `i`'s shape at `to` (px from the bar's left edge), lifted or at rest. */
+    aim(i: number, to: number, up: boolean, dragging = false, instant = false) {
+      at.i = i;
+      at.x = to;
+      at.up = up;
+      paint(instant ? "none" : dragging ? "drag" : "rest");
+    },
+    attach(node: HTMLElement | null) {
+      el = node;
+    },
+    size(w: number, h: number) {
+      at.w = w;
+      at.h = h;
+      if (el) el.style.width = `${w}px`;
+    },
+  };
+}
+
+/** Runs `fn` after two frames: past the commit and the scroll reset a route change does. */
+function afterPaint(fn: () => void) {
+  let inner = 0;
+  const outer = requestAnimationFrame(() => {
+    inner = requestAnimationFrame(fn);
+  });
+  return () => {
+    cancelAnimationFrame(outer);
+    cancelAnimationFrame(inner);
+  };
+}
+
+// Fixed bottom pill; hidden on pushed pages (buy, sell, send…) by the layout.
+export default function BottomNavigation() {
+  const path = usePathname();
+  const realIdx = tabIndex(path);
+  // Optimistic index: moves on tap and stays there until the route lands (or another tab is chosen). No timed
+  // snap-back: on a slow connection the page can take seconds, and a selection that went back and then forward
+  // again once the page arrived read as a bug.
+  const [idx, setIdx] = useState(realIdx);
+  // The tab whose label is showing. Tapping reveals it; anything off the bar hides it.
+  const [shown, setShown] = useState<number | null>(null);
+  // Smaller while scrolling down (more of the page shows), full size again on scrolling up or near the top.
   const [compact, setCompact] = useState(false);
   useEffect(() => {
-    let lastY = window.scrollY;
+    let last = window.scrollY;
     let frame = 0;
     const onScroll = () => {
-      cancelAnimationFrame(frame);
+      if (frame) return;
       frame = requestAnimationFrame(() => {
+        frame = 0;
         const y = window.scrollY;
-        const delta = y - lastY;
+        const dy = y - last;
+        // A few pixels of slack so a jittery finger or iOS's bounce doesn't flip it back and forth
         if (y < 40) setCompact(false);
-        else if (delta > 6) setCompact(true);
-        else if (delta < -6) setCompact(false);
-        if (Math.abs(delta) > 6 || y < 40) lastY = y;
+        else if (dy > 6) setCompact(true);
+        else if (dy < -6) setCompact(false);
+        else return;
+        last = y;
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -102,99 +143,357 @@ function useCompactOnScroll() {
       cancelAnimationFrame(frame);
     };
   }, []);
-  return compact;
-}
 
-// Fixed bottom pill; hidden on pushed pages (buy, sell, send…) by the layout.
-// Shrinks to icons only while scrolling down.
-export default function BottomNavigation() {
-  const pathname = usePathname();
+  const navRef = useRef<HTMLElement>(null);
+  const glowRef = useRef<HTMLSpanElement>(null);
+  const tabRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const [lens] = useState(createLens);
+  const attachLens = useCallback((node: HTMLSpanElement | null) => lens.attach(node), [lens]);
+  // Lifted while a finger (or the mouse) is down on the bar; `over` is the tab under the lens then, which takes the ink.
+  const [lifted, setLifted] = useState(false);
+  const [over, setOver] = useState<number | null>(null);
+  const pressing = useRef(false);
+  const placed = useRef(false);
   const router = useRouter();
-  const compact = useCompactOnScroll();
 
-  // Router navigation resolves the destination route segment before the pathname
-  // (and thus `isActive` below) updates, which made the pill lag behind the tap.
-  // Track the tapped href locally so the pill jumps immediately; it's cleared once
-  // `pathname` catches up to the real route. Reset during render (not an effect) per
-  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
-  const [prevPathname, setPrevPathname] = useState(pathname);
-  const [pendingHref, setPendingHref] = useState<string | null>(null);
-
-  if (pathname !== prevPathname) {
-    setPrevPathname(pathname);
-    setPendingHref(null);
+  // The tabs chosen since the last page landed, oldest first; the last is the one on its way.
+  const [chosen, setChosen] = useState<number[]>([]);
+  // When the route actually changes, accept the real index, during render rather than in an effect. Except an
+  // outdated tap: tap Activity then Plans quickly and Activity's page can land first; a page for a tab chosen
+  // earlier and then replaced is passed over, anything else (back, a redirect) is accepted.
+  const [prevReal, setPrevReal] = useState(realIdx);
+  if (prevReal !== realIdx) {
+    setPrevReal(realIdx);
+    const latest = chosen.at(-1);
+    const outdated = latest !== undefined && realIdx !== latest && chosen.includes(realIdx);
+    if (!outdated) {
+      setChosen([]);
+      setIdx(realIdx);
+    }
   }
 
-  // Prefetch the other tabs once the browser is idle, so it doesn't compete
-  // with this page's own data on slow networks.
-  useEffect(() => {
-    const prefetchAll = () => navItems.forEach((item) => router.prefetch(item.href));
-    if (typeof window.requestIdleCallback === "function") {
-      const id = window.requestIdleCallback(prefetchAll, { timeout: 3000 });
-      return () => window.cancelIdleCallback(id);
-    }
-    const id = window.setTimeout(prefetchAll, 1500);
-    return () => window.clearTimeout(id);
-  }, [router]);
+  // The lens springs to the measured tab, landing there at once the first time. ResizeObserver catches the 380px
+  // breakpoint.
+  useLayoutEffect(() => {
+    const el = tabRefs.current[idx];
+    if (!el) return;
+    const place = () => {
+      lens.size(el.offsetWidth, el.offsetHeight);
+      if (!pressing.current) lens.aim(idx, el.offsetLeft, false, false, !placed.current);
+      placed.current = true;
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    tabRefs.current.forEach((tab) => tab && ro.observe(tab));
+    return () => ro.disconnect();
+  }, [idx, lens]);
 
-  const activeHref = pendingHref ?? pathname;
-  const activeIndex = navItems.findIndex((item) => isNavItemActive(item.href, activeHref));
+  /** What a tap on tab `i` does, and a drag that lets go over it. */
+  const select = (i: number) => {
+    setShown(i);
+    if (!reducedMotion()) haptic.select();
+    setIdx(i);
+    // Coming back to the page already showing changes nothing, unless another tab is still on its way.
+    setChosen((c) => (i === realIdx && c.length === 0 ? c : [...c.filter((x) => x !== i), i]));
+  };
+  const dropOn = useEffectEvent((i: number) => {
+    const pending = idx !== realIdx;
+    select(i);
+    if (i !== realIdx || pending) router.push(TABS[i].href);
+  });
+  const currentIdx = useEffectEvent(() => idx);
+
+  // Press, drag and release on the bar. A tap still goes through the link's own click; only a hold or a drag
+  // selects here, and then the click it would leave behind is swallowed.
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    type Gesture = {
+      id: number;
+      i: number;
+      x: number;
+      anchor: number;
+      up: boolean;
+      moved: boolean;
+      scale: number;
+      first: number;
+      slot: number;
+      left: number;
+      width: number;
+    };
+    let g: Gesture | null = null;
+    let under = -1;
+    let swallowUntil = 0;
+    let hold: ReturnType<typeof setTimeout> | undefined;
+
+    const settle = (i: number) => {
+      const el = tabRefs.current[i];
+      if (el) lens.aim(i, el.offsetLeft, false);
+    };
+    const hover = (i: number) => {
+      if (i === under) return;
+      // A tick per tab crossed while dragging
+      if (under >= 0 && g?.moved) haptic.select();
+      under = i;
+      setOver(i);
+    };
+    // Where the finger has carried the lens, in the bar's own px: the bar may be scaled down (compact) on screen.
+    const position = (gs: Gesture, e: PointerEvent) =>
+      Math.min(
+        gs.first + gs.slot * (TABS.length - 1),
+        Math.max(gs.first, gs.anchor + (e.clientX - gs.x) / gs.scale)
+      );
+    const indexAt = (gs: Gesture, x: number) => Math.round((x - gs.first) / gs.slot);
+    const glow = (gs: Gesture, clientX: number) => {
+      const light = glowRef.current;
+      if (light)
+        light.style.translate = `${Math.min(gs.width, Math.max(0, (clientX - gs.left) / gs.scale))}px 0`;
+    };
+    const lift = (gs: Gesture, clientX: number) => {
+      if (gs.up) return;
+      gs.up = true;
+      pressing.current = true;
+      glow(gs, clientX);
+      setLifted(true);
+      hover(gs.i);
+      lens.aim(gs.i, gs.anchor, true);
+    };
+    const release = () => {
+      const old = g;
+      g = null;
+      clearTimeout(hold);
+      if (!old?.up) return old;
+      under = -1;
+      pressing.current = false;
+      setLifted(false);
+      setOver(null);
+      if (nav.hasPointerCapture(old.id)) nav.releasePointerCapture(old.id);
+      return old;
+    };
+
+    const onDown = (e: PointerEvent) => {
+      if (!e.isPrimary || e.button !== 0 || g || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+        return;
+      const tab = (e.target as Element).closest("a");
+      const tabs = tabRefs.current;
+      const i = tabs.indexOf(tab as HTMLAnchorElement);
+      if (i < 0 || !tab || !tabs[0] || !tabs[1]) return;
+      const first = tabs[0].offsetLeft;
+      const box = nav.getBoundingClientRect();
+      const gs: Gesture = {
+        id: e.pointerId,
+        i,
+        x: e.clientX,
+        anchor: tab.offsetLeft,
+        up: false,
+        moved: false,
+        scale: box.width / nav.offsetWidth || 1,
+        first,
+        slot: tabs[1].offsetLeft - first,
+        left: box.left,
+        width: nav.offsetWidth,
+      };
+      g = gs;
+      hold = setTimeout(() => g === gs && lift(gs, gs.x), HOLD_MS);
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!g || e.pointerId !== g.id) return;
+      if (!g.moved && Math.abs(e.clientX - g.x) > DRAG_SLOP) {
+        g.moved = true;
+        lift(g, e.clientX);
+        nav.setPointerCapture(e.pointerId);
+      }
+      if (g.up) glow(g, e.clientX);
+      if (!g.moved) return;
+      const x = position(g, e);
+      const at = indexAt(g, x);
+      lens.aim(at, x, true, true);
+      hover(at);
+    };
+    const onEnd = (e: PointerEvent) => {
+      if (!g || e.pointerId !== g.id) return;
+      const gs = g;
+      const i = indexAt(gs, gs.moved ? position(gs, e) : gs.anchor);
+      release();
+      // A plain tap: the link's click does the rest.
+      if (!gs.up) return;
+      if (e.type !== "pointerup") {
+        // Cancelled (the page took the touch to scroll, a context menu, the pointer lost): back where it was.
+        settle(currentIdx());
+        return;
+      }
+      // Held or dragged: the bar chooses the tab itself (Android sends no click after a long press), and swallows
+      // the click a shorter hold still leaves behind.
+      swallowUntil = performance.now() + 500;
+      settle(i);
+      dropOn(i);
+    };
+    // Once the lens is up, the finger belongs to the bar, not the page's scroll.
+    const onTouchMove = (e: TouchEvent) => {
+      if (g?.up && e.cancelable) e.preventDefault();
+    };
+    const onClick = (e: MouseEvent) => {
+      if (performance.now() < swallowUntil) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    // Only the bar's own capture ending counts: taking the capture over from the tab fires lostpointercapture on
+    // the tab, which bubbles here.
+    const onLostCapture = (e: PointerEvent) => {
+      if (e.target === nav) onEnd(e);
+    };
+    const onContextMenu = (e: Event) => e.preventDefault();
+    const reset = () => {
+      if (!g) return;
+      release();
+      settle(currentIdx());
+    };
+    const onVisibility = () => document.hidden && reset();
+
+    nav.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onEnd);
+    window.addEventListener("pointercancel", onEnd);
+    nav.addEventListener("lostpointercapture", onLostCapture);
+    nav.addEventListener("touchmove", onTouchMove, { passive: false });
+    nav.addEventListener("click", onClick, true);
+    nav.addEventListener("contextmenu", onContextMenu);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("blur", reset);
+    return () => {
+      clearTimeout(hold);
+      nav.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onEnd);
+      window.removeEventListener("pointercancel", onEnd);
+      nav.removeEventListener("lostpointercapture", onLostCapture);
+      nav.removeEventListener("touchmove", onTouchMove);
+      nav.removeEventListener("click", onClick, true);
+      nav.removeEventListener("contextmenu", onContextMenu);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("blur", reset);
+    };
+  }, [lens]);
+
+  // Hide the label on the first thing the user does that isn't on the tab bar.
+  useEffect(() => {
+    if (shown === null) return;
+    const hide = () => setShown(null);
+    const offBar = (e: Event) => {
+      if (!navRef.current?.contains(e.target as Node)) hide();
+    };
+    let detach = () => {};
+    const attach = () => {
+      const opts = { capture: true, passive: true } as const;
+      // Scroll doesn't bubble: capture catches sheets and lists as well as the page.
+      window.addEventListener("scroll", hide, opts);
+      window.addEventListener("wheel", offBar, opts);
+      window.addEventListener("touchmove", offBar, opts);
+      document.addEventListener("pointerdown", offBar, true);
+      document.addEventListener("keydown", hide, true);
+      detach = () => {
+        window.removeEventListener("scroll", hide, opts);
+        window.removeEventListener("wheel", offBar, opts);
+        window.removeEventListener("touchmove", offBar, opts);
+        document.removeEventListener("pointerdown", offBar, true);
+        document.removeEventListener("keydown", hide, true);
+      };
+    };
+    // Wait for the tapped route to land, or its scroll reset would hide the label at once.
+    let cancel: () => void;
+    if (realIdx === shown) {
+      cancel = afterPaint(attach);
+    } else {
+      const fallback = setTimeout(attach, 2000);
+      cancel = () => clearTimeout(fallback);
+    }
+    return () => {
+      cancel();
+      detach();
+    };
+  }, [shown, realIdx]);
 
   return (
     <nav
+      ref={navRef}
+      // Tabs are 64px (56px under 380px) whether or not their label shows: it opens under the icon, so the bar never
+      // changes width. w-max + translateX(-50%): the bar's own content width, centred on the screen.
+      // touch-pan-y: a sideways drag stays with the bar; an upward one still scrolls the page.
+      className="animate-nav-in glass fixed bottom-(--nav-bottom) left-[50vw] z-40 flex w-max origin-bottom touch-pan-y rounded-full p-[5px] select-none [--tab:64px] [-webkit-touch-callout:none] max-[380px]:[--tab:56px]"
+      // Shrinks toward its bottom edge, so it stays the same distance from the bottom of the screen. The centring
+      // and the shrink are the individual `translate` / `scale` properties, not `transform`: the entry animation
+      // (animate-nav-in) owns `transform` and keeps its last frame, so a transform here would never apply.
+      style={{
+        translate: "-50% 0",
+        scale: compact ? 0.84 : 1,
+        transition: `scale 450ms ${SPRING}`,
+      }}
+      data-lifted={lifted || undefined}
       aria-label="Main"
-      data-compact={compact || undefined}
-      className={cn(
-        "animate-nav-in bg-surface-glass shadow-nav fixed inset-x-4 bottom-(--nav-bottom) z-40 mx-auto flex items-center justify-between overflow-hidden rounded-full p-1 backdrop-blur-[12px]",
-        "transition-[max-width] duration-300 ease-(--ease-spring)",
-        compact ? "max-w-[260px]" : "max-w-[398px]"
-      )}
     >
-      {activeIndex >= 0 && (
-        <span
-          aria-hidden
-          className="bg-nav-sel absolute top-1 left-1 h-[calc(100%-8px)] rounded-[40px] transition-transform duration-[450ms] ease-(--ease-spring)"
-          style={{
-            width: `calc((100% - 8px) / ${navItems.length})`,
-            transform: `translateX(${activeIndex * 100}%)`,
-          }}
-        />
-      )}
-      {navItems.map((item, index) => {
-        const isActive = index === activeIndex;
+      {/* The light under a held finger: nothing until the lens lifts; the press handlers move the inner span. */}
+      <span className="tab-glow" aria-hidden="true">
+        <span ref={glowRef} />
+      </span>
+      {/* The selection / lens. Its translate and scale are written by createLens; the starting translate (the first
+          tab) only shows until the first layout pass places it. */}
+      <span
+        ref={attachLens}
+        className="tab-lens pointer-events-none absolute top-[5px] left-0 h-[56px] w-(--tab)"
+        style={{ translate: "5px 0", borderRadius: tabRadius(0, TABS.length) }}
+        aria-hidden="true"
+      />
+      {TABS.map((tab, i) => {
+        const open = shown === i;
         return (
-          <button
-            key={item.href}
-            type="button"
-            aria-current={isActive ? "page" : undefined}
-            onClick={() => {
-              if (item.href === pathname) return;
-              haptic.select();
-              setPendingHref(item.href);
-              router.push(item.href);
+          <Link
+            key={tab.href}
+            ref={(el) => {
+              tabRefs.current[i] = el;
             }}
+            href={tab.href}
+            onClick={(e) => {
+              // Cmd/Ctrl/Shift/Alt-click opens the tab elsewhere; this page stays, so the selection does too.
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+              select(i);
+            }}
+            // A mouse drag across the bar moves the lens; without this it would pick the link up instead.
+            draggable={false}
             className={cn(
-              "press relative flex min-w-0 flex-1 flex-col items-center justify-center rounded-[40px] border-0 bg-transparent p-2 text-[11px] leading-[13px]",
-              "transition-[height,gap] duration-300 ease-(--ease-spring)",
-              compact ? "h-11 gap-0" : "h-14 gap-1",
-              isActive ? "text-foreground font-medium" : "text-ink2 font-normal"
+              "press relative flex h-[56px] w-(--tab) flex-col items-center justify-center px-1 text-[11px] leading-none font-semibold no-underline transition-colors duration-300",
+              i === (over ?? idx) ? "text-(--glass-ink)" : "text-(--glass-fg)"
             )}
+            style={{ borderRadius: tabRadius(i, TABS.length) }}
+            aria-label={tab.label}
+            aria-current={i === realIdx ? "page" : undefined}
           >
-            <item.Icon
-              className={cn(
-                "transition-[width,height] duration-300",
-                compact ? "size-5" : "size-[22px]"
-              )}
-            />
+            {/* With the label open the icon rises LABEL_LIFT px to make room for it. */}
             <span
-              className={cn(
-                "overflow-hidden transition-[max-height,opacity] duration-300",
-                compact ? "max-h-0 opacity-0" : "max-h-4 opacity-100"
-              )}
+              className="relative flex"
+              style={{
+                translate: `${nudge(i)}px ${open ? -LABEL_LIFT : 0}px`,
+                transition: `translate 400ms ${SPRING}`,
+              }}
             >
-              {item.label}
+              <tab.Icon size={21} strokeWidth={2} aria-hidden="true" />
             </span>
-          </button>
+            {/* Under the icon, out of the flow (so the icon stays centred), faded and slid into place: opacity and
+                translate run on the compositor, so the text doesn't stutter in while the tapped page renders. */}
+            <span
+              className="pointer-events-none absolute inset-x-0 top-[35px] px-1"
+              style={{
+                translate: `${nudge(i)}px ${open ? 0 : 4}px`,
+                opacity: open ? 1 : 0,
+                transition: `translate 400ms ${SPRING}, opacity 250ms ease ${open ? "80ms" : "0ms"}`,
+              }}
+              aria-hidden="true"
+            >
+              <span className="block truncate text-center whitespace-nowrap max-[380px]:text-[10px]">
+                {tab.label}
+              </span>
+            </span>
+          </Link>
         );
       })}
     </nav>
