@@ -126,6 +126,7 @@ export function AddBankAccountSheet({
       onBack={picking ? () => setPicking(false) : undefined}
       hideClose={addAccount.isPending}
       flow
+      form
       footer={
         picking ? undefined : (
           <div className="flex flex-col gap-2">

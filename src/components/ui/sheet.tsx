@@ -16,6 +16,11 @@ interface SheetProps {
   footer?: React.ReactNode;
   /** Taller sheet for multi-step flows, so steps don't jump in height. */
   flow?: boolean;
+  /**
+   * The body has text fields: a drag on it scrolls instead of dismissing (with the keyboard up
+   * there's little else to scroll). The grab bar and header still swipe the sheet away.
+   */
+  form?: boolean;
   className?: string;
   children: React.ReactNode;
 }
@@ -29,6 +34,8 @@ const ROUND_BTN =
  * Built on Base UI's Drawer (a Dialog with gestures): swipe down to dismiss, once the body is
  * scrolled to the top. The drawer owns every touch on its viewport, so a drag over a short sheet
  * never scrolls the page or a sheet underneath (a sheet opened from inside another sheet nests).
+ * The keyboard provider pads the scrolling popup so a focused field stays above the software
+ * keyboard. From 640px (web on desktop) it's a centred card instead of a bottom sheet.
  */
 export function Sheet({
   open,
@@ -38,6 +45,7 @@ export function Sheet({
   hideClose,
   footer,
   flow,
+  form,
   className,
   children,
 }: SheetProps) {
@@ -55,67 +63,76 @@ export function Sheet({
     >
       <Drawer.Portal>
         <Drawer.Backdrop className="fixed inset-0 z-90 bg-(--scrim) opacity-[calc(1-var(--drawer-swipe-progress,0))] backdrop-blur-[4px] transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0" />
-        <Drawer.Viewport className="fixed inset-0 z-90 flex items-end justify-center">
-          <Drawer.Popup
-            className={cn(
-              "bg-card text-foreground flex max-h-[94vh] w-full max-w-[440px] flex-col overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[20px] pt-2 shadow-[0_-10px_40px_rgba(0,0,0,0.15)] outline-none",
-              "[transform:translateY(var(--drawer-swipe-movement-y))] transition-transform duration-[480ms] ease-[cubic-bezier(0.2,0.95,0.25,1)] data-swiping:duration-0 data-swiping:select-none",
-              "data-ending-style:[transform:translateY(100%)] data-ending-style:duration-[calc(var(--drawer-swipe-strength,1)*200ms)] data-ending-style:ease-in data-starting-style:[transform:translateY(100%)]",
-              flow && "min-h-[min(640px,88vh)]",
-              className
-            )}
-          >
-            <div aria-hidden className="bg-line mx-auto mb-1 h-[5px] w-9 shrink-0 rounded-[5px]" />
-            <div className="flex min-h-12 shrink-0 items-center gap-1 px-2">
-              {onBack ? (
-                <button type="button" aria-label="Back" onClick={onBack} className={ROUND_BTN}>
-                  <svg
-                    className="size-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden
-                  >
-                    <path d="M15 18l-6-6 6-6" />
-                  </svg>
-                </button>
-              ) : (
-                <span className="w-11 shrink-0" />
+        <Drawer.VirtualKeyboardProvider>
+          <Drawer.Viewport className="fixed inset-0 z-90 flex items-end justify-center min-[640px]:items-center">
+            <Drawer.Popup
+              className={cn(
+                "bg-card text-foreground flex max-h-[94dvh] w-full max-w-[440px] flex-col overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[20px] pt-2 shadow-[0_-10px_40px_rgba(0,0,0,0.15)] outline-none min-[640px]:max-h-[88dvh] min-[640px]:rounded-[20px]",
+                "[transform:translateY(var(--drawer-swipe-movement-y))] transition-transform duration-[480ms] ease-[cubic-bezier(0.2,0.95,0.25,1)] data-swiping:duration-0 data-swiping:select-none",
+                "data-ending-style:[transform:translateY(100%)] data-ending-style:duration-[calc(var(--drawer-swipe-strength,1)*200ms)] data-ending-style:ease-in data-starting-style:[transform:translateY(100%)]",
+                // Centred card: rises in a little and fades, rather than sliding up from the edge.
+                "min-[640px]:transition-[transform,opacity] min-[640px]:data-ending-style:[transform:translateY(24px)] min-[640px]:data-ending-style:opacity-0 min-[640px]:data-starting-style:[transform:translateY(40px)_scale(.98)] min-[640px]:data-starting-style:opacity-0",
+                flow && "min-h-[min(640px,88dvh)]",
+                className
               )}
-              <Drawer.Title className="grow truncate text-center font-sans text-[17px] font-bold tracking-normal">
-                {title}
-              </Drawer.Title>
-              {hideClose ? (
-                <span className="w-11 shrink-0" />
-              ) : (
-                <Drawer.Close aria-label="Close" className={ROUND_BTN}>
-                  <svg
-                    className="size-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden
-                  >
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
-                </Drawer.Close>
-              )}
-            </div>
-            <div className="grow pb-2">{children}</div>
-            {footer && (
-              <div className="bg-card sticky bottom-0 z-[4] mt-auto px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))]">
-                {footer}
+            >
+              <div
+                aria-hidden
+                className="bg-line mx-auto mb-1 h-[5px] w-9 shrink-0 rounded-[5px]"
+              />
+              <div className="flex min-h-12 shrink-0 items-center gap-1 px-2">
+                {onBack ? (
+                  <button type="button" aria-label="Back" onClick={onBack} className={ROUND_BTN}>
+                    <svg
+                      className="size-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                  </button>
+                ) : (
+                  <span className="w-11 shrink-0" />
+                )}
+                <Drawer.Title className="grow truncate text-center font-sans text-[17px] font-bold tracking-normal">
+                  {title}
+                </Drawer.Title>
+                {hideClose ? (
+                  <span className="w-11 shrink-0" />
+                ) : (
+                  <Drawer.Close aria-label="Close" className={ROUND_BTN}>
+                    <svg
+                      className="size-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  </Drawer.Close>
+                )}
               </div>
-            )}
-            {!footer && <div className="h-[env(safe-area-inset-bottom)] shrink-0" />}
-          </Drawer.Popup>
-        </Drawer.Viewport>
+              <div className="grow pb-2" data-base-ui-swipe-ignore={form || undefined}>
+                {children}
+              </div>
+              {footer && (
+                <div className="bg-card sticky bottom-0 z-[4] mt-auto px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))]">
+                  {footer}
+                </div>
+              )}
+              {!footer && <div className="h-[env(safe-area-inset-bottom)] shrink-0" />}
+            </Drawer.Popup>
+          </Drawer.Viewport>
+        </Drawer.VirtualKeyboardProvider>
       </Drawer.Portal>
     </Drawer.Root>
   );

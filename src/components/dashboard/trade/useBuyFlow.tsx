@@ -7,35 +7,28 @@ import { KeyValueList } from "@/components/ui/section";
 import { useBuyPrice, useCreateBuyLink } from "@/hooks/query/useBuy";
 import { estimateBuy } from "@/lib/buy";
 import { FetchyError } from "@/lib/fetchy";
-import { fmtLkrCurrency, fmtLkrExact, fmtSats, LKR_SYMBOL } from "@/lib/formatters";
+import { fmtLkrCurrency, fmtLkrExact, fmtSats } from "@/lib/formatters";
 import { usePayHereRedirect } from "@/lib/hooks";
 import { buyAmountSchema } from "@/lib/validations";
 import { haptic } from "@/platform";
-import { resolveStep, STEP_LABELS, type FlowArgs, type FlowStep, type FlowView } from "./flow";
-import {
-  AmountBlock,
-  AmountDisplay,
-  AmountHint,
-  applyKey,
-  Keypad,
-  Presets,
-  PriceFooter,
-} from "./keypad";
+import type { FlowArgs, FlowStep, FlowView } from "./flow";
+import { DualAmount, DualHint, GateNotice, useDualAmount } from "./DualAmount";
+import { Presets, PriceFooter } from "./keypad";
 import { ErrorRow, InfoRow, ReviewHeader } from "./parts";
-import { VerifyBody, VerifyFooter } from "./VerifyStep";
+import { verifyCopy } from "./verify-copy";
 
 const PRESETS = [1_000, 2_500, 5_000, 10_000];
 
 export const fmtFeePercent = (bps: number) => `${Number((bps / 100).toFixed(2))}%`;
 
 /**
- * Buy: amount in LKR → (verify) → review → PayHere checkout. The sats are
+ * Buy: amount (type rupees or sats) → review → PayHere checkout. Until KYC is
+ * approved the amount screen shows a verify notice and can't continue. The sats are
  * priced when PayHere confirms the payment, so the review shows an estimate
  * (no rate lock). The return lands on /payment/success (BuyOrderStatus).
  */
 export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
   const router = useRouter();
-  const [amount, setAmount] = useState("");
   const [step, setStep] = useState<FlowStep>("amount");
   const [dir, setDir] = useState<"fwd" | "back">("fwd");
   const [redirectFailed, setRedirectFailed] = useState(false);
@@ -59,10 +52,25 @@ export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
     return () => window.removeEventListener("pageshow", onPageShow);
   }, [resetCreateLink]);
 
-  const lkr = Number(amount) || 0;
   const feeBps = price
     ? price.paymentProcessorFeeBasisPoints + price.bitcoindeepaFeeBasisPoints
     : 0;
+  const d = useDualAmount({
+    initial: "lkr",
+    toSats: (lkr) =>
+      price
+        ? estimateBuy(
+            lkr,
+            price.paymentProcessorFeeBasisPoints,
+            price.bitcoindeepaFeeBasisPoints,
+            price.btcLkrPrice
+          ).sats
+        : 0,
+    // The whole rupees that buy at least this many sats after fees.
+    toLkr: (sats) =>
+      price ? Math.ceil(((sats / 1e8) * price.btcLkrPrice) / (1 - feeBps / 10_000)) : 0,
+  });
+  const lkr = d.lkr;
   const estimate = price
     ? estimateBuy(
         lkr,
@@ -76,19 +84,13 @@ export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
   const error = parsed && !parsed.success ? parsed.error.issues[0]?.message : undefined;
   const amountOk = !!parsed?.success;
 
-  const steps: FlowStep[] = ["amount", ...(kyc.approved ? [] : ["verify" as const]), "review"];
-  const current = resolveStep(step, steps);
-  const index = steps.indexOf(current);
+  // KYC can lapse while the review is open: back to the amount screen and its notice.
+  const current: FlowStep = step === "review" && kyc.approved ? "review" : "amount";
   const busy = createLink.isPending || createLink.isSuccess;
 
   const go = (to: FlowStep, d: "fwd" | "back") => {
     setDir(d);
     setStep(to);
-  };
-
-  const onKey = (k: string) => {
-    setAmount((a) => applyKey(a, k));
-    setRedirectFailed(false);
   };
 
   const pay = () => {
@@ -126,34 +128,57 @@ export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
   if (current === "amount") {
     let hint: string;
     if (error) hint = error;
-    else if (lkr > 0 && estimate) hint = `You get ≈ ${fmtSats(estimate.sats)} sats`;
     else if (price)
       hint = `From ${fmtLkrCurrency(price.minLkr)} · up to ${fmtLkrCurrency(price.maxLkr)} at a time`;
     else if (priceFailed) hint = "Couldn't load the current price and fees";
     else hint = "Getting the current price…";
+    const gate = !kyc.loading && !kyc.approved ? verifyCopy(kyc.status) : null;
 
     body = (
-      <>
-        <AmountBlock>
-          <AmountDisplay value={amount} prefix={LKR_SYMBOL} invalid={!!error} />
-          <AmountHint invalid={!!error || (priceFailed && !price)}>{hint}</AmountHint>
-        </AmountBlock>
+      <div className="pt-3">
+        {gate && (
+          <GateNotice
+            title={gate.title}
+            text={gate.text}
+            action={
+              gate.cta
+                ? {
+                    label: gate.cta,
+                    onClick: () => {
+                      close();
+                      router.push("/verification");
+                    },
+                  }
+                : undefined
+            }
+          />
+        )}
+        <DualAmount
+          id="buy"
+          d={d}
+          top={{ unit: "lkr", label: "You pay" }}
+          bottom={{ unit: "sats", label: "You get (estimate)" }}
+          invalid={!!error}
+        />
+        <DualHint invalid={!!error || (priceFailed && !price)}>{hint}</DualHint>
         <Presets
           items={PRESETS.filter((v) => !price || (v >= price.minLkr && v <= price.maxLkr)).map(
             (v) => ({
               label: fmtLkrCurrency(v),
-              on: lkr === v,
-              pick: () => setAmount(String(v)),
+              on: d.active === "lkr" && lkr === v,
+              pick: () => {
+                d.set("lkr", v);
+                setRedirectFailed(false);
+              },
             })
           )}
         />
-        <Keypad onKey={onKey} />
         {price && (
           <PriceFooter>
             1 BTC ≈ {fmtLkrCurrency(price.btcLkrPrice)} · {fmtFeePercent(feeBps)} fee
           </PriceFooter>
         )}
-      </>
+      </div>
     );
     footer =
       priceFailed && !price ? (
@@ -162,20 +187,17 @@ export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
         </Button>
       ) : (
         <Button
-          disabled={!amountOk}
+          disabled={!amountOk || !kyc.approved}
           loading={kyc.loading && amountOk}
           onClick={() => {
             haptic.impact("light");
-            go(steps[index + 1], "fwd");
+            setRedirectFailed(false);
+            go("review", "fwd");
           }}
         >
-          Continue
+          Review
         </Button>
       );
-  } else if (current === "verify") {
-    title = "Identity";
-    body = <VerifyBody status={kyc.status} />;
-    footer = <VerifyFooter status={kyc.status} close={close} />;
   } else {
     title = "Review purchase";
     const showError =
@@ -202,8 +224,7 @@ export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
             ]}
           />
           <p className="text-ink3 mt-3 px-1 text-center text-[12px] leading-4 font-semibold">
-            Up to {fmtLkrCurrency(price.dailyMaxLkr)} a day. You&apos;ll finish paying on
-            PayHere&apos;s secure page.
+            {`Up to ${fmtLkrCurrency(price.dailyMaxLkr)} a day. You'll finish paying on PayHere's secure page.`}
           </p>
         </>
       ) : null;
@@ -216,13 +237,10 @@ export function useBuyFlow({ kyc, close }: FlowArgs): FlowView {
 
   return {
     title,
-    steps: steps.map((s) => STEP_LABELS[s]),
-    stepIndex: index,
-    showStepper: steps.length > 1,
     showKindToggle: current === "amount",
     stepKey: current,
     dir,
-    onBack: index > 0 && !busy ? () => go(steps[index - 1], "back") : undefined,
+    onBack: current === "review" && !busy ? () => go("amount", "back") : undefined,
     body,
     footer,
     busy,

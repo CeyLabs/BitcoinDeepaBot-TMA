@@ -6,10 +6,7 @@ import { Button } from "@/components/ui/button";
 import { KeyValueList } from "@/components/ui/section";
 import { useToast } from "@/components/ui/toast";
 import { useSheets } from "@/components/dashboard/sheets";
-import {
-  BankAccountRequiredNotice,
-  bankRequiredCopy,
-} from "@/components/dashboard/sell/BankAccountRequiredNotice";
+import { bankRequiredCopy } from "@/components/dashboard/sell/bank-required";
 import {
   isSellInProgress,
   SellOrderPending,
@@ -25,26 +22,16 @@ import {
 } from "@/hooks/query/useSell";
 import { useWalletMetrics } from "@/hooks/query/useWalletMetrics";
 import { FetchyError } from "@/lib/fetchy";
-import { fmtLkrCurrency, fmtLkrExact, fmtSats, LKR_SYMBOL } from "@/lib/formatters";
+import { fmtLkrCurrency, fmtLkrExact, fmtSats } from "@/lib/formatters";
 import { estimateSellLkr, satsForLkr } from "@/lib/sell";
 import { sellAmountSchema } from "@/lib/validations";
 import { haptic } from "@/platform";
-import { resolveStep, STEP_LABELS, type FlowArgs, type FlowStep, type FlowView } from "./flow";
-import {
-  AmountBlock,
-  AmountDisplay,
-  AmountHint,
-  applyKey,
-  Keypad,
-  Presets,
-  PriceFooter,
-  SwapUnitPill,
-} from "./keypad";
+import type { FlowArgs, FlowStep, FlowView } from "./flow";
+import { DualAmount, DualHint, GateNotice, useDualAmount } from "./DualAmount";
+import { Presets, PriceFooter } from "./keypad";
 import { ErrorRow, HoldButton, LockRow, ReviewHeader } from "./parts";
 import { fmtFeePercent } from "./useBuyFlow";
-import { VerifyBody, VerifyFooter } from "./VerifyStep";
-
-type Unit = "sats" | "lkr";
+import { verifyCopy } from "./verify-copy";
 
 function useSecondsLeft(expiresAt: string | undefined) {
   const [now, setNow] = useState(() => Date.now());
@@ -58,17 +45,14 @@ function useSecondsLeft(expiresAt: string | undefined) {
 }
 
 /**
- * Sell: amount in sats or LKR → (verify) → (bank) → review with the real
- * quote and its expiry → press and hold to confirm → the order's status,
- * polled until it's done.
+ * Sell: amount (type sats or rupees) → review with the real quote and its
+ * expiry → press and hold to confirm → the order's status, polled until it's
+ * done. Missing KYC or a verified bank shows as a notice on the amount screen.
  */
 export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
   const router = useRouter();
   const toast = useToast();
   const { openSettings } = useSheets();
-  const [unit, setUnit] = useState<Unit>("sats");
-  const [flipped, setFlipped] = useState(false);
-  const [amount, setAmount] = useState("");
   const [step, setStep] = useState<FlowStep>("amount");
   const [dir, setDir] = useState<"fwd" | "back">("fwd");
   const [quote, setQuote] = useState<SellOrder | null>(null);
@@ -85,29 +69,27 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
   const { data: order } = useSellOrder(orderId ?? "");
   const secondsLeft = useSecondsLeft(quote?.expiresAt);
 
-  const raw = Number(amount) || 0;
-  const sats =
-    unit === "sats" ? raw : price ? satsForLkr(raw, price.feeBasisPoints, price.btcLkrRate) : 0;
-  const estimate = price ? estimateSellLkr(sats, price.feeBasisPoints, price.btcLkrRate) : null;
+  const d = useDualAmount({
+    initial: "sats",
+    toSats: (lkr) => (price ? satsForLkr(lkr, price.feeBasisPoints, price.btcLkrRate) : 0),
+    toLkr: (sats) =>
+      price
+        ? Math.floor(estimateSellLkr(sats, price.feeBasisPoints, price.btcLkrRate).amountLkr)
+        : 0,
+  });
+  const sats = d.sats;
   // The balance may still be loading: don't judge the amount against 0
   const parsed =
-    raw > 0 && !balanceLoading
+    d.hasValue && !balanceLoading
       ? sellAmountSchema(totalSats, price?.minSats, price?.maxSats).safeParse(sats)
       : null;
   const error = parsed && !parsed.success ? parsed.error.issues[0]?.message : undefined;
   const amountOk = !!parsed?.success && balanceAvailable;
   const maxSats = Math.min(totalSats, price?.maxSats ?? totalSats);
 
-  const steps: FlowStep[] = [
-    "amount",
-    ...(kyc.approved ? [] : ["verify" as const]),
-    ...(verified ? [] : ["bank" as const]),
-    "review",
-  ];
-  let current = resolveStep(step, steps);
-  // The review needs a quote (the gates before it changed): start over
-  if (current === "review" && !quote) current = "amount";
-  const index = steps.indexOf(current);
+  const ready = kyc.approved && !!verified;
+  // The review needs a quote, KYC and a verified bank (any can change while it's open).
+  const current: FlowStep = step === "review" && quote && ready ? "review" : "amount";
   const bankLabel = verified ? `${verified.bankName} ${verified.accountNumber}` : "your bank";
   const busy = confirm.isPending;
 
@@ -131,11 +113,9 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
   };
 
   const onContinue = () => {
-    if (!amountOk || !parsed?.success) return;
+    if (!amountOk || !ready || !parsed?.success) return;
     haptic.impact("light");
-    const next = steps[index + 1];
-    if (next === "review") getQuote(parsed.data, () => go("review", "fwd"));
-    else go(next, "fwd");
+    getQuote(parsed.data, () => go("review", "fwd"));
   };
 
   const onSell = async () => {
@@ -166,26 +146,11 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
     }
   };
 
-  const swapUnit = () => {
-    const nu: Unit = unit === "sats" ? "lkr" : "sats";
-    let next = "";
-    if (raw > 0 && price) {
-      const v = nu === "sats" ? sats : Math.floor(estimate?.amountLkr ?? 0);
-      next = v > 0 ? String(v) : "";
-    }
-    setUnit(nu);
-    setAmount(next);
-    setFlipped((f) => !f);
-  };
-
   // ── Status (after confirm) ─────────────────────────────────────────────
   if (orderId) {
     const inProgress = isSellInProgress(order?.status);
     return {
       title: order?.status === "COMPLETED" ? "Sold" : inProgress ? "Selling" : "Sale",
-      steps: [],
-      stepIndex: 0,
-      showStepper: false,
       showKindToggle: false,
       stepKey: "status",
       dir: "fwd",
@@ -223,50 +188,70 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
   if (current === "amount") {
     let hint: string;
     if (error) hint = error;
-    else if (raw > 0 && estimate)
-      hint =
-        unit === "sats"
-          ? `You get ≈ ${fmtLkrExact(estimate.amountLkr)}`
-          : `You sell ≈ ${fmtSats(sats)} sats`;
     else if (balanceLoading) hint = "Checking your balance…";
     else if (!balanceAvailable) hint = "Your balance couldn't be loaded right now";
     else hint = `You have ${fmtSats(totalSats)} sats`;
 
+    const kycGate = !kyc.loading && !kyc.approved ? verifyCopy(kyc.status) : null;
+    const bankGate = !kycGate && !bankLoading && !verified ? bankRequiredCopy(bankAccount) : null;
+
     body = (
-      <>
-        <AmountBlock>
-          <AmountDisplay
-            value={amount}
-            prefix={unit === "lkr" ? LKR_SYMBOL : undefined}
-            suffix={unit === "sats" ? "sats" : undefined}
-            invalid={!!error}
+      <div className="pt-3">
+        {kycGate && (
+          <GateNotice
+            title={kycGate.title}
+            text={kycGate.text}
+            action={
+              kycGate.cta
+                ? {
+                    label: kycGate.cta,
+                    onClick: () => {
+                      close();
+                      router.push("/verification");
+                    },
+                  }
+                : undefined
+            }
           />
-          <AmountHint invalid={!!error || (!balanceLoading && !balanceAvailable)}>
-            {hint}
-          </AmountHint>
-          {price && (
-            <SwapUnitPill
-              label={unit === "lkr" ? "Enter in sats" : "Enter in rupees"}
-              flipped={flipped}
-              onClick={swapUnit}
-            />
-          )}
-        </AmountBlock>
+        )}
+        {bankGate && (
+          <GateNotice
+            title={bankGate.title}
+            text={bankGate.short}
+            action={
+              bankGate.inReview
+                ? undefined
+                : {
+                    label: "Add bank",
+                    onClick: () => {
+                      haptic.impact("medium");
+                      close();
+                      // Let this sheet slide away before the settings sheet comes up
+                      window.setTimeout(openSettings, 260);
+                    },
+                  }
+            }
+          />
+        )}
+        <DualAmount
+          id="sell"
+          d={d}
+          top={{ unit: "sats", label: "You sell" }}
+          bottom={{ unit: "lkr", label: "You receive (estimate)" }}
+          invalid={!!error}
+        />
+        <DualHint invalid={!!error || (!balanceLoading && !balanceAvailable)}>{hint}</DualHint>
         <Presets
           items={[25, 50, 75, 100].map((pc) => {
             const v = pc === 100 ? maxSats : Math.floor((totalSats * pc) / 100);
             return {
               label: pc === 100 ? (maxSats < totalSats ? "Max" : "All") : `${pc}%`,
-              on: unit === "sats" && v > 0 && raw === v,
+              on: d.active === "sats" && v > 0 && sats === v,
               disabled: balanceLoading || v <= 0,
-              pick: () => {
-                setUnit("sats");
-                setAmount(v > 0 ? String(v) : "");
-              },
+              pick: () => d.set("sats", v > 0 ? v : ""),
             };
           })}
         />
-        <Keypad onKey={(k) => setAmount((a) => applyKey(a, k))} />
         {quoteM.error instanceof Error && (
           <div className="pt-2">
             <ErrorRow>{quoteM.error.message}</ErrorRow>
@@ -277,38 +262,15 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
             1 BTC ≈ {fmtLkrCurrency(price.btcLkrRate)} · {fmtFeePercent(price.feeBasisPoints)} fee
           </PriceFooter>
         )}
-      </>
+      </div>
     );
     footer = (
       <Button
-        disabled={!amountOk}
+        disabled={!amountOk || !ready}
         loading={quoteM.isPending || ((kyc.loading || bankLoading) && amountOk)}
         onClick={onContinue}
       >
-        Continue
-      </Button>
-    );
-  } else if (current === "verify") {
-    title = "Identity";
-    body = <VerifyBody status={kyc.status} />;
-    footer = <VerifyFooter status={kyc.status} close={close} />;
-  } else if (current === "bank") {
-    title = "Bank";
-    body = <BankAccountRequiredNotice account={bankAccount} />;
-    footer = bankRequiredCopy(bankAccount).inReview ? (
-      <Button variant="secondary" onClick={close}>
-        Close
-      </Button>
-    ) : (
-      <Button
-        onClick={() => {
-          haptic.impact("medium");
-          close();
-          // Let this sheet slide away before the settings sheet comes up
-          window.setTimeout(openSettings, 260);
-        }}
-      >
-        Add bank account
+        Review
       </Button>
     );
   } else if (quote) {
@@ -362,17 +324,14 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
 
   return {
     title,
-    steps: steps.map((s) => STEP_LABELS[s]),
-    stepIndex: index,
-    showStepper: steps.length > 1,
     showKindToggle: current === "amount",
     stepKey: current,
     dir,
     onBack:
-      index > 0 && !busy
+      current === "review" && !busy
         ? () => {
             haptic.select();
-            go(steps[index - 1], "back");
+            go("amount", "back");
           }
         : undefined,
     body,
