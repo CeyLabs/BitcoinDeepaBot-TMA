@@ -60,9 +60,12 @@ export function TelegramAppIcon({ size = 40, className }: { size?: number; class
 }
 
 /**
- * Our own app icon as it will sit on the home screen, with a small badge for
- * how it gets there: a download arrow (install dialog) or a plus (iOS Add to
- * Home Screen).
+ * The installed app's own icon, as the home screen will show it: the iOS
+ * home-screen icon (apple-touch-icon, see layout.tsx) as a rounded square on
+ * iPhone/iPad, the manifest's maskable icon (manifest.ts) cut to a circle on
+ * Android. Same files the system uses, so a new app icon shows up here too.
+ * A small badge says how it gets there: a download arrow (install dialog) or
+ * a plus (iOS Add to Home Screen).
  */
 export function InstallAppIcon({
   size = 40,
@@ -78,12 +81,12 @@ export function InstallAppIcon({
   return (
     <span className={cn("relative shrink-0", className)} style={{ width: size, height: size }}>
       <Image
-        src="/icons/icon-192.png"
+        src={shape === "squircle" ? "/apple-touch-icon.png" : "/icons/icon-maskable-192.png"}
         alt=""
         width={size}
         height={size}
         className={cn(
-          "size-full bg-white object-cover shadow-[0_2px_8px_rgb(248_147_26/0.3)] ring-1 ring-black/5",
+          "size-full object-cover shadow-[0_2px_8px_rgb(248_147_26/0.3)] ring-1 ring-black/5",
           shape === "squircle" ? SQUIRCLE : "rounded-full"
         )}
       />
