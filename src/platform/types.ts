@@ -72,6 +72,12 @@ export interface Platform {
    * itself asks).
    */
   requestWriteAccess(): Promise<boolean>;
+  /**
+   * Paint the host chrome around the page (browser/PWA status bar via the
+   * theme-color meta; Telegram's header, background and bottom bar) in the
+   * page's own background colour, so there are no mismatched bands.
+   */
+  setChromeColor(hex: string): void;
   /** Close the Mini App (Telegram only; no-op on the web). */
   close(): void;
   /**

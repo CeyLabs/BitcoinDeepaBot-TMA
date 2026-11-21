@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { BigEmoji, StatusScreen } from "@/components/auth/StatusScreen";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { TELEGRAM_BOT_URL } from "@/lib/constants";
+import { TELEGRAM_MINI_APP_URL } from "@/lib/constants";
 
 export default function Error({
   error,
@@ -27,7 +27,7 @@ export default function Error({
       actions={
         isLaunchParamsError ? (
           <a
-            href={TELEGRAM_BOT_URL}
+            href={TELEGRAM_MINI_APP_URL}
             target="_blank"
             rel="noopener noreferrer"
             className={buttonVariants()}

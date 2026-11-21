@@ -13,6 +13,27 @@ function isMobileBrowser(): boolean {
   );
 }
 
+/**
+ * Replaces the light/dark theme-color metas from layout.tsx with one tag in
+ * the page's actual colour: the app's Appearance setting can differ from the
+ * OS, and some screens (the landing) use another surface.
+ */
+export function setThemeColorMeta(hex: string) {
+  if (typeof document === "undefined") return;
+  const metas = document.head.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]');
+  metas.forEach((meta, i) => {
+    if (i > 0) meta.remove();
+  });
+  let meta = metas[0];
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.name = "theme-color";
+    document.head.appendChild(meta);
+  }
+  meta.removeAttribute("media");
+  meta.content = hex;
+}
+
 function openInNewTab(url: string) {
   window.open(url, "_blank", "noopener,noreferrer");
 }
@@ -48,6 +69,7 @@ export function createWebPlatform(kind: Platform["kind"] = "web"): Platform {
     confirm: requestConfirm,
     // The web login already asks for it (data-request-access="write")
     requestWriteAccess: async () => false,
+    setChromeColor: setThemeColorMeta,
     close: () => {},
     getColorScheme: () => null,
     onColorSchemeChange: () => null,

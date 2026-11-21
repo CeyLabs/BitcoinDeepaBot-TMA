@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, use, useEffect, useSyncExternalStore } from "react";
+import { usePathname } from "next/navigation";
 import { usePlatform, type ColorScheme } from "@/platform";
 import { THEME_PREFERENCE_KEY } from "@/lib/theme-boot";
 
@@ -27,6 +28,16 @@ export const useTheme = () => {
   }
   return context;
 };
+
+/** The page's background (body) as #rrggbb, or null if it can't be read. */
+function readPageColor(): string | null {
+  const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(getComputedStyle(document.body).backgroundColor);
+  if (!m) return null;
+  return `#${m
+    .slice(1, 4)
+    .map((n) => Number(n).toString(16).padStart(2, "0"))
+    .join("")}`;
+}
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
@@ -105,6 +116,8 @@ function writePreference(next: ThemePreference) {
 }
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const platform = usePlatform();
+  const pathname = usePathname();
   const scheme = useColorScheme();
   const preference = useSyncExternalStore<ThemePreference>(
     subscribePreference,
@@ -120,6 +133,18 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     root.dataset.theme = effectiveTheme;
     root.style.colorScheme = effectiveTheme;
   }, [effectiveTheme]);
+
+  // Status bar / Telegram header and bottom bar in the page's colour. Read
+  // from the page itself (after the frame that applies the theme and the
+  // route's surface, e.g. the landing's card colour) rather than hard-coded,
+  // so they can never drift apart.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      const color = readPageColor();
+      if (color) platform.setChromeColor(color);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [effectiveTheme, pathname, platform]);
 
   const value: ThemeContextType = {
     theme: effectiveTheme,

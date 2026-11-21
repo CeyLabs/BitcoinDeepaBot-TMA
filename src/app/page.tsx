@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { SlowLoadNotice } from "@/components/SlowLoadNotice";
-import { Logo } from "@/components/ui/logo";
 import { cn } from "cn";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { Cell, CellChevron } from "@/components/ui/cell";
 import { Emoji } from "@/components/ui/emoji";
-import { LandingShell } from "@/components/auth/LandingShell";
+import { LandingShell, LogoStage } from "@/components/auth/LandingShell";
 import { getMiniAppToken, getIsExistingUserFromStorage } from "@/lib/auth";
 import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
 import { useRegisterTelegramUserResult } from "@/hooks/query/useRegisterTelegramUser";
@@ -23,7 +22,8 @@ import { UserProgress } from "@/components/auth/UserProgress";
 /**
  * Logo + content. With no children it's the start screen (platform detection,
  * sign-in, redirect): it appears only after 300ms so fast loads never flash
- * it, the logo breathes slowly, and a retry shows up if it takes too long.
+ * it, the logo's glow pulses over a loading bar, and a retry shows up if it
+ * takes too long.
  * The logo stays in the same spot when the real content arrives.
  */
 function PageShell({ children }: { children?: React.ReactNode }) {
@@ -37,18 +37,10 @@ function PageShell({ children }: { children?: React.ReactNode }) {
           loading && "animate-appear motion-reduce:animate-none"
         )}
       >
-        <div
-          className={cn(
-            "relative h-[200px] w-full max-w-[300px]",
-            loading
-              ? "animate-breathe motion-reduce:animate-none"
-              : "animate-logo-in motion-reduce:animate-none"
-          )}
-        >
-          <Logo priority />
-        </div>
+        <LogoStage loading={loading} />
         {loading ? (
-          <div className="mt-6">
+          <div className="mt-8 flex flex-col items-center gap-4">
+            <div className="loading-bar" role="progressbar" aria-label="Loading" />
             <SlowLoadNotice />
           </div>
         ) : (

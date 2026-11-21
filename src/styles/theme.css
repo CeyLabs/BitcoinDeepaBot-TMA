@@ -657,7 +657,14 @@ body {
   bar. Browsers and Telegram report a 0 top inset, so this only matters
   standalone. The bottom inset is handled by the fixed bottom navigation.
 */
+:root {
+  /* What body's padding-top takes away from the viewport (standalone only). */
+  --top-inset: 0px;
+}
 @media (display-mode: standalone) {
+  :root {
+    --top-inset: env(safe-area-inset-top);
+  }
   body {
     padding-top: env(safe-area-inset-top);
   }
@@ -672,5 +679,127 @@ body {
     height: env(safe-area-inset-top);
     background: var(--background);
     pointer-events: none;
+  }
+}
+
+/* Screens drawn on the card colour (LandingShell sets data-surface="card"):
+   the body, the status-bar strip and, via ThemeProvider, the theme-color /
+   Telegram header take that colour too, so there are no darker bands above
+   or below the page. */
+body:has([data-surface="card"]) {
+  background-color: var(--card);
+}
+body:has([data-surface="card"])::before {
+  background: var(--card);
+}
+
+/* ─── Landing logo stage ──────────────────────────────────────────────────
+   A warm glow and slowly turning light rays behind the logo (the mask's
+   flame colours), plus a gentle float. While loading, the glow pulses
+   faster. CSS only, so it runs before hydration. */
+.logo-glow,
+.logo-rays {
+  position: absolute;
+  inset: -18% -22%;
+  pointer-events: none;
+  border-radius: 9999px;
+}
+.logo-glow {
+  background: radial-gradient(
+    closest-side,
+    rgb(248 147 26 / 0.34),
+    rgb(232 74 39 / 0.14) 55%,
+    transparent 78%
+  );
+  filter: blur(18px);
+  animation: logo-glow 5s ease-in-out infinite;
+}
+.logo-rays {
+  inset: -30% -34%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgb(248 147 26 / 0.16) 0deg 5deg,
+    transparent 5deg 22.5deg
+  );
+  -webkit-mask-image: radial-gradient(closest-side, #000 25%, transparent 72%);
+  mask-image: radial-gradient(closest-side, #000 25%, transparent 72%);
+  animation: logo-rays 60s linear infinite;
+}
+html[data-theme="light"] .logo-glow {
+  opacity: 0.75;
+}
+html[data-theme="light"] .logo-rays {
+  opacity: 0.6;
+}
+.logo-float {
+  animation: logo-float 6s ease-in-out infinite;
+}
+[data-loading] .logo-glow {
+  animation-duration: 1.8s;
+}
+[data-loading] .logo-float {
+  animation: logo-float 2.4s ease-in-out infinite;
+}
+/* Indeterminate bar under the logo while the start screen waits. */
+.loading-bar {
+  position: relative;
+  height: 4px;
+  width: 112px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: var(--chip);
+}
+.loading-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f8931a, #e84a27);
+  animation: loading-bar 1.3s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+@keyframes logo-glow {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+@keyframes logo-rays {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes logo-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes loading-bar {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(230%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-glow,
+  .logo-rays,
+  .logo-float,
+  .loading-bar::after {
+    animation: none !important;
+  }
+  .loading-bar::after {
+    width: 100%;
+    opacity: 0.5;
   }
 }
