@@ -24,7 +24,7 @@ export function UserProgress() {
   if (isLoading) {
     return (
       <div className="flex w-full flex-col gap-2">
-        <Progress value={0} label="Members joined" />
+        <Progress value={0} label="Members joined" className="bg-card" />
         <div className="flex w-full items-baseline justify-between">
           <Bone className="h-7 w-28" />
           <Bone className="h-4 w-12" />
@@ -35,7 +35,7 @@ export function UserProgress() {
 
   return (
     <div className="flex w-full flex-col gap-2">
-      <Progress value={progressPct} label="Members joined" />
+      <Progress value={progressPct} label="Members joined" className="bg-card" />
       <div className="flex w-full items-baseline justify-between">
         <p className="flex items-baseline gap-1.5">
           <span className="num text-[22px] font-bold">{count.toLocaleString()}</span>

@@ -682,17 +682,6 @@ body {
   }
 }
 
-/* Screens drawn on the card colour (LandingShell sets data-surface="card"):
-   the body, the status-bar strip and, via ThemeProvider, the theme-color /
-   Telegram header take that colour too, so there are no darker bands above
-   or below the page. */
-body:has([data-surface="card"]) {
-  background-color: var(--card);
-}
-body:has([data-surface="card"])::before {
-  background: var(--card);
-}
-
 /* ─── Landing logo stage ──────────────────────────────────────────────────
    A warm glow behind the logo (the mask's flame colours), plus a gentle
    float. While loading, the glow pulses
@@ -737,7 +726,7 @@ html[data-theme="light"] .logo-glow {
   width: 112px;
   overflow: hidden;
   border-radius: 9999px;
-  background: var(--chip);
+  background: var(--card);
 }
 .loading-bar::after {
   content: "";

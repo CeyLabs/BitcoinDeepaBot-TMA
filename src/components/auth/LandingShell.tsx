@@ -18,7 +18,7 @@ export function ThemeToggle({ className }: { className?: string }) {
         setPreference(isDark ? "light" : "dark");
       }}
       className={cn(
-        "press hit bg-chip text-ink2 flex size-10 items-center justify-center rounded-full border-0",
+        "press hit bg-card shadow-card text-ink2 flex size-10 items-center justify-center rounded-full border-0",
         className
       )}
     >
@@ -52,7 +52,7 @@ export function LogoStage({ loading }: { loading?: boolean }) {
 
 /**
  * Full-screen landing surface for the screens outside the dashboard (welcome,
- * sign-in, errors, payment results): plain card background and a centered column.
+ * sign-in, errors, payment results): plain page background and a centered column.
  */
 export function LandingShell({
   children,
@@ -67,14 +67,11 @@ export function LandingShell({
   "aria-label"?: string;
 }) {
   return (
-    // Plain page in the card colour; content in a centered phone-width column.
-    // data-surface paints the body, status bar and Telegram header to match
-    // (styles/theme.css, ThemeProvider). The height leaves out the installed
-    // PWA's status-bar padding, so the page fits the screen without scrolling.
-    <div
-      data-surface="card"
-      className="bg-card min-h-[calc(100dvh-var(--top-inset))] overflow-x-clip transition-colors duration-300"
-    >
+    // The app's page colour (same as the body, the status bar and Android's
+    // navigation bar, which comes from the manifest), content in a centered
+    // phone-width column. The height leaves out the installed PWA's
+    // status-bar padding, so the page fits the screen without scrolling.
+    <div className="bg-background min-h-[calc(100dvh-var(--top-inset))] overflow-x-clip transition-colors duration-300">
       <main
         aria-label={ariaLabel}
         className="relative mx-auto flex min-h-[calc(100dvh-var(--top-inset))] w-full max-w-[440px] flex-col"
