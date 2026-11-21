@@ -257,7 +257,7 @@ export function ChoosePlanView({ asTab = false }: { asTab?: boolean }) {
       )}
 
       <p className="text-ink3 text-center text-[12px]">
-        Paid securely through PayHere with your card or bank.
+        Paid securely through PayHere with your bank.
       </p>
 
       {!currentPlan && !asTab && (
@@ -314,7 +314,7 @@ export function ChoosePlanView({ asTab = false }: { asTab?: boolean }) {
             </div>
             <KeyValueList
               rows={[
-                { k: "Pays with", v: "PayHere · card or bank" },
+                { k: "Pays with", v: "PayHere · bank" },
                 { k: "Billed", v: selectedPlan.type === "weekly" ? "Every week" : "Every month" },
                 ...(feeText ? [{ k: "Fee", v: `${feeText} of each payment` }] : []),
                 { k: "Cancel", v: "Any time, in Plans" },
