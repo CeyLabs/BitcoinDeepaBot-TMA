@@ -661,6 +661,11 @@ body {
   /* What body's padding-top takes away from the viewport (standalone only). */
   --top-inset: 0px;
 }
+/* A full-screen page: the viewport minus that padding, so it fits the screen
+   (no scrolling just to reach a bottom button) in the installed app too. */
+@utility min-h-app {
+  min-height: calc(100dvh - var(--top-inset));
+}
 @media (display-mode: standalone) {
   :root {
     --top-inset: env(safe-area-inset-top);

@@ -71,10 +71,10 @@ export function LandingShell({
     // navigation bar, which comes from the manifest), content in a centered
     // phone-width column. The height leaves out the installed PWA's
     // status-bar padding, so the page fits the screen without scrolling.
-    <div className="bg-background min-h-[calc(100dvh-var(--top-inset))] overflow-x-clip transition-colors duration-300">
+    <div className="bg-background min-h-app overflow-x-clip transition-colors duration-300">
       <main
         aria-label={ariaLabel}
-        className="relative mx-auto flex min-h-[calc(100dvh-var(--top-inset))] w-full max-w-[440px] flex-col"
+        className="min-h-app relative mx-auto flex w-full max-w-[440px] flex-col"
       >
         {themeToggle && <ThemeToggle className="absolute top-4 right-4 z-10" />}
         <div
