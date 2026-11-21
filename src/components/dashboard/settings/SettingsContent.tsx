@@ -7,8 +7,9 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { useAvatarSeed, useUserMe } from "@/hooks/query/useUserMe";
 import { UsernameSheet } from "./UsernameSheet";
 import { AvatarPickerSheet } from "./AvatarPickerSheet";
-import { Badge } from "@/components/ui/badge";
+import { Badge, BadgeDot } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CopyButton } from "@/components/ui/copy-button";
 import { List, ListRow, Section } from "@/components/ui/section";
 import { Segmented } from "@/components/ui/segmented";
 import { Switch } from "@/components/ui/switch";
@@ -20,7 +21,7 @@ import { useUser } from "@/hooks/useUser";
 import type { User } from "@/lib/types";
 import { haptic, usePlatform } from "@/platform";
 import { Icon } from "./icons";
-import { InstallButton } from "@/pwa";
+import { InstallButton, useInstallKind } from "@/pwa";
 import { PayoutAccountSection } from "./PayoutAccountSection";
 import { PersonalDetailsSection } from "./PersonalDetailsSection";
 
@@ -61,7 +62,7 @@ function ProfileRow() {
         <UserAvatar seed={avatarSeed} size={56} />
         <span
           aria-hidden
-          className="bg-card text-link shadow-card absolute -right-0.5 -bottom-0.5 flex size-6 items-center justify-center rounded-full"
+          className="bg-card text-link shadow-card absolute -top-0.5 -right-0.5 flex size-6 items-center justify-center rounded-full"
         >
           <svg
             className="size-3.5"
@@ -77,21 +78,21 @@ function ProfileRow() {
         </span>
       </button>
       <AvatarPickerSheet open={picking} onOpenChange={setPicking} />
-      <div className="flex min-w-0 flex-col gap-0.5">
+      <div className="flex min-w-0 grow flex-col gap-0.5">
         <p className="truncate text-[18px] leading-[22px] font-bold">{displayName}</p>
-        <p className="text-ink3 truncate text-[13px] leading-4">
-          {[
-            ourUsername ? `@${ourUsername}` : null,
-            kycStatus === undefined
-              ? null
-              : kycStatus === "APPROVED"
-                ? "Verified member"
-                : "Not verified yet",
-          ]
-            .filter(Boolean)
-            .join(" · ") || " "}
-        </p>
+        {ourUsername && <p className="text-ink3 truncate text-[13px] leading-4">@{ourUsername}</p>}
       </div>
+      {kycStatus !== undefined &&
+        (kycStatus === "APPROVED" ? (
+          <Badge variant="active" className="shrink-0">
+            <BadgeDot />
+            Verified
+          </Badge>
+        ) : (
+          <Badge variant="soft" className="shrink-0">
+            Not verified
+          </Badge>
+        ))}
     </div>
   );
 }
@@ -104,7 +105,7 @@ function UsernameRow() {
     <>
       <ListRow
         icon={<span className="text-ink2 text-[18px] font-extrabold">@</span>}
-        title="Username"
+        title="BitcoinDeepa username"
         subtitle={username ? `@${username}` : "So others can send you sats"}
         after={
           me && !username ? (
@@ -117,6 +118,8 @@ function UsernameRow() {
             >
               Set up
             </Button>
+          ) : username ? (
+            <CopyButton value={`@${username}`} label="username" />
           ) : null
         }
       />
@@ -164,6 +167,9 @@ export function SettingsContent({
 }) {
   const router = useRouter();
   const { kind } = usePlatform();
+  // Install shows only in a browser that can install (not Telegram, not once installed).
+  const installKind = useInstallKind();
+  const canInstall = kind === "web" && installKind !== null;
   const { logout } = useSession();
   const toast = useToast();
   const logOut = (everywhere: boolean) => {
@@ -202,7 +208,6 @@ export function SettingsContent({
 
       <Section title="Account">
         <List>
-          <InstallButton variant="row" />
           <IdentityRow onVerify={() => go("/verification")} />
           <UsernameRow />
           <ListRow
@@ -211,17 +216,18 @@ export function SettingsContent({
             subtitle="Mask amounts on screen"
             after={<Switch label="Hide balances" checked={!visible} onCheckedChange={toggle} />}
           />
-          <ListRow
-            icon={<Icon name="globe" className="text-ink2" />}
-            title="Language"
-            subtitle="English · Sinhala coming soon"
-          />
         </List>
       </Section>
 
       <PayoutAccountSection />
 
       <PersonalDetailsSection onCompleteProfile={() => go("/verification/details")} />
+
+      {canInstall && (
+        <List>
+          <InstallButton variant="row" />
+        </List>
+      )}
 
       <List>
         {kind === "web" && (

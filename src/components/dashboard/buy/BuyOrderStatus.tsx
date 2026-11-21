@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { cn } from "cn";
+import { ResultShell } from "@/components/auth/StatusScreen";
 import { PushHeader } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { KeyValueList } from "@/components/ui/section";
@@ -24,7 +24,7 @@ function stateOf(order: BuyOrder | undefined, cancelled: boolean) {
     case "AWAITING_PAYMENT":
       if (cancelled) {
         return {
-          title: "Payment Cancelled",
+          title: "Payment cancelled",
           text: `Your ${amount} buy was not completed. You can try again anytime.`,
           emoji: "/emoji/animated/cross-mark.webp",
         };
@@ -198,13 +198,15 @@ export function BuyOrderStatus({
   }
 
   const doneOrder = done ? order : undefined;
+  // Money only moved once PayHere confirmed (a chargeback was paid, then reversed)
+  const paid = order?.status === "SUCCESS" || order?.status === "CHARGEBACK";
   const rows = order
     ? [
-        { k: "Amount paid", v: fmtLkrExact(order.amount_lkr) },
+        { k: paid ? "Amount paid" : "Amount", v: fmtLkrExact(order.amount_lkr) },
         ...(order.satoshis
           ? [{ k: done ? "Sats added" : "Sats", v: `${fmtSats(order.satoshis)} sats` }]
           : []),
-        { k: "Paid with", v: "PayHere" },
+        { k: paid ? "Paid with" : "Pay with", v: "PayHere" },
         { k: "Date", v: fmtActivityDateTime(order.created_at) },
         { k: "Reference", v: order.order_id.slice(0, 8).toUpperCase() },
       ]
@@ -213,27 +215,30 @@ export function BuyOrderStatus({
 
   const content = (
     <>
-      {doneOrder ? (
-        <ResultHero
-          visual="party"
-          big={`+${fmtSats(doneOrder.satoshis ?? 0)} sats`}
-          text={`Bought for ${fmtLkrExact(doneOrder.amount_lkr)} and added to your wallet`}
-        />
-      ) : state.spinner ? (
-        <>
-          <div className="flex flex-col items-center gap-1 px-2 pt-2 text-center">
-            <h2 className="text-[22px] leading-7">{state.title}</h2>
-            <p className="text-ink2 text-[14px] leading-5 font-semibold">{state.text}</p>
-          </div>
-          <Timeline steps={buyTimeline(order)} />
-        </>
-      ) : (
-        <ResultHero visual={{ emoji: state.emoji! }} title={state.title} text={state.text} />
-      )}
+      {/* Hero and details sit in the middle of the space above the buttons */}
+      <div className="flex flex-1 flex-col justify-center gap-5">
+        {doneOrder ? (
+          <ResultHero
+            visual="party"
+            big={`+${fmtSats(doneOrder.satoshis ?? 0)} sats`}
+            text={`Bought for ${fmtLkrExact(doneOrder.amount_lkr)} and added to your wallet`}
+          />
+        ) : state.spinner ? (
+          <>
+            <div className="flex flex-col items-center gap-1 px-2 pt-2 text-center">
+              <h2 className="text-[22px] leading-7">{state.title}</h2>
+              <p className="text-ink2 text-[14px] leading-5 font-semibold">{state.text}</p>
+            </div>
+            <Timeline steps={buyTimeline(order)} />
+          </>
+        ) : (
+          <ResultHero visual={{ emoji: state.emoji! }} title={state.title} text={state.text} />
+        )}
 
-      {rows.length > 0 && <KeyValueList rows={rows} />}
+        {rows.length > 0 && <KeyValueList rows={rows} />}
+      </div>
 
-      <div className="mt-auto flex w-full flex-col gap-1 pt-2">
+      <div className="flex w-full flex-col gap-1 pt-2">
         {retry && (
           <Button variant="secondary" loading={isFetching} onClick={() => void refetch()}>
             Try again
@@ -260,16 +265,7 @@ export function BuyOrderStatus({
     );
   }
 
-  return (
-    <main
-      className={cn(
-        "bg-background text-foreground mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4",
-        "pt-[calc(24px+env(safe-area-inset-top))] pb-[calc(24px+env(safe-area-inset-bottom))]"
-      )}
-    >
-      <div className="flex flex-1 flex-col justify-center gap-5">{content}</div>
-    </main>
-  );
+  return <ResultShell>{content}</ResultShell>;
 }
 
 /**

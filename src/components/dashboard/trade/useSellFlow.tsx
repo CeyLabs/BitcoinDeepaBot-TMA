@@ -27,8 +27,14 @@ import { estimateSellLkr, satsForLkr } from "@/lib/sell";
 import { sellAmountSchema } from "@/lib/validations";
 import { haptic } from "@/platform";
 import type { FlowArgs, FlowStep, FlowView } from "./flow";
-import { DualAmount, DualHint, GateNotice, useDualAmount } from "./DualAmount";
-import { Presets, PriceFooter } from "./keypad";
+import {
+  DualAmount,
+  DualHint,
+  GateNotice,
+  Presets,
+  PriceFooter,
+  useDualAmount,
+} from "./DualAmount";
 import { ErrorRow, HoldButton, LockRow, ReviewHeader } from "./parts";
 import { fmtFeePercent } from "./useBuyFlow";
 import { verifyCopy } from "./verify-copy";
@@ -49,10 +55,10 @@ function useSecondsLeft(expiresAt: string | undefined) {
  * expiry → press and hold to confirm → the order's status, polled until it's
  * done. Missing KYC or a verified bank shows as a notice on the amount screen.
  */
-export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
+export function useSellFlow({ kyc, close, open }: FlowArgs): FlowView {
   const router = useRouter();
   const toast = useToast();
-  const { openSettings } = useSheets();
+  const { openAddBank } = useSheets();
   const [step, setStep] = useState<FlowStep>("amount");
   const [dir, setDir] = useState<"fwd" | "back">("fwd");
   const [quote, setQuote] = useState<SellOrder | null>(null);
@@ -62,7 +68,7 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
   const [orderId, setOrderId] = useState<string | null>(null);
 
   const { totalSats, balanceAvailable, isLoading: balanceLoading } = useWalletMetrics();
-  const { data: price } = useSellPrice();
+  const { data: price } = useSellPrice(open);
   const { current: bankAccount, verified, isLoading: bankLoading } = useBankAccounts();
   const quoteM = useSellQuote();
   const confirm = useConfirmSell();
@@ -159,7 +165,7 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
       stepKey: "status",
       dir: "fwd",
       body: order ? (
-        <SellOrderStatus order={order} bankLabel={bankLabel} />
+        <SellOrderStatus order={order} bankLabel={bankLabel} celebrateOnArrival />
       ) : (
         <SellOrderPending bankLabel={bankLabel} />
       ),
@@ -230,8 +236,8 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
                     onClick: () => {
                       haptic.impact("medium");
                       close();
-                      // Let this sheet slide away before the settings sheet comes up
-                      window.setTimeout(openSettings, 260);
+                      // Let this sheet slide away before the bank form comes up
+                      window.setTimeout(openAddBank, 260);
                     },
                   }
             }
@@ -239,9 +245,10 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
         )}
         <DualAmount
           id="sell"
+          onSubmit={onContinue}
           d={d}
           top={{ unit: "sats", label: "You sell" }}
-          bottom={{ unit: "lkr", label: "You receive (estimate)" }}
+          bottom={{ unit: "lkr", label: "You receive" }}
           invalid={!!error}
         />
         <DualHint invalid={!!error || (!balanceLoading && !balanceAvailable)}>{hint}</DualHint>
@@ -316,7 +323,7 @@ export function useSellFlow({ kyc, close }: FlowArgs): FlowView {
     footer = (
       <>
         <HoldButton
-          label={`Sell for ${fmtLkrExact(quote.amountLkr)}`}
+          label="Press and Hold to Sell"
           disabled={expired || quoteM.isPending}
           loading={confirm.isPending}
           onConfirm={() => void onSell()}

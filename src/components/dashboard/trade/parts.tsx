@@ -99,6 +99,34 @@ export function InfoRow({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** Orange caution box: something the member must know before paying. */
+export function WarningRow({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div
+      role="note"
+      className="text-foreground mb-3 flex items-start gap-2.5 rounded-xl border border-[rgba(248,147,26,0.45)] bg-[rgba(248,147,26,0.14)] px-3.5 py-3 text-[13px] leading-[18px]"
+    >
+      <svg
+        className="text-link mt-px size-5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
+        <path d="M12 9v4M12 17h.01" />
+      </svg>
+      <span className="flex flex-col gap-0.5">
+        <b className="text-[14px] leading-[18px] font-bold">{title}</b>
+        <span className="text-ink2">{children}</span>
+      </span>
+    </div>
+  );
+}
+
 /** Red message row for a failed request. */
 export function ErrorRow({ children }: { children: React.ReactNode }) {
   return (
@@ -158,6 +186,8 @@ export function HoldButton({
       aria-busy={loading || undefined}
       // A finger that wobbles while holding must not drag the sheet down.
       data-base-ui-swipe-ignore=""
+      // Its own haptics (a tick on press); the app-wide tap layer stays out
+      data-no-haptic=""
       onPointerDown={start}
       onPointerUp={end}
       onPointerLeave={end}

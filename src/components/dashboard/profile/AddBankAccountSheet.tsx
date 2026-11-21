@@ -126,7 +126,6 @@ export function AddBankAccountSheet({
       onBack={picking ? () => setPicking(false) : undefined}
       hideClose={addAccount.isPending}
       flow
-      form
       footer={
         picking ? undefined : (
           <div className="flex flex-col gap-2">
@@ -149,7 +148,6 @@ export function AddBankAccountSheet({
               placeholder="Search banks"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              autoFocus
             />
           </div>
           {banksLoading ? (

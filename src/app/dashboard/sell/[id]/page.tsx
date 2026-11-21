@@ -43,7 +43,7 @@ export default function SellOrderPage({ params }: { params: Promise<{ id: string
       <PushHeader title="Sale" onBack={() => router.push("/dashboard/sell")} />
       {content}
       <div className="mt-auto pt-2">
-        <Button onClick={() => router.push("/dashboard")}>Back to wallet</Button>
+        <Button onClick={() => router.push("/dashboard")}>Go to wallet</Button>
       </div>
     </div>
   );

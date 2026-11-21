@@ -19,7 +19,7 @@ export function AppHeader() {
   const ready = useSession().status !== "loading";
 
   return (
-    <header className="bg-background sticky top-0 z-35 -mx-4 px-4 pt-3 pb-2 transition-colors duration-300">
+    <header className="bg-background sticky top-[env(safe-area-inset-top)] z-35 -mx-4 px-4 pt-3 pb-2 transition-colors duration-300">
       <div className="flex min-h-11 items-center justify-between gap-2.5">
         <Wordmark className="text-foreground relative top-0.5 h-9 w-auto shrink-0" />
         <div className="flex min-w-0 items-center gap-2">
@@ -49,7 +49,7 @@ export function AppHeader() {
               // Verified (KYC approved): a green check on the avatar's corner.
               <span
                 aria-hidden
-                className="bg-gain-fill border-background absolute -right-0.5 -bottom-0.5 flex size-[18px] items-center justify-center rounded-full border-2 text-white"
+                className="bg-gain-fill border-background absolute -top-0.5 -right-0.5 flex size-[18px] items-center justify-center rounded-full border-2 text-white"
               >
                 <svg
                   className="size-2.5"

@@ -12,6 +12,8 @@ interface SheetsContextValue {
   openTrade: (kind: TradeKind) => void;
   /** Send sats to another Bitcoin Deepa user. */
   openSend: () => void;
+  /** The add-bank-account form, straight away (not via settings). */
+  openAddBank: () => void;
 }
 
 const SheetsContext = createContext<SheetsContextValue | null>(null);
@@ -20,6 +22,10 @@ const SheetsContext = createContext<SheetsContextValue | null>(null);
 const SettingsSheet = dynamic(() => import("./settings/SettingsSheet"), { ssr: false });
 const TradeSheet = dynamic(() => import("./trade/TradeSheet"), { ssr: false });
 const SendSheet = dynamic(() => import("./send/SendSheet"), { ssr: false });
+const AddBankAccountSheet = dynamic(
+  () => import("./profile/AddBankAccountSheet").then((m) => m.AddBankAccountSheet),
+  { ssr: false }
+);
 
 /** App-level sheets any dashboard screen can open. Mounted once in the dashboard layout. */
 export function SheetsProvider({ children }: { children: React.ReactNode }) {
@@ -27,6 +33,7 @@ export function SheetsProvider({ children }: { children: React.ReactNode }) {
   const [settingsMounted, setSettingsMounted] = useState(false);
   const [trade, setTrade] = useState<{ open: boolean; kind: TradeKind; key: number } | null>(null);
   const [send, setSend] = useState<{ open: boolean; key: number } | null>(null);
+  const [addBank, setAddBank] = useState<{ open: boolean; key: number } | null>(null);
 
   const openSettings = useCallback(() => {
     setSettingsMounted(true);
@@ -39,9 +46,14 @@ export function SheetsProvider({ children }: { children: React.ReactNode }) {
 
   const openSend = useCallback(() => setSend((s) => ({ open: true, key: (s?.key ?? 0) + 1 })), []);
 
+  const openAddBank = useCallback(
+    () => setAddBank((b) => ({ open: true, key: (b?.key ?? 0) + 1 })),
+    []
+  );
+
   const value = useMemo(
-    () => ({ openSettings, openTrade, openSend }),
-    [openSettings, openTrade, openSend]
+    () => ({ openSettings, openTrade, openSend, openAddBank }),
+    [openSettings, openTrade, openSend, openAddBank]
   );
 
   return (
@@ -51,7 +63,7 @@ export function SheetsProvider({ children }: { children: React.ReactNode }) {
       {trade && (
         <TradeSheet
           // A fresh flow every time it's opened.
-          key={trade.key}
+          key={`trade-${trade.key}`}
           open={trade.open}
           initialKind={trade.kind}
           onOpenChange={(open) => setTrade((t) => (t ? { ...t, open } : t))}
@@ -60,9 +72,17 @@ export function SheetsProvider({ children }: { children: React.ReactNode }) {
       {send && (
         <SendSheet
           // A fresh payment (and payment key) every time it's opened.
-          key={send.key}
+          key={`send-${send.key}`}
           open={send.open}
           onOpenChange={(open) => setSend((s) => (s ? { ...s, open } : s))}
+        />
+      )}
+      {addBank && (
+        <AddBankAccountSheet
+          // A blank form every time it's opened.
+          key={`bank-${addBank.key}`}
+          open={addBank.open}
+          onOpenChange={(open) => setAddBank((b) => (b ? { ...b, open } : b))}
         />
       )}
     </SheetsContext>

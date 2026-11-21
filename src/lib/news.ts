@@ -85,6 +85,12 @@ function estimateReadTime(text: string): number {
   return Math.max(1, Math.round(words / 200));
 }
 
+/** The feed shouts some categories ("MARKETS"): show them like "All" ("Markets").
+ *  Short all-caps words are acronyms (ETF, BTC) and stay as they are. */
+function categoryLabel(raw: string): string {
+  return raw.replace(/\b[A-Z]{4,}\b/g, (w) => w[0] + w.slice(1).toLowerCase());
+}
+
 function toArticle(item: FeedItem, index: number): NewsArticle | null {
   if (!item.link || !item.title) return null;
 
@@ -97,7 +103,7 @@ function toArticle(item: FeedItem, index: number): NewsArticle | null {
     title: item.title,
     description: plainText.slice(0, 160),
     thumbnailUrl: extractThumbnail(item),
-    category: item.categories?.[0] ?? "General",
+    category: categoryLabel(item.categories?.[0] ?? "General"),
     readTimeMinutes: estimateReadTime(plainText),
     publishedAt: item.isoDate ?? item.pubDate ?? new Date().toISOString(),
     link: item.link,

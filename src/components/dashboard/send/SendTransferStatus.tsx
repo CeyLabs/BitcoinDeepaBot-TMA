@@ -7,7 +7,7 @@ import { ResultHero, Timeline, type TimelineState } from "@/components/dashboard
 import { useSecondsLeft } from "@/hooks/useSecondsLeft";
 import { celebrate } from "@/lib/celebrate";
 import { TELEGRAM_BOT_URL } from "@/lib/constants";
-import { fmtActivityDateTime, fmtSats } from "@/lib/formatters";
+import { fmtActivityDateTime, fmtSats, LKR_SYMBOL } from "@/lib/formatters";
 import { recipientLabel, type P2pTransfer } from "@/lib/p2p";
 import { usePlatform } from "@/platform";
 
@@ -69,7 +69,8 @@ export const isTransferInProgress = (t: P2pTransfer | undefined) => {
 export function transferRows(t: P2pTransfer) {
   return [
     { k: "Amount", v: `${fmtSats(t.amount)} sats` },
-    ...(t.amount_lkr ? [{ k: "Value", v: t.amount_lkr }] : []),
+    // The bot sends a bare number ("1,234.56"): add the currency.
+    ...(t.amount_lkr ? [{ k: "Value", v: `≈ ${LKR_SYMBOL} ${t.amount_lkr}` }] : []),
     ...(t.to ? [{ k: "To", v: recipientLabel(t.to) }] : []),
     ...(t.memo ? [{ k: "Note", v: t.memo }] : []),
     { k: "Date", v: fmtActivityDateTime(t.created_at) },
@@ -81,19 +82,29 @@ export function transferRows(t: P2pTransfer) {
  * A send's status: a timeline while it moves, the bot-chat confirm with its
  * countdown, the success screen (confetti once), or why nothing was sent.
  */
-export function SendTransferStatus({ transfer }: { transfer: P2pTransfer }) {
+export function SendTransferStatus({
+  transfer,
+  celebrateOnArrival = false,
+}: {
+  transfer: P2pTransfer;
+  /** Also celebrate if it's already completed when first shown (the send flow, right after sending). */
+  celebrateOnArrival?: boolean;
+}) {
   const platform = usePlatform();
   const view = viewFor(transfer);
   const secondsLeft = useSecondsLeft(view.kind === "confirm" ? transfer.confirm_by : undefined);
   const to = recipientLabel(transfer.to);
 
+  // Confetti once, when it completes while this is open, not when opening a
+  // transfer that finished earlier.
   const celebrated = useRef(false);
+  const firstStatus = useRef(transfer.status);
   useEffect(() => {
-    if (transfer.status === "completed" && !celebrated.current) {
-      celebrated.current = true;
-      void celebrate();
-    }
-  }, [transfer.status]);
+    if (transfer.status !== "completed" || celebrated.current) return;
+    if (firstStatus.current === "completed" && !celebrateOnArrival) return;
+    celebrated.current = true;
+    void celebrate();
+  }, [transfer.status, celebrateOnArrival]);
 
   const at = (i: number, active: number): TimelineState =>
     i < active ? "done" : i === active ? "active" : "todo";

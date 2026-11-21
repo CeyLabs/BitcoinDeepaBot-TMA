@@ -115,7 +115,7 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className="bg-background text-foreground min-h-screen font-sans leading-normal antialiased">
+      <body className="bg-background text-foreground min-h-dvh font-sans leading-normal antialiased">
         <PwaSetup />
         <Providers>{children}</Providers>
         {/* Reveal the server-rendered page inside Telegram right away (see lib/launch-redirect.ts). */}

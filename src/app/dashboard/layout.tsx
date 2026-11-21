@@ -3,7 +3,7 @@
 import BottomNavigation from "@/components/bottomNavigation";
 import { AppHeader } from "@/components/dashboard/AppHeader";
 import { SheetsProvider } from "@/components/dashboard/sheets";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { PullToRefresh } from "@/components/pull-to-refresh";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,7 +17,10 @@ import ChoosePlanLoading from "./plans/choose/loading";
 import ProfileLoading from "./profile/loading";
 import SellLoading from "./sell/loading";
 import { kycStatusOptions } from "@/hooks/query/useKyc";
+import { bankAccountsOptions } from "@/hooks/query/useBankAccounts";
 import { subscriptionCurrentOptions } from "@/hooks/query/useSubscriptionCurrent";
+import { preloadEmoji } from "@/components/ui/emoji";
+import { PLAN_ICONS } from "@/components/dashboard/wallet/PlanSummaryCard";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { sessionExpired, signingIn } = useAuthGuard();
@@ -33,7 +36,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (status !== "authenticated") return;
     queryClient.prefetchQuery(kycStatusOptions());
     queryClient.prefetchQuery(subscriptionCurrentOptions());
+    // The wallet's setup card waits on it: start it with the first batch,
+    // not after the screen mounts (one round trip less on cold load).
+    queryClient.prefetchQuery(bankAccountsOptions());
   }, [status, queryClient]);
+
+  // Plan creatures (Plans tab cards at 40px, the confirm sheet at 84px; the 40px set also covers
+  // the 36px hero/summary icons). Fetched once the first screen is idle, so opening Plans
+  // doesn't pop them in after the cards render.
+  useEffect(() => {
+    const warm = () => {
+      for (const src of Object.values(PLAN_ICONS)) {
+        preloadEmoji(src, 40);
+        preloadEmoji(src, 84);
+      }
+    };
+    if ("requestIdleCallback" in window) {
+      const id = requestIdleCallback(warm, { timeout: 2000 });
+      return () => cancelIdleCallback(id);
+    }
+    const id = setTimeout(warm, 500);
+    return () => clearTimeout(id);
+  }, []);
 
   // Pull down from the top of any tab: refetch what's on screen, and re-render
   // the server parts (news is fetched on the server).
@@ -43,18 +67,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return queryClient.refetchQueries({ type: "active" });
   };
 
-  // Pushed pages (an article, payment status) hide the tab bar.
+  // A news article opens at the top. Next only scrolls when the new page isn't
+  // already in view, and with the sticky header it usually is, so an article
+  // opened from a scrolled list kept that offset.
+  useLayoutEffect(() => {
+    if (/^\/dashboard\/news\/[^/]+/.test(pathname)) window.scrollTo(0, 0);
+  }, [pathname]);
+
+  // Pushed pages (buy, sell, send, profile) hide the tab bar; news articles keep it.
   const showNav = !PUSHED_PAGES.some((p) => pathname.startsWith(p));
 
   return (
     // Phone-width column, centered on a plain page on wider screens.
     <SheetsProvider>
-      <div className="bg-background relative mx-auto flex min-h-screen w-full max-w-[440px] flex-col overflow-x-clip px-4 transition-colors duration-300">
+      <div className="bg-background relative mx-auto flex min-h-dvh w-full max-w-[440px] flex-col overflow-x-clip px-4 transition-colors duration-300">
         <AppHeader />
         <main
           className={
             showNav
-              ? "flex flex-1 flex-col gap-5 pt-3 pb-[calc(116px+env(safe-area-inset-bottom))]"
+              ? "flex flex-1 flex-col gap-5 pt-3 pb-[calc(var(--nav-bottom)+100px)]"
               : "flex flex-1 flex-col gap-5 pt-3 pb-[calc(40px+env(safe-area-inset-bottom))]"
           }
         >
@@ -79,7 +110,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 }
 
 const PUSHED_PAGES = [
-  "/dashboard/news/",
   "/dashboard/buy",
   "/dashboard/sell/",
   "/dashboard/send",
@@ -101,7 +131,7 @@ function SessionExpiredNotice() {
 
 // Pages that don't depend on the session render for real from the server
 // instead of a skeleton: news (server-fetched) and tasks (static list).
-const RENDER_WITHOUT_SESSION = ["/dashboard/news", "/dashboard/tasks"];
+const RENDER_WITHOUT_SESSION = ["/dashboard/news"];
 
 function TabSkeleton({ pathname }: { pathname: string }) {
   if (pathname.startsWith("/dashboard/activity")) return <ActivityLoading />;

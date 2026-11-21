@@ -1,12 +1,7 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { ManageTasksSection } from "@/components/dashboard/tasks/ManageTasksSection";
-import { MOCK_TASKS } from "@/components/dashboard/tasks/mock-data";
-
+// Tasks are off for now (News took their tab). The page and its components in
+// src/components/dashboard/tasks stay for when tasks come back.
 export default function TasksPage() {
-  return (
-    <div className="flex w-full flex-col gap-5">
-      <ManageTasksSection items={MOCK_TASKS} />
-    </div>
-  );
+  redirect("/dashboard");
 }

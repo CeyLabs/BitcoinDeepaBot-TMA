@@ -27,6 +27,8 @@ const RANGE_MONTHS: Record<Exclude<Range, "All">, number> = { "3M": 3, "1Y": 12 
 
 interface ChartPoint {
   date: string;
+  /** `date` as epoch ms: the x position on the time axis. */
+  t: number;
   invested: number;
   bitcoin: number;
   portfolio: number;
@@ -48,6 +50,7 @@ function buildPoints(transactions: DcaTransaction[], currentBtcPrice: number): C
     cumulativeInvested += tx.net_amount || tx.gross_amount;
     return {
       date: tx.created_at,
+      t: new Date(tx.created_at).getTime(),
       invested: cumulativeInvested,
       bitcoin: tx.btc_price_at_purchase,
       portfolio: (cumulativeSats / 1e8) * currentBtcPrice,
@@ -55,14 +58,27 @@ function buildPoints(transactions: DcaTransaction[], currentBtcPrice: number): C
   });
 }
 
-function filterByRange(points: ChartPoint[], range: Range): ChartPoint[] {
-  if (range === "All") return points;
-  const cutoff = new Date();
-  cutoff.setMonth(cutoff.getMonth() - RANGE_MONTHS[range]);
-  const windowed = points.filter((p) => new Date(p.date) >= cutoff);
-  // Too few buys in the window to draw a line: show everything instead.
-  return windowed.length >= 2 ? windowed : points;
+/**
+ * The x-axis window for a range: first to last buy inside it. Every range draws the same full
+ * dataset and only moves this window, so switching ranges pans/zooms the lines in an animation
+ * instead of swapping in a different set of points.
+ */
+function rangeWindow(points: ChartPoint[], range: Range): { min: number; max: number } | null {
+  if (points.length === 0) return null;
+  const max = points[points.length - 1].t;
+  let first = points[0];
+  if (range !== "All") {
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - RANGE_MONTHS[range]);
+    const windowed = points.filter((p) => p.t >= cutoff.getTime());
+    // Too few buys in the window to draw a line: show everything instead.
+    if (windowed.length >= 2) first = windowed[0];
+  }
+  return { min: first.t, max };
 }
+
+const fmtAxisDate = (t: number) =>
+  new Date(t).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
 export interface PortfolioChartProps {
   transactions: DcaTransaction[];
@@ -77,7 +93,8 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
     () => buildPoints(transactions, currentBtcPrice),
     [transactions, currentBtcPrice]
   );
-  const points = useMemo(() => filterByRange(allPoints, range), [allPoints, range]);
+  const points = allPoints;
+  const xWindow = useMemo(() => rangeWindow(points, range), [points, range]);
   const last = points[points.length - 1];
   const isUp = !last || last.portfolio >= last.invested;
 
@@ -92,17 +109,14 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
   );
 
   // Memoized so PortfolioLine only updates the chart when the data or theme
-  // actually changes, not on every re-render of this card.
+  // actually changes, not on every re-render of this card. Points are {x: time, y}
+  // on a linear x axis, so buys are spaced by date and a range is just an x window.
   const data = useMemo<ChartData<"line">>(() => {
-    const labels = points.map((p) =>
-      new Date(p.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
-    );
     return {
-      labels,
       datasets: [
         {
           label: "Portfolio",
-          data: points.map((p) => p.portfolio),
+          data: points.map((p) => ({ x: p.t, y: p.portfolio })),
           yAxisID: "y",
           borderColor: colors.pl,
           backgroundColor: (ctx) => {
@@ -124,7 +138,7 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
         },
         {
           label: "Invested",
-          data: points.map((p) => p.invested),
+          data: points.map((p) => ({ x: p.t, y: p.invested })),
           yAxisID: "y",
           borderColor: "#f8931a",
           backgroundColor: "transparent",
@@ -136,7 +150,7 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
         },
         {
           label: "Bitcoin",
-          data: points.map((p) => p.bitcoin),
+          data: points.map((p) => ({ x: p.t, y: p.bitcoin })),
           yAxisID: "y1",
           borderColor: colors.btc,
           backgroundColor: "transparent",
@@ -165,6 +179,17 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
           cornerRadius: 12,
           padding: 10,
           callbacks: {
+            // The axis keeps "25 Jan" to fit; the tooltip says which year.
+            title: (items: TooltipItem<"line">[]) => {
+              const point = points[items[0]?.dataIndex ?? -1];
+              return point
+                ? new Date(point.date).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "";
+            },
             label: (context: TooltipItem<"line">) =>
               `${context.dataset.label}: ${fmtLkrCurrency(Math.round(context.parsed.y ?? 0))}`,
           },
@@ -172,9 +197,23 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
       },
       scales: {
         x: {
+          type: "linear" as const,
+          min: xWindow?.min,
+          max: xWindow?.max,
           grid: { display: false },
           border: { display: false },
-          ticks: { color: colors.tick, font: { size: 12, weight: 600 }, maxTicksLimit: 3 },
+          // Three dates: the window's start, middle and end, first and last kept inside the card.
+          afterBuildTicks: (scale) => {
+            const { min, max } = scale;
+            scale.ticks = [min, (min + max) / 2, max].map((value) => ({ value }));
+          },
+          ticks: {
+            color: colors.tick,
+            font: { size: 12, weight: 600 },
+            align: "inner" as const,
+            maxRotation: 0,
+            callback: (value: string | number) => fmtAxisDate(Number(value)),
+          },
         },
         y: {
           position: "left" as const,
@@ -201,7 +240,7 @@ export function PortfolioChart({ transactions, currentBtcPrice }: PortfolioChart
       },
       interaction: { mode: "index" as const, intersect: false },
     }),
-    [colors]
+    [colors, points, xWindow]
   );
 
   return (

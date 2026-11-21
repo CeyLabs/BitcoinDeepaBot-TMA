@@ -50,6 +50,8 @@ export const ACTIVITY_TITLE: Record<ActivityType, string> = {
 
 /** An activity row plus display-only extras the shared ActivityItem type doesn't carry. */
 export type ActivityEntry = ActivityItem & {
+  /** A Lightning payment (not a transfer between bot users): a bolt on the icon */
+  lightning?: boolean;
   settlement: ActivityItem["settlement"] & {
     /** LKR taken as fees (gross minus the amount that bought BTC); only when the backend sent it */
     feeLkr?: number;
@@ -97,7 +99,7 @@ export function mapDcaTransactionToActivityItem(tx: DcaTransaction): ActivityEnt
         ? "One-time Buy"
         : tx.package_name
           ? `${tx.package_name} Plan`
-          : "Destributed",
+          : "Distributed",
     timestamp: tx.created_at,
     sats: tx.satoshis_purchased,
     lkr: tx.gross_amount,
@@ -131,7 +133,8 @@ const SELL_BADGE_DOT: Record<
 // A sale from the member's history: sats out of the wallet, LKR to their
 // bank. A refunded sale's sats came back (that transfer is listed on its own),
 // so it reads as not taken.
-export function mapSellOrderToActivityItem(order: SellOrder): ActivityItem {
+/** `memo`: the memo of the bot transfer that paid this sale (hidden from the list as a duplicate). */
+export function mapSellOrderToActivityItem(order: SellOrder, memo?: string): ActivityItem {
   const { label, variant } = SELL_STATUS_BADGE[order.status] ?? {
     label: order.status,
     variant: "soft" as const,
@@ -150,6 +153,7 @@ export function mapSellOrderToActivityItem(order: SellOrder): ActivityItem {
       settledOn: order.completedAt ?? order.createdAt,
       btcSats: order.sats,
       btcPriceLkr: order.btcLkrRate,
+      memo: memo || undefined,
       transactionId: order.id,
     },
   };
@@ -165,26 +169,59 @@ function parseLkr(value: string | number | null | undefined): number {
   return Number(value.replace(/,/g, "")) || 0;
 }
 
+/**
+ * The note from a bot transfer's memo, without the bot's wrapper, which names
+ * both people by their Telegram usernames (never shown in the app):
+ * "💸 P2P Send from @a to @b. Memo: lunch" → "lunch"; "💰 Collect by @w from
+ * @u." → none. A memo the bot didn't wrap (a Lightning payer's note) is kept.
+ */
+export function cleanBotMemo(memo: string | undefined): string | undefined {
+  if (!memo) return undefined;
+  const wrapped = /^[^\p{L}\p{N}\s]/u.test(memo) && /\b(?:Send|Collect)\b/.test(memo);
+  if (!wrapped) return memo;
+  const i = memo.indexOf(" Memo: ");
+  return i === -1 ? undefined : memo.slice(i + " Memo: ".length).trim() || undefined;
+}
+
+const BOT_STATUS: Record<"success" | "pending" | "failed", { dot: StatusDot; label: string }> = {
+  success: { dot: "green", label: "Completed" },
+  pending: { dot: "orange", label: "Pending" },
+  failed: { dot: "red", label: "Failed" },
+};
+
 export function mapBotTransactionToActivityItem(tx: BotTransaction): ActivityEntry {
   const isOutgoing = tx.direction === "outgoing";
+  const isLightning = tx.type === "lightning";
   // Our @username only: never the Telegram username the bot also sends (to_user/from_user).
-  const counterparty = tx.counterparty_username?.replace(/^@/, "") || undefined;
+  // Lightning has no other user at all.
+  const counterparty = isLightning
+    ? undefined
+    : tx.counterparty_username?.replace(/^@/, "") || undefined;
   const lkr = parseLkr(tx.amount_lkr);
+  const memo = cleanBotMemo(tx.memo);
+  // Lightning rows all have id 0: the payment hash is what tells them apart
+  const ref = tx.id ? String(tx.id) : tx.payment_hash || `${tx.time}-${tx.amount}`;
+  const status = BOT_STATUS[tx.status ?? (tx.success ? "success" : "failed")] ?? BOT_STATUS.failed;
 
   return {
-    id: String(tx.id),
+    id: `bot-${ref}`,
     type: isOutgoing ? "sent" : "received",
     counterparty,
+    detailLabel: isLightning ? (memo ? `Lightning · ${memo}` : "Lightning") : undefined,
+    lightning: isLightning,
     timestamp: tx.time,
     sats: isOutgoing ? -tx.amount : tx.amount,
     lkr,
-    statusDot: tx.success ? "green" : "red",
+    statusDot: status.dot,
+    // Failed: the sats never moved, so it can't read as a send or a receipt
+    notCredited: tx.status === "failed" || (!tx.status && !tx.success),
     settlement: {
-      status: tx.success ? "Completed" : "Failed",
+      status: status.label,
       settledOn: tx.time,
       btcSats: tx.amount,
-      memo: tx.memo,
-      transactionId: String(tx.id),
+      feeSats: isLightning && isOutgoing && (tx.fee ?? 0) > 0 ? tx.fee : undefined,
+      memo,
+      transactionId: ref,
     },
   };
 }

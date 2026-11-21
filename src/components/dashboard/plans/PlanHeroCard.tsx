@@ -36,6 +36,8 @@ export interface PlanHeroCardProps {
   subscriptionLoading?: boolean;
   summaryLoading?: boolean;
   onCancel: () => void;
+  /** One plan at a time: changing starts by cancelling this one. */
+  onChangePlan: () => void;
   cancelling?: boolean;
   offline?: boolean;
 }
@@ -77,6 +79,7 @@ export function PlanHeroCard({
   subscriptionLoading = false,
   summaryLoading = false,
   onCancel,
+  onChangePlan,
   cancelling = false,
   offline = false,
 }: PlanHeroCardProps) {
@@ -249,10 +252,8 @@ export function PlanHeroCard({
           <Button
             variant="inverse"
             className="h-11 flex-1 rounded-xl text-[15px]"
-            onClick={() => {
-              haptic.impact("light");
-              router.push("/dashboard/plans/choose");
-            }}
+            disabled={offline || cancelling}
+            onClick={onChangePlan}
           >
             Change plan
           </Button>

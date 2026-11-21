@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Bone } from "@/components/ui/bone";
-import { Button } from "@/components/ui/button";
 import { List, ListRow, Section } from "@/components/ui/section";
 import { useToast } from "@/components/ui/toast";
 import { AddBankAccountSheet } from "@/components/dashboard/profile/AddBankAccountSheet";
@@ -11,7 +10,7 @@ import { BANK_STATUS_BADGE } from "@/components/dashboard/profile/bank-status";
 import { useBankAccounts, useRemoveBankAccount } from "@/hooks/query/useBankAccounts";
 import { useKycStatus } from "@/hooks/query/useKyc";
 import { FetchyError } from "@/lib/fetchy";
-import { haptic } from "@/platform";
+import { haptic, usePlatform } from "@/platform";
 import { Icon } from "./icons";
 
 const NOTE = {
@@ -20,33 +19,34 @@ const NOTE = {
   VERIFIED: "Rupees from selling sats are sent to this account.",
 } as const;
 
-/** How long the "Remove" confirm stays armed before it falls back to the bin icon. */
-const ARM_MS = 4000;
-
 /** Where LKR goes when the member sells: the current bank account, its review status, add/remove. */
 export function PayoutAccountSection() {
   const toast = useToast();
   const [adding, setAdding] = useState(false);
-  const [armed, setArmed] = useState(false);
+  const platform = usePlatform();
   const { data: kyc, isLoading: kycLoading } = useKycStatus();
   const { current, isLoading } = useBankAccounts();
   const remove = useRemoveBankAccount();
 
   const kycApproved = kyc?.status === "APPROVED";
 
-  useEffect(() => {
-    if (!armed) return;
-    const t = window.setTimeout(() => setArmed(false), ARM_MS);
-    return () => window.clearTimeout(t);
-  }, [armed]);
-
   const openAdd = () => {
     haptic.impact("medium");
     setAdding(true);
   };
 
+  // Ask first: Telegram's native popup in the Mini App, the confirm sheet on the web.
   const onRemove = async () => {
     if (!current) return;
+    haptic.impact("light");
+    const confirmed = await platform.confirm({
+      title: "Remove bank account?",
+      message: `${current.bankName} ${current.accountNumber} won't get payouts any more. To sell again, you'll add an account and wait for it to be verified.`,
+      confirmText: "Remove",
+      cancelText: "Keep it",
+      destructive: true,
+    });
+    if (!confirmed) return;
     haptic.impact("rigid");
     try {
       await remove.mutateAsync(current.id);
@@ -64,8 +64,6 @@ export function PayoutAccountSection() {
               ? err.message
               : undefined,
       });
-    } finally {
-      setArmed(false);
     }
   };
 
@@ -118,31 +116,17 @@ export function PayoutAccountSection() {
           }
           subtitle={`${current.accountNumber} · ${current.accountName}`}
           after={
-            canRemove &&
-            (armed ? (
-              <Button
-                variant="destructive"
-                size="sm"
-                className="mr-1"
-                loading={remove.isPending}
-                aria-label={`Confirm removing ${current.bankName} ${current.accountNumber}`}
-                onClick={() => void onRemove()}
-              >
-                Remove
-              </Button>
-            ) : (
+            canRemove && (
               <button
                 type="button"
                 aria-label={`Remove ${current.bankName} ${current.accountNumber}`}
-                onClick={() => {
-                  haptic.impact("light");
-                  setArmed(true);
-                }}
-                className="press text-ink3 flex size-11 shrink-0 items-center justify-center rounded-lg border-0 bg-transparent"
+                disabled={remove.isPending}
+                onClick={() => void onRemove()}
+                className="press text-ink3 flex size-11 shrink-0 items-center justify-center rounded-lg border-0 bg-transparent disabled:opacity-50"
               >
                 <Icon name="trash" />
               </button>
-            ))
+            )
           }
         />
         {current.status === "REJECTED" && addRow("Add another account", "Upload a new statement")}

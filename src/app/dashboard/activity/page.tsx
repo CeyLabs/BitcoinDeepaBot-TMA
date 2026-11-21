@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { ActivitySearchBar } from "@/components/dashboard/activity/ActivitySearchBar";
 import { ActivityTabs } from "@/components/dashboard/activity/ActivityTabs";
@@ -18,9 +18,13 @@ import {
   mapBotTransactionToActivityItem,
   mapDcaTransactionToActivityItem,
   mapSellOrderToActivityItem,
+  cleanBotMemo,
   type ActivityCategory,
 } from "@/lib/activity";
 import { useBalanceVisible } from "@/hooks/useBalanceVisible";
+
+/** How long to wait for every source before showing the ones that are in. */
+const COMBINED_WAIT_MS = 4000;
 
 // Tipjar/faucet/gift and tasks have no backend endpoint yet.
 const COMING_SOON_CATEGORIES: ActivityCategory[] = ["tasks"];
@@ -33,7 +37,7 @@ export default function ActivityPage() {
   const deferredSearch = useDeferredValue(search);
   const [category, setCategory] = useState<ActivityCategory>("all");
 
-  // Plan charges show on Plans, one-time buys and sales on Transactions: all
+  // Plan charges show on Subscriptions, one-time buys and sales on Transactions: all
   // come from the member's history
   const showDca = category !== "tasks";
   const showBotHistory = category === "all" || category === "transactions";
@@ -44,18 +48,23 @@ export default function ActivityPage() {
   // A sale still moving is followed on its own; the history reloads once it settles
   useRefreshWhenSalesSettle(dca.sales);
 
-  const activity = useMemo(
-    () => [
+  const activity = useMemo(() => {
+    // The bot transfer that paid a sale is hidden below; its memo goes on the sale
+    const saleMemos = new Map(
+      botHistory.transactions
+        .filter((tx) => tx.sale_payment && tx.sale_order_id && cleanBotMemo(tx.memo))
+        .map((tx) => [tx.sale_order_id!, cleanBotMemo(tx.memo)!])
+    );
+    return [
       ...dca.transactions.map(mapDcaTransactionToActivityItem),
-      ...dca.sales.map(mapSellOrderToActivityItem),
+      ...dca.sales.map((order) => mapSellOrderToActivityItem(order, saleMemos.get(order.id))),
       // A purchase's sats arrive as a bot transfer, and a sale's leave as a
       // bot payment: the backend marks both, so each shows once
       ...botHistory.transactions
         .filter((tx) => !tx.purchase_settlement && !tx.sale_payment)
         .map(mapBotTransactionToActivityItem),
-    ],
-    [dca.transactions, dca.sales, botHistory.transactions]
-  );
+    ];
+  }, [dca.transactions, dca.sales, botHistory.transactions]);
 
   const dcaLoading = showDca && dca.isLoading;
   const botLoading = showBotHistory && botHistory.isLoading;
@@ -114,9 +123,18 @@ export default function ActivityPage() {
     return Array.from(byDay.entries());
   }, [activity, comingSoon, deferredSearch, category]);
 
-  // Show whatever has loaded: a slow or failing source (the bot API can take
-  // its full 10s timeout) must not hide purchases that are already here.
-  const isLoading = stillLoading && groups.length === 0;
+  // Wait for every source so the list appears once, already merged (rows
+  // don't pop in between others). A slow source (the bot API can take its
+  // full 10s timeout) only holds it back for COMBINED_WAIT_MS, then whatever
+  // loaded shows.
+  const [waitedOut, setWaitedOut] = useState(false);
+  if (!stillLoading && waitedOut) setWaitedOut(false);
+  useEffect(() => {
+    if (!stillLoading) return;
+    const id = window.setTimeout(() => setWaitedOut(true), COMBINED_WAIT_MS);
+    return () => window.clearTimeout(id);
+  }, [stillLoading]);
+  const isLoading = stillLoading && (groups.length === 0 || !waitedOut);
 
   const canClear = search.trim() !== "" || category !== "all";
   const clearFilters = () => {

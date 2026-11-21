@@ -89,12 +89,14 @@ export interface ActivityItem {
   notCredited?: boolean;
   settlement: {
     status: string;
+    /** Network fee in sats (outgoing Lightning payments), when there's no LKR fee */
+    feeSats?: number;
     settledOn: string;
     btcSats: number;
     btcPriceUsd?: number;
     /** Omit when there's no real price for this transaction (e.g. bot transfers) — show `memo` instead */
     btcPriceLkr?: number;
-    /** Transfer note from the sender, shown in place of the price panel when there's no real price */
+    /** Transfer note: a bot transfer's memo, or the memo of the transfer that paid a sale */
     memo?: string;
     transactionId: string;
   };
@@ -163,8 +165,11 @@ export interface DCSummary {
   };
 }
 
-// Sats sent/received to other Telegram users via the bot (BitcoinDeepa API).
+// One entry of the user's bot history (/api/v1/usertransactions): an internal
+// transfer to/from another bot user, or a Lightning payment (type "lightning":
+// /pay, /invoice, Lightning-address receipts).
 export interface BotTransaction {
+  /** Internal row id; 0 for Lightning payments (use payment_hash as the key) */
   id: number;
   time: string;
   direction: "incoming" | "outgoing";
@@ -175,12 +180,20 @@ export interface BotTransaction {
   type: string;
   amount: number;
   amount_lkr: string | number | null;
+  /** The note; on a Lightning-address receipt, the payer's note */
   memo?: string;
   success: boolean;
+  /** Missing on older backends: fall back to `success` */
+  status?: "success" | "pending" | "failed";
+  /** Sats, Lightning only (0 for internal transfers) */
+  fee?: number;
+  payment_hash?: string;
   /** The transfer that settled one of the user's successful purchases (already listed) */
   purchase_settlement?: boolean;
   /** The payment that took one of the user's sales' sats (already listed as the sale) */
   sale_payment?: boolean;
+  /** With sale_payment: which sale it paid, so the sale can show this transfer's memo */
+  sale_order_id?: string | null;
   /** The other party's Bitcoin Deepa @username and avatar seed (null if they have none) */
   counterparty_username?: string | null;
   counterparty_avatar_seed?: string | null;

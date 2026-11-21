@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BigEmoji, StatusScreen } from "@/components/auth/StatusScreen";
 import { buttonVariants } from "@/components/ui/button";
 
+/** Any unknown URL: a plain full-screen result, no header or tab bar. */
 export default function NotFound() {
   return (
     <StatusScreen

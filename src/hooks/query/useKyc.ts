@@ -15,9 +15,11 @@ export const kycStatusOptions = () =>
   queryOptions({
     queryKey: queryKeys.kycStatus,
     queryFn: () => fetchy.get<KycStatusResponse>("/user/kyc/status"),
-    // Changes outside the app (the user finishes KYC on the provider's page),
-    // so refetch whenever they come back instead of trusting the 60s default.
-    staleTime: 0,
+    // Changes outside the app (the user finishes KYC on the provider's page):
+    // refetch whenever they come back to the app. Fresh for 30s otherwise, so
+    // every tab/sheet that reads it doesn't refetch it on mount.
+    staleTime: 30_000,
+    refetchOnWindowFocus: "always",
   });
 
 export function useKycStatus() {

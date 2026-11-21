@@ -16,6 +16,8 @@ import { WebBackButton } from "@/components/ui/back-button";
 import { ChoosePlanSkeleton } from "@/components/skeletons/choose-plan";
 import { KycRequiredNotice } from "@/components/dashboard/plans/KycRequiredNotice";
 import { PLAN_CTA_BAR } from "@/components/dashboard/plans/plan-cta-bar";
+import { useCancelPlan } from "@/components/dashboard/plans/useCancelPlan";
+import { GateNotice } from "@/components/dashboard/trade/DualAmount";
 import {
   getPlanIconSrc,
   stripFrequencySuffix,
@@ -63,6 +65,7 @@ export function ChoosePlanView({ asTab = false }: { asTab?: boolean }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [payhereLinkLoading, setPayhereLinkLoading] = useState(false);
   const toast = useToast();
+  const { cancel, cancelling } = useCancelPlan();
 
   const { data: fetchedPackages, isLoading: packagesLoading } = usePackages();
   const packages = fetchedPackages ?? EMPTY_PLANS;
@@ -93,9 +96,10 @@ export function ChoosePlanView({ asTab = false }: { asTab?: boolean }) {
     [packages, duration]
   );
 
-  // Only set once the user explicitly taps a plan — details stay hidden until then.
-  const selectedPlan = packages.find((p) => p.id === selectedId);
-  const isCurrentSelected = !!selectedPlan && selectedPlan.id === currentPlan?.id;
+  // Until the user taps one, the first plan of this frequency is selected (the
+  // first one that isn't their current plan, when changing plans).
+  const defaultPlan = filteredPlans.find((p) => p.id !== currentPlan?.id) ?? filteredPlans[0];
+  const selectedPlan = packages.find((p) => p.id === selectedId) ?? defaultPlan;
 
   const estimateText = (plan: SubscriptionPlan) => {
     if (!price || feeBps === undefined) return plan.features?.[0] ?? "Bitcoin membership rewards";
@@ -114,7 +118,7 @@ export function ChoosePlanView({ asTab = false }: { asTab?: boolean }) {
   };
 
   const handleContinue = () => {
-    if (!selectedPlan || isCurrentSelected) return;
+    if (!selectedPlan || currentPlan) return;
     haptic.impact("light");
     setConfirmOpen(true);
   };
@@ -179,11 +183,13 @@ export function ChoosePlanView({ asTab = false }: { asTab?: boolean }) {
     );
   }
 
-  const ctaLabel = !selectedPlan
-    ? "Select a plan"
-    : isCurrentSelected
-      ? "This is your current plan"
-      : `${currentPlan ? "Switch to" : "Activate"} ${stripFrequencySuffix(selectedPlan.name)} · ${fmtLkrCurrency(selectedPlan.amount)}/${perLabel(selectedPlan.type)}`;
+  const currentName = currentPlan ? stripFrequencySuffix(currentPlan.name) : undefined;
+  // One plan at a time: with an active plan, nothing here can be bought.
+  const ctaLabel = currentPlan
+    ? `Cancel ${currentName} to switch`
+    : !selectedPlan
+      ? "Select a plan"
+      : `Activate ${stripFrequencySuffix(selectedPlan.name)} · ${fmtLkrCurrency(selectedPlan.amount)}/${perLabel(selectedPlan.type)}`;
 
   return (
     <div className="flex flex-col gap-5">
@@ -200,6 +206,20 @@ export function ChoosePlanView({ asTab = false }: { asTab?: boolean }) {
         value={duration}
         onChange={handleDurationChange}
       />
+
+      {currentPlan && (
+        <GateNotice
+          className=""
+          title={`You're on ${currentName}`}
+          text="You can have one plan at a time. Cancel it first, then pick a new one."
+          action={{
+            label: "Cancel plan",
+            loading: cancelling,
+            disabled: offline,
+            onClick: () => void cancel(currentName, "switch"),
+          }}
+        />
+      )}
 
       {packagesLoading ? (
         <div className="flex flex-col gap-3">
@@ -218,7 +238,7 @@ export function ChoosePlanView({ asTab = false }: { asTab?: boolean }) {
               name={stripFrequencySuffix(plan.name)}
               price={fmtLkrCurrency(plan.amount)}
               period={`/${perLabel(plan.type)}`}
-              selected={selectedId === plan.id}
+              selected={selectedPlan?.id === plan.id}
               current={plan.id === currentPlan?.id}
               popular={plan.popular}
               onSelect={() => setSelectedId(plan.id)}
@@ -255,7 +275,7 @@ export function ChoosePlanView({ asTab = false }: { asTab?: boolean }) {
       <div className={PLAN_CTA_BAR}>
         <Button
           className="animate-rise"
-          disabled={!selectedPlan || isCurrentSelected || packagesLoading || offline}
+          disabled={!!currentPlan || !selectedPlan || packagesLoading || offline}
           onClick={handleContinue}
         >
           <span className="truncate">{ctaLabel}</span>
@@ -267,7 +287,7 @@ export function ChoosePlanView({ asTab = false }: { asTab?: boolean }) {
         onOpenChange={(open) => {
           if (!payhereLinkLoading) setConfirmOpen(open);
         }}
-        title={currentPlan ? "Switch plan" : "Confirm plan"}
+        title="Confirm plan"
         hideClose={payhereLinkLoading}
         footer={
           <Button

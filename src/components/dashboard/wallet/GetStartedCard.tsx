@@ -24,7 +24,7 @@ const TITLES = [
 /** Onboarding checklist on the wallet; hidden once every step is done. */
 export function GetStartedCard({ hasSats }: { hasSats: boolean }) {
   const router = useRouter();
-  const { openTrade, openSettings } = useSheets();
+  const { openTrade, openAddBank } = useSheets();
   const { kycStatus } = useUser();
   const { current: bankAccount, isLoading: bankLoading } = useBankAccounts();
   const { data: me, isLoading: meLoading } = useUserMe();
@@ -53,7 +53,8 @@ export function GetStartedCard({ hasSats }: { hasSats: boolean }) {
       sub: "Where your rupees go when you sell",
       img: "/emoji/wallet.webp",
       done: !!bankAccount,
-      go: openSettings,
+      // The form needs a verified identity: send unverified members there first.
+      go: () => (kycStatus === "APPROVED" ? openAddBank() : router.push("/verification")),
     },
     {
       label: "Set up your username",

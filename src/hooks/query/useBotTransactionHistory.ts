@@ -27,8 +27,10 @@ const flattenBotTransactions = (data: InfiniteData<BotTransactionPage>) =>
     .flatMap((page) => page.transactions)
     .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
 
-// Sats sent/received to other Telegram users via the bot, paginated
-// newest page first via offset/limit, sorted oldest-first once flattened.
+// The user's bot history (transfers to/from other users and Lightning
+// payments), paginated newest page first via offset/limit, sorted oldest-first
+// once flattened. The bot pages only its newest 1000 entries: an empty page
+// past that ends the list (see hasMore below).
 export const botTransactionsOptions = (userId: string) =>
   infiniteQueryOptions({
     queryKey: queryKeys.botTransactions(userId),
@@ -62,6 +64,13 @@ export const botTransactionsOptions = (userId: string) =>
       return { transactions, nextOffset, hasMore };
     },
     initialPageParam: 0,
+    // A pending Lightning payment settles on its own: look again until none is left
+    refetchInterval: (query) =>
+      query.state.data?.pages.some((page) =>
+        page.transactions.some((tx) => tx.status === "pending")
+      )
+        ? 15_000
+        : false,
     // A bot outage costs the backend's full 10s timeout per attempt: retry once, not 3 times
     retry: 1,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextOffset : undefined),

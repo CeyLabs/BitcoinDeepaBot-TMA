@@ -53,8 +53,9 @@ export default function PortfolioLine({ data, options }: PortfolioLineProps) {
     if (!chart) return;
     chart.data = data;
     chart.options = options;
-    // No animation: a theme or data change just redraws.
-    chart.update("none");
+    // Animated (options.animation): a range change pans/zooms the lines to the new window
+    // and the y axes ease to their new bounds, instead of jumping.
+    chart.update();
   }, [data, options]);
 
   return <canvas ref={canvasRef} role="img" aria-label="Reward portfolio performance chart" />;
