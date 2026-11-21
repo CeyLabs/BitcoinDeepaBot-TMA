@@ -6,6 +6,7 @@ import { usePlatform } from "@/platform";
 import { cn } from "cn";
 import { ListRow } from "@/components/ui/section";
 import { Sheet } from "@/components/ui/sheet";
+import { InstallAppIcon } from "@/components/ui/app-icons";
 import { promptInstall, useInstallKind } from "./install";
 
 interface InstallButtonProps {
@@ -50,9 +51,7 @@ export function InstallButton({ variant = "button", className }: InstallButtonPr
             className
           )}
         >
-          <span className="bg-chip text-link flex size-9 shrink-0 items-center justify-center rounded-[10px]">
-            <Download size={18} strokeWidth={2} />
-          </span>
+          <InstallAppIcon size={36} badge={installKind === "ios" ? "add" : "download"} />
           <span className="flex min-w-0 grow flex-col gap-1 pl-0.5">
             <span className="text-[16px] leading-[18px] font-semibold">Install the app</span>
             <span className="text-ink3 truncate text-[13px] leading-4">

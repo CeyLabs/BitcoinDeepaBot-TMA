@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CellChevron } from "@/components/ui/cell";
-import { Emoji } from "@/components/ui/emoji";
+import { TelegramAppIcon } from "@/components/ui/app-icons";
 import { LandingShell, LogoStage } from "@/components/auth/LandingShell";
 import { UserProgress } from "@/components/auth/UserProgress";
 import { loginErrorMessage } from "@/lib/auth";
@@ -90,7 +90,7 @@ export default function BrowserLoginScreen() {
           onClick={(e) => openMiniApp(e, isMobileDevice)}
           className="press bg-card shadow-card flex min-h-16 w-full items-center gap-3 rounded-xl px-4 py-3 text-left"
         >
-          <Emoji src="/emoji/wallet.webp" />
+          <TelegramAppIcon size={36} />
           <span className="flex min-w-0 grow flex-col gap-1 pl-0.5">
             <span className="text-[16px] leading-[18px] font-semibold">Prefer Telegram?</span>
             <span className="text-ink3 truncate text-[13px] leading-4">
