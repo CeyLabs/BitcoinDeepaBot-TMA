@@ -711,6 +711,11 @@ body:has([data-surface="card"])::before {
     transparent 78%
   );
   filter: blur(18px);
+  animation:
+    logo-glow-in 1.4s ease-out calc(1.6s - var(--yaka-t0, 0s)) both,
+    logo-glow 5s ease-in-out 3s infinite;
+}
+[data-drawn] .logo-glow {
   animation: logo-glow 5s ease-in-out infinite;
 }
 html[data-theme="light"] .logo-glow {
@@ -720,7 +725,7 @@ html[data-theme="light"] .logo-glow {
   animation: logo-float 6s ease-in-out infinite;
 }
 [data-loading] .logo-glow {
-  animation-duration: 1.8s;
+  animation-duration: 1.4s, 1.8s;
 }
 [data-loading] .logo-float {
   animation: logo-float 2.4s ease-in-out infinite;
@@ -742,6 +747,49 @@ html[data-theme="light"] .logo-glow {
   border-radius: inherit;
   background: linear-gradient(90deg, #f8931a, #e84a27);
   animation: loading-bar 1.3s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+/* Hand-drawn logo (components/ui/animated-logo.tsx): each piece of the mask
+   is traced from the eyes outward, then the mask fills in, the tracing fades
+   and the wordmark rises in. Without .yaka-draw it's just the finished logo. */
+.yaka-lines path {
+  stroke-width: 3.5;
+  animation: yaka-trace 1.2s cubic-bezier(0.45, 0, 0.2, 1) both;
+}
+.yaka-draw .yaka-lines {
+  animation: yaka-out 0.7s ease-out calc(2.8s - var(--yaka-t0, 0s)) both;
+}
+.yaka-draw .yaka-fill {
+  animation: yaka-in 0.9s ease-out calc(2.2s - var(--yaka-t0, 0s)) both;
+}
+.yaka-draw .yaka-word {
+  transform-box: fill-box;
+  animation: yaka-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) calc(2.5s - var(--yaka-t0, 0s)) both;
+}
+@keyframes yaka-trace {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes yaka-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes yaka-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes yaka-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+@keyframes logo-glow-in {
+  from {
+    opacity: 0;
+  }
 }
 @keyframes logo-glow {
   0%,
@@ -772,6 +820,10 @@ html[data-theme="light"] .logo-glow {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .yaka-lines {
+    display: none;
+  }
+  .yaka-draw *,
   .logo-glow,
   .logo-float,
   .loading-bar::after {

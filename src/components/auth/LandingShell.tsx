@@ -4,7 +4,7 @@ import { cn } from "cn";
 import { useTheme } from "@/app/context/theme";
 import { Icon } from "@/components/dashboard/settings/icons";
 import { haptic } from "@/platform";
-import { Logo } from "@/components/ui/logo";
+import { AnimatedLogo, useDrawOffset } from "@/components/ui/animated-logo";
 
 /** Light/dark toggle (top-right of the landing); saves an Appearance override. */
 export function ThemeToggle({ className }: { className?: string }) {
@@ -28,22 +28,23 @@ export function ThemeToggle({ className }: { className?: string }) {
 }
 
 /**
- * The landing logo with a soft, slowly pulsing warm glow behind it. The
+ * The landing logo, drawn by hand from the eyes outward (AnimatedLogo), with
+ * a soft, slowly pulsing warm glow behind it. The
  * same size on the start screen and the sign-in/welcome screens, so it
  * doesn't jump when the content arrives; `loading` makes the glow pulse.
  */
 export function LogoStage({ loading }: { loading?: boolean }) {
+  const offset = useDrawOffset();
   return (
     <div
       data-loading={loading || undefined}
-      className={cn(
-        "relative h-[220px] w-full max-w-[320px]",
-        !loading && "animate-logo-in motion-reduce:animate-none"
-      )}
+      data-drawn={offset === null || undefined}
+      style={{ "--yaka-t0": `${offset ?? 0}s` } as React.CSSProperties}
+      className="relative h-[220px] w-full max-w-[320px]"
     >
       <div aria-hidden className="logo-glow" />
       <div className="logo-float absolute inset-0">
-        <Logo priority />
+        <AnimatedLogo offset={offset} />
       </div>
     </div>
   );
