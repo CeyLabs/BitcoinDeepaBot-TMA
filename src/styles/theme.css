@@ -834,3 +834,20 @@ html[data-theme="light"] .logo-glow {
     opacity: 0.5;
   }
 }
+
+/* Light/dark switch (app/context/theme.tsx): the new theme spreads from the
+   tap over a still snapshot of the old one; JS animates the clip-path. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 1;
+}
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
+}

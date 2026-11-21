@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, use, useEffect, useSyncExternalStore } from "react";
+import { flushSync } from "react-dom";
 import { usePathname } from "next/navigation";
 import { usePlatform, type ColorScheme } from "@/platform";
 import { THEME_PREFERENCE_KEY } from "@/lib/theme-boot";
@@ -115,6 +116,62 @@ function writePreference(next: ThemePreference) {
   listeners.forEach((notify) => notify());
 }
 
+// Where the last tap was: a theme switch spreads out from there.
+let lastTap: { x: number; y: number } | null = null;
+if (typeof window !== "undefined") {
+  window.addEventListener(
+    "pointerdown",
+    (e) => {
+      lastTap = { x: e.clientX, y: e.clientY };
+    },
+    { capture: true, passive: true }
+  );
+}
+
+const SPREAD_MS = 750;
+
+/**
+ * Switch light/dark with the new theme spreading out in a circle from the
+ * tap (View Transitions: the old page is a still snapshot, the new one is
+ * revealed by a growing clip-path). Browsers without the API, and reduced
+ * motion, switch at once.
+ */
+function switchTheme(next: ColorScheme, apply: () => void) {
+  const root = document.documentElement;
+  const canAnimate =
+    typeof document.startViewTransition === "function" &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!canAnimate) {
+    apply();
+    return;
+  }
+  const { x, y } = lastTap ?? { x: window.innerWidth / 2, y: 0 };
+  const radius = Math.hypot(
+    Math.max(x, window.innerWidth - x),
+    Math.max(y, window.innerHeight - y)
+  );
+  // No colour transitions inside the new snapshot: it should already be the new theme.
+  root.classList.add("theme-switching");
+  const transition = document.startViewTransition(() => {
+    flushSync(apply);
+    root.dataset.theme = next;
+    root.style.colorScheme = next;
+  });
+  transition.ready
+    .then(() =>
+      root.animate(
+        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+        {
+          duration: SPREAD_MS,
+          easing: "cubic-bezier(0.65, 0, 0.35, 1)",
+          pseudoElement: "::view-transition-new(root)",
+        }
+      )
+    )
+    .catch(() => {});
+  transition.finished.finally(() => root.classList.remove("theme-switching"));
+}
+
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const platform = usePlatform();
   const pathname = usePathname();
@@ -146,13 +203,19 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     return () => cancelAnimationFrame(frame);
   }, [effectiveTheme, pathname, platform]);
 
+  const setPreference = (next: ThemePreference) => {
+    const nextTheme = next === "auto" ? scheme : next;
+    if (nextTheme === effectiveTheme) writePreference(next);
+    else switchTheme(nextTheme, () => writePreference(next));
+  };
+
   const value: ThemeContextType = {
     theme: effectiveTheme,
     isDark: effectiveTheme === "dark",
     isLight: effectiveTheme === "light",
     preference,
-    setPreference: writePreference,
-    setThemeOverride: (theme) => writePreference(theme ?? "auto"),
+    setPreference,
+    setThemeOverride: (theme) => setPreference(theme ?? "auto"),
   };
 
   return <ThemeContext value={value}>{children}</ThemeContext>;
