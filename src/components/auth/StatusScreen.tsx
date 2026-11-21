@@ -52,7 +52,7 @@ export function BigEmoji({ src, className }: { src: string; className?: string }
  */
 export function ResultShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="bg-background text-foreground mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4 pt-6 pb-[calc(24px+env(safe-area-inset-bottom))]">
+    <main className="bg-background text-foreground min-h-app mx-auto flex w-full max-w-md flex-col gap-5 px-4 pt-6 pb-[calc(24px+env(safe-area-inset-bottom))]">
       {children}
     </main>
   );

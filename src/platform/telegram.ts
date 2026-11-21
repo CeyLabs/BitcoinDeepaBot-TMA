@@ -17,6 +17,7 @@ import {
 import type { ColorScheme, Platform, TelegramLaunch } from "./types";
 import { requestConfirm } from "./confirm";
 import { copyText } from "@/lib/clipboard";
+import { setThemeColorMeta } from "./web";
 
 // "android_x" is Telegram X.
 const MOBILE_CLIENTS = ["ios", "android", "android_x"];
@@ -177,6 +178,23 @@ export function createTelegramPlatform(launch: TelegramLaunch | null = readLaunc
         // Unsupported client (Mini Apps < 6.9) or the request failed
         return false;
       }
+    },
+    setChromeColor: (hex) => {
+      setThemeColorMeta(hex);
+      // Each needs a newer client than the last (6.1 / 6.9 / 7.10); older
+      // clients keep Telegram's own colours.
+      tryOr(
+        () => postEvent("web_app_set_header_color", { color: hex as `#${string}` }),
+        () => {}
+      );
+      tryOr(
+        () => postEvent("web_app_set_background_color", { color: hex as `#${string}` }),
+        () => {}
+      );
+      tryOr(
+        () => postEvent("web_app_set_bottom_bar_color", { color: hex as `#${string}` }),
+        () => {}
+      );
     },
     close: () =>
       tryOr(

@@ -4,6 +4,7 @@ import { cn } from "cn";
 import { useTheme } from "@/app/context/theme";
 import { Icon } from "@/components/dashboard/settings/icons";
 import { haptic } from "@/platform";
+import { AnimatedLogo, useDrawOffset } from "@/components/ui/animated-logo";
 
 /** Light/dark toggle (top-right of the landing); saves an Appearance override. */
 export function ThemeToggle({ className }: { className?: string }) {
@@ -17,7 +18,7 @@ export function ThemeToggle({ className }: { className?: string }) {
         setPreference(isDark ? "light" : "dark");
       }}
       className={cn(
-        "press hit bg-chip text-ink2 flex size-10 items-center justify-center rounded-full border-0",
+        "press hit bg-card shadow-card text-ink2 flex size-10 items-center justify-center rounded-full border-0",
         className
       )}
     >
@@ -27,8 +28,31 @@ export function ThemeToggle({ className }: { className?: string }) {
 }
 
 /**
+ * The landing logo, drawn by hand from the eyes outward (AnimatedLogo), with
+ * a soft, slowly pulsing warm glow behind it. The
+ * same size on the start screen and the sign-in/welcome screens, so it
+ * doesn't jump when the content arrives; `loading` makes the glow pulse.
+ */
+export function LogoStage({ loading }: { loading?: boolean }) {
+  const offset = useDrawOffset();
+  return (
+    <div
+      data-loading={loading || undefined}
+      data-drawn={offset === null || undefined}
+      style={{ "--yaka-t0": `${offset ?? 0}s` } as React.CSSProperties}
+      className="relative h-[220px] w-full max-w-[320px]"
+    >
+      <div aria-hidden className="logo-glow" />
+      <div className="logo-float absolute inset-0">
+        <AnimatedLogo offset={offset} />
+      </div>
+    </div>
+  );
+}
+
+/**
  * Full-screen landing surface for the screens outside the dashboard (welcome,
- * sign-in, errors, payment results): plain card background and a centered column.
+ * sign-in, errors, payment results): plain page background and a centered column.
  */
 export function LandingShell({
   children,
@@ -43,11 +67,14 @@ export function LandingShell({
   "aria-label"?: string;
 }) {
   return (
-    // Plain page in the card colour; content in a centered phone-width column.
-    <div className="bg-card min-h-dvh transition-colors duration-300">
+    // The app's page colour (same as the body, the status bar and Android's
+    // navigation bar, which comes from the manifest), content in a centered
+    // phone-width column. The height leaves out the installed PWA's
+    // status-bar padding, so the page fits the screen without scrolling.
+    <div className="bg-background min-h-app overflow-x-clip transition-colors duration-300">
       <main
         aria-label={ariaLabel}
-        className="relative mx-auto flex min-h-dvh w-full max-w-[440px] flex-col"
+        className="min-h-app relative mx-auto flex w-full max-w-[440px] flex-col"
       >
         {themeToggle && <ThemeToggle className="absolute top-4 right-4 z-10" />}
         <div

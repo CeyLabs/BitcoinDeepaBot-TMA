@@ -80,7 +80,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     // Phone-width column, centered on a plain page on wider screens.
     <SheetsProvider>
-      <div className="bg-background relative mx-auto flex min-h-dvh w-full max-w-[440px] flex-col overflow-x-clip px-4 transition-colors duration-300">
+      <div className="bg-background min-h-app relative mx-auto flex w-full max-w-[440px] flex-col overflow-x-clip px-4 transition-colors duration-300">
         <AppHeader />
         <main
           className={

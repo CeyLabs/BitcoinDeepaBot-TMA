@@ -657,7 +657,19 @@ body {
   bar. Browsers and Telegram report a 0 top inset, so this only matters
   standalone. The bottom inset is handled by the fixed bottom navigation.
 */
+:root {
+  /* What body's padding-top takes away from the viewport (standalone only). */
+  --top-inset: 0px;
+}
+/* A full-screen page: the viewport minus that padding, so it fits the screen
+   (no scrolling just to reach a bottom button) in the installed app too. */
+@utility min-h-app {
+  min-height: calc(100dvh - var(--top-inset));
+}
 @media (display-mode: standalone) {
+  :root {
+    --top-inset: env(safe-area-inset-top);
+  }
   body {
     padding-top: env(safe-area-inset-top);
   }
@@ -673,4 +685,164 @@ body {
     background: var(--background);
     pointer-events: none;
   }
+}
+
+/* ─── Landing logo stage ──────────────────────────────────────────────────
+   A warm glow behind the logo (the mask's flame colours), plus a gentle
+   float. While loading, the glow pulses
+   faster. CSS only, so it runs before hydration. */
+.logo-glow {
+  position: absolute;
+  inset: -18% -22%;
+  pointer-events: none;
+  border-radius: 9999px;
+}
+.logo-glow {
+  background: radial-gradient(
+    closest-side,
+    rgb(248 147 26 / 0.34),
+    rgb(232 74 39 / 0.14) 55%,
+    transparent 78%
+  );
+  filter: blur(18px);
+  animation:
+    logo-glow-in 1.4s ease-out calc(1.6s - var(--yaka-t0, 0s)) both,
+    logo-glow 5s ease-in-out 3s infinite;
+}
+[data-drawn] .logo-glow {
+  animation: logo-glow 5s ease-in-out infinite;
+}
+html[data-theme="light"] .logo-glow {
+  opacity: 0.75;
+}
+.logo-float {
+  animation: logo-float 6s ease-in-out infinite;
+}
+[data-loading] .logo-glow {
+  animation-duration: 1.4s, 1.8s;
+}
+[data-loading] .logo-float {
+  animation: logo-float 2.4s ease-in-out infinite;
+}
+/* Indeterminate bar under the logo while the start screen waits. */
+.loading-bar {
+  position: relative;
+  height: 4px;
+  width: 112px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: var(--card);
+}
+.loading-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f8931a, #e84a27);
+  animation: loading-bar 1.3s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+/* Hand-drawn logo (components/ui/animated-logo.tsx): the mask's lines grow
+   out from the eyes, then "bitcoin දීප" is written left to right; each fills
+   in once traced and its tracing fades. Delays are shifted by --yaka-t0 for a
+   logo mounted mid-way. Without .yaka-draw it's just the finished logo. */
+.yaka-lines path {
+  stroke-width: 3.5;
+  animation: yaka-trace 1.1s cubic-bezier(0.45, 0, 0.2, 1) both;
+}
+.yaka-word-lines path {
+  stroke-width: 3;
+  animation-duration: 0.9s;
+}
+.yaka-draw .yaka-fill {
+  animation: yaka-in 0.9s ease-out calc(2.3s - var(--yaka-t0, 0s)) both;
+}
+.yaka-draw .yaka-mask-lines {
+  animation: yaka-out 0.7s ease-out calc(2.8s - var(--yaka-t0, 0s)) both;
+}
+.yaka-draw .yaka-word {
+  animation: yaka-in 0.7s ease-out calc(3.2s - var(--yaka-t0, 0s)) both;
+}
+.yaka-draw .yaka-word-lines {
+  animation: yaka-out 0.6s ease-out calc(3.5s - var(--yaka-t0, 0s)) both;
+}
+@keyframes yaka-trace {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes yaka-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes yaka-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes logo-glow-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes logo-glow {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+@keyframes logo-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes loading-bar {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(230%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .yaka-lines {
+    display: none;
+  }
+  .yaka-draw *,
+  .logo-glow,
+  .logo-float,
+  .loading-bar::after {
+    animation: none !important;
+  }
+  .loading-bar::after {
+    width: 100%;
+    opacity: 0.5;
+  }
+}
+
+/* Light/dark switch (app/context/theme.tsx): the new theme spreads from the
+   tap over a still snapshot of the old one; JS animates the clip-path. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 1;
+}
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
 }

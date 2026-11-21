@@ -1,7 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { webLoginUrl } from "@/lib/auth";
+import { API_BASE_URL } from "@/lib/constants";
 
 /**
  * "Log In with Telegram" for the web: a full-page redirect to the backend's
@@ -21,12 +23,23 @@ export default function TelegramLoginButton({
   label?: string;
   className?: string;
 }) {
+  const toast = useToast();
   return (
     <Button
       className={className}
-      onClick={() =>
-        window.location.assign(webLoginUrl(returnTo ?? "/dashboard?tab=wallet", referralCode))
-      }
+      onClick={() => {
+        // A build without NEXT_PUBLIC_API_BASE_URL (e.g. a Vercel preview with
+        // no Preview env vars) would send this to a page of our own: a 404.
+        if (!API_BASE_URL) {
+          toast({
+            type: "error",
+            title: "Sign-in isn't set up here",
+            description: "This build has no backend address (NEXT_PUBLIC_API_BASE_URL).",
+          });
+          return;
+        }
+        window.location.assign(webLoginUrl(returnTo ?? "/dashboard?tab=wallet", referralCode));
+      }}
     >
       {label}
     </Button>
