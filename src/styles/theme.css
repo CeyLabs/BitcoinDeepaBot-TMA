@@ -694,11 +694,10 @@ body:has([data-surface="card"])::before {
 }
 
 /* ─── Landing logo stage ──────────────────────────────────────────────────
-   A warm glow and slowly turning light rays behind the logo (the mask's
-   flame colours), plus a gentle float. While loading, the glow pulses
+   A warm glow behind the logo (the mask's flame colours), plus a gentle
+   float. While loading, the glow pulses
    faster. CSS only, so it runs before hydration. */
-.logo-glow,
-.logo-rays {
+.logo-glow {
   position: absolute;
   inset: -18% -22%;
   pointer-events: none;
@@ -714,22 +713,8 @@ body:has([data-surface="card"])::before {
   filter: blur(18px);
   animation: logo-glow 5s ease-in-out infinite;
 }
-.logo-rays {
-  inset: -30% -34%;
-  background: repeating-conic-gradient(
-    from 0deg,
-    rgb(248 147 26 / 0.16) 0deg 5deg,
-    transparent 5deg 22.5deg
-  );
-  -webkit-mask-image: radial-gradient(closest-side, #000 25%, transparent 72%);
-  mask-image: radial-gradient(closest-side, #000 25%, transparent 72%);
-  animation: logo-rays 60s linear infinite;
-}
 html[data-theme="light"] .logo-glow {
   opacity: 0.75;
-}
-html[data-theme="light"] .logo-rays {
-  opacity: 0.6;
 }
 .logo-float {
   animation: logo-float 6s ease-in-out infinite;
@@ -769,11 +754,6 @@ html[data-theme="light"] .logo-rays {
     transform: scale(1.06);
   }
 }
-@keyframes logo-rays {
-  to {
-    transform: rotate(360deg);
-  }
-}
 @keyframes logo-float {
   0%,
   100% {
@@ -793,7 +773,6 @@ html[data-theme="light"] .logo-rays {
 }
 @media (prefers-reduced-motion: reduce) {
   .logo-glow,
-  .logo-rays,
   .logo-float,
   .loading-bar::after {
     animation: none !important;

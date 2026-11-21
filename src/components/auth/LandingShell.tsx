@@ -28,7 +28,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 }
 
 /**
- * The landing logo with a warm glow and slowly turning rays behind it. The
+ * The landing logo with a soft, slowly pulsing warm glow behind it. The
  * same size on the start screen and the sign-in/welcome screens, so it
  * doesn't jump when the content arrives; `loading` makes the glow pulse.
  */
@@ -41,7 +41,6 @@ export function LogoStage({ loading }: { loading?: boolean }) {
         !loading && "animate-logo-in motion-reduce:animate-none"
       )}
     >
-      <div aria-hidden className="logo-rays" />
       <div aria-hidden className="logo-glow" />
       <div className="logo-float absolute inset-0">
         <Logo priority />
