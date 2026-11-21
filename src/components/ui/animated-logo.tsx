@@ -2,10 +2,17 @@
 
 import { useEffect, useId, useState } from "react";
 import { cn } from "cn";
-import { LOGO_VIEWBOX, MASK_PIECES, WORDMARK_INK, WORDMARK_ORANGE } from "./logo-paths";
+import {
+  LOGO_VIEWBOX,
+  MASK_FILL,
+  MASK_LINES,
+  WORD_LINES,
+  WORDMARK_INK,
+  WORDMARK_ORANGE,
+} from "./logo-paths";
 
 /** How long the whole draw-in takes (keep in step with styles/theme.css). */
-const DRAW_SECONDS = 3.6;
+const DRAW_SECONDS = 4.2;
 
 let hydrated = false;
 
@@ -38,12 +45,35 @@ const STOPS: [offset: string, color: string][] = [
   ["1", "#e74126"],
 ];
 
-const MASK_FILL = MASK_PIECES.map(([d]) => d).join("");
+/** A stroke that traces itself (styles/theme.css `.yaka-lines path`). */
+function Trace({
+  d,
+  length,
+  delay,
+  className,
+}: {
+  d: string;
+  length: number;
+  delay: number;
+  className?: string;
+}) {
+  return (
+    <path
+      d={d}
+      className={className}
+      style={{
+        strokeDasharray: length,
+        strokeDashoffset: length,
+        animationDelay: `${delay.toFixed(2)}s`,
+      }}
+    />
+  );
+}
 
 /**
- * The Bitcoin Deepa logo drawn by hand: the Yaka mask's lines start at the
- * eyes and spread outward, then the mask fills in and "bitcoin දීප" rises in
- * underneath. Inline SVG, animated with CSS (styles/theme.css, `.yaka`), so it
+ * The Bitcoin Deepa logo drawn by hand: the Yaka mask's lines grow out from
+ * the eyes, then "bitcoin දීප" is written left to right, and each fills in
+ * once traced. Inline SVG, animated with CSS (styles/theme.css, `.yaka`), so it
  * starts with the server-rendered HTML, before hydration. Fills its
  * (positioned, sized) parent like <Logo>.
  */
@@ -101,29 +131,40 @@ export function AnimatedLogo({
         strokeMiterlimit={10}
       />
       {draw && (
-        <g className="yaka-lines" fill="none" stroke={`url(#${id}s)`} strokeLinecap="round">
-          {MASK_PIECES.map(([d, length, t]) => (
-            <path
-              key={d}
-              d={d}
-              style={{
-                strokeDasharray: length,
-                strokeDashoffset: length,
-                // Eyes first, the farthest flames last
-                animationDelay: `${(0.3 + t * 1.4 - (offset ?? 0)).toFixed(2)}s`,
-              }}
-            />
+        <g
+          className="yaka-lines yaka-mask-lines"
+          fill="none"
+          stroke={`url(#${id}s)`}
+          strokeLinecap="round"
+        >
+          {MASK_LINES.map(([d, length, t], i) => (
+            // Eyes first, the farthest flames last
+            <Trace key={i} d={d} length={length} delay={0.3 + t * 1.3 - (offset ?? 0)} />
           ))}
         </g>
       )}
       <g className="yaka-word">
-        {WORDMARK_INK.map((d) => (
-          <path key={d} d={d} className="fill-foreground" />
+        {WORDMARK_INK.map((d, i) => (
+          <path key={i} d={d} className="fill-foreground" />
         ))}
-        {WORDMARK_ORANGE.map((d) => (
-          <path key={d} d={d} fill="#f8931a" />
+        {WORDMARK_ORANGE.map((d, i) => (
+          <path key={i} d={d} fill="#f8931a" />
         ))}
       </g>
+      {draw && (
+        <g className="yaka-lines yaka-word-lines" fill="none" strokeLinecap="round">
+          {WORD_LINES.map(([d, length, t, kind], i) => (
+            // Written left to right while the mask finishes
+            <Trace
+              key={i}
+              d={d}
+              length={length}
+              delay={1.9 + t * 1.0 - (offset ?? 0)}
+              className={kind === "ink" ? "stroke-foreground" : "stroke-[#f8931a]"}
+            />
+          ))}
+        </g>
+      )}
     </svg>
   );
 }
