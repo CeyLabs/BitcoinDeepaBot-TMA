@@ -14,10 +14,14 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    // Android builds its launch splash from these; the page's theme-color
-    // meta (light/dark, see layout.tsx) takes over once loaded.
-    background_color: "#ffffff",
-    theme_color: "#ffffff",
+    // Installed on Android, Chrome takes the system navigation bar's colour
+    // (and the launch splash) from these, not from the page: the theme-color
+    // meta only reaches the status bar. A manifest can't follow light/dark, so
+    // use the dark page colour: a dark bar under the light theme looks fine,
+    // a white bar under the dark theme looks broken. Chrome picks up a change
+    // when it next updates the installed app (or on reinstall).
+    background_color: "#0b0f14",
+    theme_color: "#0b0f14",
     categories: ["finance"],
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
