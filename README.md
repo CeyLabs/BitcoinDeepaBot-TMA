@@ -105,13 +105,13 @@ bun dev                      # http://localhost:3347
 
 <br>
 
-| Variable | What it does |
-| --- | --- |
-| `NEXT_PUBLIC_API_BASE_URL` | Base URL of app-backend; the backend's `APP_URL` must be this app's origin |
+| Variable                            | What it does                                                                           |
+| ----------------------------------- | -------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_BASE_URL`          | Base URL of app-backend; the backend's `APP_URL` must be this app's origin             |
 | `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | Bot that hosts the Mini App, for t.me links and invites; defaults to `BitcoinDeepaBot` |
-| `NEXT_PUBLIC_GA_ID` | Google Analytics measurement ID; leave empty to turn analytics off |
-| `MONGODB_URI` | Server-only. MongoDB for `/api/user`, the user count on the landing page |
-| `VERCEL_GIT_COMMIT_SHA` and friends | Set by the host. Stamps the service worker with the commit; falls back to a timestamp |
+| `NEXT_PUBLIC_GA_ID`                 | Google Analytics measurement ID; leave empty to turn analytics off                     |
+| `MONGODB_URI`                       | Server-only. MongoDB for `/api/user`, the user count on the landing page               |
+| `VERCEL_GIT_COMMIT_SHA` and friends | Set by the host. Stamps the service worker with the commit; falls back to a timestamp  |
 
 The build checks `RAILWAY_GIT_COMMIT_SHA`, `GITHUB_SHA`, `VERCEL_GIT_COMMIT_SHA`, `CF_PAGES_COMMIT_SHA` and
 `SOURCE_COMMIT`, in that order.

@@ -7,7 +7,7 @@ import { Emoji } from "@/components/ui/emoji";
 import { LandingShell } from "@/components/auth/LandingShell";
 import { UserProgress } from "@/components/auth/UserProgress";
 import { loginErrorMessage } from "@/lib/auth";
-import { TELEGRAM_BOT_URL } from "@/lib/constants";
+import { TELEGRAM_BOT_URL, TELEGRAM_BOT_USERNAME } from "@/lib/constants";
 import TelegramLoginButton from "@/components/auth/TelegramLoginButton";
 import { InstallButton } from "@/pwa";
 
@@ -72,7 +72,9 @@ export default function BrowserLoginScreen() {
           <CellChevron />
         </a>
         <InstallButton variant="cell" />
-        <p className="text-ink3 mt-1 text-center text-[13px] font-semibold">@BitcoinDeepaBot</p>
+        <p className="text-ink3 mt-1 text-center text-[13px] font-semibold">
+          @{TELEGRAM_BOT_USERNAME}
+        </p>
       </div>
     </LandingShell>
   );
